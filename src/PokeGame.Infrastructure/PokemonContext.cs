@@ -5,6 +5,8 @@ namespace PokeGame.Infrastructure;
 
 public class PokemonContext : DbContext
 {
+  internal const string Schema = "Pokemon";
+
   public PokemonContext(DbContextOptions<PokemonContext> options) : base(options)
   {
   }
