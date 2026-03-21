@@ -1,6 +1,7 @@
 ﻿using Krakenar.Contracts.Actors;
 using Logitar.EventSourcing;
 using Microsoft.Extensions.Caching.Memory;
+using PokeGame.Core.Actors;
 using PokeGame.Core.Caching;
 using PokeGame.Infrastructure.Settings;
 
@@ -29,7 +30,8 @@ internal class CacheService : ICacheService
   }
   public void SetActor(Actor actor)
   {
-    string key = string.Empty; // TODO(fpion): implement
+    ActorId actorId = actor.GetActorId();
+    string key = GetActorKey(actorId);
     _memoryCache.Set(key, actor, _settings.ActorLifetime);
   }
   private static string GetActorKey(ActorId actorId) => $"Actor.Id={actorId}";
