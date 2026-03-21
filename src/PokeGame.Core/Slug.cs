@@ -8,12 +8,15 @@ public record Slug
   public const int MaximumLength = 100;
 
   public string Value { get; }
+  public string NormalizedValue => Normalize(Value);
 
   public Slug(string value)
   {
     Value = value.Trim();
     new Validator().ValidateAndThrow(this);
   }
+
+  public static string Normalize(string value) => value.Trim().ToLowerInvariant();
 
   public override string ToString() => Value;
 

@@ -8,7 +8,6 @@ namespace PokeGame.Controllers;
 
 [ApiController]
 [Authorize]
-[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 [Route("worlds")]
 public class WorldController : ControllerBase
 {
@@ -20,24 +19,27 @@ public class WorldController : ControllerBase
   }
 
   [HttpPost]
-  [ProducesResponseType<WorldModel>(StatusCodes.Status201Created)]
-  [ProducesResponseType(StatusCodes.Status400BadRequest)]
-  [ProducesResponseType(StatusCodes.Status402PaymentRequired)]
-  [ProducesResponseType(StatusCodes.Status403Forbidden)]
-  [ProducesResponseType(StatusCodes.Status409Conflict)]
   public async Task<ActionResult<WorldModel>> CreateAsync([FromBody] CreateOrReplaceWorldPayload payload, CancellationToken cancellationToken)
   {
     CreateOrReplaceWorldResult result = await _worldService.CreateOrReplaceAsync(payload, id: null, cancellationToken);
     return ToActionResult(result);
   }
 
+  [HttpGet("{id}")]
+  public async Task<ActionResult<WorldModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
+  {
+    WorldModel? world = await _worldService.ReadAsync(id, slug: null, cancellationToken);
+    return world is null ? NotFound() : Ok(world);
+  }
+
+  [HttpGet("slug:{slug}")]
+  public async Task<ActionResult<WorldModel>> ReadAsync(string slug, CancellationToken cancellationToken)
+  {
+    WorldModel? world = await _worldService.ReadAsync(id: null, slug, cancellationToken);
+    return world is null ? NotFound() : Ok(world);
+  }
+
   [HttpPut("{id}")]
-  [ProducesResponseType<WorldModel>(StatusCodes.Status200OK)]
-  [ProducesResponseType<WorldModel>(StatusCodes.Status201Created)]
-  [ProducesResponseType(StatusCodes.Status400BadRequest)]
-  [ProducesResponseType(StatusCodes.Status402PaymentRequired)]
-  [ProducesResponseType(StatusCodes.Status403Forbidden)]
-  [ProducesResponseType(StatusCodes.Status409Conflict)]
   public async Task<ActionResult<WorldModel>> ReplaceAsync(Guid id, [FromBody] CreateOrReplaceWorldPayload payload, CancellationToken cancellationToken)
   {
     CreateOrReplaceWorldResult result = await _worldService.CreateOrReplaceAsync(payload, id, cancellationToken);
