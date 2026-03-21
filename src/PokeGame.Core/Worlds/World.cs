@@ -54,6 +54,8 @@ public class World : AggregateRoot, IEntityProvider
     }
   }
 
+  public long Size => Slug.Size + (Name?.Size ?? 0) + (Description?.Size ?? 0);
+
   public World() : base()
   {
   }
@@ -78,7 +80,7 @@ public class World : AggregateRoot, IEntityProvider
     }
   }
 
-  public Entity GetEntity() => new(EntityKind, Id.ToGuid());
+  public Entity GetEntity() => new(EntityKind, Id.ToGuid(), worldId: null, Size);
 
   public void Update(UserId userId)
   {

@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using PokeGame.Core.Validators;
+using PokeGame.Core.Validation;
 
 namespace PokeGame.Core.Worlds.Models;
 
