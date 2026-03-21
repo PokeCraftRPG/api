@@ -15,10 +15,8 @@ internal class AbilityConfiguration : AggregateConfiguration<AbilityEntity>, IEn
     builder.HasKey(x => x.AbilityId);
 
     builder.HasIndex(x => new { x.WorldId, x.Id }).IsUnique();
-    // TODO(fpion): Key/Slug
     builder.HasIndex(x => x.Name);
 
-    // TODO(fpion): Key/Slug
     builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
     builder.Property(x => x.Url).HasMaxLength(Url.MaximumLength);
 

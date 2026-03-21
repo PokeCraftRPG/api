@@ -40,13 +40,6 @@ internal class AbilityQuerier : IAbilityQuerier
       .SingleOrDefaultAsync(cancellationToken);
     return ability is null ? null : await MapAsync(ability, cancellationToken);
   }
-  //TODO(fpion):public async Task<AbilityModel?> ReadAsync(string slug, CancellationToken cancellationToken)
-  //{
-  //  AbilityEntity? ability = await _abilities.AsNoTracking()
-  //    .Where(x => x.SlugNormalized == Slug.Normalize(slug) && x.OwnerId == _context.UserId.Value)
-  //    .SingleOrDefaultAsync(cancellationToken);
-  //  return ability is null ? null : await MapAsync(ability, cancellationToken);
-  //}
 
   private async Task<AbilityModel> MapAsync(AbilityEntity ability, CancellationToken cancellationToken)
   {

@@ -30,7 +30,6 @@ internal class Mapper
     AbilityModel destination = new()
     {
       Id = source.Id,
-      // TODO(fpion: Key/Slug
       Name = source.Name,
       Description = source.Description,
       Url = source.Url,

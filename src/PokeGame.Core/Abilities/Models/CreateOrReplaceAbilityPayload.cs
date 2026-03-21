@@ -5,8 +5,7 @@ namespace PokeGame.Core.Abilities.Models;
 
 public record CreateOrReplaceAbilityPayload
 {
-  // TODO(fpion): Key/Slug
-  public string? Name { get; set; }
+  public string Name { get; set; } = string.Empty;
   public string? Description { get; set; }
 
   public string? Url { get; set; }
@@ -18,8 +17,7 @@ public record CreateOrReplaceAbilityPayload
   {
     public Validator()
     {
-      // TODO(fpion): Key/Slug
-      When(x => !string.IsNullOrWhiteSpace(x.Name), () => RuleFor(x => x.Name!).Name());
+      RuleFor(x => x.Name).Name();
       When(x => !string.IsNullOrWhiteSpace(x.Description), () => RuleFor(x => x.Description!).Description());
 
       When(x => !string.IsNullOrWhiteSpace(x.Url), () => RuleFor(x => x.Url!).Url());

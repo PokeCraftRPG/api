@@ -17,15 +17,15 @@ public class Ability : AggregateRoot, IEntityProvider
   public Guid EntityId => Id.EntityId;
 
   private Name? _name = null;
-  public Name? Name
+  public Name Name
   {
-    get => _name;
+    get => _name ?? throw new InvalidOperationException("The ability was not initialized.");
     set
     {
       if (_name != value)
       {
         _name = value;
-        _updated.Name = new Optional<Name>(value);
+        _updated.Name = value;
       }
     }
   }
@@ -70,22 +70,27 @@ public class Ability : AggregateRoot, IEntityProvider
     }
   }
 
-  public long Size => (Name?.Size ?? 0) + (Description?.Size ?? 0) + (Url?.Size ?? 0) + (Notes?.Size ?? 0); // TODO(fpion): Slug/Key
+  public long Size => Name.Size + (Description?.Size ?? 0) + (Url?.Size ?? 0) + (Notes?.Size ?? 0);
 
   public Ability() : base()
   {
   }
 
-  public Ability(World world, UserId? userId = null)
+  public Ability(World world, Name name, UserId? userId = null)
     : base(AbilityId.NewId(world.Id).StreamId)
   {
-    Raise(new AbilityCreated(), (userId ?? world.OwnerId).ActorId);
+    Raise(new AbilityCreated(name), (userId ?? world.OwnerId).ActorId);
   }
 
-  public Ability(UserId userId, AbilityId abilityId)
+  public Ability(Name name, UserId userId, AbilityId abilityId)
     : base(abilityId.StreamId)
   {
-    Raise(new AbilityCreated(), userId.ActorId);
+    Raise(new AbilityCreated(name), userId.ActorId);
+  }
+
+  protected virtual void Handle(AbilityCreated @event)
+  {
+    _name = @event.Name;
   }
 
   public void Delete(UserId userId)
@@ -108,10 +113,9 @@ public class Ability : AggregateRoot, IEntityProvider
   }
   protected virtual void Handle(AbilityUpdated @event)
   {
-    // TODO(fpion): Slug/Key
     if (@event.Name is not null)
     {
-      _name = @event.Name.Value;
+      _name = @event.Name;
     }
     if (@event.Description is not null)
     {
@@ -128,5 +132,5 @@ public class Ability : AggregateRoot, IEntityProvider
     }
   }
 
-  // TODO(fpion): ToString
+  public override string ToString() => $"{Name} | {base.ToString()}";
 }

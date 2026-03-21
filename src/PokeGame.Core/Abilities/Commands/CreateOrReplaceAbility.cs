@@ -46,30 +46,29 @@ internal class CreateOrReplaceAbilityCommandHandler : ICommandHandler<CreateOrRe
       ability = await _abilityRepository.LoadAsync(abilityId, cancellationToken);
     }
 
+    Name name = new(payload.Name);
+
     bool created = false;
     if (ability is null)
     {
       await _permissionService.CheckAsync(Actions.CreateAbility, cancellationToken);
 
-      ability = new(userId, abilityId);
+      ability = new(name, userId, abilityId);
       created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, ability, cancellationToken);
 
-      // TODO(fpion): Key/Slug
+      ability.Name = name;
     }
 
-    ability.Name = Name.TryCreate(payload.Name);
     ability.Description = Description.TryCreate(payload.Description);
 
     ability.Url = Url.TryCreate(payload.Url);
     ability.Notes = Notes.TryCreate(payload.Notes);
 
     ability.Update(userId);
-
-    // TODO(fpion): check for key/slug conflict
 
     await _storageService.ExecuteWithQuotaAsync(
       ability,

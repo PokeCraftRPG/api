@@ -42,9 +42,9 @@ internal class UpdateAbilityCommandHandler : ICommandHandler<UpdateAbilityComman
     }
     await _permissionService.CheckAsync(Actions.Update, ability, cancellationToken);
 
-    if (payload.Name is not null)
+    if (!string.IsNullOrWhiteSpace(payload.Name))
     {
-      ability.Name = Name.TryCreate(payload.Name.Value);
+      ability.Name = new Name(payload.Name);
     }
     if (payload.Description is not null)
     {
@@ -61,8 +61,6 @@ internal class UpdateAbilityCommandHandler : ICommandHandler<UpdateAbilityComman
     }
 
     ability.Update(_context.UserId);
-
-    // TODO(fpion): check for key/slug conflict
 
     await _storageService.ExecuteWithQuotaAsync(
       ability,

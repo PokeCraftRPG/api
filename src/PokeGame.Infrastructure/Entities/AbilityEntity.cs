@@ -12,8 +12,7 @@ internal class AbilityEntity : AggregateEntity
   public Guid WorldUid { get; private set; }
   public Guid Id { get; private set; }
 
-  // TODO(fpion): Key/Slug
-  public string? Name { get; private set; }
+  public string Name { get; private set; } = string.Empty;
   public string? Description { get; private set; }
 
   public string? Url { get; private set; }
@@ -26,6 +25,8 @@ internal class AbilityEntity : AggregateEntity
     World = world;
     WorldId = world.WorldId;
     WorldUid = world.Id;
+
+    Name = @event.Name.Value;
   }
 
   private AbilityEntity() : base()
@@ -38,7 +39,7 @@ internal class AbilityEntity : AggregateEntity
 
     if (@event.Name is not null)
     {
-      Name = @event.Name.Value?.Value;
+      Name = @event.Name.Value;
     }
     if (@event.Description is not null)
     {
@@ -55,5 +56,5 @@ internal class AbilityEntity : AggregateEntity
     }
   }
 
-  // TODO(fpion): ToString
+  public override string ToString() => $"{Name} | {base.ToString()}";
 }
