@@ -10,13 +10,13 @@ public class SlugValidatorTests
   private static readonly SlugValidator<Example> Validator = new();
   private static readonly ValidationContext<Example> Context = new(new Example());
 
-  [Fact(DisplayName = "SlugValidator.Name: it should be SlugValidator.")]
+  [Fact(DisplayName = "Name: it should be SlugValidator.")]
   public void Given_nothing_When_Name_Then_isSlugValidator()
   {
     Assert.Equal("SlugValidator", Validator.Name);
   }
 
-  [Fact(DisplayName = "SlugValidator.GetDefaultMessageTemplate: it should describe hyphen-separated alphanumeric words.")]
+  [Fact(DisplayName = "GetDefaultMessageTemplate: it should return the message describing hyphen-separated alphanumeric words.")]
   public void Given_anyErrorCode_When_GetDefaultMessageTemplate_Then_returnsExpectedTemplate()
   {
     string template = Validator.GetDefaultMessageTemplate(string.Empty);
@@ -25,7 +25,7 @@ public class SlugValidatorTests
       template);
   }
 
-  [Theory(DisplayName = "SlugValidator.IsValid: it should return true for hyphen-separated alphanumeric words.")]
+  [Theory(DisplayName = "IsValid: it should return true for hyphen-separated alphanumeric words.")]
   [InlineData("a")]
   [InlineData("my-cool-slug")]
   [InlineData("Gen1-Route1")]
@@ -34,7 +34,7 @@ public class SlugValidatorTests
     Assert.True(Validator.IsValid(Context, value));
   }
 
-  [Theory(DisplayName = "SlugValidator.IsValid: it should return false when segments are empty or not alphanumeric.")]
+  [Theory(DisplayName = "IsValid: it should return false when a segment is empty or contains non-alphanumeric characters.")]
   [InlineData("")]
   [InlineData("-leading")]
   [InlineData("trailing-")]

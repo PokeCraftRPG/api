@@ -84,7 +84,7 @@ public class World : AggregateRoot, IEntityProvider
   {
     if (HasUpdates)
     {
-      Raise(_updated, userId.ActorId);
+      Raise(_updated, userId.ActorId, DateTime.Now);
       _updated = new();
     }
   }

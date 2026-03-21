@@ -5,7 +5,7 @@ namespace PokeGame.Core;
 [Trait(Traits.Category, Categories.Unit)]
 public class UserIdTests
 {
-  [Fact(DisplayName = "UserId constructor (string): it should expose the same value on Value and ToString.")]
+  [Fact(DisplayName = "ctor: it should expose the same string on Value and ToString when constructed from a string.")]
   public void Given_string_When_ctor_Then_ValueAndToStringMatch()
   {
     UserId userId = new UserId("actor-123");
@@ -14,7 +14,7 @@ public class UserIdTests
     Assert.Equal("actor-123", userId.ToString());
   }
 
-  [Fact(DisplayName = "UserId constructor (ActorId): it should preserve the ActorId instance.")]
+  [Fact(DisplayName = "ctor: it should preserve ActorId and Value when constructed from ActorId.")]
   public void Given_actorId_When_ctor_Then_ActorIdMatches()
   {
     ActorId actorId = new ActorId("actor-456");
@@ -24,7 +24,7 @@ public class UserIdTests
     Assert.Equal("actor-456", userId.Value);
   }
 
-  [Fact(DisplayName = "UserId equality: it should treat equal values as equal via == and object.Equals.")]
+  [Fact(DisplayName = "==: it should yield true for equal values with == and Equals, false for !=, and matching GetHashCode.")]
   public void Given_sameValue_When_comparing_Then_areEqual()
   {
     UserId left = new UserId("same");
@@ -36,7 +36,7 @@ public class UserIdTests
     Assert.Equal(left.GetHashCode(), right.GetHashCode());
   }
 
-  [Fact(DisplayName = "UserId equality: it should treat different values as not equal.")]
+  [Fact(DisplayName = "==: it should yield false for == and Equals and true for != when values differ.")]
   public void Given_differentValues_When_comparing_Then_areNotEqual()
   {
     UserId left = new UserId("a");
@@ -47,7 +47,7 @@ public class UserIdTests
     Assert.False(left.Equals(right));
   }
 
-  [Fact(DisplayName = "UserId.Equals: it should return false for null and non-UserId objects.")]
+  [Fact(DisplayName = "Equals: it should return false for null and for a non-UserId value.")]
   public void Given_nullOrOtherType_When_Equals_Then_returnsFalse()
   {
     UserId userId = new UserId("x");
@@ -56,7 +56,7 @@ public class UserIdTests
     Assert.False(userId.Equals("x"));
   }
 
-  [Fact(DisplayName = "UserId default: it should equal another default UserId.")]
+  [Fact(DisplayName = "==: it should treat default instances as equal via == and Equals.")]
   public void Given_defaultUserId_When_comparingToDefault_Then_areEqual()
   {
     UserId a = default;

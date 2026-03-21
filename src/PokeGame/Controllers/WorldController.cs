@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Models;
+using PokeGame.Extensions;
 
 namespace PokeGame.Controllers;
 
@@ -48,7 +49,7 @@ public class WorldController : ControllerBase
     WorldModel world = result.World;
     if (result.Created)
     {
-      Uri location = new($"/worlds/{world.Id}", UriKind.Relative); // TODO(fpion): Absolute
+      Uri location = new($"{HttpContext.GetBaseUri()}/worlds/{world.Id}", UriKind.Absolute);
       return Created(location, world);
     }
     return Ok(world);

@@ -34,6 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Using Include="System.Reflection" />
     <Using Include="Xunit" />
   </ItemGroup>
 
