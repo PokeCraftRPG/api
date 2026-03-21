@@ -10,6 +10,7 @@ public interface IWorldService
 {
   Task<CreateOrReplaceWorldResult> CreateOrReplaceAsync(CreateOrReplaceWorldPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
   Task<WorldModel?> ReadAsync(Guid? id = null, string? slug = null, CancellationToken cancellationToken = default);
+  Task<WorldModel?> UpdateAsync(Guid id, UpdateWorldPayload payload, CancellationToken cancellationToken = default);
 }
 
 internal class WorldService : IWorldService
@@ -18,6 +19,7 @@ internal class WorldService : IWorldService
   {
     services.AddTransient<IWorldService, WorldService>();
     services.AddTransient<ICommandHandler<CreateOrReplaceWorldCommand, CreateOrReplaceWorldResult>, CreateOrReplaceWorldCommandHandler>();
+    services.AddTransient<ICommandHandler<UpdateWorldCommand, WorldModel?>, UpdateWorldCommandHandler>();
     services.AddTransient<IQueryHandler<ReadWorldQuery, WorldModel?>, ReadWorldQueryHandler>();
   }
 
@@ -40,5 +42,11 @@ internal class WorldService : IWorldService
   {
     ReadWorldQuery query = new(id, slug);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
+  }
+
+  public async Task<WorldModel?> UpdateAsync(Guid id, UpdateWorldPayload payload, CancellationToken cancellationToken)
+  {
+    UpdateWorldCommand command = new(id, payload);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 }

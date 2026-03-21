@@ -46,6 +46,13 @@ public class WorldController : ControllerBase
     return ToActionResult(result);
   }
 
+  [HttpPatch("{id}")]
+  public async Task<ActionResult<WorldModel>> UpdateAsync(Guid id, [FromBody] UpdateWorldPayload payload, CancellationToken cancellationToken)
+  {
+    WorldModel? world = await _worldService.UpdateAsync(id, payload, cancellationToken);
+    return world is null ? NotFound() : Ok(world);
+  }
+
   private ActionResult<WorldModel> ToActionResult(CreateOrReplaceWorldResult result)
   {
     WorldModel world = result.World;
