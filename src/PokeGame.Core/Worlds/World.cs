@@ -3,7 +3,7 @@ using PokeGame.Core.Worlds.Events;
 
 namespace PokeGame.Core.Worlds;
 
-public class World : AggregateRoot
+public class World : AggregateRoot, IEntityProvider
 {
   public const string EntityKind = "World";
 
@@ -78,11 +78,13 @@ public class World : AggregateRoot
     }
   }
 
+  public Entity GetEntity() => new(EntityKind, Id.ToGuid());
+
   public void Update(UserId userId)
   {
     if (HasUpdates)
     {
-      Raise(_updated, userId.ActorId);
+      Raise(_updated, userId.ActorId, DateTime.Now);
       _updated = new();
     }
   }
