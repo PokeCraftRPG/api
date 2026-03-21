@@ -20,6 +20,7 @@ public static class DependencyInjectionExtensions
   {
     return services
       .AddLogitarEventSourcingWithEntityFrameworkCoreRelational()
+      .AddMemoryCache()
       .AddEventHandlers()
       .AddQueriers()
       .AddRepositories()
