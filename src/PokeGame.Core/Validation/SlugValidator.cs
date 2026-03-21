@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.Validators;
 
-namespace PokeGame.Core.Validators;
+namespace PokeGame.Core.Validation;
 
 public class SlugValidator<T> : IPropertyValidator<T, string>
 {

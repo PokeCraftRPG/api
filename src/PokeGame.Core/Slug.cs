@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using PokeGame.Core.Validators;
+using PokeGame.Core.Validation;
 
 namespace PokeGame.Core;
 
@@ -9,6 +9,7 @@ public record Slug
 
   public string Value { get; }
   public string NormalizedValue => Normalize(Value);
+  public long Size => Value.Length;
 
   public Slug(string value)
   {

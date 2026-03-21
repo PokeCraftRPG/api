@@ -1,0 +1,15 @@
+name: pokecraft
+services:
+  pokecraft_postgres:
+    image: postgres
+    container_name: PokeCraft_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: V4zf8BvAy6cX2bjD
+    ports:
+      - 5442:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+volumes:
+  postgres_data:

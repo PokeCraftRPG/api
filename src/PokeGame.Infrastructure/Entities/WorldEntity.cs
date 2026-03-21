@@ -10,14 +10,10 @@ internal class WorldEntity : AggregateEntity
 
   public string OwnerId { get; private set; } = string.Empty;
 
-  public string Slug { get; private set; } = string.Empty;
-  public string SlugNormalized
-  {
-    get => Core.Slug.Normalize(Slug);
-    private set { }
-  }
-  public string? Name { get; private set; }
+  public string Name { get; private set; } = string.Empty;
   public string? Description { get; private set; }
+
+  public List<AbilityEntity> Abilities { get; private set; } = [];
 
   public WorldEntity(WorldCreated @event) : base(@event)
   {
@@ -25,7 +21,7 @@ internal class WorldEntity : AggregateEntity
 
     OwnerId = @event.OwnerId.Value;
 
-    Slug = @event.Slug.Value;
+    Name = @event.Name.Value;
   }
 
   private WorldEntity() : base()
@@ -36,13 +32,9 @@ internal class WorldEntity : AggregateEntity
   {
     base.Update(@event);
 
-    if (@event.Slug is not null)
-    {
-      Slug = @event.Slug.Value;
-    }
     if (@event.Name is not null)
     {
-      Name = @event.Name.Value?.Value;
+      Name = @event.Name.Value;
     }
     if (@event.Description is not null)
     {
@@ -50,5 +42,5 @@ internal class WorldEntity : AggregateEntity
     }
   }
 
-  public override string ToString() => $"{Name ?? Slug} | {base.ToString()}";
+  public override string ToString() => $"{Name} | {base.ToString()}";
 }

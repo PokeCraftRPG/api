@@ -2,6 +2,7 @@
 using Logitar.EventSourcing.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Caching;
 using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure.Actors;
@@ -17,9 +18,10 @@ public static class DependencyInjectionExtensions
 {
   public static IServiceCollection AddPokeGameInfrastructure(this IServiceCollection services)
   {
-    WorldEvents.Register(services);
     return services
       .AddLogitarEventSourcingWithEntityFrameworkCoreRelational()
+      .AddMemoryCache()
+      .AddEventHandlers()
       .AddQueriers()
       .AddRepositories()
       .AddSingleton(serviceProvider => CachingSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
@@ -29,13 +31,24 @@ public static class DependencyInjectionExtensions
       .AddTransient<IActorService, ActorService>();
   }
 
+  private static IServiceCollection AddEventHandlers(this IServiceCollection services)
+  {
+    AbilityEvents.Register(services);
+    WorldEvents.Register(services);
+    return services;
+  }
+
   private static IServiceCollection AddQueriers(this IServiceCollection services)
   {
-    return services.AddTransient<IWorldQuerier, WorldQuerier>();
+    return services
+      .AddTransient<IAbilityQuerier, AbilityQuerier>()
+      .AddTransient<IWorldQuerier, WorldQuerier>();
   }
 
   private static IServiceCollection AddRepositories(this IServiceCollection services)
   {
-    return services.AddTransient<IWorldRepository, WorldRepository>();
+    return services
+      .AddTransient<IAbilityRepository, AbilityRepository>()
+      .AddTransient<IWorldRepository, WorldRepository>();
   }
 }

@@ -2,4 +2,4 @@
 
 namespace PokeGame.Core.Worlds.Events;
 
-public record WorldCreated(UserId OwnerId, Slug Slug) : DomainEvent;
+public record WorldCreated(UserId OwnerId, Name Name) : DomainEvent;

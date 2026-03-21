@@ -40,13 +40,6 @@ internal class WorldQuerier : IWorldQuerier
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
-  public async Task<WorldModel?> ReadAsync(string slug, CancellationToken cancellationToken)
-  {
-    WorldEntity? world = await _worlds.AsNoTracking()
-      .Where(x => x.SlugNormalized == Slug.Normalize(slug) && x.OwnerId == _context.UserId.Value)
-      .SingleOrDefaultAsync(cancellationToken);
-    return world is null ? null : await MapAsync(world, cancellationToken);
-  }
 
   private async Task<WorldModel> MapAsync(WorldEntity world, CancellationToken cancellationToken)
   {
