@@ -1,10 +1,9 @@
-﻿using Krakenar.Contracts;
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using PokeGame.Core.Worlds.Models;
 
 namespace PokeGame.Core.Worlds.Queries;
 
-internal record ReadWorldQuery(Guid? Id, string? Slug) : IQuery<WorldModel?>;
+internal record ReadWorldQuery(Guid Id) : IQuery<WorldModel?>;
 
 internal class ReadWorldQueryHandler : IQueryHandler<ReadWorldQuery, WorldModel?>
 {
@@ -17,31 +16,6 @@ internal class ReadWorldQueryHandler : IQueryHandler<ReadWorldQuery, WorldModel?
 
   public async Task<WorldModel?> HandleAsync(ReadWorldQuery query, CancellationToken cancellationToken)
   {
-    Dictionary<Guid, WorldModel> worlds = new(capacity: 2);
-
-    if (query.Id.HasValue)
-    {
-      WorldModel? world = await _worldQuerier.ReadAsync(query.Id.Value, cancellationToken);
-      if (world is not null)
-      {
-        worlds[world.Id] = world;
-      }
-    }
-
-    if (!string.IsNullOrWhiteSpace(query.Slug))
-    {
-      WorldModel? world = await _worldQuerier.ReadAsync(query.Slug, cancellationToken);
-      if (world is not null)
-      {
-        worlds[world.Id] = world;
-      }
-    }
-
-    if (worlds.Count > 0)
-    {
-      throw TooManyResultsException<WorldModel>.ExpectedSingle(worlds.Count);
-    }
-
-    return worlds.Values.SingleOrDefault();
+    return await _worldQuerier.ReadAsync(query.Id, cancellationToken);
   }
 }

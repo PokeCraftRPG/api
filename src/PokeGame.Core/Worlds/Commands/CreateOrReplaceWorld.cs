@@ -43,29 +43,26 @@ internal class CreateOrReplaceWorldCommandHandler : ICommandHandler<CreateOrRepl
     }
 
     UserId userId = _context.UserId;
-    Slug slug = new(payload.Slug);
+    Name name = new(payload.Name);
 
     bool created = false;
     if (world is null)
     {
       await _permissionService.CheckAsync(Actions.CreateWorld, cancellationToken);
 
-      world = new World(userId, slug, worldId);
+      world = new World(userId, name, worldId);
       created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, world, cancellationToken);
 
-      world.Slug = slug;
+      world.Name = name;
     }
 
-    world.Name = Name.TryCreate(payload.Name);
     world.Description = Description.TryCreate(payload.Description);
 
     world.Update(userId);
-
-    // TODO(fpion): check for slug conflict
 
     await _storageService.ExecuteWithQuotaAsync(
       world,

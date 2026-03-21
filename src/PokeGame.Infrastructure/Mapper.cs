@@ -47,7 +47,6 @@ internal class Mapper
     WorldModel destination = new()
     {
       Id = source.Id,
-      Slug = source.Slug,
       Name = source.Name,
       Description = source.Description
     };

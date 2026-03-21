@@ -4,7 +4,6 @@ namespace PokeGame.Core.Worlds.Events;
 
 public record WorldUpdated : DomainEvent
 {
-  public Slug? Slug { get; set; }
-  public Optional<Name>? Name { get; set; }
+  public Name? Name { get; set; }
   public Optional<Description>? Description { get; set; }
 }

@@ -17,13 +17,9 @@ internal class WorldConfiguration : AggregateConfiguration<WorldEntity>, IEntity
 
     builder.HasIndex(x => x.Id).IsUnique();
     builder.HasIndex(x => x.OwnerId);
-    builder.HasIndex(x => x.Slug);
-    builder.HasIndex(x => x.SlugNormalized).IsUnique();
     builder.HasIndex(x => x.Name);
 
     builder.Property(x => x.OwnerId).HasMaxLength(ActorId.MaximumLength);
-    builder.Property(x => x.Slug).HasMaxLength(Slug.MaximumLength);
-    builder.Property(x => x.SlugNormalized).HasMaxLength(Slug.MaximumLength);
     builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
   }
 }

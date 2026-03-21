@@ -42,13 +42,9 @@ internal class UpdateWorldCommandHandler : ICommandHandler<UpdateWorldCommand, W
     }
     await _permissionService.CheckAsync(Actions.Update, world, cancellationToken);
 
-    if (!string.IsNullOrWhiteSpace(payload.Slug))
+    if (!string.IsNullOrWhiteSpace(payload.Name))
     {
-      world.Slug = new Slug(payload.Slug);
-    }
-    if (payload.Name is not null)
-    {
-      world.Name = Name.TryCreate(payload.Name.Value);
+      world.Name = new Name(payload.Name);
     }
     if (payload.Description is not null)
     {
@@ -56,8 +52,6 @@ internal class UpdateWorldCommandHandler : ICommandHandler<UpdateWorldCommand, W
     }
 
     world.Update(_context.UserId);
-
-    // TODO(fpion): check for slug conflict
 
     await _storageService.ExecuteWithQuotaAsync(
       world,
