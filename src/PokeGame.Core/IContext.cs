@@ -6,4 +6,5 @@ public interface IContext
 {
   UserId UserId { get; }
   WorldId WorldId { get; }
+  Guid WorldUid { get; }
 }

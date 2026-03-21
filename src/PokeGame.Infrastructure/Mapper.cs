@@ -2,6 +2,7 @@
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
+using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Worlds.Models;
 using PokeGame.Infrastructure.Entities;
 
@@ -22,6 +23,23 @@ internal class Mapper
     {
       _actors[actor.Key] = actor.Value;
     }
+  }
+
+  public AbilityModel ToAbility(AbilityEntity source)
+  {
+    AbilityModel destination = new()
+    {
+      Id = source.Id,
+      // TODO(fpion: Key/Slug
+      Name = source.Name,
+      Description = source.Description,
+      Url = source.Url,
+      Notes = source.Notes
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
   }
 
   public WorldModel ToWorld(WorldEntity source)

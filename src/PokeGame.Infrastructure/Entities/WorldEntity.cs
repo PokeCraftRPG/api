@@ -19,6 +19,8 @@ internal class WorldEntity : AggregateEntity
   public string? Name { get; private set; }
   public string? Description { get; private set; }
 
+  public List<AbilityEntity> Abilities { get; private set; } = [];
+
   public WorldEntity(WorldCreated @event) : base(@event)
   {
     Id = new WorldId(@event.StreamId).ToGuid();
