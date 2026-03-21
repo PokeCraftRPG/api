@@ -6,6 +6,7 @@ using PokeGame.Core.Caching;
 using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Caching;
+using PokeGame.Infrastructure.Handlers;
 using PokeGame.Infrastructure.Queriers;
 using PokeGame.Infrastructure.Repositories;
 using PokeGame.Infrastructure.Settings;
@@ -16,6 +17,7 @@ public static class DependencyInjectionExtensions
 {
   public static IServiceCollection AddPokeGameInfrastructure(this IServiceCollection services)
   {
+    WorldEvents.Register(services);
     return services
       .AddLogitarEventSourcingWithEntityFrameworkCoreRelational()
       .AddQueriers()
