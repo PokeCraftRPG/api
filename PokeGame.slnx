@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".dockerignore" />
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/PokeGame.Tests/PokeGame.Tests.csproj" Id="aca65187-ad69-44fd-994e-1a3b14530ef4" />
+    <Project Path="tests/PokeGame.UnitTests/PokeGame.UnitTests.csproj" Id="9b2619f4-59bc-49f8-8431-246a0dda4f93" />
+  </Folder>
+  <Project Path="src/PokeGame.Core/PokeGame.Core.csproj" />
+  <Project Path="src/PokeGame.Infrastructure/PokeGame.Infrastructure.csproj" />
+  <Project Path="src/PokeGame/PokeGame.csproj" />
+</Solution>
