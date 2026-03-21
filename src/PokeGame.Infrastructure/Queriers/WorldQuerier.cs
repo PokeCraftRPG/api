@@ -12,12 +12,14 @@ namespace PokeGame.Infrastructure.Queriers;
 internal class WorldQuerier : IWorldQuerier
 {
   private readonly IActorService _actors;
+  private readonly IContext _context;
   private readonly DbSet<WorldEntity> _worlds;
 
-  public WorldQuerier(IActorService actors, PokemonContext context)
+  public WorldQuerier(IActorService actors, IContext context, PokemonContext pokemon)
   {
     _actors = actors;
-    _worlds = context.Worlds;
+    _context = context;
+    _worlds = pokemon.Worlds;
   }
 
   public async Task<WorldModel> ReadAsync(World world, CancellationToken cancellationToken)
@@ -27,21 +29,21 @@ internal class WorldQuerier : IWorldQuerier
   public async Task<WorldModel?> ReadAsync(WorldId id, CancellationToken cancellationToken)
   {
     WorldEntity? world = await _worlds.AsNoTracking()
-      .Where(x => x.StreamId == id.Value) // TODO(fpion): Authorization
+      .Where(x => x.StreamId == id.Value && x.OwnerId == _context.UserId.Value)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
   public async Task<WorldModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     WorldEntity? world = await _worlds.AsNoTracking()
-      .Where(x => x.Id == id) // TODO(fpion): Authorization
+      .Where(x => x.Id == id && x.OwnerId == _context.UserId.Value)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
   public async Task<WorldModel?> ReadAsync(string slug, CancellationToken cancellationToken)
   {
     WorldEntity? world = await _worlds.AsNoTracking()
-      .Where(x => x.SlugNormalized == Slug.Normalize(slug)) // TODO(fpion): Authorization
+      .Where(x => x.SlugNormalized == Slug.Normalize(slug) && x.OwnerId == _context.UserId.Value)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
