@@ -19,8 +19,9 @@ public static class DependencyInjectionExtensions
     RegionService.Register(services);
     WorldService.Register(services);
     return services
-      .AddLogitarCQRS()
+      .AddLogitarCQRS() // TODO(fpion): RetrySettings, IQueryBus
       .AddLogitarEventSourcing()
+      .AddTransient<ICommandBus, CommandBus>()
       .AddTransient<IPermissionService, PermissionService>()
       .AddTransient<IStorageService, StorageService>();
   }

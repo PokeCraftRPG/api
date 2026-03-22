@@ -63,11 +63,11 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
 
       if (payload.Type != move.Type)
       {
-        // TODO(fpion): implement
+        throw new ImmutablePropertyException<PokemonType>(move, move.Type, payload.Type, nameof(payload.Type));
       }
       if (payload.Category != move.Category)
       {
-        // TODO(fpion): implement
+        throw new ImmutablePropertyException<MoveCategory>(move, move.Category, payload.Category, nameof(payload.Category));
       }
 
       move.Name = name;

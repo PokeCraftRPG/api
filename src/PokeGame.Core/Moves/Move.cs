@@ -66,9 +66,11 @@ public class Move : AggregateRoot, IEntityProvider
     get => _power;
     set
     {
-      // TODO(fpion): Category.Status moves should not have Power
-
-      if (_power != value)
+      if (value is not null && Category == MoveCategory.Status)
+      {
+        throw new StatusMoveCannotHavePowerException(this, value);
+      }
+      else if (_power != value)
       {
         _power = value;
         _updated.Power = new Optional<Power>(value);
