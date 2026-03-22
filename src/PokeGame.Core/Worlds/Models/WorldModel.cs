@@ -4,9 +4,8 @@ namespace PokeGame.Core.Worlds.Models;
 
 public class WorldModel : Aggregate
 {
-  public string Slug { get; set; } = string.Empty;
-  public string? Name { get; set; }
+  public string Name { get; set; } = string.Empty;
   public string? Description { get; set; }
 
-  public override string ToString() => $"{Name ?? Slug} | {base.ToString()}";
+  public override string ToString() => $"{Name} | {base.ToString()}";
 }
