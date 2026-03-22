@@ -9,7 +9,7 @@ namespace PokeGame.Core.Regions;
 public interface IRegionService
 {
   Task<CreateOrReplaceRegionResult> CreateOrReplaceAsync(CreateOrReplaceRegionPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
-  Task<RegionModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
+  Task<RegionModel?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
   Task<RegionModel?> UpdateAsync(Guid id, UpdateRegionPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -38,9 +38,9 @@ internal class RegionService : IRegionService
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
-  public async Task<RegionModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<RegionModel?> ReadAsync(Guid? id, string? key, CancellationToken cancellationToken)
   {
-    ReadRegionQuery query = new(id);
+    ReadRegionQuery query = new(id, key);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 

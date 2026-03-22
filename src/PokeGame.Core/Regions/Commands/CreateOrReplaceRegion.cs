@@ -1,5 +1,6 @@
 ﻿using Logitar.CQRS;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Regions.Events;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Storages;
 using PokeGame.Core.Worlds;
@@ -46,29 +47,35 @@ internal class CreateOrReplaceRegionCommandHandler : ICommandHandler<CreateOrRep
       region = await _regionRepository.LoadAsync(regionId, cancellationToken);
     }
 
-    Name name = new(payload.Name);
+    Slug key = new(payload.Key);
 
     bool created = false;
     if (region is null)
     {
       await _permissionService.CheckAsync(Actions.CreateRegion, cancellationToken);
 
-      region = new(name, userId, regionId);
+      region = new(key, userId, regionId);
       created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, region, cancellationToken);
 
-      region.Name = name;
+      region.SetKey(key, userId);
     }
 
+    region.Name = Name.TryCreate(payload.Name);
     region.Description = Description.TryCreate(payload.Description);
 
     region.Url = Url.TryCreate(payload.Url);
     region.Notes = Notes.TryCreate(payload.Notes);
 
     region.Update(userId);
+
+    if (region.Changes.Any(change => change is RegionCreated || change is RegionKeyChanged))
+    {
+      await _regionQuerier.EnsureUnicityAsync(region, cancellationToken);
+    }
 
     await _storageService.ExecuteWithQuotaAsync(
       region,
