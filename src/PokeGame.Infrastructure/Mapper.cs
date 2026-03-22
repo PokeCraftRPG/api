@@ -70,6 +70,7 @@ internal class Mapper
     RegionModel destination = new()
     {
       Id = source.Id,
+      Key = source.Key,
       Name = source.Name,
       Description = source.Description,
       Url = source.Url,

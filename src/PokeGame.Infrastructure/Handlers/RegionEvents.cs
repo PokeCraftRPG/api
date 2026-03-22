@@ -8,12 +8,13 @@ using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Handlers;
 
-internal class RegionEvents : IEventHandler<RegionCreated>, IEventHandler<RegionDeleted>, IEventHandler<RegionUpdated>
+internal class RegionEvents : IEventHandler<RegionCreated>, IEventHandler<RegionDeleted>, IEventHandler<RegionKeyChanged>, IEventHandler<RegionUpdated>
 {
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IEventHandler<RegionCreated>, RegionEvents>();
     services.AddTransient<IEventHandler<RegionDeleted>, RegionEvents>();
+    services.AddTransient<IEventHandler<RegionKeyChanged>, RegionEvents>();
     services.AddTransient<IEventHandler<RegionUpdated>, RegionEvents>();
   }
 
@@ -47,6 +48,17 @@ internal class RegionEvents : IEventHandler<RegionCreated>, IEventHandler<Region
     if (region is not null)
     {
       _pokemon.Regions.Remove(region);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(RegionKeyChanged @event, CancellationToken cancellationToken)
+  {
+    RegionEntity? region = await _pokemon.Regions.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (region is not null && region.Version == (@event.Version - 1))
+    {
+      region.SetKey(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

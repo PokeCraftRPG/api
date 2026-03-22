@@ -9,10 +9,10 @@ internal class RegionEntity : AggregateEntity
 
   public WorldEntity? World { get; private set; }
   public int WorldId { get; private set; }
-  public Guid WorldUid { get; private set; }
   public Guid Id { get; private set; }
 
-  public string Name { get; private set; } = string.Empty;
+  public string Key { get; private set; } = string.Empty;
+  public string? Name { get; private set; }
   public string? Description { get; private set; }
 
   public string? Url { get; private set; }
@@ -24,13 +24,19 @@ internal class RegionEntity : AggregateEntity
 
     World = world;
     WorldId = world.WorldId;
-    WorldUid = world.Id;
 
-    Name = @event.Name.Value;
+    Key = @event.Key.Value;
   }
 
   private RegionEntity() : base()
   {
+  }
+
+  public void SetKey(RegionKeyChanged @event)
+  {
+    base.Update(@event);
+
+    Key = @event.Key.Value;
   }
 
   public void Update(RegionUpdated @event)
@@ -39,7 +45,7 @@ internal class RegionEntity : AggregateEntity
 
     if (@event.Name is not null)
     {
-      Name = @event.Name.Value;
+      Name = @event.Name.Value?.Value;
     }
     if (@event.Description is not null)
     {
@@ -56,5 +62,5 @@ internal class RegionEntity : AggregateEntity
     }
   }
 
-  public override string ToString() => $"{Name} | {base.ToString()}";
+  public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
 }

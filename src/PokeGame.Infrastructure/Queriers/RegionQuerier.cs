@@ -22,6 +22,17 @@ internal class RegionQuerier : IRegionQuerier
     _regions = pokemon.Regions;
   }
 
+  public async Task EnsureUnicityAsync(Region region, CancellationToken cancellationToken)
+  {
+    string? streamId = await _regions.Where(x => x.World!.Id == region.WorldId.ToGuid() && x.Key == region.Key.Value)
+      .Select(x => x.StreamId)
+      .SingleOrDefaultAsync(cancellationToken);
+    if (streamId is not null && streamId != region.Id.Value)
+    {
+      throw new PropertyConflictException<string>(region, new RegionId(streamId).EntityId, region.Key.Value, nameof(Region.Key));
+    }
+  }
+
   public async Task<RegionModel> ReadAsync(Region region, CancellationToken cancellationToken)
   {
     return await ReadAsync(region.Id, cancellationToken) ?? throw new InvalidOperationException($"The region entity '{region}' was not found.");
@@ -29,14 +40,21 @@ internal class RegionQuerier : IRegionQuerier
   public async Task<RegionModel?> ReadAsync(RegionId id, CancellationToken cancellationToken)
   {
     RegionEntity? region = await _regions.AsNoTracking()
-      .Where(x => x.StreamId == id.Value && x.WorldUid == _context.WorldUid)
+      .Where(x => x.StreamId == id.Value && x.World!.Id == _context.WorldUid)
       .SingleOrDefaultAsync(cancellationToken);
     return region is null ? null : await MapAsync(region, cancellationToken);
   }
   public async Task<RegionModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     RegionEntity? region = await _regions.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldUid == _context.WorldUid)
+      .Where(x => x.Id == id && x.World!.Id == _context.WorldUid)
+      .SingleOrDefaultAsync(cancellationToken);
+    return region is null ? null : await MapAsync(region, cancellationToken);
+  }
+  public async Task<RegionModel?> ReadAsync(string key, CancellationToken cancellationToken)
+  {
+    RegionEntity? region = await _regions.AsNoTracking()
+      .Where(x => x.Key == Slug.Normalize(key) && x.World!.Id == _context.WorldUid)
       .SingleOrDefaultAsync(cancellationToken);
     return region is null ? null : await MapAsync(region, cancellationToken);
   }

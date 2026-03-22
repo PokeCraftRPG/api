@@ -1,9 +1,10 @@
-﻿using Logitar.CQRS;
+﻿using Krakenar.Contracts;
+using Logitar.CQRS;
 using PokeGame.Core.Regions.Models;
 
 namespace PokeGame.Core.Regions.Queries;
 
-internal record ReadRegionQuery(Guid Id) : IQuery<RegionModel?>;
+internal record ReadRegionQuery(Guid? Id, string? Key) : IQuery<RegionModel?>;
 
 internal class ReadRegionQueryHandler : IQueryHandler<ReadRegionQuery, RegionModel?>
 {
@@ -16,6 +17,31 @@ internal class ReadRegionQueryHandler : IQueryHandler<ReadRegionQuery, RegionMod
 
   public async Task<RegionModel?> HandleAsync(ReadRegionQuery query, CancellationToken cancellationToken)
   {
-    return await _regionQuerier.ReadAsync(query.Id, cancellationToken);
+    Dictionary<Guid, RegionModel> regions = new(capacity: 2);
+
+    if (query.Id.HasValue)
+    {
+      RegionModel? region = await _regionQuerier.ReadAsync(query.Id.Value, cancellationToken);
+      if (region is not null)
+      {
+        regions[region.Id] = region;
+      }
+    }
+
+    if (!string.IsNullOrWhiteSpace(query.Key))
+    {
+      RegionModel? region = await _regionQuerier.ReadAsync(query.Key, cancellationToken);
+      if (region is not null)
+      {
+        regions[region.Id] = region;
+      }
+    }
+
+    if (regions.Count > 1)
+    {
+      throw TooManyResultsException<RegionModel>.ExpectedSingle(regions.Count);
+    }
+
+    return regions.Values.SingleOrDefault();
   }
 }

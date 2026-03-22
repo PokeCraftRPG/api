@@ -28,7 +28,14 @@ public class RegionController : ControllerBase
   [HttpGet("{id}")]
   public async Task<ActionResult<RegionModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
-    RegionModel? region = await _regionService.ReadAsync(id, cancellationToken);
+    RegionModel? region = await _regionService.ReadAsync(id, key: null, cancellationToken);
+    return region is null ? NotFound() : Ok(region);
+  }
+
+  [HttpGet("key:{key}")]
+  public async Task<ActionResult<RegionModel>> ReadAsync(string key, CancellationToken cancellationToken)
+  {
+    RegionModel? region = await _regionService.ReadAsync(id: null, key, cancellationToken);
     return region is null ? NotFound() : Ok(region);
   }
 
