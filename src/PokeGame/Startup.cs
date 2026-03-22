@@ -1,6 +1,8 @@
 ﻿using PokeGame.Core;
+using PokeGame.Extensions;
 using PokeGame.Infrastructure;
 using PokeGame.PostgreSQL;
+using PokeGame.Settings;
 
 namespace PokeGame;
 
@@ -19,7 +21,12 @@ internal class Startup : StartupBase
 
     services.AddControllers();
 
-    services.AddOpenApi();
+    ApiSettings apiSettings = ApiSettings.Initialize(_configuration);
+    services.AddSingleton(apiSettings);
+    if (apiSettings.EnableSwagger)
+    {
+      services.AddPokeGameSwagger(apiSettings);
+    }
 
     services.AddPokeGameCore();
     services.AddPokeGameInfrastructure();
@@ -36,9 +43,10 @@ internal class Startup : StartupBase
   }
   public virtual void Configure(WebApplication application)
   {
-    if (application.Environment.IsDevelopment())
+    ApiSettings apiSettings = application.Services.GetRequiredService<ApiSettings>();
+    if (apiSettings.EnableSwagger)
     {
-      application.MapOpenApi();
+      application.UsePokeGameSwagger(apiSettings);
     }
 
     application.UseHttpsRedirection();
