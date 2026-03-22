@@ -19,16 +19,18 @@ internal class MoveConfiguration : AggregateConfiguration<MoveEntity>, IEntityTy
     builder.HasKey(x => x.MoveId);
 
     builder.HasIndex(x => new { x.WorldId, x.Id }).IsUnique();
-    builder.HasIndex(x => x.Type);
-    builder.HasIndex(x => x.Category);
-    builder.HasIndex(x => x.Name);
-    builder.HasIndex(x => x.Accuracy);
-    builder.HasIndex(x => x.Power);
-    builder.HasIndex(x => x.PowerPoints);
+    builder.HasIndex(x => new { x.WorldId, x.Key }).IsUnique();
+    builder.HasIndex(x => new { x.WorldId, x.Name });
+    builder.HasIndex(x => new { x.WorldId, x.Type });
+    builder.HasIndex(x => new { x.WorldId, x.Category });
+    builder.HasIndex(x => new { x.WorldId, x.Accuracy });
+    builder.HasIndex(x => new { x.WorldId, x.Power });
+    builder.HasIndex(x => new { x.WorldId, x.PowerPoints });
 
     builder.Property(x => x.Type).HasMaxLength(Constants.PokemonTypeMaximumLength).HasConversion(new EnumToStringConverter<PokemonType>());
     builder.Property(x => x.Category).HasMaxLength(CategoryMaximumLength).HasConversion(new EnumToStringConverter<MoveCategory>());
-    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
+    builder.Property(x => x.Key).HasMaxLength(Slug.MaximumLength);
+    builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
     builder.Property(x => x.Url).HasMaxLength(Url.MaximumLength);
 
     builder.HasOne(x => x.World).WithMany(x => x.Moves).OnDelete(DeleteBehavior.Restrict);

@@ -51,6 +51,7 @@ internal class Mapper
       Id = source.Id,
       Type = source.Type,
       Category = source.Category,
+      Key = source.Key,
       Name = source.Name,
       Description = source.Description,
       Accuracy = source.Accuracy,

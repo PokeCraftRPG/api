@@ -2,4 +2,4 @@
 
 namespace PokeGame.Core.Moves.Events;
 
-public record MoveCreated(PokemonType Type, MoveCategory Category, Name Name, PowerPoints PowerPoints) : DomainEvent;
+public record MoveCreated(PokemonType Type, MoveCategory Category, Slug Key, PowerPoints PowerPoints) : DomainEvent;
