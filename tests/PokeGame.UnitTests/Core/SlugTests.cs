@@ -20,6 +20,14 @@ public class SlugTests
   [Fact(DisplayName = "ctor: it should throw ValidationException when the value is not valid.")]
   public void Given_Invalid_When_ctor_Then_ValidationException()
   {
+    var exception = Assert.Throws<FluentValidation.ValidationException>(() => new Slug("invalid--value!"));
+    Assert.Single(exception.Errors);
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "SlugValidator" && e.PropertyName == "Value");
+  }
+
+  [Fact(DisplayName = "ctor: it should throw ValidationException when the value is too long.")]
+  public void Given_TooLong_When_ctor_Then_ValidationException()
+  {
     string value = _faker.Random.String(Slug.MaximumLength + 1, 'a', 'z');
     var exception = Assert.Throws<FluentValidation.ValidationException>(() => new Slug(value));
     Assert.Single(exception.Errors);
