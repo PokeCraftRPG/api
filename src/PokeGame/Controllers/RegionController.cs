@@ -1,0 +1,59 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using PokeGame.Core.Regions;
+using PokeGame.Core.Regions.Models;
+using PokeGame.Extensions;
+
+namespace PokeGame.Controllers;
+
+[ApiController]
+[Authorize]
+[Route("regions")]
+public class RegionController : ControllerBase
+{
+  private readonly IRegionService _regionService;
+
+  public RegionController(IRegionService regionService)
+  {
+    _regionService = regionService;
+  }
+
+  [HttpPost]
+  public async Task<ActionResult<RegionModel>> CreateAsync([FromBody] CreateOrReplaceRegionPayload payload, CancellationToken cancellationToken)
+  {
+    CreateOrReplaceRegionResult result = await _regionService.CreateOrReplaceAsync(payload, id: null, cancellationToken);
+    return ToActionResult(result);
+  }
+
+  [HttpGet("{id}")]
+  public async Task<ActionResult<RegionModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
+  {
+    RegionModel? region = await _regionService.ReadAsync(id, cancellationToken);
+    return region is null ? NotFound() : Ok(region);
+  }
+
+  [HttpPut("{id}")]
+  public async Task<ActionResult<RegionModel>> ReplaceAsync(Guid id, [FromBody] CreateOrReplaceRegionPayload payload, CancellationToken cancellationToken)
+  {
+    CreateOrReplaceRegionResult result = await _regionService.CreateOrReplaceAsync(payload, id, cancellationToken);
+    return ToActionResult(result);
+  }
+
+  [HttpPatch("{id}")]
+  public async Task<ActionResult<RegionModel>> UpdateAsync(Guid id, [FromBody] UpdateRegionPayload payload, CancellationToken cancellationToken)
+  {
+    RegionModel? region = await _regionService.UpdateAsync(id, payload, cancellationToken);
+    return region is null ? NotFound() : Ok(region);
+  }
+
+  private ActionResult<RegionModel> ToActionResult(CreateOrReplaceRegionResult result)
+  {
+    RegionModel region = result.Region;
+    if (result.Created)
+    {
+      Uri location = new($"{HttpContext.GetBaseUri()}/regions/{region.Id}", UriKind.Absolute);
+      return Created(location, region);
+    }
+    return Ok(region);
+  }
+}

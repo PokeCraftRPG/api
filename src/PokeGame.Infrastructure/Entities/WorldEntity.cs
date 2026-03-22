@@ -14,6 +14,7 @@ internal class WorldEntity : AggregateEntity
   public string? Description { get; private set; }
 
   public List<AbilityEntity> Abilities { get; private set; } = [];
+  public List<RegionEntity> Regions { get; private set; } = [];
 
   public WorldEntity(WorldCreated @event) : base(@event)
   {
