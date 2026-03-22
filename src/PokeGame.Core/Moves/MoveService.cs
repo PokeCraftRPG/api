@@ -1,4 +1,4 @@
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Moves.Commands;
 using PokeGame.Core.Moves.Models;
@@ -9,7 +9,7 @@ namespace PokeGame.Core.Moves;
 public interface IMoveService
 {
   Task<CreateOrReplaceMoveResult> CreateOrReplaceAsync(CreateOrReplaceMovePayload payload, Guid? id = null, CancellationToken cancellationToken = default);
-  Task<MoveModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
+  Task<MoveModel?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
   Task<MoveModel?> UpdateAsync(Guid id, UpdateMovePayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -38,9 +38,9 @@ internal class MoveService : IMoveService
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
-  public async Task<MoveModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<MoveModel?> ReadAsync(Guid? id, string? key, CancellationToken cancellationToken)
   {
-    ReadMoveQuery query = new(id);
+    ReadMoveQuery query = new(id, key);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 

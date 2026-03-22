@@ -4,7 +4,7 @@ namespace PokeGame.Core.Moves.Events;
 
 public record MoveUpdated : DomainEvent
 {
-  public Name? Name { get; set; }
+  public Optional<Name>? Name { get; set; }
   public Optional<Description>? Description { get; set; }
 
   public Optional<Accuracy>? Accuracy { get; set; }

@@ -1,4 +1,5 @@
 ﻿using Logitar.CQRS;
+using PokeGame.Core.Moves.Events;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Storages;
@@ -42,9 +43,16 @@ internal class UpdateMoveCommandHandler : ICommandHandler<UpdateMoveCommand, Mov
     }
     await _permissionService.CheckAsync(Actions.Update, move, cancellationToken);
 
-    if (!string.IsNullOrWhiteSpace(payload.Name))
+    UserId userId = _context.UserId;
+
+    if (!string.IsNullOrWhiteSpace(payload.Key))
     {
-      move.Name = new Name(payload.Name);
+      Slug key = new(payload.Key);
+      move.SetKey(key, userId);
+    }
+    if (payload.Name is not null)
+    {
+      move.Name = Name.TryCreate(payload.Name.Value);
     }
     if (payload.Description is not null)
     {
@@ -73,7 +81,12 @@ internal class UpdateMoveCommandHandler : ICommandHandler<UpdateMoveCommand, Mov
       move.Notes = Notes.TryCreate(payload.Notes.Value);
     }
 
-    move.Update(_context.UserId);
+    move.Update(userId);
+
+    if (move.Changes.Any(change => change is MoveKeyChanged))
+    {
+      await _moveQuerier.EnsureUnicityAsync(move, cancellationToken);
+    }
 
     await _storageService.ExecuteWithQuotaAsync(
       move,

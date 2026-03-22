@@ -28,7 +28,14 @@ public class MoveController : ControllerBase
   [HttpGet("{id}")]
   public async Task<ActionResult<MoveModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
-    MoveModel? move = await _moveService.ReadAsync(id, cancellationToken);
+    MoveModel? move = await _moveService.ReadAsync(id, key: null, cancellationToken);
+    return move is null ? NotFound() : Ok(move);
+  }
+
+  [HttpGet("key:{key}")]
+  public async Task<ActionResult<MoveModel>> ReadAsync(string key, CancellationToken cancellationToken)
+  {
+    MoveModel? move = await _moveService.ReadAsync(id: null, key, cancellationToken);
     return move is null ? NotFound() : Ok(move);
   }
 

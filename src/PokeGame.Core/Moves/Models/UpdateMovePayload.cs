@@ -5,7 +5,8 @@ namespace PokeGame.Core.Moves.Models;
 
 public record UpdateMovePayload
 {
-  public string? Name { get; set; }
+  public string? Key { get; set; }
+  public Optional<string>? Name { get; set; }
   public Optional<string>? Description { get; set; }
 
   public Optional<byte?>? Accuracy { get; set; }
@@ -21,7 +22,8 @@ public record UpdateMovePayload
   {
     public Validator()
     {
-      When(x => !string.IsNullOrWhiteSpace(x.Name), () => RuleFor(x => x.Name!).Name());
+      When(x => !string.IsNullOrWhiteSpace(x.Key), () => RuleFor(x => x.Key!).Slug());
+      When(x => !string.IsNullOrWhiteSpace(x.Name?.Value), () => RuleFor(x => x.Name!.Value!).Name());
       When(x => !string.IsNullOrWhiteSpace(x.Description?.Value), () => RuleFor(x => x.Description!.Value!).Description());
 
       When(x => x.Accuracy?.Value is not null, () => RuleFor(x => x.Accuracy!.Value!.Value).Accuracy());

@@ -1,4 +1,5 @@
 ﻿using Logitar.CQRS;
+using PokeGame.Core.Moves.Events;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Storages;
@@ -46,7 +47,7 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
       move = await _moveRepository.LoadAsync(moveId, cancellationToken);
     }
 
-    Name name = new(payload.Name);
+    Slug key = new(payload.Key);
     PowerPoints powerPoints = new(payload.PowerPoints);
 
     bool created = false;
@@ -54,7 +55,7 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
     {
       await _permissionService.CheckAsync(Actions.CreateMove, cancellationToken);
 
-      move = new(payload.Type, payload.Category, name, powerPoints, userId, moveId);
+      move = new(payload.Type, payload.Category, key, powerPoints, userId, moveId);
       created = true;
     }
     else
@@ -70,11 +71,12 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
         throw new ImmutablePropertyException<MoveCategory>(move, move.Category, payload.Category, nameof(payload.Category));
       }
 
-      move.Name = name;
+      move.SetKey(key, userId);
 
       move.PowerPoints = powerPoints;
     }
 
+    move.Name = Name.TryCreate(payload.Name);
     move.Description = Description.TryCreate(payload.Description);
 
     move.Accuracy = payload.Accuracy.HasValue ? new Accuracy(payload.Accuracy.Value) : null;
@@ -84,6 +86,11 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
     move.Notes = Notes.TryCreate(payload.Notes);
 
     move.Update(userId);
+
+    if (move.Changes.Any(change => change is MoveCreated || change is MoveKeyChanged))
+    {
+      await _moveQuerier.EnsureUnicityAsync(move, cancellationToken);
+    }
 
     await _storageService.ExecuteWithQuotaAsync(
       move,

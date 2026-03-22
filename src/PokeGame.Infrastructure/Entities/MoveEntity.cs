@@ -10,13 +10,14 @@ internal class MoveEntity : AggregateEntity
 
   public WorldEntity? World { get; private set; }
   public int WorldId { get; private set; }
-  public Guid WorldUid { get; private set; }
   public Guid Id { get; private set; }
 
   public PokemonType Type { get; private set; }
   public MoveCategory Category { get; private set; }
 
-  public string Name { get; private set; } = string.Empty;
+  public string Key { get; private set; } = string.Empty;
+  public string? Name { get; private set; }
+
   public string? Description { get; private set; }
 
   public byte? Accuracy { get; private set; }
@@ -32,12 +33,11 @@ internal class MoveEntity : AggregateEntity
 
     World = world;
     WorldId = world.WorldId;
-    WorldUid = world.Id;
 
     Type = @event.Type;
     Category = @event.Category;
 
-    Name = @event.Name.Value;
+    Key = @event.Key.Value;
 
     PowerPoints = @event.PowerPoints.Value;
   }
@@ -46,13 +46,20 @@ internal class MoveEntity : AggregateEntity
   {
   }
 
+  public void SetKey(MoveKeyChanged @event)
+  {
+    base.Update(@event);
+
+    Key = @event.Key.Value;
+  }
+
   public void Update(MoveUpdated @event)
   {
     base.Update(@event);
 
     if (@event.Name is not null)
     {
-      Name = @event.Name.Value;
+      Name = @event.Name.Value?.Value;
     }
     if (@event.Description is not null)
     {
@@ -82,5 +89,5 @@ internal class MoveEntity : AggregateEntity
     }
   }
 
-  public override string ToString() => $"{Name} | {base.ToString()}";
+  public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
 }

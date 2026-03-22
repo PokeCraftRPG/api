@@ -22,6 +22,17 @@ internal class MoveQuerier : IMoveQuerier
     _moves = pokemon.Moves;
   }
 
+  public async Task EnsureUnicityAsync(Move move, CancellationToken cancellationToken)
+  {
+    string? streamId = await _moves.Where(x => x.World!.Id == move.WorldId.ToGuid() && x.Key == move.Key.Value)
+      .Select(x => x.StreamId)
+      .SingleOrDefaultAsync(cancellationToken);
+    if (streamId is not null && streamId != move.Id.Value)
+    {
+      throw new PropertyConflictException<string>(move, new MoveId(streamId).EntityId, move.Key.Value, nameof(Move.Key));
+    }
+  }
+
   public async Task<MoveModel> ReadAsync(Move move, CancellationToken cancellationToken)
   {
     return await ReadAsync(move.Id, cancellationToken) ?? throw new InvalidOperationException($"The move entity '{move}' was not found.");
@@ -29,14 +40,21 @@ internal class MoveQuerier : IMoveQuerier
   public async Task<MoveModel?> ReadAsync(MoveId id, CancellationToken cancellationToken)
   {
     MoveEntity? move = await _moves.AsNoTracking()
-      .Where(x => x.StreamId == id.Value && x.WorldUid == _context.WorldUid)
+      .Where(x => x.StreamId == id.Value && x.World!.Id == _context.WorldUid)
       .SingleOrDefaultAsync(cancellationToken);
     return move is null ? null : await MapAsync(move, cancellationToken);
   }
   public async Task<MoveModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     MoveEntity? move = await _moves.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldUid == _context.WorldUid)
+      .Where(x => x.Id == id && x.World!.Id == _context.WorldUid)
+      .SingleOrDefaultAsync(cancellationToken);
+    return move is null ? null : await MapAsync(move, cancellationToken);
+  }
+  public async Task<MoveModel?> ReadAsync(string key, CancellationToken cancellationToken)
+  {
+    MoveEntity? move = await _moves.AsNoTracking()
+      .Where(x => x.Key == Slug.Normalize(key) && x.World!.Id == _context.WorldUid)
       .SingleOrDefaultAsync(cancellationToken);
     return move is null ? null : await MapAsync(move, cancellationToken);
   }

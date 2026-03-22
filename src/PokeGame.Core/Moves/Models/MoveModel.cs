@@ -7,7 +7,8 @@ public class MoveModel : Aggregate
   public PokemonType Type { get; set; }
   public MoveCategory Category { get; set; }
 
-  public string Name { get; set; } = string.Empty;
+  public string Key { get; set; } = string.Empty;
+  public string? Name { get; set; }
   public string? Description { get; set; }
 
   public byte? Accuracy { get; set; }
@@ -17,5 +18,5 @@ public class MoveModel : Aggregate
   public string? Url { get; set; }
   public string? Notes { get; set; }
 
-  public override string ToString() => $"{Name} | {base.ToString()}";
+  public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
 }
