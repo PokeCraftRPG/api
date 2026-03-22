@@ -6,8 +6,10 @@ using Logitar.EventSourcing.EntityFrameworkCore.Relational;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Caching;
+using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure;
 using PokeGame.PostgreSQL;
 
@@ -15,12 +17,13 @@ namespace PokeGame;
 
 public abstract class IntegrationTests : IAsyncLifetime
 {
-  private readonly IntegrationContext _context = new();
+  private readonly TestContext _context = new();
 
   protected Faker Faker { get; } = new();
   protected IServiceProvider ServiceProvider { get; }
 
   protected Actor Actor => _context.Actor;
+  protected World World => _context.World ?? throw new InvalidOperationException("The world has not been initialized.");
 
   protected IntegrationTests()
   {
@@ -48,23 +51,20 @@ public abstract class IntegrationTests : IAsyncLifetime
     await commandBus.ExecuteAsync(new MigrateDatabaseCommand());
 
     PokemonContext pokemon = ServiceProvider.GetRequiredService<PokemonContext>();
+    await pokemon.Abilities.ExecuteDeleteAsync();
     await pokemon.Worlds.ExecuteDeleteAsync();
 
     EventContext events = ServiceProvider.GetRequiredService<EventContext>();
     await events.Events.ExecuteDeleteAsync();
     await events.Streams.ExecuteDeleteAsync();
 
-    _context.Actor = new Actor(Faker.Person.FullName)
-    {
-      RealmId = Guid.NewGuid(),
-      Id = Guid.NewGuid(),
-      Type = ActorType.User,
-      EmailAddress = Faker.Person.Email,
-      PictureUrl = Faker.Person.Avatar
-    };
-
+    _context.User = new UserBuilder(Faker).Build();
     ICacheService cacheService = ServiceProvider.GetRequiredService<ICacheService>();
-    cacheService.SetActor(_context.Actor);
+    cacheService.SetActor(new Actor(_context.User));
+
+    _context.World = new WorldBuilder(Faker).WithUser(_context.User).Build();
+    IWorldRepository worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
+    await worldRepository.SaveAsync(_context.World);
   }
 
   public virtual Task DisposeAsync() => Task.CompletedTask;

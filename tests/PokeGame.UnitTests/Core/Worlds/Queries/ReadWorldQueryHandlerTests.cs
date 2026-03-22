@@ -1,5 +1,4 @@
-﻿using Bogus;
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Moq;
 using PokeGame.Core.Worlds.Models;
 
@@ -8,7 +7,6 @@ namespace PokeGame.Core.Worlds.Queries;
 [Trait(Traits.Category, Categories.Unit)]
 public class ReadWorldQueryHandlerTests
 {
-  private readonly Faker _faker = new();
   private readonly CancellationToken _cancellationToken = default;
 
   private readonly Mock<IWorldQuerier> _worldQuerier = new();

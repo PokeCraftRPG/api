@@ -13,17 +13,18 @@ public class CreateOrReplaceWorldCommandHandlerTests
   private readonly CancellationToken _cancellationToken = default;
   private readonly Faker _faker = new();
 
-  private readonly Mock<IContext> _context = new();
   private readonly Mock<IPermissionService> _permissionService = new();
   private readonly Mock<IStorageService> _storageService = new();
   private readonly Mock<IWorldQuerier> _worldQuerier = new();
   private readonly Mock<IWorldRepository> _worldRepository = new();
 
+  private readonly TestContext _context;
   private readonly CreateOrReplaceWorldCommandHandler _handler;
 
   public CreateOrReplaceWorldCommandHandlerTests()
   {
-    _handler = new(_context.Object, _permissionService.Object, _storageService.Object, _worldQuerier.Object, _worldRepository.Object);
+    _context = new(_faker);
+    _handler = new(_context, _permissionService.Object, _storageService.Object, _worldQuerier.Object, _worldRepository.Object);
   }
 
   [Theory(DisplayName = "It should create a new world.")]
@@ -61,8 +62,7 @@ public class CreateOrReplaceWorldCommandHandlerTests
   [Fact(DisplayName = "It should replace the existing world.")]
   public async Task Given_Exists_When_HandleAsync_Then_Replaced()
   {
-    World world = new WorldBuilder(_faker).Build();
-    world.ClearChanges();
+    World world = new WorldBuilder(_faker).ClearChanges().Build();
     _worldRepository.Setup(x => x.LoadAsync(world.Id, _cancellationToken)).ReturnsAsync(world);
 
     CreateOrReplaceWorldPayload payload = new()

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core;
-using PokeGame.Core.Actors;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Models;
 
@@ -9,23 +8,11 @@ namespace PokeGame;
 [Trait(Traits.Category, Categories.Integration)]
 public class WorldIntegrationTests : IntegrationTests
 {
-  private readonly IWorldRepository _worldRepository;
   private readonly IWorldService _worldService;
-
-  private World _world = null!;
 
   public WorldIntegrationTests() : base()
   {
-    _worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
     _worldService = ServiceProvider.GetRequiredService<IWorldService>();
-  }
-
-  public override async Task InitializeAsync()
-  {
-    await base.InitializeAsync();
-
-    _world = new World(new UserId(Actor.GetActorId()), new Slug("the-old-world"));
-    await _worldRepository.SaveAsync(_world);
   }
 
   [Theory(DisplayName = "It should create a new world.")]
@@ -69,7 +56,7 @@ public class WorldIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should read a world by ID.")]
   public async Task Given_Id_When_Read_Then_Found()
   {
-    Guid id = _world.Id.ToGuid();
+    Guid id = World.Id.ToGuid();
     WorldModel? world = await _worldService.ReadAsync(id);
     Assert.NotNull(world);
     Assert.Equal(id, world.Id);
@@ -78,9 +65,9 @@ public class WorldIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should read a world by key.")]
   public async Task Given_Key_When_Read_Then_Found()
   {
-    WorldModel? world = await _worldService.ReadAsync(id: null, $" {_world.Key.Value.ToUpperInvariant()} ");
+    WorldModel? world = await _worldService.ReadAsync(id: null, $" {World.Key.Value.ToUpperInvariant()} ");
     Assert.NotNull(world);
-    Assert.Equal(_world.Id.ToGuid(), world.Id);
+    Assert.Equal(World.Id.ToGuid(), world.Id);
   }
 
   [Fact(DisplayName = "It should replace an existing world.")]
@@ -92,7 +79,7 @@ public class WorldIntegrationTests : IntegrationTests
       Name = " The New World ",
       Description = "  This is the new world.  "
     };
-    Guid id = _world.Id.ToGuid();
+    Guid id = World.Id.ToGuid();
 
     CreateOrReplaceWorldResult result = await _worldService.CreateOrReplaceAsync(payload, id);
     Assert.False(result.Created);
@@ -114,7 +101,7 @@ public class WorldIntegrationTests : IntegrationTests
   {
     CreateOrReplaceWorldPayload payload = new()
     {
-      Key = _world.Key.Value.ToUpperInvariant()
+      Key = World.Key.Value.ToUpperInvariant()
     };
     Guid id = Guid.NewGuid();
 
@@ -122,15 +109,15 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Null(exception.WorldId);
     Assert.Equal("World", exception.EntityKind);
     Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_world.Id.ToGuid(), exception.ConflictId);
-    Assert.Equal(_world.Key.Value, exception.AttemptedValue);
+    Assert.Equal(World.Id.ToGuid(), exception.ConflictId);
+    Assert.Equal(World.Key.Value, exception.AttemptedValue);
     Assert.Equal("Key", exception.PropertyName);
   }
 
   [Fact(DisplayName = "It should update an existing world.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
-    Guid id = _world.Id.ToGuid();
+    Guid id = World.Id.ToGuid();
     UpdateWorldPayload payload = new()
     {
       Name = new Optional<string>(" The New World "),
@@ -145,7 +132,7 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Equal(Actor, world.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, world.UpdatedOn, TimeSpan.FromSeconds(10));
 
-    Assert.Equal(_world.Key.Value, world.Key);
+    Assert.Equal(World.Key.Value, world.Key);
     Assert.Equal(payload.Name.Value?.Trim(), world.Name);
     Assert.Equal(payload.Description.Value?.Trim(), world.Description);
   }
