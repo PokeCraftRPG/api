@@ -88,7 +88,7 @@ public class AbilityBuilder : IAbilityBuilder
   public Ability Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    Slug key = _key ?? new("overgrow");
+    Slug key = _key ?? new("an-ability");
 
     Ability ability = _id.HasValue ? new(key, world.OwnerId, _id.Value) : new(world, key);
     ability.Name = _name;

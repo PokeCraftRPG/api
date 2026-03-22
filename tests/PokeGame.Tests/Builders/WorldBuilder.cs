@@ -76,7 +76,7 @@ public class WorldBuilder : IWorldBuilder
     User user = _user ?? new UserBuilder(_faker).Build();
     Actor actor = new(user);
     UserId userId = new(actor.GetActorId());
-    Slug key = _key ?? new("pokemon-world");
+    Slug key = _key ?? new("a-world");
 
     World world = new(userId, key, _id)
     {

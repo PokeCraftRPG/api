@@ -88,7 +88,7 @@ public class RegionBuilder : IRegionBuilder
   public Region Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    Slug key = _key ?? new("hisui");
+    Slug key = _key ?? new("a-region");
 
     Region region = _id.HasValue ? new(key, world.OwnerId, _id.Value) : new(world, key);
     region.Name = _name;
