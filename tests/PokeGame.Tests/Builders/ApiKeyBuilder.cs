@@ -1,5 +1,4 @@
 ﻿using Bogus;
-using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.ApiKeys;
 
 namespace PokeGame.Builders;
@@ -26,8 +25,7 @@ public class ApiKeyBuilder : IApiKeyBuilder
       Version = 1,
       Realm = new RealmBuilder().Build()
     };
-    apikey.CreatedOn = apikey.UpdatedOn = apikey.Realm.CreatedOn = apikey.Realm.UpdatedOn = DateTime.UtcNow;
-    apikey.CreatedBy = apikey.UpdatedBy = apikey.Realm.CreatedBy = apikey.Realm.UpdatedBy = new Actor(apikey);
+    apikey.CreatedOn = apikey.UpdatedOn = DateTime.UtcNow;
     return apikey;
   }
 }

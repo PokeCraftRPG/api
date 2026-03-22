@@ -1,5 +1,4 @@
 ﻿using Bogus;
-using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Localization;
 using Krakenar.Contracts.Users;
 using Logitar;
@@ -39,8 +38,7 @@ public class UserBuilder : IUserBuilder
       Picture = _faker.Person.Avatar,
       Website = _faker.Person.Website
     };
-    user.CreatedOn = user.UpdatedOn = user.Realm.CreatedOn = user.Realm.UpdatedOn = DateTime.UtcNow;
-    user.CreatedBy = user.UpdatedBy = user.Realm.CreatedBy = user.Realm.UpdatedBy = new Actor(user);
+    user.CreatedOn = user.UpdatedOn = DateTime.UtcNow;
     return user;
   }
 }
