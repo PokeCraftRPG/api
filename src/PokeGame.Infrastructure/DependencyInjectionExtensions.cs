@@ -1,4 +1,5 @@
-﻿using Logitar.EventSourcing.EntityFrameworkCore.Relational;
+﻿using Logitar.CQRS;
+using Logitar.EventSourcing.EntityFrameworkCore.Relational;
 using Logitar.EventSourcing.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +31,8 @@ public static class DependencyInjectionExtensions
       .AddSingleton<ICacheService, CacheService>()
       .AddSingleton<IEventBus, EventBus>()
       .AddSingleton<IEventSerializer, EventSerializer>()
-      .AddTransient<IActorService, ActorService>();
+      .AddTransient<IActorService, ActorService>()
+      .AddTransient<ICommandHandler<MigrateDatabaseCommand, Unit>, MigrateDatabaseCommandHandler>();
   }
 
   private static IServiceCollection AddEventHandlers(this IServiceCollection services)

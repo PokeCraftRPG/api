@@ -28,4 +28,8 @@
     <Using Include="System.Text.Json.Serialization" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="PokeGame.IntegrationTests"/>
+  </ItemGroup>
+
 </Project>
