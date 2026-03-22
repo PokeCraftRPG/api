@@ -10,6 +10,7 @@ public class Move : AggregateRoot, IEntityProvider
 
   private MoveUpdated _updated = new();
   public bool HasUpdates => _updated.Name is not null || _updated.Description is not null
+    || _updated.Accuracy is not null || _updated.Power is not null || _updated.PowerPoints is not null
     || _updated.Url is not null || _updated.Notes is not null;
 
   public new MoveId Id => new(base.Id);
@@ -42,6 +43,48 @@ public class Move : AggregateRoot, IEntityProvider
       {
         _description = value;
         _updated.Description = new Optional<Description>(value);
+      }
+    }
+  }
+
+  private Accuracy? _accuracy = null;
+  public Accuracy? Accuracy
+  {
+    get => _accuracy;
+    set
+    {
+      if (_accuracy != value)
+      {
+        _accuracy = value;
+        _updated.Accuracy = new Optional<Accuracy>(value);
+      }
+    }
+  }
+  private Power? _power = null;
+  public Power? Power
+  {
+    get => _power;
+    set
+    {
+      // TODO(fpion): Category.Status moves should not have Power
+
+      if (_power != value)
+      {
+        _power = value;
+        _updated.Power = new Optional<Power>(value);
+      }
+    }
+  }
+  private PowerPoints? _powerPoints = null;
+  public PowerPoints PowerPoints
+  {
+    get => _powerPoints ?? throw new InvalidOperationException("The move was not initialized.");
+    set
+    {
+      if (_powerPoints != value)
+      {
+        _powerPoints = value;
+        _updated.PowerPoints = value;
       }
     }
   }
@@ -79,12 +122,12 @@ public class Move : AggregateRoot, IEntityProvider
   {
   }
 
-  public Move(World world, PokemonType type, MoveCategory category, Name name, UserId? userId = null)
-    : this(type, category, name, userId ?? world.OwnerId, MoveId.NewId(world.Id))
+  public Move(World world, PokemonType type, MoveCategory category, Name name, PowerPoints? powerPoints = null, UserId? userId = null)
+    : this(type, category, name, powerPoints ?? new PowerPoints(PowerPoints.MinimumValue), userId ?? world.OwnerId, MoveId.NewId(world.Id))
   {
   }
 
-  public Move(PokemonType type, MoveCategory category, Name name, UserId userId, MoveId moveId)
+  public Move(PokemonType type, MoveCategory category, Name name, PowerPoints powerPoints, UserId userId, MoveId moveId)
     : base(moveId.StreamId)
   {
     if (!Enum.IsDefined(type))
@@ -96,7 +139,7 @@ public class Move : AggregateRoot, IEntityProvider
       throw new ArgumentOutOfRangeException(nameof(category));
     }
 
-    Raise(new MoveCreated(type, category, name), userId.ActorId);
+    Raise(new MoveCreated(type, category, name, powerPoints), userId.ActorId);
   }
   protected virtual void Handle(MoveCreated @event)
   {
@@ -104,6 +147,8 @@ public class Move : AggregateRoot, IEntityProvider
     Category = @event.Category;
 
     _name = @event.Name;
+
+    _powerPoints = @event.PowerPoints;
   }
 
   public void Delete(UserId userId)
@@ -133,6 +178,19 @@ public class Move : AggregateRoot, IEntityProvider
     if (@event.Description is not null)
     {
       _description = @event.Description.Value;
+    }
+
+    if (@event.Accuracy is not null)
+    {
+      _accuracy = @event.Accuracy.Value;
+    }
+    if (@event.Power is not null)
+    {
+      _power = @event.Power.Value;
+    }
+    if (@event.PowerPoints is not null)
+    {
+      _powerPoints = @event.PowerPoints;
     }
 
     if (@event.Url is not null)

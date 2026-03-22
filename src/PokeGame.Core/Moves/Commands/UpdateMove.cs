@@ -51,6 +51,19 @@ internal class UpdateMoveCommandHandler : ICommandHandler<UpdateMoveCommand, Mov
       move.Description = Description.TryCreate(payload.Description.Value);
     }
 
+    if (payload.Accuracy is not null)
+    {
+      move.Accuracy = payload.Accuracy.Value.HasValue ? new Accuracy(payload.Accuracy.Value.Value) : null;
+    }
+    if (payload.Power is not null)
+    {
+      move.Power = payload.Power.Value.HasValue ? new Power(payload.Power.Value.Value) : null;
+    }
+    if (payload.PowerPoints.HasValue)
+    {
+      move.PowerPoints = new PowerPoints(payload.PowerPoints.Value);
+    }
+
     if (payload.Url is not null)
     {
       move.Url = Url.TryCreate(payload.Url.Value);

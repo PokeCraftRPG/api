@@ -11,6 +11,10 @@ public record CreateOrReplaceMovePayload
   public string Name { get; set; } = string.Empty;
   public string? Description { get; set; }
 
+  public byte? Accuracy { get; set; }
+  public byte? Power { get; set; }
+  public byte PowerPoints { get; set; }
+
   public string? Url { get; set; }
   public string? Notes { get; set; }
 
@@ -25,6 +29,10 @@ public record CreateOrReplaceMovePayload
 
       RuleFor(x => x.Name).Name();
       When(x => !string.IsNullOrWhiteSpace(x.Description), () => RuleFor(x => x.Description!).Description());
+
+      When(x => x.Accuracy.HasValue, () => RuleFor(x => x.Accuracy!.Value).Accuracy());
+      When(x => x.Power.HasValue, () => RuleFor(x => x.Power!.Value).Power());
+      RuleFor(x => x.PowerPoints).PowerPoints();
 
       When(x => !string.IsNullOrWhiteSpace(x.Url), () => RuleFor(x => x.Url!).Url());
       When(x => !string.IsNullOrWhiteSpace(x.Notes), () => RuleFor(x => x.Notes!).Notes());

@@ -19,6 +19,10 @@ internal class MoveEntity : AggregateEntity
   public string Name { get; private set; } = string.Empty;
   public string? Description { get; private set; }
 
+  public byte? Accuracy { get; private set; }
+  public byte? Power { get; private set; }
+  public byte PowerPoints { get; private set; }
+
   public string? Url { get; private set; }
   public string? Notes { get; private set; }
 
@@ -34,6 +38,8 @@ internal class MoveEntity : AggregateEntity
     Category = @event.Category;
 
     Name = @event.Name.Value;
+
+    PowerPoints = @event.PowerPoints.Value;
   }
 
   private MoveEntity() : base()
@@ -51,6 +57,19 @@ internal class MoveEntity : AggregateEntity
     if (@event.Description is not null)
     {
       Description = @event.Description.Value?.Value;
+    }
+
+    if (@event.Accuracy is not null)
+    {
+      Accuracy = @event.Accuracy.Value?.Value;
+    }
+    if (@event.Power is not null)
+    {
+      Power = @event.Power.Value?.Value;
+    }
+    if (@event.PowerPoints is not null)
+    {
+      PowerPoints = @event.PowerPoints.Value;
     }
 
     if (@event.Url is not null)

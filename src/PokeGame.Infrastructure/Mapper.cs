@@ -52,6 +52,9 @@ internal class Mapper
       Category = source.Category,
       Name = source.Name,
       Description = source.Description,
+      Accuracy = source.Accuracy,
+      Power = source.Power,
+      PowerPoints = source.PowerPoints,
       Url = source.Url,
       Notes = source.Notes
     };

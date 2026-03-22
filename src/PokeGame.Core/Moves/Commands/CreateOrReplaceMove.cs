@@ -47,13 +47,14 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
     }
 
     Name name = new(payload.Name);
+    PowerPoints powerPoints = new(payload.PowerPoints);
 
     bool created = false;
     if (move is null)
     {
       await _permissionService.CheckAsync(Actions.CreateMove, cancellationToken);
 
-      move = new(payload.Type, payload.Category, name, userId, moveId);
+      move = new(payload.Type, payload.Category, name, powerPoints, userId, moveId);
       created = true;
     }
     else
@@ -70,9 +71,14 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
       }
 
       move.Name = name;
+
+      move.PowerPoints = powerPoints;
     }
 
     move.Description = Description.TryCreate(payload.Description);
+
+    move.Accuracy = payload.Accuracy.HasValue ? new Accuracy(payload.Accuracy.Value) : null;
+    move.Power = payload.Power.HasValue ? new Power(payload.Power.Value) : null;
 
     move.Url = Url.TryCreate(payload.Url);
     move.Notes = Notes.TryCreate(payload.Notes);
