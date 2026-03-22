@@ -1,5 +1,6 @@
 ﻿using Logitar.CQRS;
 using Logitar.EventSourcing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Moves;
@@ -19,9 +20,10 @@ public static class DependencyInjectionExtensions
     RegionService.Register(services);
     WorldService.Register(services);
     return services
-      .AddLogitarCQRS() // TODO(fpion): RetrySettings, IQueryBus
       .AddLogitarEventSourcing()
+      .AddSingleton(serviceProvider => RetrySettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddTransient<ICommandBus, CommandBus>()
+      .AddTransient<IQueryBus, QueryBus>()
       .AddTransient<IPermissionService, PermissionService>()
       .AddTransient<IStorageService, StorageService>();
   }

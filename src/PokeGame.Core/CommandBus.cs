@@ -9,6 +9,7 @@ internal class CommandBus : Logitar.CQRS.CommandBus
   {
   }
 
-  protected override bool ShouldRetry<TResult>(ICommand<TResult> command, Exception exception) => exception is not DomainException
+  protected override bool ShouldRetry<TResult>(ICommand<TResult> command, Exception exception) => exception is not ConflictException
+    && exception is not DomainException
     && exception is not ValidationException;
 }
