@@ -28,7 +28,14 @@ public class WorldController : ControllerBase
   [HttpGet("{id}")]
   public async Task<ActionResult<WorldModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
-    WorldModel? world = await _worldService.ReadAsync(id, cancellationToken);
+    WorldModel? world = await _worldService.ReadAsync(id, key: null, cancellationToken);
+    return world is null ? NotFound() : Ok(world);
+  }
+
+  [HttpGet("key:{key}")]
+  public async Task<ActionResult<WorldModel>> ReadAsync(string key, CancellationToken cancellationToken)
+  {
+    WorldModel? world = await _worldService.ReadAsync(id: null, key, cancellationToken);
     return world is null ? NotFound() : Ok(world);
   }
 

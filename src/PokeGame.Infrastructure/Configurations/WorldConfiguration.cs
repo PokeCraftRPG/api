@@ -1,6 +1,7 @@
 ﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PokeGame.Core;
 using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Configurations;
@@ -16,9 +17,11 @@ internal class WorldConfiguration : AggregateConfiguration<WorldEntity>, IEntity
 
     builder.HasIndex(x => x.Id).IsUnique();
     builder.HasIndex(x => x.OwnerId);
+    builder.HasIndex(x => x.Key).IsUnique();
     builder.HasIndex(x => x.Name);
 
     builder.Property(x => x.OwnerId).HasMaxLength(ActorId.MaximumLength);
-    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
+    builder.Property(x => x.Key).HasMaxLength(Slug.MaximumLength);
+    builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
   }
 }

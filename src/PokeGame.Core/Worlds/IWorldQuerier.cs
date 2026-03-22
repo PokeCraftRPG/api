@@ -4,7 +4,10 @@ namespace PokeGame.Core.Worlds;
 
 public interface IWorldQuerier
 {
+  Task EnsureUnicityAsync(World world, CancellationToken cancellationToken = default);
+
   Task<WorldModel> ReadAsync(World world, CancellationToken cancellationToken = default);
   Task<WorldModel?> ReadAsync(WorldId id, CancellationToken cancellationToken = default);
   Task<WorldModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
+  Task<WorldModel?> ReadAsync(string key, CancellationToken cancellationToken = default);
 }

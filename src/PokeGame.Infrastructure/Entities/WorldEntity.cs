@@ -10,7 +10,8 @@ internal class WorldEntity : AggregateEntity
 
   public string OwnerId { get; private set; } = string.Empty;
 
-  public string Name { get; private set; } = string.Empty;
+  public string Key { get; private set; } = string.Empty;
+  public string? Name { get; private set; }
   public string? Description { get; private set; }
 
   public List<AbilityEntity> Abilities { get; private set; } = [];
@@ -23,11 +24,18 @@ internal class WorldEntity : AggregateEntity
 
     OwnerId = @event.OwnerId.Value;
 
-    Name = @event.Name.Value;
+    Key = @event.Key.Value;
   }
 
   private WorldEntity() : base()
   {
+  }
+
+  public void SetKey(WorldKeyChanged evnet)
+  {
+    base.Update(evnet);
+
+    Key = evnet.Key.Value;
   }
 
   public void Update(WorldUpdated @event)
@@ -36,7 +44,7 @@ internal class WorldEntity : AggregateEntity
 
     if (@event.Name is not null)
     {
-      Name = @event.Name.Value;
+      Name = @event.Name.Value?.Value;
     }
     if (@event.Description is not null)
     {
@@ -44,5 +52,5 @@ internal class WorldEntity : AggregateEntity
     }
   }
 
-  public override string ToString() => $"{Name} | {base.ToString()}";
+  public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
 }

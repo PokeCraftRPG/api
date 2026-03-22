@@ -22,6 +22,17 @@ internal class WorldQuerier : IWorldQuerier
     _worlds = pokemon.Worlds;
   }
 
+  public async Task EnsureUnicityAsync(World world, CancellationToken cancellationToken)
+  {
+    string? streamId = await _worlds.Where(x => x.Key == world.Key.Value)
+      .Select(x => x.StreamId)
+      .SingleOrDefaultAsync(cancellationToken);
+    if (streamId is not null && streamId != world.Id.Value)
+    {
+      throw new PropertyConflictException<string>(world, new WorldId(streamId).ToGuid(), world.Key.Value, nameof(World.Key));
+    }
+  }
+
   public async Task<WorldModel> ReadAsync(World world, CancellationToken cancellationToken)
   {
     return await ReadAsync(world.Id, cancellationToken) ?? throw new InvalidOperationException($"The world entity '{world}' was not found.");
@@ -37,6 +48,13 @@ internal class WorldQuerier : IWorldQuerier
   {
     WorldEntity? world = await _worlds.AsNoTracking()
       .Where(x => x.Id == id && x.OwnerId == _context.UserId.Value)
+      .SingleOrDefaultAsync(cancellationToken);
+    return world is null ? null : await MapAsync(world, cancellationToken);
+  }
+  public async Task<WorldModel?> ReadAsync(string key, CancellationToken cancellationToken)
+  {
+    WorldEntity? world = await _worlds.AsNoTracking()
+      .Where(x => x.Key == Slug.Normalize(key) && x.OwnerId == _context.UserId.Value)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }

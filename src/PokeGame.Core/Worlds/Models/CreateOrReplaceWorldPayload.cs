@@ -5,7 +5,8 @@ namespace PokeGame.Core.Worlds.Models;
 
 public record CreateOrReplaceWorldPayload
 {
-  public string Name { get; set; } = string.Empty;
+  public string Key { get; set; } = string.Empty;
+  public string? Name { get; set; }
   public string? Description { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
@@ -14,7 +15,8 @@ public record CreateOrReplaceWorldPayload
   {
     public Validator()
     {
-      RuleFor(x => x.Name).Name();
+      RuleFor(x => x.Key).Slug();
+      When(x => !string.IsNullOrWhiteSpace(x.Name), () => RuleFor(x => x.Name!).Name());
       When(x => !string.IsNullOrWhiteSpace(x.Description), () => RuleFor(x => x.Description!).Description());
     }
   }

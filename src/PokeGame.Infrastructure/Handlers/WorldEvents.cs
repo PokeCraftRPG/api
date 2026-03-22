@@ -6,12 +6,13 @@ using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Handlers;
 
-internal class WorldEvents : IEventHandler<WorldCreated>, IEventHandler<WorldDeleted>, IEventHandler<WorldUpdated>
+internal class WorldEvents : IEventHandler<WorldCreated>, IEventHandler<WorldDeleted>, IEventHandler<WorldKeyChanged>, IEventHandler<WorldUpdated>
 {
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IEventHandler<WorldCreated>, WorldEvents>();
     services.AddTransient<IEventHandler<WorldDeleted>, WorldEvents>();
+    services.AddTransient<IEventHandler<WorldKeyChanged>, WorldEvents>();
     services.AddTransient<IEventHandler<WorldUpdated>, WorldEvents>();
   }
 
@@ -41,6 +42,17 @@ internal class WorldEvents : IEventHandler<WorldCreated>, IEventHandler<WorldDel
     if (world is not null)
     {
       _pokemon.Worlds.Remove(world);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(WorldKeyChanged @event, CancellationToken cancellationToken)
+  {
+    WorldEntity? world = await _pokemon.Worlds.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (world is not null && world.Version == (@event.Version - 1))
+    {
+      world.SetKey(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
