@@ -13,6 +13,6 @@
   </Folder>
   <Project Path="src/PokeGame.Core/PokeGame.Core.csproj" />
   <Project Path="src/PokeGame.Infrastructure/PokeGame.Infrastructure.csproj" />
-  <Project Path="src/PokeGame.PostgreSQL/PokeGame.PostgreSQL.csproj" Id="b0eb6a64-430a-429b-9c32-0e91afe255e8" />
+  <Project Path="src/PokeGame.PostgreSQL/PokeGame.PostgreSQL.csproj" />
   <Project Path="src/PokeGame/PokeGame.csproj" />
 </Solution>

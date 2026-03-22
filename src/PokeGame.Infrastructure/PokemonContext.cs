@@ -12,6 +12,7 @@ public class PokemonContext : DbContext
   }
 
   internal DbSet<AbilityEntity> Abilities => Set<AbilityEntity>();
+  internal DbSet<RegionEntity> Regions => Set<RegionEntity>();
   internal DbSet<WorldEntity> Worlds => Set<WorldEntity>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)

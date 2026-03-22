@@ -19,12 +19,7 @@ public static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(Core.Notes.MaximumLength);
   }
 
-  public static IRuleBuilderOptions<T, string> Slug<T>(this IRuleBuilder<T, string> ruleBuilder)
-  {
-    return ruleBuilder.NotEmpty().MaximumLength(Core.Slug.MaximumLength).SetValidator(new SlugValidator<T>());
-  }
-
-  public static IRuleBuilderOptions<T, string> Url<T>(this IRuleBuilder<T, string> ruleBuilder)
+  public static IRuleBuilderOptions<T, string> Url<T>(this IRuleBuilderInitial<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Core.Url.MaximumLength).SetValidator(new UrlValidator<T>());
   }
