@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using PokeGame.Core.Validation;
 
 namespace PokeGame.Core;
@@ -20,7 +20,7 @@ public record Url
     Value = value.Trim();
     new Validator().ValidateAndThrow(this);
 
-    Uri = new Uri(value, UriKind.Absolute);
+    Uri = new Uri(Value, UriKind.Absolute);
   }
 
   public static Url? TryCreate(string? value) => string.IsNullOrWhiteSpace(value) ? null : new(value);
