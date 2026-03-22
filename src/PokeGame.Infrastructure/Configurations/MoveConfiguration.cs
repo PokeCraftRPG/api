@@ -1,12 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PokeGame.Core;
+using PokeGame.Core.Moves;
 using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Configurations;
 
 internal class MoveConfiguration : AggregateConfiguration<MoveEntity>, IEntityTypeConfiguration<MoveEntity>
 {
+  private const int CategoryMaximumLength = 8;
+
   public override void Configure(EntityTypeBuilder<MoveEntity> builder)
   {
     base.Configure(builder);
@@ -15,8 +19,12 @@ internal class MoveConfiguration : AggregateConfiguration<MoveEntity>, IEntityTy
     builder.HasKey(x => x.MoveId);
 
     builder.HasIndex(x => new { x.WorldId, x.Id }).IsUnique();
+    builder.HasIndex(x => x.Type);
+    builder.HasIndex(x => x.Category);
     builder.HasIndex(x => x.Name);
 
+    builder.Property(x => x.Type).HasMaxLength(Constants.PokemonTypeMaximumLength).HasConversion(new EnumToStringConverter<PokemonType>());
+    builder.Property(x => x.Category).HasMaxLength(CategoryMaximumLength).HasConversion(new EnumToStringConverter<MoveCategory>());
     builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
     builder.Property(x => x.Url).HasMaxLength(Url.MaximumLength);
 

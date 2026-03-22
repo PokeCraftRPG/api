@@ -77,9 +77,8 @@ public class Region : AggregateRoot, IEntityProvider
   }
 
   public Region(World world, Name name, UserId? userId = null)
-    : base(RegionId.NewId(world.Id).StreamId)
+    : this(name, userId ?? world.OwnerId, RegionId.NewId(world.Id))
   {
-    Raise(new RegionCreated(name), (userId ?? world.OwnerId).ActorId);
   }
 
   public Region(Name name, UserId userId, RegionId regionId)
@@ -87,7 +86,6 @@ public class Region : AggregateRoot, IEntityProvider
   {
     Raise(new RegionCreated(name), userId.ActorId);
   }
-
   protected virtual void Handle(RegionCreated @event)
   {
     _name = @event.Name;

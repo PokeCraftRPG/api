@@ -1,4 +1,4 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using PokeGame.Core.Moves.Events;
 using PokeGame.Core.Worlds;
 
@@ -15,6 +15,9 @@ public class Move : AggregateRoot, IEntityProvider
   public new MoveId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
   public Guid EntityId => Id.EntityId;
+
+  public PokemonType Type { get; private set; }
+  public MoveCategory Category { get; private set; }
 
   private Name? _name = null;
   public Name Name
@@ -76,20 +79,30 @@ public class Move : AggregateRoot, IEntityProvider
   {
   }
 
-  public Move(World world, Name name, UserId? userId = null)
-    : base(MoveId.NewId(world.Id).StreamId)
+  public Move(World world, PokemonType type, MoveCategory category, Name name, UserId? userId = null)
+    : this(type, category, name, userId ?? world.OwnerId, MoveId.NewId(world.Id))
   {
-    Raise(new MoveCreated(name), (userId ?? world.OwnerId).ActorId);
   }
 
-  public Move(Name name, UserId userId, MoveId moveId)
+  public Move(PokemonType type, MoveCategory category, Name name, UserId userId, MoveId moveId)
     : base(moveId.StreamId)
   {
-    Raise(new MoveCreated(name), userId.ActorId);
-  }
+    if (!Enum.IsDefined(type))
+    {
+      throw new ArgumentOutOfRangeException(nameof(type));
+    }
+    if (!Enum.IsDefined(category))
+    {
+      throw new ArgumentOutOfRangeException(nameof(category));
+    }
 
+    Raise(new MoveCreated(type, category, name), userId.ActorId);
+  }
   protected virtual void Handle(MoveCreated @event)
   {
+    Type = @event.Type;
+    Category = @event.Category;
+
     _name = @event.Name;
   }
 

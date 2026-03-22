@@ -1,5 +1,5 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 
 namespace PokeGame.Core.Moves.Events;
 
-public record MoveCreated(Name Name) : DomainEvent;
+public record MoveCreated(PokemonType Type, MoveCategory Category, Name Name) : DomainEvent;

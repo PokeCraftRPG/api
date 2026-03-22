@@ -53,12 +53,21 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
     {
       await _permissionService.CheckAsync(Actions.CreateMove, cancellationToken);
 
-      move = new(name, userId, moveId);
+      move = new(payload.Type, payload.Category, name, userId, moveId);
       created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, move, cancellationToken);
+
+      if (payload.Type != move.Type)
+      {
+        // TODO(fpion): implement
+      }
+      if (payload.Category != move.Category)
+      {
+        // TODO(fpion): implement
+      }
 
       move.Name = name;
     }

@@ -48,6 +48,8 @@ internal class Mapper
     MoveModel destination = new()
     {
       Id = source.Id,
+      Type = source.Type,
+      Category = source.Category,
       Name = source.Name,
       Description = source.Description,
       Url = source.Url,

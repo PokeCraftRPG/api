@@ -1,4 +1,5 @@
-﻿using PokeGame.Core.Moves;
+﻿using PokeGame.Core;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Moves.Events;
 
 namespace PokeGame.Infrastructure.Entities;
@@ -11,6 +12,9 @@ internal class MoveEntity : AggregateEntity
   public int WorldId { get; private set; }
   public Guid WorldUid { get; private set; }
   public Guid Id { get; private set; }
+
+  public PokemonType Type { get; private set; }
+  public MoveCategory Category { get; private set; }
 
   public string Name { get; private set; } = string.Empty;
   public string? Description { get; private set; }
@@ -25,6 +29,9 @@ internal class MoveEntity : AggregateEntity
     World = world;
     WorldId = world.WorldId;
     WorldUid = world.Id;
+
+    Type = @event.Type;
+    Category = @event.Category;
 
     Name = @event.Name.Value;
   }

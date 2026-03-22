@@ -1,10 +1,13 @@
-using FluentValidation;
+﻿using FluentValidation;
 using PokeGame.Core.Validation;
 
 namespace PokeGame.Core.Moves.Models;
 
 public record CreateOrReplaceMovePayload
 {
+  public PokemonType Type { get; set; }
+  public MoveCategory Category { get; set; }
+
   public string Name { get; set; } = string.Empty;
   public string? Description { get; set; }
 
@@ -17,6 +20,9 @@ public record CreateOrReplaceMovePayload
   {
     public Validator()
     {
+      RuleFor(x => x.Type).IsInEnum();
+      RuleFor(x => x.Category).IsInEnum();
+
       RuleFor(x => x.Name).Name();
       When(x => !string.IsNullOrWhiteSpace(x.Description), () => RuleFor(x => x.Description!).Description());
 
