@@ -1,6 +1,7 @@
 ﻿using Logitar.CQRS;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Storages;
+using PokeGame.Core.Worlds.Events;
 using PokeGame.Core.Worlds.Models;
 
 namespace PokeGame.Core.Worlds.Commands;
@@ -42,16 +43,28 @@ internal class UpdateWorldCommandHandler : ICommandHandler<UpdateWorldCommand, W
     }
     await _permissionService.CheckAsync(Actions.Update, world, cancellationToken);
 
-    if (!string.IsNullOrWhiteSpace(payload.Name))
+    UserId userId = _context.UserId;
+
+    if (!string.IsNullOrWhiteSpace(payload.Key))
     {
-      world.Name = new Name(payload.Name);
+      Slug key = new(payload.Key);
+      world.SetKey(key, userId);
+    }
+    if (payload.Name is not null)
+    {
+      world.Name = Name.TryCreate(payload.Name.Value);
     }
     if (payload.Description is not null)
     {
       world.Description = Description.TryCreate(payload.Description.Value);
     }
 
-    world.Update(_context.UserId);
+    world.Update(userId);
+
+    if (world.Changes.Any(change => change is WorldKeyChanged))
+    {
+      await _worldQuerier.EnsureUnicityAsync(world, cancellationToken);
+    }
 
     await _storageService.ExecuteWithQuotaAsync(
       world,

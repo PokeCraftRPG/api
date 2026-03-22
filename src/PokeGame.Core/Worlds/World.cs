@@ -14,16 +14,18 @@ public class World : AggregateRoot, IEntityProvider
 
   public UserId OwnerId { get; private set; }
 
+  private Slug? _key = null;
+  public Slug Key => _key ?? throw new InvalidOperationException("The world was not initialized.");
   private Name? _name = null;
-  public Name Name
+  public Name? Name
   {
-    get => _name ?? throw new InvalidOperationException("The world was not initialized.");
+    get => _name;
     set
     {
       if (_name != value)
       {
         _name = value;
-        _updated.Name = value;
+        _updated.Name = new Optional<Name>(value);
       }
     }
   }
@@ -41,22 +43,22 @@ public class World : AggregateRoot, IEntityProvider
     }
   }
 
-  public long Size => Name.Size + (Description?.Size ?? 0);
+  public long Size => Key.Size + (Name?.Size ?? 0) + (Description?.Size ?? 0);
 
   public World() : base()
   {
   }
 
-  public World(UserId ownerId, Name name, WorldId? worldId = null)
+  public World(UserId ownerId, Slug key, WorldId? worldId = null)
     : base((worldId ?? WorldId.NewId()).StreamId)
   {
-    Raise(new WorldCreated(ownerId, name), ownerId.ActorId);
+    Raise(new WorldCreated(ownerId, key), ownerId.ActorId);
   }
   protected virtual void Handle(WorldCreated @event)
   {
     OwnerId = @event.OwnerId;
 
-    _name = @event.Name;
+    _key = @event.Key;
   }
 
   public void Delete(UserId userId)
@@ -68,6 +70,18 @@ public class World : AggregateRoot, IEntityProvider
   }
 
   public Entity GetEntity() => new(EntityKind, Id.ToGuid(), worldId: null, Size);
+
+  public void SetKey(Slug key, UserId userId)
+  {
+    if (_key != key)
+    {
+      Raise(new WorldKeyChanged(key), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(WorldKeyChanged @event)
+  {
+    _key = @event.Key;
+  }
 
   public void Update(UserId userId)
   {
@@ -81,7 +95,7 @@ public class World : AggregateRoot, IEntityProvider
   {
     if (@event.Name is not null)
     {
-      _name = @event.Name;
+      _name = @event.Name.Value;
     }
     if (@event.Description is not null)
     {
@@ -89,5 +103,5 @@ public class World : AggregateRoot, IEntityProvider
     }
   }
 
-  public override string ToString() => $"{Name} | {base.ToString()}";
+  public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";
 }
