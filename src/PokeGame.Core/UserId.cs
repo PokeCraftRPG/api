@@ -9,7 +9,7 @@ public readonly struct UserId
 
   public UserId(ActorId actorId)
   {
-    ActorId = actorId;
+    ActorId = actorId; // TODO(fpion): validate that actor is a User
   }
 
   public UserId(string value) : this(new ActorId(value))
