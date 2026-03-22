@@ -1,7 +1,5 @@
 ﻿using Bogus;
-using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Localization;
-using Krakenar.Contracts.Realms;
 using Krakenar.Contracts.Users;
 using Logitar;
 
@@ -27,13 +25,7 @@ public class UserBuilder : IUserBuilder
     {
       Id = Guid.NewGuid(),
       Version = 1,
-      Realm = new Realm
-      {
-        Id = Guid.NewGuid(),
-        Version = 1,
-        UniqueSlug = "pokecraft",
-        DisplayName = "PokéCraft"
-      },
+      Realm = new RealmBuilder().Build(),
       Email = new Email(_faker.Person.Email, isVerified: true),
       IsConfirmed = true,
       FirstName = _faker.Person.FirstName,
@@ -46,8 +38,7 @@ public class UserBuilder : IUserBuilder
       Picture = _faker.Person.Avatar,
       Website = _faker.Person.Website
     };
-    user.CreatedOn = user.UpdatedOn = user.Realm.CreatedOn = user.Realm.UpdatedOn = DateTime.UtcNow;
-    user.CreatedBy = user.UpdatedBy = user.Realm.CreatedBy = user.Realm.UpdatedBy = new Actor(user);
+    user.CreatedOn = user.UpdatedOn = DateTime.UtcNow;
     return user;
   }
 }

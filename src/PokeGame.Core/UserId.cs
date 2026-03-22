@@ -1,4 +1,5 @@
-﻿using Logitar.EventSourcing;
+﻿using Krakenar.Contracts.Actors;
+using Logitar.EventSourcing;
 
 namespace PokeGame.Core;
 
@@ -9,7 +10,8 @@ public readonly struct UserId
 
   public UserId(ActorId actorId)
   {
-    ActorId = actorId; // TODO(fpion): validate that actor is a User
+    _ = Entity.Parse(actorId.Value, ActorType.User.ToString());
+    ActorId = actorId;
   }
 
   public UserId(string value) : this(new ActorId(value))
