@@ -77,9 +77,8 @@ public class Ability : AggregateRoot, IEntityProvider
   }
 
   public Ability(World world, Name name, UserId? userId = null)
-    : base(AbilityId.NewId(world.Id).StreamId)
+    : this(name, userId ?? world.OwnerId, AbilityId.NewId(world.Id))
   {
-    Raise(new AbilityCreated(name), (userId ?? world.OwnerId).ActorId);
   }
 
   public Ability(Name name, UserId userId, AbilityId abilityId)
@@ -87,7 +86,6 @@ public class Ability : AggregateRoot, IEntityProvider
   {
     Raise(new AbilityCreated(name), userId.ActorId);
   }
-
   protected virtual void Handle(AbilityCreated @event)
   {
     _name = @event.Name;
