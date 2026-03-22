@@ -5,7 +5,8 @@ namespace PokeGame.Core.Abilities.Models;
 
 public record UpdateAbilityPayload
 {
-  public string? Name { get; set; }
+  public string? Key { get; set; }
+  public Optional<string>? Name { get; set; }
   public Optional<string>? Description { get; set; }
 
   public Optional<string>? Url { get; set; }
@@ -17,7 +18,8 @@ public record UpdateAbilityPayload
   {
     public Validator()
     {
-      When(x => !string.IsNullOrWhiteSpace(x.Name), () => RuleFor(x => x.Name!).Name());
+      When(x => !string.IsNullOrWhiteSpace(x.Key), () => RuleFor(x => x.Key!).Slug());
+      When(x => !string.IsNullOrWhiteSpace(x.Name?.Value), () => RuleFor(x => x.Name!.Value!).Name());
       When(x => !string.IsNullOrWhiteSpace(x.Description?.Value), () => RuleFor(x => x.Description!.Value!).Description());
 
       When(x => !string.IsNullOrWhiteSpace(x.Url?.Value), () => RuleFor(x => x.Url!.Value!).Url());

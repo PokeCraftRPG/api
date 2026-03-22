@@ -1,4 +1,5 @@
 ﻿using Logitar.CQRS;
+using PokeGame.Core.Abilities.Events;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Storages;
@@ -42,9 +43,16 @@ internal class UpdateAbilityCommandHandler : ICommandHandler<UpdateAbilityComman
     }
     await _permissionService.CheckAsync(Actions.Update, ability, cancellationToken);
 
-    if (!string.IsNullOrWhiteSpace(payload.Name))
+    UserId userId = _context.UserId;
+
+    if (!string.IsNullOrWhiteSpace(payload.Key))
     {
-      ability.Name = new Name(payload.Name);
+      Slug key = new(payload.Key);
+      ability.SetKey(key, userId);
+    }
+    if (payload.Name is not null)
+    {
+      ability.Name = Name.TryCreate(payload.Name.Value);
     }
     if (payload.Description is not null)
     {
@@ -60,7 +68,12 @@ internal class UpdateAbilityCommandHandler : ICommandHandler<UpdateAbilityComman
       ability.Notes = Notes.TryCreate(payload.Notes.Value);
     }
 
-    ability.Update(_context.UserId);
+    ability.Update(userId);
+
+    if (ability.Changes.Any(change => change is AbilityKeyChanged))
+    {
+      await _abilityQuerier.EnsureUnicityAsync(ability, cancellationToken);
+    }
 
     await _storageService.ExecuteWithQuotaAsync(
       ability,

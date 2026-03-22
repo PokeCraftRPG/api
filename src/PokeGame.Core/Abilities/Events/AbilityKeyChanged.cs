@@ -2,4 +2,4 @@
 
 namespace PokeGame.Core.Abilities.Events;
 
-public record AbilityCreated(Slug Key) : DomainEvent;
+public record AbilityKeyChanged(Slug Key) : DomainEvent;
