@@ -28,7 +28,14 @@ public class AbilityController : ControllerBase
   [HttpGet("{id}")]
   public async Task<ActionResult<AbilityModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
-    AbilityModel? ability = await _abilityService.ReadAsync(id, cancellationToken);
+    AbilityModel? ability = await _abilityService.ReadAsync(id, key: null, cancellationToken);
+    return ability is null ? NotFound() : Ok(ability);
+  }
+
+  [HttpGet("key:{key}")]
+  public async Task<ActionResult<AbilityModel>> ReadAsync(string key, CancellationToken cancellationToken)
+  {
+    AbilityModel? ability = await _abilityService.ReadAsync(id: null, key, cancellationToken);
     return ability is null ? NotFound() : Ok(ability);
   }
 

@@ -22,6 +22,17 @@ internal class AbilityQuerier : IAbilityQuerier
     _abilities = pokemon.Abilities;
   }
 
+  public async Task EnsureUnicityAsync(Ability ability, CancellationToken cancellationToken)
+  {
+    string? streamId = await _abilities.Where(x => x.World!.Id == ability.WorldId.ToGuid() && x.Key == ability.Key.Value)
+      .Select(x => x.StreamId)
+      .SingleOrDefaultAsync(cancellationToken);
+    if (streamId is not null && streamId != ability.Id.Value)
+    {
+      throw new PropertyConflictException<string>(ability, new AbilityId(streamId).EntityId, ability.Key.Value, nameof(Ability.Key));
+    }
+  }
+
   public async Task<AbilityModel> ReadAsync(Ability ability, CancellationToken cancellationToken)
   {
     return await ReadAsync(ability.Id, cancellationToken) ?? throw new InvalidOperationException($"The ability entity '{ability}' was not found.");
@@ -29,14 +40,21 @@ internal class AbilityQuerier : IAbilityQuerier
   public async Task<AbilityModel?> ReadAsync(AbilityId id, CancellationToken cancellationToken)
   {
     AbilityEntity? ability = await _abilities.AsNoTracking()
-      .Where(x => x.StreamId == id.Value && x.WorldUid == _context.WorldUid)
+      .Where(x => x.StreamId == id.Value && x.World!.Id == _context.WorldUid)
       .SingleOrDefaultAsync(cancellationToken);
     return ability is null ? null : await MapAsync(ability, cancellationToken);
   }
   public async Task<AbilityModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     AbilityEntity? ability = await _abilities.AsNoTracking()
-      .Where(x => x.Id == id && x.WorldUid == _context.WorldUid)
+      .Where(x => x.Id == id && x.World!.Id == _context.WorldUid)
+      .SingleOrDefaultAsync(cancellationToken);
+    return ability is null ? null : await MapAsync(ability, cancellationToken);
+  }
+  public async Task<AbilityModel?> ReadAsync(string key, CancellationToken cancellationToken)
+  {
+    AbilityEntity? ability = await _abilities.AsNoTracking()
+      .Where(x => x.Key == Slug.Normalize(key) && x.World!.Id == _context.WorldUid)
       .SingleOrDefaultAsync(cancellationToken);
     return ability is null ? null : await MapAsync(ability, cancellationToken);
   }

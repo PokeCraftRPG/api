@@ -8,12 +8,13 @@ using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Handlers;
 
-internal class AbilityEvents : IEventHandler<AbilityCreated>, IEventHandler<AbilityDeleted>, IEventHandler<AbilityUpdated>
+internal class AbilityEvents : IEventHandler<AbilityCreated>, IEventHandler<AbilityDeleted>, IEventHandler<AbilityKeyChanged>, IEventHandler<AbilityUpdated>
 {
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IEventHandler<AbilityCreated>, AbilityEvents>();
     services.AddTransient<IEventHandler<AbilityDeleted>, AbilityEvents>();
+    services.AddTransient<IEventHandler<AbilityKeyChanged>, AbilityEvents>();
     services.AddTransient<IEventHandler<AbilityUpdated>, AbilityEvents>();
   }
 
@@ -47,6 +48,17 @@ internal class AbilityEvents : IEventHandler<AbilityCreated>, IEventHandler<Abil
     if (ability is not null)
     {
       _pokemon.Abilities.Remove(ability);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(AbilityKeyChanged @event, CancellationToken cancellationToken)
+  {
+    AbilityEntity? ability = await _pokemon.Abilities.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (ability is not null && ability.Version == (@event.Version - 1))
+    {
+      ability.SetKey(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

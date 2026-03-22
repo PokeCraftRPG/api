@@ -16,16 +16,18 @@ public class Ability : AggregateRoot, IEntityProvider
   public WorldId WorldId => Id.WorldId;
   public Guid EntityId => Id.EntityId;
 
+  private Slug? _key = null;
+  public Slug Key => _key ?? throw new InvalidOperationException("The ability was not initialized.");
   private Name? _name = null;
-  public Name Name
+  public Name? Name
   {
-    get => _name ?? throw new InvalidOperationException("The ability was not initialized.");
+    get => _name;
     set
     {
       if (_name != value)
       {
         _name = value;
-        _updated.Name = value;
+        _updated.Name = new Optional<Name>(value);
       }
     }
   }
@@ -70,25 +72,25 @@ public class Ability : AggregateRoot, IEntityProvider
     }
   }
 
-  public long Size => Name.Size + (Description?.Size ?? 0) + (Url?.Size ?? 0) + (Notes?.Size ?? 0);
+  public long Size => Key.Size + (Name?.Size ?? 0) + (Description?.Size ?? 0) + (Url?.Size ?? 0) + (Notes?.Size ?? 0);
 
   public Ability() : base()
   {
   }
 
-  public Ability(World world, Name name, UserId? userId = null)
-    : this(name, userId ?? world.OwnerId, AbilityId.NewId(world.Id))
+  public Ability(World world, Slug key, UserId? userId = null)
+    : this(key, userId ?? world.OwnerId, AbilityId.NewId(world.Id))
   {
   }
 
-  public Ability(Name name, UserId userId, AbilityId abilityId)
+  public Ability(Slug key, UserId userId, AbilityId abilityId)
     : base(abilityId.StreamId)
   {
-    Raise(new AbilityCreated(name), userId.ActorId);
+    Raise(new AbilityCreated(key), userId.ActorId);
   }
   protected virtual void Handle(AbilityCreated @event)
   {
-    _name = @event.Name;
+    _key = @event.Key;
   }
 
   public void Delete(UserId userId)
@@ -100,6 +102,18 @@ public class Ability : AggregateRoot, IEntityProvider
   }
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId, Size);
+
+  public void SetKey(Slug key, UserId userId)
+  {
+    if (_key != key)
+    {
+      Raise(new AbilityKeyChanged(key), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(AbilityKeyChanged @event)
+  {
+    _key = @event.Key;
+  }
 
   public void Update(UserId userId)
   {
@@ -113,7 +127,7 @@ public class Ability : AggregateRoot, IEntityProvider
   {
     if (@event.Name is not null)
     {
-      _name = @event.Name;
+      _name = @event.Name.Value;
     }
     if (@event.Description is not null)
     {
@@ -130,5 +144,5 @@ public class Ability : AggregateRoot, IEntityProvider
     }
   }
 
-  public override string ToString() => $"{Name} | {base.ToString()}";
+  public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";
 }

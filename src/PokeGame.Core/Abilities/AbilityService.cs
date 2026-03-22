@@ -9,7 +9,7 @@ namespace PokeGame.Core.Abilities;
 public interface IAbilityService
 {
   Task<CreateOrReplaceAbilityResult> CreateOrReplaceAsync(CreateOrReplaceAbilityPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
-  Task<AbilityModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
+  Task<AbilityModel?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
   Task<AbilityModel?> UpdateAsync(Guid id, UpdateAbilityPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -38,9 +38,9 @@ internal class AbilityService : IAbilityService
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
-  public async Task<AbilityModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<AbilityModel?> ReadAsync(Guid? id, string? key, CancellationToken cancellationToken)
   {
-    ReadAbilityQuery query = new(id);
+    ReadAbilityQuery query = new(id, key);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 
