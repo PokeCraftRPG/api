@@ -10,23 +10,23 @@ internal record CreateOrReplaceRegionCommand(CreateOrReplaceRegionPayload Payloa
 
 internal class CreateOrReplaceRegionCommandHandler : ICommandHandler<CreateOrReplaceRegionCommand, CreateOrReplaceRegionResult>
 {
-  private readonly IRegionQuerier _regionQuerier;
-  private readonly IRegionRepository _regionRepository;
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
+  private readonly IRegionQuerier _regionQuerier;
+  private readonly IRegionRepository _regionRepository;
   private readonly IStorageService _storageService;
 
   public CreateOrReplaceRegionCommandHandler(
-    IRegionQuerier regionQuerier,
-    IRegionRepository regionRepository,
     IContext context,
     IPermissionService permissionService,
+    IRegionQuerier regionQuerier,
+    IRegionRepository regionRepository,
     IStorageService storageService)
   {
-    _regionQuerier = regionQuerier;
-    _regionRepository = regionRepository;
     _context = context;
     _permissionService = permissionService;
+    _regionQuerier = regionQuerier;
+    _regionRepository = regionRepository;
     _storageService = storageService;
   }
 

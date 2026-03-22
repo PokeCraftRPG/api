@@ -9,23 +9,23 @@ internal record UpdateRegionCommand(Guid Id, UpdateRegionPayload Payload) : ICom
 
 internal class UpdateRegionCommandHandler : ICommandHandler<UpdateRegionCommand, RegionModel?>
 {
-  private readonly IRegionQuerier _regionQuerier;
-  private readonly IRegionRepository _regionRepository;
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
+  private readonly IRegionQuerier _regionQuerier;
+  private readonly IRegionRepository _regionRepository;
   private readonly IStorageService _storageService;
 
   public UpdateRegionCommandHandler(
-    IRegionQuerier regionQuerier,
-    IRegionRepository regionRepository,
     IContext context,
     IPermissionService permissionService,
+    IRegionQuerier regionQuerier,
+    IRegionRepository regionRepository,
     IStorageService storageService)
   {
-    _regionQuerier = regionQuerier;
-    _regionRepository = regionRepository;
     _context = context;
     _permissionService = permissionService;
+    _regionQuerier = regionQuerier;
+    _regionRepository = regionRepository;
     _storageService = storageService;
   }
 
