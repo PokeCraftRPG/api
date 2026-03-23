@@ -9,6 +9,11 @@ public static class ValidationExtensions
     return ruleBuilder.InclusiveBetween(Moves.Accuracy.MinimumValue, Moves.Accuracy.MaximumValue);
   }
 
+  public static IRuleBuilderOptions<T, byte> CatchRate<T>(this IRuleBuilder<T, byte> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThan((byte)0);
+  }
+
   public static IRuleBuilderOptions<T, string> Description<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Core.Description.MaximumLength);

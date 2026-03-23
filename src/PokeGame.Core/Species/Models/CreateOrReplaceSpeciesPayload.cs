@@ -11,8 +11,17 @@ public record CreateOrReplaceSpeciesPayload
   public string Key { get; set; } = string.Empty;
   public string? Name { get; set; }
 
+  public byte BaseFriendship { get; set; }
+  public byte CatchRate { get; set; }
+  public GrowthRate GrowthRate { get; set; }
+
+  public byte EggCycles { get; set; }
+  public EggGroupsModel EggGroups { get; set; } = new();
+
   public string? Url { get; set; }
   public string? Notes { get; set; }
+
+  public List<RegionalNumberPayload> RegionalNumbers { get; set; } = [];
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 
@@ -26,8 +35,16 @@ public record CreateOrReplaceSpeciesPayload
       RuleFor(x => x.Key).Slug();
       When(x => !string.IsNullOrWhiteSpace(x.Name), () => RuleFor(x => x.Name!).Name());
 
+      RuleFor(x => x.CatchRate).CatchRate();
+      RuleFor(x => x.GrowthRate).IsInEnum();
+
+      // TODO(fpion): EggCycles
+      // TODO(fpion): EggGroups
+
       When(x => !string.IsNullOrWhiteSpace(x.Url), () => RuleFor(x => x.Url!).Url());
       When(x => !string.IsNullOrWhiteSpace(x.Notes), () => RuleFor(x => x.Notes!).Notes());
+
+      // TODO(fpion): RegionalNumbers
     }
   }
 }
