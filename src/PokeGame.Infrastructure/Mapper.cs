@@ -5,6 +5,7 @@ using Logitar.EventSourcing;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
+using PokeGame.Core.Species.Models;
 using PokeGame.Core.Worlds.Models;
 using PokeGame.Infrastructure.Entities;
 
@@ -76,6 +77,21 @@ internal class Mapper
       Description = source.Description,
       Url = source.Url,
       Notes = source.Notes
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public SpeciesModel ToSpecies(SpeciesEntity source)
+  {
+    SpeciesModel destination = new()
+    {
+      Id = source.Id,
+      Category = source.Category,
+      Key = source.Key,
+      Name = source.Name
     };
 
     MapAggregate(source, destination);

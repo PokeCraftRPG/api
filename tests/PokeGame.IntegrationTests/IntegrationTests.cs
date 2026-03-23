@@ -51,6 +51,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     await commandBus.ExecuteAsync(new MigrateDatabaseCommand());
 
     PokemonContext pokemon = ServiceProvider.GetRequiredService<PokemonContext>();
+    await pokemon.Species.ExecuteDeleteAsync();
     await pokemon.Regions.ExecuteDeleteAsync();
     await pokemon.Moves.ExecuteDeleteAsync();
     await pokemon.Abilities.ExecuteDeleteAsync();
