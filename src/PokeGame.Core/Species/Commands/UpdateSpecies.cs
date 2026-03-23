@@ -55,6 +55,15 @@ internal class UpdateSpeciesCommandHandler : ICommandHandler<UpdateSpeciesComman
       species.Name = Name.TryCreate(payload.Name.Value);
     }
 
+    if (payload.Url is not null)
+    {
+      species.Url = Url.TryCreate(payload.Url.Value);
+    }
+    if (payload.Notes is not null)
+    {
+      species.Notes = Notes.TryCreate(payload.Notes.Value);
+    }
+
     species.Update(userId);
 
     if (species.Changes.Any(change => change is SpeciesKeyChanged))

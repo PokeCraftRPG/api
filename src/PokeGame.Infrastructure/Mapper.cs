@@ -89,9 +89,12 @@ internal class Mapper
     SpeciesModel destination = new()
     {
       Id = source.Id,
+      Number = source.Number,
       Category = source.Category,
       Key = source.Key,
-      Name = source.Name
+      Name = source.Name,
+      Url = source.Url,
+      Notes = source.Notes
     };
 
     MapAggregate(source, destination);

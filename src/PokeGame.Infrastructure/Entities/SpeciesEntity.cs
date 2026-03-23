@@ -11,10 +11,14 @@ internal class SpeciesEntity : AggregateEntity
   public int WorldId { get; private set; }
   public Guid Id { get; private set; }
 
+  public int Number { get; private set; }
   public PokemonCategory Category { get; private set; }
 
   public string Key { get; private set; } = string.Empty;
   public string? Name { get; private set; }
+
+  public string? Url { get; private set; }
+  public string? Notes { get; private set; }
 
   public SpeciesEntity(WorldEntity world, SpeciesCreated @event) : base(@event)
   {
@@ -23,6 +27,7 @@ internal class SpeciesEntity : AggregateEntity
     World = world;
     WorldId = world.WorldId;
 
+    Number = @event.Number.Value;
     Category = @event.Category;
 
     Key = @event.Key.Value;
@@ -46,6 +51,15 @@ internal class SpeciesEntity : AggregateEntity
     if (@event.Name is not null)
     {
       Name = @event.Name.Value?.Value;
+    }
+
+    if (@event.Url is not null)
+    {
+      Url = @event.Url.Value?.Value;
+    }
+    if (@event.Notes is not null)
+    {
+      Notes = @event.Notes.Value?.Value;
     }
   }
 

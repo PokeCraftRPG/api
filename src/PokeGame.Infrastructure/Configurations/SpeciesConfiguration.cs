@@ -19,13 +19,15 @@ internal class SpeciesConfiguration : AggregateConfiguration<SpeciesEntity>, IEn
     builder.HasKey(x => x.SpeciesId);
 
     builder.HasIndex(x => new { x.WorldId, x.Id }).IsUnique();
-    builder.HasIndex(x => new { x.WorldId, x.Key }).IsUnique();
+    builder.HasIndex(x => new { x.WorldId, x.Number }).IsUnique();
     builder.HasIndex(x => new { x.WorldId, x.Category });
+    builder.HasIndex(x => new { x.WorldId, x.Key }).IsUnique();
     builder.HasIndex(x => new { x.WorldId, x.Name });
 
     builder.Property(x => x.Category).HasMaxLength(CategoryMaximumLength).HasConversion(new EnumToStringConverter<PokemonCategory>());
     builder.Property(x => x.Key).HasMaxLength(Slug.MaximumLength);
     builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
+    builder.Property(x => x.Url).HasMaxLength(Url.MaximumLength);
 
     builder.HasOne(x => x.World).WithMany(x => x.Species).OnDelete(DeleteBehavior.Restrict);
   }

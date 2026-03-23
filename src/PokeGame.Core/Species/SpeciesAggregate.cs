@@ -9,12 +9,15 @@ public class SpeciesAggregate : AggregateRoot, IEntityProvider
   public const string EntityKind = "Species";
 
   private SpeciesUpdated _updated = new();
-  public bool HasUpdates => _updated.Name is not null;
+  public bool HasUpdates => _updated.Name is not null
+    || _updated.Url is not null || _updated.Notes is not null;
 
   public new SpeciesId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
   public Guid EntityId => Id.EntityId;
 
+  private Number? _number = null;
+  public Number Number => _number ?? throw new InvalidOperationException("The species was not initialized.");
   public PokemonCategory Category { get; private set; }
 
   private Slug? _key = null;
@@ -33,18 +36,45 @@ public class SpeciesAggregate : AggregateRoot, IEntityProvider
     }
   }
 
-  public long Size => Key.Size + (Name?.Size ?? 0);
+  private Url? _url = null;
+  public Url? Url
+  {
+    get => _url;
+    set
+    {
+      if (_url != value)
+      {
+        _url = value;
+        _updated.Url = new Optional<Url>(value);
+      }
+    }
+  }
+  private Notes? _notes = null;
+  public Notes? Notes
+  {
+    get => _notes;
+    set
+    {
+      if (_notes != value)
+      {
+        _notes = value;
+        _updated.Notes = new Optional<Notes>(value);
+      }
+    }
+  }
+
+  public long Size => Key.Size + (Name?.Size ?? 0) + (Url?.Size ?? 0) + (Notes?.Size ?? 0);
 
   public SpeciesAggregate() : base()
   {
   }
 
-  public SpeciesAggregate(World world, PokemonCategory category, Slug key, UserId? userId = null)
-    : this(category, key, userId ?? world.OwnerId, SpeciesId.NewId(world.Id))
+  public SpeciesAggregate(World world, Number number, PokemonCategory category, Slug key, UserId? userId = null)
+    : this(number, category, key, userId ?? world.OwnerId, SpeciesId.NewId(world.Id))
   {
   }
 
-  public SpeciesAggregate(PokemonCategory category, Slug key, UserId userId, SpeciesId speciesId)
+  public SpeciesAggregate(Number number, PokemonCategory category, Slug key, UserId userId, SpeciesId speciesId)
     : base(speciesId.StreamId)
   {
     if (!Enum.IsDefined(category))
@@ -52,11 +82,11 @@ public class SpeciesAggregate : AggregateRoot, IEntityProvider
       throw new ArgumentOutOfRangeException(nameof(category));
     }
 
-    Raise(new SpeciesCreated(category, key), userId.ActorId);
+    Raise(new SpeciesCreated(number, category, key), userId.ActorId);
   }
-
   protected virtual void Handle(SpeciesCreated @event)
   {
+    _number = @event.Number;
     Category = @event.Category;
 
     _key = @event.Key;
@@ -99,6 +129,15 @@ public class SpeciesAggregate : AggregateRoot, IEntityProvider
     if (@event.Name is not null)
     {
       _name = @event.Name.Value;
+    }
+
+    if (@event.Url is not null)
+    {
+      _url = @event.Url.Value;
+    }
+    if (@event.Notes is not null)
+    {
+      _notes = @event.Notes.Value;
     }
   }
 

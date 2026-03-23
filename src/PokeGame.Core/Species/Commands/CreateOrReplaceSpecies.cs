@@ -54,13 +54,17 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
     {
       await _permissionService.CheckAsync(Actions.CreateSpecies, cancellationToken);
 
-      species = new(payload.Category, key, userId, speciesId);
+      species = new(new Number(payload.Number), payload.Category, key, userId, speciesId);
       created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, species, cancellationToken);
 
+      if (payload.Number != species.Number.Value)
+      {
+        throw new ImmutablePropertyException<int>(species, species.Number.Value, payload.Number, nameof(payload.Number));
+      }
       if (payload.Category != species.Category)
       {
         throw new ImmutablePropertyException<PokemonCategory>(species, species.Category, payload.Category, nameof(payload.Category));
@@ -70,6 +74,9 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
     }
 
     species.Name = Name.TryCreate(payload.Name);
+
+    species.Url = Url.TryCreate(payload.Url);
+    species.Notes = Notes.TryCreate(payload.Notes);
 
     species.Update(userId);
 
