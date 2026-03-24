@@ -130,7 +130,7 @@ public class SpeciesBuilder : ISpeciesBuilder
     CatchRate catchRate = _catchRate ?? new(_faker.Random.Byte(min: 1));
     GrowthRate growthRate = _growthRate ?? _faker.PickRandom<GrowthRate>();
     EggCycles eggCycles = _eggCycles ?? new(_faker.Random.Byte(min: 1));
-    EggGroups eggGroups = _eggGroups ?? RandomEggGroups();
+    EggGroups eggGroups = _eggGroups ?? _faker.EggGroups();
 
     SpeciesAggregate species = _id.HasValue
       ? new(number, category, key, baseFriendship, catchRate, growthRate, eggCycles, eggGroups, world.OwnerId, _id.Value)
@@ -149,16 +149,5 @@ public class SpeciesBuilder : ISpeciesBuilder
     }
 
     return species;
-  }
-
-  private EggGroups RandomEggGroups()
-  {
-    EggGroup primary = _faker.PickRandom<EggGroup>();
-    EggGroup? secondary = _faker.PickRandom<EggGroup>();
-    if (primary == secondary || primary == EggGroup.NoEggsDiscovered || primary == EggGroup.Ditto || secondary == EggGroup.NoEggsDiscovered || secondary == EggGroup.Ditto)
-    {
-      secondary = null;
-    }
-    return new EggGroups(primary, secondary);
   }
 }
