@@ -102,6 +102,12 @@ internal class Mapper
       Notes = source.Notes
     };
 
+    foreach (RegionalNumberEntity regionalNumber in source.RegionalNumbers)
+    {
+      RegionEntity region = regionalNumber.Region ?? throw new ArgumentException("The region is required.", nameof(source));
+      destination.RegionalNumbers.Add(new RegionalNumberModel(ToRegion(region), regionalNumber.Number));
+    }
+
     MapAggregate(source, destination);
 
     return destination;

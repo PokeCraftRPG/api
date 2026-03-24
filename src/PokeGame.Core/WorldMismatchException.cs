@@ -44,6 +44,7 @@ public class WorldMismatchException : ArgumentException
     message.Append(nameof(Expected)).Append(": ").Append(expected.GetEntity()).AppendLine();
     if (mismatched.Any())
     {
+      message.Append(nameof(Mismatched)).Append(':').AppendLine();
       mismatched = mismatched.Distinct();
       foreach (IEntityProvider provider in mismatched)
       {

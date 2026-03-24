@@ -1,4 +1,6 @@
-﻿using PokeGame.Core.Species;
+﻿using Logitar;
+using Logitar.EventSourcing;
+using PokeGame.Core.Species;
 using PokeGame.Core.Species.Events;
 
 namespace PokeGame.Infrastructure.Entities;
@@ -52,6 +54,19 @@ internal class SpeciesEntity : AggregateEntity
 
   private SpeciesEntity() : base()
   {
+  }
+
+  public override IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    foreach (RegionalNumberEntity regionalNumber in RegionalNumbers)
+    {
+      if (regionalNumber.Region is not null)
+      {
+        actorIds.AddRange(regionalNumber.Region.GetActorIds());
+      }
+    }
+    return actorIds;
   }
 
   public void SetKey(SpeciesKeyChanged @event)

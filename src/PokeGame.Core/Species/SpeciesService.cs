@@ -18,6 +18,7 @@ internal class SpeciesService : ISpeciesService
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<ISpeciesService, SpeciesService>();
+    services.AddTransient<ISpeciesManager, SpeciesManager>();
     services.AddTransient<ICommandHandler<CreateOrReplaceSpeciesCommand, CreateOrReplaceSpeciesResult>, CreateOrReplaceSpeciesCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateSpeciesCommand, SpeciesModel?>, UpdateSpeciesCommandHandler>();
     services.AddTransient<IQueryHandler<ReadSpeciesQuery, SpeciesModel?>, ReadSpeciesQueryHandler>();

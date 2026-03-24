@@ -33,6 +33,14 @@ internal class RegionQuerier : IRegionQuerier
     }
   }
 
+  public async Task<IReadOnlyCollection<RegionKey>> ListKeysAsync(CancellationToken cancellationToken)
+  {
+    var keys = await _regions.Where(x => x.World!.Id == _context.WorldUid)
+      .Select(x => new { x.StreamId, x.Id, x.Key })
+      .ToArrayAsync(cancellationToken);
+    return keys.Select(key => new RegionKey(new RegionId(key.StreamId), key.Id, key.Key)).ToList().AsReadOnly();
+  }
+
   public async Task<RegionModel> ReadAsync(Region region, CancellationToken cancellationToken)
   {
     return await ReadAsync(region.Id, cancellationToken) ?? throw new InvalidOperationException($"The region entity '{region}' was not found.");

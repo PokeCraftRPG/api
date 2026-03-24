@@ -1,6 +1,6 @@
 ﻿using Logitar.CQRS;
 using PokeGame.Core.Permissions;
-using PokeGame.Core.Species.Events;
+using PokeGame.Core.Regions;
 using PokeGame.Core.Species.Models;
 using PokeGame.Core.Storages;
 using PokeGame.Core.Worlds;
@@ -13,6 +13,7 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
+  private readonly ISpeciesManager _speciesManager;
   private readonly ISpeciesQuerier _speciesQuerier;
   private readonly ISpeciesRepository _speciesRepository;
   private readonly IStorageService _storageService;
@@ -20,12 +21,14 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
   public CreateOrReplaceSpeciesCommandHandler(
     IContext context,
     IPermissionService permissionService,
+    ISpeciesManager speciesManager,
     ISpeciesQuerier speciesQuerier,
     ISpeciesRepository speciesRepository,
     IStorageService storageService)
   {
     _context = context;
     _permissionService = permissionService;
+    _speciesManager = speciesManager;
     _speciesQuerier = speciesQuerier;
     _speciesRepository = speciesRepository;
     _storageService = storageService;
@@ -91,13 +94,20 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
 
     species.Update(userId);
 
-    // TODO(fpion): Regional Numbers
-
-    if (species.Changes.Any(change => change is SpeciesCreated || change is SpeciesKeyChanged))
+    IReadOnlyDictionary<RegionId, Number?> regionalNumbers = await _speciesManager.FindRegionalNumbersAsync(payload.RegionalNumbers, nameof(payload.RegionalNumbers), cancellationToken);
+    foreach (KeyValuePair<RegionId, Number> regionalNumber in species.RegionalNumbers)
     {
-      await _speciesQuerier.EnsureUnicityAsync(species, cancellationToken); // TODO(fpion): refactor
+      if (!regionalNumbers.ContainsKey(regionalNumber.Key))
+      {
+        species.SetRegionalNumber(regionalNumber.Key, number: null, userId);
+      }
     }
-    // TODO(fpion): Regional Numbers
+    foreach (KeyValuePair<RegionId, Number?> regionalNumber in regionalNumbers)
+    {
+      species.SetRegionalNumber(regionalNumber.Key, regionalNumber.Value, userId);
+    }
+
+    await _speciesQuerier.EnsureUnicityAsync(species, cancellationToken);
 
     await _storageService.ExecuteWithQuotaAsync(
       species,

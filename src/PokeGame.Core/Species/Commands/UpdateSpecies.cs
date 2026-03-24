@@ -1,6 +1,6 @@
 ﻿using Logitar.CQRS;
 using PokeGame.Core.Permissions;
-using PokeGame.Core.Species.Events;
+using PokeGame.Core.Regions;
 using PokeGame.Core.Species.Models;
 using PokeGame.Core.Storages;
 
@@ -12,6 +12,7 @@ internal class UpdateSpeciesCommandHandler : ICommandHandler<UpdateSpeciesComman
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
+  private readonly ISpeciesManager _speciesManager;
   private readonly ISpeciesQuerier _speciesQuerier;
   private readonly ISpeciesRepository _speciesRepository;
   private readonly IStorageService _storageService;
@@ -19,12 +20,14 @@ internal class UpdateSpeciesCommandHandler : ICommandHandler<UpdateSpeciesComman
   public UpdateSpeciesCommandHandler(
     IContext context,
     IPermissionService permissionService,
+    ISpeciesManager speciesManager,
     ISpeciesQuerier speciesQuerier,
     ISpeciesRepository speciesRepository,
     IStorageService storageService)
   {
     _context = context;
     _permissionService = permissionService;
+    _speciesManager = speciesManager;
     _speciesQuerier = speciesQuerier;
     _speciesRepository = speciesRepository;
     _storageService = storageService;
@@ -86,15 +89,15 @@ internal class UpdateSpeciesCommandHandler : ICommandHandler<UpdateSpeciesComman
       species.Notes = Notes.TryCreate(payload.Notes.Value);
     }
 
-    // TODO(fpion): Regional Numbers
-
     species.Update(userId);
 
-    if (species.Changes.Any(change => change is SpeciesKeyChanged))
+    IReadOnlyDictionary<RegionId, Number?> regionalNumbers = await _speciesManager.FindRegionalNumbersAsync(payload.RegionalNumbers, nameof(payload.RegionalNumbers), cancellationToken);
+    foreach (KeyValuePair<RegionId, Number?> regionalNumber in regionalNumbers)
     {
-      await _speciesQuerier.EnsureUnicityAsync(species, cancellationToken); // TODO(fpion): refactor
+      species.SetRegionalNumber(regionalNumber.Key, regionalNumber.Value, userId);
     }
-    // TODO(fpion): Regional Numbers
+
+    await _speciesQuerier.EnsureUnicityAsync(species, cancellationToken);
 
     await _storageService.ExecuteWithQuotaAsync(
       species,
