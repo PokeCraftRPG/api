@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using PokeGame.Core.Species.Validators;
 using PokeGame.Core.Validation;
 
 namespace PokeGame.Core.Species.Models;
@@ -38,13 +39,13 @@ public record CreateOrReplaceSpeciesPayload
       RuleFor(x => x.CatchRate).CatchRate();
       RuleFor(x => x.GrowthRate).IsInEnum();
 
-      // TODO(fpion): EggCycles
-      // TODO(fpion): EggGroups
+      RuleFor(x => x.EggCycles).EggCycles();
+      RuleFor(x => x.EggGroups).SetValidator(new EggGroupsValidator());
 
       When(x => !string.IsNullOrWhiteSpace(x.Url), () => RuleFor(x => x.Url!).Url());
       When(x => !string.IsNullOrWhiteSpace(x.Notes), () => RuleFor(x => x.Notes!).Notes());
 
-      // TODO(fpion): RegionalNumbers
+      RuleForEach(x => x.RegionalNumbers).SetValidator(new RegionalNumberValidator());
     }
   }
 }

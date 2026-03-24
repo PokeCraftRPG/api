@@ -55,6 +55,28 @@ internal class UpdateSpeciesCommandHandler : ICommandHandler<UpdateSpeciesComman
       species.Name = Name.TryCreate(payload.Name.Value);
     }
 
+    if (payload.BaseFriendship.HasValue)
+    {
+      species.BaseFriendship = new Friendship(payload.BaseFriendship.Value);
+    }
+    if (payload.CatchRate.HasValue)
+    {
+      species.CatchRate = new CatchRate(payload.CatchRate.Value);
+    }
+    if (payload.GrowthRate.HasValue)
+    {
+      species.GrowthRate = payload.GrowthRate.Value;
+    }
+
+    if (payload.EggCycles.HasValue)
+    {
+      species.EggCycles = new EggCycles(payload.EggCycles.Value);
+    }
+    if (payload.EggGroups is not null)
+    {
+      species.EggGroups = new EggGroups(payload.EggGroups);
+    }
+
     if (payload.Url is not null)
     {
       species.Url = Url.TryCreate(payload.Url.Value);
@@ -64,12 +86,15 @@ internal class UpdateSpeciesCommandHandler : ICommandHandler<UpdateSpeciesComman
       species.Notes = Notes.TryCreate(payload.Notes.Value);
     }
 
+    // TODO(fpion): Regional Numbers
+
     species.Update(userId);
 
     if (species.Changes.Any(change => change is SpeciesKeyChanged))
     {
-      await _speciesQuerier.EnsureUnicityAsync(species, cancellationToken);
+      await _speciesQuerier.EnsureUnicityAsync(species, cancellationToken); // TODO(fpion): refactor
     }
+    // TODO(fpion): Regional Numbers
 
     await _storageService.ExecuteWithQuotaAsync(
       species,

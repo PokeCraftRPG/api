@@ -19,6 +19,11 @@ public static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(Core.Description.MaximumLength);
   }
 
+  public static IRuleBuilderOptions<T, byte> EggCycles<T>(this IRuleBuilder<T, byte> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThan((byte)0);
+  }
+
   public static IRuleBuilderOptions<T, string> Name<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Core.Name.MaximumLength);

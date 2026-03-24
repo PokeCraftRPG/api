@@ -2,4 +2,12 @@
 
 namespace PokeGame.Core.Species.Events;
 
-public record SpeciesCreated(Number Number, PokemonCategory Category, Slug Key) : DomainEvent;
+public record SpeciesCreated(
+  Number Number,
+  PokemonCategory Category,
+  Slug Key,
+  Friendship BaseFriendship,
+  CatchRate CatchRate,
+  GrowthRate GrowthRate,
+  EggCycles EggCycles,
+  EggGroups EggGroups) : DomainEvent;

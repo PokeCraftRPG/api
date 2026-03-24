@@ -1,4 +1,5 @@
 ﻿using Logitar.EventSourcing;
+using PokeGame.Core.Regions;
 using PokeGame.Core.Species.Events;
 using PokeGame.Core.Worlds;
 
@@ -10,6 +11,8 @@ public class SpeciesAggregate : AggregateRoot, IEntityProvider
 
   private SpeciesUpdated _updated = new();
   public bool HasUpdates => _updated.Name is not null
+    || _updated.BaseFriendship is not null || _updated.CatchRate is not null || _updated.GrowthRate.HasValue
+    || _updated.EggCycles is not null || _updated.EggGroups is not null
     || _updated.Url is not null || _updated.Notes is not null;
 
   public new SpeciesId Id => new(base.Id);
@@ -32,6 +35,73 @@ public class SpeciesAggregate : AggregateRoot, IEntityProvider
       {
         _name = value;
         _updated.Name = new Optional<Name>(value);
+      }
+    }
+  }
+
+  private Friendship? _baseFriendship = null;
+  public Friendship BaseFriendship
+  {
+    get => _baseFriendship ?? throw new InvalidOperationException("The species was not initialized.");
+    set
+    {
+      if (_baseFriendship != value)
+      {
+        _baseFriendship = value;
+        _updated.BaseFriendship = value;
+      }
+    }
+  }
+  private CatchRate? _catchRate = null;
+  public CatchRate CatchRate
+  {
+    get => _catchRate ?? throw new InvalidOperationException("The species was not initialized.");
+    set
+    {
+      if (_catchRate != value)
+      {
+        _catchRate = value;
+        _updated.CatchRate = value;
+      }
+    }
+  }
+  private GrowthRate _growthRate = default;
+  public GrowthRate GrowthRate
+  {
+    get => _growthRate;
+    set
+    {
+      if (_growthRate != value)
+      {
+        _growthRate = value;
+        _updated.GrowthRate = value;
+      }
+    }
+  }
+
+  private EggCycles? _eggCycles = null;
+  public EggCycles EggCycles
+  {
+    get => _eggCycles ?? throw new InvalidOperationException("The species was not initialized.");
+    set
+    {
+      if (_eggCycles != value)
+      {
+        _eggCycles = value;
+        _updated.EggCycles = value;
+      }
+    }
+  }
+  private EggGroups? _eggGroups = null;
+  public EggGroups EggGroups
+  {
+    get => _eggGroups ?? throw new InvalidOperationException("The species was not initialized.");
+    set
+    {
+      if (_eggGroups != value)
+      {
+        _eggGroups = value;
+        _updated.EggGroups = value;
       }
     }
   }
@@ -63,26 +133,51 @@ public class SpeciesAggregate : AggregateRoot, IEntityProvider
     }
   }
 
+  private readonly Dictionary<RegionId, Number> _regionalNumbers = [];
+  public IReadOnlyDictionary<RegionId, Number> RegionalNumbers => _regionalNumbers.AsReadOnly();
+
   public long Size => Key.Size + (Name?.Size ?? 0) + (Url?.Size ?? 0) + (Notes?.Size ?? 0);
 
   public SpeciesAggregate() : base()
   {
   }
 
-  public SpeciesAggregate(World world, Number number, PokemonCategory category, Slug key, UserId? userId = null)
-    : this(number, category, key, userId ?? world.OwnerId, SpeciesId.NewId(world.Id))
+  public SpeciesAggregate(
+    World world,
+    Number number,
+    PokemonCategory category,
+    Slug key,
+    Friendship baseFriendship,
+    CatchRate catchRate,
+    GrowthRate growthRate,
+    EggCycles eggCycles,
+    EggGroups eggGroups,
+    UserId? userId = null) : this(number, category, key, baseFriendship, catchRate, growthRate, eggCycles, eggGroups, userId ?? world.OwnerId, SpeciesId.NewId(world.Id))
   {
   }
 
-  public SpeciesAggregate(Number number, PokemonCategory category, Slug key, UserId userId, SpeciesId speciesId)
-    : base(speciesId.StreamId)
+  public SpeciesAggregate(
+    Number number,
+    PokemonCategory category,
+    Slug key,
+    Friendship baseFriendship,
+    CatchRate catchRate,
+    GrowthRate growthRate,
+    EggCycles eggCycles,
+    EggGroups eggGroups,
+    UserId userId,
+    SpeciesId speciesId) : base(speciesId.StreamId)
   {
     if (!Enum.IsDefined(category))
     {
       throw new ArgumentOutOfRangeException(nameof(category));
     }
+    if (!Enum.IsDefined(growthRate))
+    {
+      throw new ArgumentOutOfRangeException(nameof(growthRate));
+    }
 
-    Raise(new SpeciesCreated(number, category, key), userId.ActorId);
+    Raise(new SpeciesCreated(number, category, key, baseFriendship, catchRate, growthRate, eggCycles, eggGroups), userId.ActorId);
   }
   protected virtual void Handle(SpeciesCreated @event)
   {
@@ -90,6 +185,13 @@ public class SpeciesAggregate : AggregateRoot, IEntityProvider
     Category = @event.Category;
 
     _key = @event.Key;
+
+    _baseFriendship = @event.BaseFriendship;
+    _catchRate = @event.CatchRate;
+    _growthRate = @event.GrowthRate;
+
+    _eggCycles = @event.EggCycles;
+    _eggGroups = @event.EggGroups;
   }
 
   public void Delete(UserId userId)
@@ -109,10 +211,35 @@ public class SpeciesAggregate : AggregateRoot, IEntityProvider
       Raise(new SpeciesKeyChanged(key), userId.ActorId);
     }
   }
-
   protected virtual void Handle(SpeciesKeyChanged @event)
   {
     _key = @event.Key;
+  }
+
+  public void SetRegionalNumber(Region region, Number? number, UserId userId) => SetRegionalNumber(region.Id, number, userId);
+  public void SetRegionalNumber(RegionId regionId, Number? number, UserId userId)
+  {
+    if (regionId.WorldId != WorldId)
+    {
+      throw new NotImplementedException(); // TODO(fpion): implement
+    }
+
+    _regionalNumbers.TryGetValue(regionId, out Number? existingNumber);
+    if (existingNumber != number)
+    {
+      Raise(new SpeciesRegionalNumberChanged(regionId, number), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(SpeciesRegionalNumberChanged @event)
+  {
+    if (@event.Number is null)
+    {
+      _regionalNumbers.Remove(@event.RegionId);
+    }
+    else
+    {
+      _regionalNumbers[@event.RegionId] = @event.Number;
+    }
   }
 
   public void Update(UserId userId)
@@ -129,6 +256,28 @@ public class SpeciesAggregate : AggregateRoot, IEntityProvider
     if (@event.Name is not null)
     {
       _name = @event.Name.Value;
+    }
+
+    if (@event.BaseFriendship is not null)
+    {
+      _baseFriendship = @event.BaseFriendship;
+    }
+    if (@event.CatchRate is not null)
+    {
+      _catchRate = @event.CatchRate;
+    }
+    if (@event.GrowthRate.HasValue)
+    {
+      _growthRate = @event.GrowthRate.Value;
+    }
+
+    if (@event.EggCycles is not null)
+    {
+      _eggCycles = @event.EggCycles;
+    }
+    if (@event.EggGroups is not null)
+    {
+      _eggGroups = @event.EggGroups;
     }
 
     if (@event.Url is not null)

@@ -48,13 +48,17 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
     }
 
     Slug key = new(payload.Key);
+    Friendship baseFriendship = new(payload.BaseFriendship);
+    CatchRate catchRate = new(payload.CatchRate);
+    EggCycles eggCycles = new(payload.EggCycles);
+    EggGroups eggGroups = new(payload.EggGroups);
 
     bool created = false;
     if (species is null)
     {
       await _permissionService.CheckAsync(Actions.CreateSpecies, cancellationToken);
 
-      species = new(new Number(payload.Number), payload.Category, key, userId, speciesId);
+      species = new(new Number(payload.Number), payload.Category, key, baseFriendship, catchRate, payload.GrowthRate, eggCycles, eggGroups, userId, speciesId);
       created = true;
     }
     else
@@ -71,6 +75,13 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
       }
 
       species.SetKey(key, userId);
+
+      species.BaseFriendship = baseFriendship;
+      species.CatchRate = catchRate;
+      species.GrowthRate = payload.GrowthRate;
+
+      species.EggCycles = eggCycles;
+      species.EggGroups = eggGroups;
     }
 
     species.Name = Name.TryCreate(payload.Name);
@@ -80,10 +91,13 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
 
     species.Update(userId);
 
+    // TODO(fpion): Regional Numbers
+
     if (species.Changes.Any(change => change is SpeciesCreated || change is SpeciesKeyChanged))
     {
-      await _speciesQuerier.EnsureUnicityAsync(species, cancellationToken);
+      await _speciesQuerier.EnsureUnicityAsync(species, cancellationToken); // TODO(fpion): refactor
     }
+    // TODO(fpion): Regional Numbers
 
     await _storageService.ExecuteWithQuotaAsync(
       species,
