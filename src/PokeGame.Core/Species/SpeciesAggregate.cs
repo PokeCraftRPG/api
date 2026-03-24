@@ -219,10 +219,7 @@ public class SpeciesAggregate : AggregateRoot, IEntityProvider
   public void SetRegionalNumber(Region region, Number? number, UserId userId) => SetRegionalNumber(region.Id, number, userId);
   public void SetRegionalNumber(RegionId regionId, Number? number, UserId userId)
   {
-    if (regionId.WorldId != WorldId)
-    {
-      throw new NotImplementedException(); // TODO(fpion): implement
-    }
+    WorldMismatchException.ThrowIfMismatch(this, regionId, nameof(regionId));
 
     _regionalNumbers.TryGetValue(regionId, out Number? existingNumber);
     if (existingNumber != number)
