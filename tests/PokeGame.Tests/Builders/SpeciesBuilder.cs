@@ -1,5 +1,6 @@
 ﻿using Bogus;
 using PokeGame.Core;
+using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
 using PokeGame.Core.Worlds;
 
@@ -17,6 +18,8 @@ public interface ISpeciesBuilder
   ISpeciesBuilder WithGrowthRate(GrowthRate? growthRate);
   ISpeciesBuilder WithEggCycles(EggCycles? eggCycles);
   ISpeciesBuilder WithEggGroups(EggGroups? eggGroups);
+  ISpeciesBuilder WithRegionalNumber(Region region, Number? number);
+  ISpeciesBuilder WithRegionalNumber(RegionId regionId, Number? number);
   ISpeciesBuilder ClearChanges(bool clearChanges = true);
 
   SpeciesAggregate Build();
@@ -25,6 +28,7 @@ public interface ISpeciesBuilder
 public class SpeciesBuilder : ISpeciesBuilder
 {
   private readonly Faker _faker;
+  private readonly Dictionary<RegionId, Number?> _regionalNumbers = [];
 
   private Friendship? _baseFriendship = null;
   private CatchRate? _catchRate = null;
@@ -103,6 +107,13 @@ public class SpeciesBuilder : ISpeciesBuilder
     return this;
   }
 
+  public ISpeciesBuilder WithRegionalNumber(Region region, Number? number) => WithRegionalNumber(region.Id, number);
+  public ISpeciesBuilder WithRegionalNumber(RegionId regionId, Number? number)
+  {
+    _regionalNumbers[regionId] = number;
+    return this;
+  }
+
   public ISpeciesBuilder ClearChanges(bool clearChanges = true)
   {
     _clearChanges = clearChanges;
@@ -126,6 +137,11 @@ public class SpeciesBuilder : ISpeciesBuilder
       : new(world, number, category, key, baseFriendship, catchRate, growthRate, eggCycles, eggGroups);
 
     species.Update(world.OwnerId);
+
+    foreach (KeyValuePair<RegionId, Number?> regionalNumber in _regionalNumbers)
+    {
+      species.SetRegionalNumber(regionalNumber.Key, regionalNumber.Value, world.OwnerId);
+    }
 
     if (_clearChanges)
     {
