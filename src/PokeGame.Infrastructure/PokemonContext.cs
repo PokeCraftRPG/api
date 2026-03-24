@@ -13,6 +13,7 @@ public class PokemonContext : DbContext
 
   internal DbSet<AbilityEntity> Abilities => Set<AbilityEntity>();
   internal DbSet<MoveEntity> Moves => Set<MoveEntity>();
+  internal DbSet<RegionalNumberEntity> RegionalNumbers => Set<RegionalNumberEntity>();
   internal DbSet<RegionEntity> Regions => Set<RegionEntity>();
   internal DbSet<SpeciesEntity> Species => Set<SpeciesEntity>();
   internal DbSet<WorldEntity> Worlds => Set<WorldEntity>();

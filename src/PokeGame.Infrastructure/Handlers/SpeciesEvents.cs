@@ -8,13 +8,18 @@ using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Handlers;
 
-internal class SpeciesEvents : IEventHandler<SpeciesCreated>, IEventHandler<SpeciesDeleted>, IEventHandler<SpeciesKeyChanged>, IEventHandler<SpeciesUpdated>
+internal class SpeciesEvents : IEventHandler<SpeciesCreated>,
+  IEventHandler<SpeciesDeleted>,
+  IEventHandler<SpeciesKeyChanged>,
+  IEventHandler<SpeciesRegionalNumberChanged>,
+  IEventHandler<SpeciesUpdated>
 {
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IEventHandler<SpeciesCreated>, SpeciesEvents>();
     services.AddTransient<IEventHandler<SpeciesDeleted>, SpeciesEvents>();
     services.AddTransient<IEventHandler<SpeciesKeyChanged>, SpeciesEvents>();
+    services.AddTransient<IEventHandler<SpeciesRegionalNumberChanged>, SpeciesEvents>();
     services.AddTransient<IEventHandler<SpeciesUpdated>, SpeciesEvents>();
   }
 
@@ -59,6 +64,24 @@ internal class SpeciesEvents : IEventHandler<SpeciesCreated>, IEventHandler<Spec
     if (species is not null && species.Version == (@event.Version - 1))
     {
       species.SetKey(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(SpeciesRegionalNumberChanged @event, CancellationToken cancellationToken)
+  {
+    SpeciesEntity? species = await _pokemon.Species.Include(x => x.RegionalNumbers).SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (species is not null && species.Version == (@event.Version - 1))
+    {
+      RegionEntity region = await _pokemon.Regions.SingleOrDefaultAsync(x => x.StreamId == @event.RegionId.Value, cancellationToken)
+        ?? throw new InvalidOperationException($"The region entity 'StreamId={@event.RegionId}' was not found.");
+
+      RegionalNumberEntity? regionalNumber = species.SetRegionalNumber(region, @event);
+      if (regionalNumber is not null && @event.Number is null)
+      {
+        _pokemon.RegionalNumbers.Remove(regionalNumber);
+      }
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

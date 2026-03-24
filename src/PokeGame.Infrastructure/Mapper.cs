@@ -93,6 +93,11 @@ internal class Mapper
       Category = source.Category,
       Key = source.Key,
       Name = source.Name,
+      BaseFriendship = source.BaseFriendship,
+      CatchRate = source.CatchRate,
+      GrowthRate = source.GrowthRate,
+      EggCycles = source.EggCycles,
+      EggGroups = new EggGroupsModel(source.PrimaryEggGroup, source.SecondaryEggGroup),
       Url = source.Url,
       Notes = source.Notes
     };
