@@ -22,7 +22,7 @@ public class VarietyTests
   [Fact(DisplayName = "ctor: it should throw WorldMismatchException when the variety and species are not in the same world.")]
   public void Given_WorldMismatch_When_ctor_Then_WorldMismatchException()
   {
-    SpeciesAggregate species = SpeciesBuilder.Eevee(_faker);
+    SpeciesAggregate species = SpeciesBuilder.Eevee();
     VarietyId varietyId = VarietyId.NewId(_world.Id);
 
     var exception = Assert.Throws<WorldMismatchException>(() => new Variety(species, isDefault: true, species.Key, _world.OwnerId, varietyId));

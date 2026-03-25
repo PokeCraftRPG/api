@@ -2,7 +2,6 @@
 using Moq;
 using PokeGame.Builders;
 using PokeGame.Core.Moves;
-using PokeGame.Core.Species;
 using PokeGame.Core.Varieties.Models;
 
 namespace PokeGame.Core.Varieties;
@@ -61,14 +60,14 @@ public class VarietyManagerTests
     Assert.Equal($"The variety 'Id={variety.Id}' was not loaded.", exception.Message);
   }
 
-  [Fact(DisplayName = "FindAsync: it should throw SpeciesNotFoundException when the species was not found.")]
-  public async Task Given_NotFound_When_FindAsync_Then_SpeciesNotFoundException()
+  [Fact(DisplayName = "FindAsync: it should throw VarietyNotFoundException when the species was not found.")]
+  public async Task Given_NotFound_When_FindAsync_Then_VarietyNotFoundException()
   {
     string key = $"  {Guid.NewGuid().ToString().ToUpperInvariant()}  ";
 
-    var exception = await Assert.ThrowsAsync<SpeciesNotFoundException>(async () => await _manager.FindAsync(key, PropertyName, _cancellationToken));
+    var exception = await Assert.ThrowsAsync<VarietyNotFoundException>(async () => await _manager.FindAsync(key, PropertyName, _cancellationToken));
     Assert.Equal(_context.WorldUid, exception.WorldId);
-    Assert.Equal(key, exception.Species);
+    Assert.Equal(key, exception.Variety);
     Assert.Equal(PropertyName, exception.PropertyName);
 
     _varietyRepository.Verify(x => x.LoadAsync(new VarietyId(_context.WorldId, Guid.Parse(key)), _cancellationToken), Times.Once());
