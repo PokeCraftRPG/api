@@ -2,6 +2,16 @@
 
 public record RegionalNumberPayload
 {
-  public string Region { get; set; } = string.Empty;
+  public string Region { get; set; }
   public int Number { get; set; }
+
+  public RegionalNumberPayload() : this(string.Empty, default)
+  {
+  }
+
+  public RegionalNumberPayload(string region, int number)
+  {
+    Region = region;
+    Number = number;
+  }
 }

@@ -9,7 +9,7 @@ public record CreateOrReplaceSpeciesPayload
   public int Number { get; set; }
   public PokemonCategory Category { get; set; }
 
-  public string Key { get; set; } = string.Empty;
+  public string Key { get; set; }
   public string? Name { get; set; }
 
   public byte BaseFriendship { get; set; }
@@ -23,6 +23,18 @@ public record CreateOrReplaceSpeciesPayload
   public string? Notes { get; set; }
 
   public List<RegionalNumberPayload> RegionalNumbers { get; set; } = [];
+
+  public CreateOrReplaceSpeciesPayload() : this(default, string.Empty, default, default)
+  {
+  }
+
+  public CreateOrReplaceSpeciesPayload(int number, string key, byte catchRate, byte eggCycles)
+  {
+    Number = number;
+    Key = key;
+    CatchRate = catchRate;
+    EggCycles = eggCycles;
+  }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 
