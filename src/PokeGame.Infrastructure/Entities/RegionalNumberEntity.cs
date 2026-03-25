@@ -23,6 +23,10 @@ internal class RegionalNumberEntity
     Update(@event);
   }
 
+  private RegionalNumberEntity()
+  {
+  }
+
   public void Update(SpeciesRegionalNumberChanged @event)
   {
     if (@event.Number is null)

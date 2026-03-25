@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using PokeGame.Core.Species.Models;
 using PokeGame.Core.Species.Validators;
-using System.Text.Json.Serialization;
 
 namespace PokeGame.Core.Species;
 

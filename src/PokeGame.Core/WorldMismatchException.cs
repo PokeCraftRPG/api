@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace PokeGame.Core;
+﻿namespace PokeGame.Core;
 
 public class WorldMismatchException : ArgumentException
 {
