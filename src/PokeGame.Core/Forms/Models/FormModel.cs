@@ -25,7 +25,7 @@ public class FormModel : Aggregate
   // TODO(fpion): Sprites
 
   public string? Url { get; set; }
-  public string? Note { get; set; }
+  public string? Notes { get; set; }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
 }

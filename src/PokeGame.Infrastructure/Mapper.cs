@@ -3,6 +3,7 @@ using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
 using PokeGame.Core.Abilities.Models;
+using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
@@ -108,6 +109,35 @@ internal class Mapper
       RegionEntity region = regionalNumber.Region ?? throw new ArgumentException("The region is required.", nameof(source));
       destination.RegionalNumbers.Add(new RegionalNumberModel(ToRegion(region), regionalNumber.Number));
     }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public FormModel ToForm(FormEntity source)
+  {
+    VarietyEntity variety = source.Variety ?? throw new ArgumentException("The variety is required.", nameof(source));
+    FormModel destination = new()
+    {
+      Id = source.Id,
+      Variety = ToVariety(variety),
+      IsDefault = source.IsDefault,
+      Key = source.Key,
+      Name = source.Name,
+      Description = source.Description,
+      IsBattleOnly = source.IsBattleOnly,
+      IsMega = source.IsMega,
+      Height = source.Height,
+      Weight = source.Weight,
+      Types = new FormTypesModel(source.PrimaryType, source.SecondaryType),
+      // TODO(fpion): Abilities
+      // TODO(fpion): BaseStatistics
+      // TODO(fpion): Yield
+      // TODO(fpion): Sprites
+      Url = source.Url,
+      Notes = source.Notes
+    };
 
     MapAggregate(source, destination);
 

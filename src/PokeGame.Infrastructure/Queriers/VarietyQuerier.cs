@@ -51,6 +51,15 @@ internal class VarietyQuerier : IVarietyQuerier
     }
   }
 
+  public async Task<VarietyId?> FindIdAsync(string key, CancellationToken cancellationToken)
+  {
+    string normalized = Slug.Normalize(key);
+    string? streamId = await _varieties.Where(x => x.World!.Id == _context.WorldUid && x.Key == normalized)
+      .Select(x => x.StreamId)
+      .SingleOrDefaultAsync(cancellationToken);
+    return streamId is null ? null : new VarietyId(streamId);
+  }
+
   public async Task<VarietyModel> ReadAsync(Variety variety, CancellationToken cancellationToken)
   {
     return await ReadAsync(variety.Id, cancellationToken) ?? throw new InvalidOperationException($"The variety entity '{variety}' was not found.");
