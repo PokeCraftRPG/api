@@ -188,29 +188,37 @@ public class VarietyBuilder : IVarietyBuilder
     return variety;
   }
 
-  public static Variety Eevee(Faker? faker = null, World? world = null) => new VarietyBuilder(faker)
-    .WithWorld(world)
-    .WithSpecies(SpeciesBuilder.Eevee(faker, world))
-    .IsDefault()
-    .WithKey(new Slug("eevee"))
-    .WithName(new Name("Eevee"))
-    .WithGenus(new Genus("Evolution"))
-    .WithDescription(new Description("Thanks to its unstable genetic makeup, this special Pokémon conceals many different possible evolutions."))
-    .WithGenderRatio(new GenderRatio(7))
-    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Eevee_(Pok%C3%A9mon)#Trivia"))
-    .WithNotes(new Notes("This is the default variety."))
-    .Build();
+  public static Variety Eevee(Faker? faker = null, World? world = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new VarietyBuilder(faker)
+      .WithWorld(world)
+      .WithSpecies(SpeciesBuilder.Eevee(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("eevee"))
+      .WithName(new Name("Eevee"))
+      .WithGenus(new Genus("Evolution"))
+      .WithDescription(new Description("Thanks to its unstable genetic makeup, this special Pokémon conceals many different possible evolutions."))
+      .WithGenderRatio(new GenderRatio(7))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Eevee_(Pok%C3%A9mon)#Trivia"))
+      .WithNotes(new Notes("This is the default variety."))
+      .Build();
+  }
 
-  public static Variety Pikachu(Faker? faker = null, World? world = null) => new VarietyBuilder(faker)
-    .WithWorld(world)
-    .WithSpecies(SpeciesBuilder.Pikachu(faker, world))
-    .IsDefault()
-    .WithKey(new Slug("pikachu"))
-    .WithName(new Name("Pikachu"))
-    .WithGenus(new Genus("Mouse"))
-    .WithDescription(new Description("It has small electric sacs on both its cheeks. When in a tough spot, this Pokémon discharges electricity."))
-    .WithGenderRatio(new GenderRatio(4))
-    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Pikachu_(Pok%C3%A9mon)"))
-    .WithNotes(new Notes("This is the default variety."))
-    .Build();
+  public static Variety Pikachu(Faker? faker = null, World? world = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new VarietyBuilder(faker)
+      .WithWorld(world)
+      .WithSpecies(SpeciesBuilder.Pikachu(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("pikachu"))
+      .WithName(new Name("Pikachu"))
+      .WithGenus(new Genus("Mouse"))
+      .WithDescription(new Description("It has small electric sacs on both its cheeks. When in a tough spot, this Pokémon discharges electricity."))
+      .WithGenderRatio(new GenderRatio(4))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Pikachu_(Pok%C3%A9mon)"))
+      .WithNotes(new Notes("This is the default variety."))
+      .Build();
+  }
 }
