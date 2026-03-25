@@ -7,6 +7,7 @@ internal class RegionalNumberValidator : AbstractValidator<RegionalNumberPayload
 {
   public RegionalNumberValidator(int minimum = Number.MinimumValue)
   {
+    RuleFor(x => x.Region).NotEmpty();
     RuleFor(x => x.Number).InclusiveBetween(minimum, Number.MaximumValue);
   }
 }

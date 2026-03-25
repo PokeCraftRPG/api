@@ -50,10 +50,12 @@ public class UpdateSpeciesCommandHandlerTests
       EggGroups = new EggGroupsModel(EggGroup.Field, (EggGroup)(-1)),
       Url = new Optional<string>("invalid")
     };
+    payload.RegionalNumbers.Add(new RegionalNumberPayload(string.Empty, number: -1));
+    payload.RegionalNumbers.Add(new RegionalNumberPayload("kanto", Number.MaximumValue + 1));
     UpdateSpeciesCommand command = new(Guid.Empty, payload);
 
     var exception = await Assert.ThrowsAsync<FluentValidation.ValidationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
-    Assert.Equal(7, exception.Errors.Count());
+    Assert.Equal(10, exception.Errors.Count());
     Assert.Contains(exception.Errors, e => e.ErrorCode == "SlugValidator" && e.PropertyName == "Key");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "MaximumLengthValidator" && e.PropertyName == "Name.Value");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "GreaterThanValidator" && e.PropertyName == "CatchRate.Value");
@@ -61,6 +63,9 @@ public class UpdateSpeciesCommandHandlerTests
     Assert.Contains(exception.Errors, e => e.ErrorCode == "GreaterThanValidator" && e.PropertyName == "EggCycles.Value");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "EnumValidator" && e.PropertyName == "EggGroups.Secondary");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "UrlValidator" && e.PropertyName == "Url.Value");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "RegionalNumbers[0].Region");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "InclusiveBetweenValidator" && e.PropertyName == "RegionalNumbers[0].Number");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "InclusiveBetweenValidator" && e.PropertyName == "RegionalNumbers[1].Number");
   }
 
   [Fact(DisplayName = "It should update the existing species.")]

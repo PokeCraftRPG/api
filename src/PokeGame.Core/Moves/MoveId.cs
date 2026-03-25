@@ -1,9 +1,9 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Moves;
 
-public readonly struct MoveId
+public readonly struct MoveId : IEntityProvider
 {
   public StreamId StreamId { get; }
   public string Value => StreamId.Value;
@@ -34,6 +34,8 @@ public readonly struct MoveId
   }
 
   public static MoveId NewId(WorldId worldId) => new(worldId, Guid.NewGuid());
+
+  public Entity GetEntity() => new(Move.EntityKind, EntityId, WorldId);
 
   public static bool operator ==(MoveId left, MoveId right) => left.Equals(right);
   public static bool operator !=(MoveId left, MoveId right) => !left.Equals(right);

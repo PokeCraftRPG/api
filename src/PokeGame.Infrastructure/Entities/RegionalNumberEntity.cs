@@ -35,4 +35,8 @@ internal class RegionalNumberEntity
     }
     Number = @event.Number.Value;
   }
+
+  public override bool Equals(object? obj) => obj is RegionalNumberEntity entity && entity.SpeciesId == SpeciesId && entity.RegionId == RegionId;
+  public override int GetHashCode() => HashCode.Combine(SpeciesId, RegionId);
+  public override string ToString() => $"{base.ToString()} (SpeciesId={SpeciesId}, RegionId={RegionId})";
 }

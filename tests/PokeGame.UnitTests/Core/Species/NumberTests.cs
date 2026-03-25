@@ -29,7 +29,7 @@ public class NumberTests
   public void Given_Number_When_ToString_Then_CorrectValue()
   {
     int value = _faker.Random.Int(Number.MinimumValue, Number.MaximumValue);
-    Number catchRate = new(value);
-    Assert.Equal(value.ToString(), catchRate.ToString());
+    Number number = new(value);
+    Assert.Equal(value.ToString(), number.ToString());
   }
 }

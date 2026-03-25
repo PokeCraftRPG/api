@@ -197,10 +197,12 @@ public class CreateOrReplaceSpeciesCommandHandlerTests
       EggGroups = new EggGroupsModel(EggGroup.Field, (EggGroup)(-1)),
       Url = "invalid"
     };
+    payload.RegionalNumbers.Add(new RegionalNumberPayload());
+    payload.RegionalNumbers.Add(new RegionalNumberPayload("kanto", Number.MaximumValue + 1));
     CreateOrReplaceSpeciesCommand command = new(payload, Guid.Empty);
 
     var exception = await Assert.ThrowsAsync<FluentValidation.ValidationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
-    Assert.Equal(9, exception.Errors.Count());
+    Assert.Equal(12, exception.Errors.Count());
     Assert.Contains(exception.Errors, e => e.ErrorCode == "InclusiveBetweenValidator" && e.PropertyName == "Number");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "EnumValidator" && e.PropertyName == "Category");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "SlugValidator" && e.PropertyName == "Key");
@@ -210,5 +212,8 @@ public class CreateOrReplaceSpeciesCommandHandlerTests
     Assert.Contains(exception.Errors, e => e.ErrorCode == "GreaterThanValidator" && e.PropertyName == "EggCycles");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "EnumValidator" && e.PropertyName == "EggGroups.Secondary");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "UrlValidator" && e.PropertyName == "Url");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "RegionalNumbers[0].Region");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "InclusiveBetweenValidator" && e.PropertyName == "RegionalNumbers[0].Number");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "InclusiveBetweenValidator" && e.PropertyName == "RegionalNumbers[1].Number");
   }
 }

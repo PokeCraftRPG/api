@@ -24,6 +24,21 @@ public static class ValidationExtensions
     return ruleBuilder.GreaterThan((byte)0);
   }
 
+  public static IRuleBuilderOptions<T, int> GenderRatio<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.InclusiveBetween(Varieties.GenderRatio.MinimumValue, Varieties.GenderRatio.MaximumValue);
+  }
+
+  public static IRuleBuilderOptions<T, string> Genus<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty().MaximumLength(Varieties.Genus.MaximumLength);
+  }
+
+  public static IRuleBuilderOptions<T, int> Level<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.InclusiveBetween(Pokemon.Level.MinimumValue, Pokemon.Level.MaximumValue);
+  }
+
   public static IRuleBuilderOptions<T, string> Name<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Core.Name.MaximumLength);

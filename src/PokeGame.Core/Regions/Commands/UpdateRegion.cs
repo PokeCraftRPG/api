@@ -1,6 +1,5 @@
 ﻿using Logitar.CQRS;
 using PokeGame.Core.Permissions;
-using PokeGame.Core.Regions.Events;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Storages;
 
@@ -70,10 +69,7 @@ internal class UpdateRegionCommandHandler : ICommandHandler<UpdateRegionCommand,
 
     region.Update(userId);
 
-    if (region.Changes.Any(change => change is RegionKeyChanged))
-    {
-      await _regionQuerier.EnsureUnicityAsync(region, cancellationToken);
-    }
+    await _regionQuerier.EnsureUnicityAsync(region, cancellationToken);
 
     await _storageService.ExecuteWithQuotaAsync(
       region,

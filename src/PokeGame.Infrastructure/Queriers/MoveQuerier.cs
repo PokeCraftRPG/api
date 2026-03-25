@@ -51,6 +51,14 @@ internal class MoveQuerier : IMoveQuerier
     }
   }
 
+  public async Task<IReadOnlyCollection<MoveKey>> ListKeysAsync(CancellationToken cancellationToken)
+  {
+    var keys = await _moves.Where(x => x.World!.Id == _context.WorldUid)
+      .Select(x => new { x.StreamId, x.Id, x.Key })
+      .ToArrayAsync(cancellationToken);
+    return keys.Select(key => new MoveKey(new MoveId(key.StreamId), key.Id, key.Key)).ToList().AsReadOnly();
+  }
+
   public async Task<MoveModel> ReadAsync(Move move, CancellationToken cancellationToken)
   {
     return await ReadAsync(move.Id, cancellationToken) ?? throw new InvalidOperationException($"The move entity '{move}' was not found.");

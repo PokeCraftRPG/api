@@ -1,5 +1,4 @@
 ﻿using Logitar.CQRS;
-using PokeGame.Core.Abilities.Events;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Storages;
@@ -70,10 +69,7 @@ internal class UpdateAbilityCommandHandler : ICommandHandler<UpdateAbilityComman
 
     ability.Update(userId);
 
-    if (ability.Changes.Any(change => change is AbilityKeyChanged))
-    {
-      await _abilityQuerier.EnsureUnicityAsync(ability, cancellationToken);
-    }
+    await _abilityQuerier.EnsureUnicityAsync(ability, cancellationToken);
 
     await _storageService.ExecuteWithQuotaAsync(
       ability,

@@ -104,4 +104,6 @@ public class AbilityBuilder : IAbilityBuilder
 
     return ability;
   }
+
+  // TODO(fpion): Examples
 }

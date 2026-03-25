@@ -31,10 +31,10 @@ public class SpeciesIntegrationTests : IntegrationTests
   {
     await base.InitializeAsync();
 
-    _kanto = new RegionBuilder(Faker).WithWorld(World).WithKey(new Slug("kanto")).Build();
-    _johto = new RegionBuilder(Faker).WithWorld(World).WithKey(new Slug("johto")).Build();
-    _hoenn = new RegionBuilder(Faker).WithWorld(World).WithKey(new Slug("hoenn")).Build();
-    _sinnoh = new RegionBuilder(Faker).WithWorld(World).WithKey(new Slug("sinnoh")).Build();
+    _kanto = RegionBuilder.Kanto(Faker, World);
+    _johto = RegionBuilder.Johto(Faker, World);
+    _hoenn = RegionBuilder.Hoenn(Faker, World);
+    _sinnoh = RegionBuilder.Sinnoh(Faker, World);
     await _regionRepository.SaveAsync([_kanto, _johto, _hoenn, _sinnoh]);
 
     _species = new SpeciesBuilder(Faker).WithWorld(World).WithNumber(new Number(172)).WithCategory(PokemonCategory.Baby).WithKey(new Slug("pichu")).Build();
