@@ -64,7 +64,10 @@ internal class VarietyEvents : IEventHandler<VarietyCreated>,
     VarietyEntity? variety = await _pokemon.Varieties.Include(x => x.Moves).SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (variety is not null && variety.Version == (@event.Version - 1))
     {
-      //variety.SetEvolutionMove(move, @event); // TODO(fpion): implement
+      MoveEntity move = await _pokemon.Moves.SingleOrDefaultAsync(x => x.StreamId == @event.MoveId.Value, cancellationToken)
+        ?? throw new InvalidOperationException($"The move entity 'StreamId={@event.MoveId}' was not found.");
+
+      variety.SetEvolutionMove(move, @event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
@@ -86,7 +89,10 @@ internal class VarietyEvents : IEventHandler<VarietyCreated>,
     VarietyEntity? variety = await _pokemon.Varieties.Include(x => x.Moves).SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (variety is not null && variety.Version == (@event.Version - 1))
     {
-      //variety.SetEvolutionMove(move, @event); // TODO(fpion): implement
+      MoveEntity move = await _pokemon.Moves.SingleOrDefaultAsync(x => x.StreamId == @event.MoveId.Value, cancellationToken)
+        ?? throw new InvalidOperationException($"The move entity 'StreamId={@event.MoveId}' was not found.");
+
+      variety.SetLevelMove(move, @event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
@@ -94,10 +100,16 @@ internal class VarietyEvents : IEventHandler<VarietyCreated>,
 
   public async Task HandleAsync(VarietyMoveRemoved @event, CancellationToken cancellationToken)
   {
-    VarietyEntity? variety = await _pokemon.Varieties.Include(x => x.Moves).SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    VarietyEntity? variety = await _pokemon.Varieties
+      .Include(x => x.Moves).ThenInclude(x => x.Move)
+      .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (variety is not null && variety.Version == (@event.Version - 1))
     {
-      //variety.SetEvolutionMove(move, @event); // TODO(fpion): implement
+      VarietyMoveEntity? move = variety.RemoveMove(@event);
+      if (move is not null)
+      {
+        _pokemon.VarietyMoves.Remove(move);
+      }
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

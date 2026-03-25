@@ -1,13 +1,17 @@
 ﻿using FluentValidation;
-using PokeGame.Core.Validation;
+using PokeGame.Core.Pokemon;
 using PokeGame.Core.Varieties.Models;
 
 namespace PokeGame.Core.Varieties.Validators;
 
 internal class VarietyMoveValidator : AbstractValidator<VarietyMovePayload>
 {
-  public VarietyMoveValidator()
+  public VarietyMoveValidator(bool allowNullLevel = false)
   {
-    RuleFor(x => x.Level).Level(); // TODO(fpion): should 0 be allowed? should null be allowed? How to differenciate between removing, evolution and level moves?
+    if (!allowNullLevel)
+    {
+      RuleFor(x => x.Level).NotNull();
+    }
+    When(x => x.Level.HasValue, () => RuleFor(x => x.Level!.Value).InclusiveBetween(0, Level.MaximumValue));
   }
 }

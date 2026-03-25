@@ -1,5 +1,7 @@
 ﻿using Logitar.CQRS;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Pokemon;
 using PokeGame.Core.Species;
 using PokeGame.Core.Storages;
 using PokeGame.Core.Varieties.Models;
@@ -13,6 +15,7 @@ internal class CreateOrReplaceVarietyCommandHandler : ICommandHandler<CreateOrRe
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
+  private readonly ISpeciesManager _speciesManager;
   private readonly IStorageService _storageService;
   private readonly IVarietyManager _varietyManager;
   private readonly IVarietyQuerier _varietyQuerier;
@@ -21,6 +24,7 @@ internal class CreateOrReplaceVarietyCommandHandler : ICommandHandler<CreateOrRe
   public CreateOrReplaceVarietyCommandHandler(
     IContext context,
     IPermissionService permissionService,
+    ISpeciesManager speciesManager,
     IStorageService storageService,
     IVarietyManager varietyManager,
     IVarietyQuerier varietyQuerier,
@@ -28,6 +32,7 @@ internal class CreateOrReplaceVarietyCommandHandler : ICommandHandler<CreateOrRe
   {
     _context = context;
     _permissionService = permissionService;
+    _speciesManager = speciesManager;
     _storageService = storageService;
     _varietyManager = varietyManager;
     _varietyQuerier = varietyQuerier;
@@ -50,7 +55,7 @@ internal class CreateOrReplaceVarietyCommandHandler : ICommandHandler<CreateOrRe
       variety = await _varietyRepository.LoadAsync(varietyId, cancellationToken);
     }
 
-    SpeciesAggregate species = await _varietyManager.FindSpeciesAsync(payload.Species, nameof(payload.Species), cancellationToken);
+    SpeciesAggregate species = await _speciesManager.FindAsync(payload.Species, nameof(payload.Species), cancellationToken);
     Slug key = new(payload.Key);
 
     bool created = false;
@@ -86,7 +91,29 @@ internal class CreateOrReplaceVarietyCommandHandler : ICommandHandler<CreateOrRe
 
     variety.Update(userId);
 
-    // TODO(fpion): moves
+    IReadOnlyDictionary<MoveId, int?> moves = await _varietyManager.FindMovesAsync(payload.Moves, nameof(payload.Moves), cancellationToken);
+    foreach (KeyValuePair<MoveId, Level?> move in variety.AllMoves)
+    {
+      if (!moves.ContainsKey(move.Key))
+      {
+        variety.RemoveMove(move.Key, userId);
+      }
+    }
+    foreach (KeyValuePair<MoveId, int?> move in moves)
+    {
+      if (!move.Value.HasValue)
+      {
+        variety.RemoveMove(move.Key, userId);
+      }
+      else if (move.Value.Value == 0)
+      {
+        variety.SetEvolutionMove(move.Key, userId);
+      }
+      else
+      {
+        variety.SetLevelMove(move.Key, new Level(move.Value.Value), userId);
+      }
+    }
 
     await _varietyQuerier.EnsureUnicityAsync(variety, cancellationToken);
 

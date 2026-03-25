@@ -66,11 +66,50 @@ internal class VarietyEntity : AggregateEntity
     return actorIds;
   }
 
+  public VarietyMoveEntity? RemoveMove(VarietyMoveRemoved @event)
+  {
+    base.Update(@event);
+
+    return Moves.SingleOrDefault(x => x.Move?.StreamId == @event.MoveId.Value);
+  }
+
+  public void SetEvolutionMove(MoveEntity move, VarietyEvolutionMoveChanged @event)
+  {
+    base.Update(@event);
+
+    VarietyMoveEntity? varietyMove = Moves.SingleOrDefault(x => x.MoveId == move.MoveId);
+    if (varietyMove is null)
+    {
+      varietyMove = new(this, move, @event);
+      Moves.Add(varietyMove);
+    }
+    else
+    {
+      varietyMove.Update(@event);
+    }
+  }
+
   public void SetKey(VarietyKeyChanged @event)
   {
     base.Update(@event);
 
     Key = @event.Key.Value;
+  }
+
+  public void SetLevelMove(MoveEntity move, VarietyLevelMoveChanged @event)
+  {
+    base.Update(@event);
+
+    VarietyMoveEntity? varietyMove = Moves.SingleOrDefault(x => x.MoveId == move.MoveId);
+    if (varietyMove is null)
+    {
+      varietyMove = new(this, move, @event);
+      Moves.Add(varietyMove);
+    }
+    else
+    {
+      varietyMove.Update(@event);
+    }
   }
 
   public void Update(VarietyUpdated @event)

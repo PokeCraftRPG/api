@@ -83,6 +83,14 @@ internal class SpeciesQuerier : ISpeciesQuerier
     }
   }
 
+  public async Task<SpeciesId?> FindIdAsync(string key, CancellationToken cancellationToken)
+  {
+    string? streamId = await _species.Where(x => x.World!.Id == _context.WorldUid && x.Key == Slug.Normalize(key))
+      .Select(x => x.StreamId)
+      .SingleOrDefaultAsync(cancellationToken);
+    return streamId is null ? null : new SpeciesId(streamId);
+  }
+
   public async Task<SpeciesModel> ReadAsync(SpeciesAggregate species, CancellationToken cancellationToken)
   {
     return await ReadAsync(species.Id, cancellationToken) ?? throw new InvalidOperationException($"The species entity '{species}' was not found.");

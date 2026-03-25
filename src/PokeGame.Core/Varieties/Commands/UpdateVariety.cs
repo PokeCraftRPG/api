@@ -1,5 +1,7 @@
 ﻿using Logitar.CQRS;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Pokemon;
 using PokeGame.Core.Storages;
 using PokeGame.Core.Varieties.Models;
 
@@ -86,7 +88,22 @@ internal class UpdateVarietyCommandHandler : ICommandHandler<UpdateVarietyComman
 
     variety.Update(userId);
 
-    // TODO(fpion): Moves
+    IReadOnlyDictionary<MoveId, int?> moves = await _varietyManager.FindMovesAsync(payload.Moves, nameof(payload.Moves), cancellationToken);
+    foreach (KeyValuePair<MoveId, int?> move in moves)
+    {
+      if (!move.Value.HasValue)
+      {
+        variety.RemoveMove(move.Key, userId);
+      }
+      else if (move.Value.Value == 0)
+      {
+        variety.SetEvolutionMove(move.Key, userId);
+      }
+      else
+      {
+        variety.SetLevelMove(move.Key, new Level(move.Value.Value), userId);
+      }
+    }
 
     await _varietyQuerier.EnsureUnicityAsync(variety, cancellationToken);
 
