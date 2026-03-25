@@ -10,7 +10,7 @@ internal class VarietyMoveEntity
   public MoveEntity? Move { get; private set; }
   public int MoveId { get; private set; }
 
-  public byte Level { get; private set; }
+  public int Level { get; private set; }
 
   public VarietyMoveEntity(VarietyEntity variety, MoveEntity move, VarietyEvolutionMoveChanged @event) : this(variety, move)
   {

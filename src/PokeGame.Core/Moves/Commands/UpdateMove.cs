@@ -1,5 +1,4 @@
 ﻿using Logitar.CQRS;
-using PokeGame.Core.Moves.Events;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Storages;
@@ -83,10 +82,7 @@ internal class UpdateMoveCommandHandler : ICommandHandler<UpdateMoveCommand, Mov
 
     move.Update(userId);
 
-    if (move.Changes.Any(change => change is MoveKeyChanged))
-    {
-      await _moveQuerier.EnsureUnicityAsync(move, cancellationToken);
-    }
+    await _moveQuerier.EnsureUnicityAsync(move, cancellationToken);
 
     await _storageService.ExecuteWithQuotaAsync(
       move,

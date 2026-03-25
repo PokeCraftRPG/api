@@ -6,15 +6,15 @@ namespace PokeGame.Core.Varieties;
 
 public record GenderRatio
 {
-  public const byte MinimumValue = 0;
-  public const byte MaximumValue = 8;
+  public const int MinimumValue = 0;
+  public const int MaximumValue = 8;
 
   public static GenderRatio AllFemale { get; } = new(MinimumValue);
   public static GenderRatio AllMale { get; } = new(MaximumValue);
 
-  public byte Value { get; }
+  public int Value { get; }
 
-  public GenderRatio(byte value)
+  public GenderRatio(int value)
   {
     Value = value;
     new Validator().ValidateAndThrow(this);

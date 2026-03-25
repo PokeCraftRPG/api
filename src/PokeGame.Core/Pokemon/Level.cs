@@ -5,12 +5,12 @@ namespace PokeGame.Core.Pokemon;
 
 public record Level
 {
-  public const byte MinimumValue = 1;
-  public const byte MaximumValue = 100;
+  public const int MinimumValue = 1;
+  public const int MaximumValue = 100;
 
-  public byte Value { get; }
+  public int Value { get; }
 
-  public Level(byte value)
+  public Level(int value)
   {
     Value = value;
     new Validator().ValidateAndThrow(this);
