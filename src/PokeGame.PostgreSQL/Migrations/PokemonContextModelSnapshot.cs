@@ -438,6 +438,131 @@ namespace PokeGame.PostgreSQL.Migrations
                     b.ToTable("Species", "Pokemon");
                 });
 
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.VarietyEntity", b =>
+                {
+                    b.Property<int>("VarietyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("VarietyId"));
+
+                    b.Property<bool>("CanChangeForm")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("GenderRatio")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Genus")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SpeciesId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StreamId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Url")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("WorldId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("VarietyId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("CreatedOn");
+
+                    b.HasIndex("SpeciesId");
+
+                    b.HasIndex("StreamId")
+                        .IsUnique();
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.HasIndex("UpdatedOn");
+
+                    b.HasIndex("Version");
+
+                    b.HasIndex("WorldId", "CanChangeForm");
+
+                    b.HasIndex("WorldId", "GenderRatio");
+
+                    b.HasIndex("WorldId", "Genus");
+
+                    b.HasIndex("WorldId", "Id")
+                        .IsUnique();
+
+                    b.HasIndex("WorldId", "Key")
+                        .IsUnique();
+
+                    b.HasIndex("WorldId", "Name");
+
+                    b.HasIndex("WorldId", "SpeciesId", "IsDefault");
+
+                    b.ToTable("Varieties", "Pokemon");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.VarietyMoveEntity", b =>
+                {
+                    b.Property<int>("VarietyId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MoveId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
+
+                    b.HasKey("VarietyId", "MoveId");
+
+                    b.HasIndex("MoveId");
+
+                    b.ToTable("VarietyMoves", "Pokemon");
+                });
+
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.WorldEntity", b =>
                 {
                     b.Property<int>("WorldId")
@@ -579,6 +704,49 @@ namespace PokeGame.PostgreSQL.Migrations
                     b.Navigation("World");
                 });
 
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.VarietyEntity", b =>
+                {
+                    b.HasOne("PokeGame.Infrastructure.Entities.SpeciesEntity", "Species")
+                        .WithMany("Varieties")
+                        .HasForeignKey("SpeciesId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PokeGame.Infrastructure.Entities.WorldEntity", "World")
+                        .WithMany("Varieties")
+                        .HasForeignKey("WorldId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Species");
+
+                    b.Navigation("World");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.VarietyMoveEntity", b =>
+                {
+                    b.HasOne("PokeGame.Infrastructure.Entities.MoveEntity", "Move")
+                        .WithMany("Varieties")
+                        .HasForeignKey("MoveId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PokeGame.Infrastructure.Entities.VarietyEntity", "Variety")
+                        .WithMany("Moves")
+                        .HasForeignKey("VarietyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Move");
+
+                    b.Navigation("Variety");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.MoveEntity", b =>
+                {
+                    b.Navigation("Varieties");
+                });
+
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.RegionEntity", b =>
                 {
                     b.Navigation("RegionalNumbers");
@@ -587,6 +755,13 @@ namespace PokeGame.PostgreSQL.Migrations
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.SpeciesEntity", b =>
                 {
                     b.Navigation("RegionalNumbers");
+
+                    b.Navigation("Varieties");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.VarietyEntity", b =>
+                {
+                    b.Navigation("Moves");
                 });
 
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.WorldEntity", b =>
@@ -598,6 +773,8 @@ namespace PokeGame.PostgreSQL.Migrations
                     b.Navigation("Regions");
 
                     b.Navigation("Species");
+
+                    b.Navigation("Varieties");
                 });
 #pragma warning restore 612, 618
         }
