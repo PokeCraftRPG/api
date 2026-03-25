@@ -3,6 +3,7 @@ using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
 using PokeGame.Core.Worlds;
+using PokeGame.Core.Worlds.Events;
 using PokeGame.Core.Worlds.Models;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Entities;
@@ -24,12 +25,29 @@ internal class WorldQuerier : IWorldQuerier
 
   public async Task EnsureUnicityAsync(World world, CancellationToken cancellationToken)
   {
-    string? streamId = await _worlds.Where(x => x.Key == world.Key.Value)
-      .Select(x => x.StreamId)
-      .SingleOrDefaultAsync(cancellationToken);
-    if (streamId is not null && streamId != world.Id.Value)
+    Slug? key = null;
+
+    foreach (IEvent change in world.Changes)
     {
-      throw new PropertyConflictException<string>(world, new WorldId(streamId).ToGuid(), world.Key.Value, nameof(World.Key));
+      if (change is WorldCreated created)
+      {
+        key = created.Key;
+      }
+      else if (change is WorldKeyChanged changed)
+      {
+        key = changed.Key;
+      }
+    }
+
+    if (key is not null)
+    {
+      string? streamId = await _worlds.Where(x => x.Key == key.Value)
+        .Select(x => x.StreamId)
+        .SingleOrDefaultAsync(cancellationToken);
+      if (streamId is not null && streamId != world.Id.Value)
+      {
+        throw new PropertyConflictException<string>(world, new WorldId(streamId).ToGuid(), key.Value, nameof(World.Key));
+      }
     }
   }
 

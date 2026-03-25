@@ -5,9 +5,18 @@ namespace PokeGame.Core.Worlds.Models;
 
 public record CreateOrReplaceWorldPayload
 {
-  public string Key { get; set; } = string.Empty;
+  public string Key { get; set; }
   public string? Name { get; set; }
   public string? Description { get; set; }
+
+  public CreateOrReplaceWorldPayload() : this(string.Empty)
+  {
+  }
+
+  public CreateOrReplaceWorldPayload(string key)
+  {
+    Key = key;
+  }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 

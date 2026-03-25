@@ -8,7 +8,7 @@ public record CreateOrReplaceMovePayload
   public PokemonType Type { get; set; }
   public MoveCategory Category { get; set; }
 
-  public string Key { get; set; } = string.Empty;
+  public string Key { get; set; }
   public string? Name { get; set; }
   public string? Description { get; set; }
 
@@ -18,6 +18,16 @@ public record CreateOrReplaceMovePayload
 
   public string? Url { get; set; }
   public string? Notes { get; set; }
+
+  public CreateOrReplaceMovePayload() : this(string.Empty, default)
+  {
+  }
+
+  public CreateOrReplaceMovePayload(string key, byte powerPoints)
+  {
+    Key = key;
+    PowerPoints = powerPoints;
+  }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 

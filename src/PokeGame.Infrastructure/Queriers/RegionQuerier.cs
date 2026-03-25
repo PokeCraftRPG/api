@@ -3,6 +3,7 @@ using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Regions.Events;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Entities;
@@ -24,12 +25,29 @@ internal class RegionQuerier : IRegionQuerier
 
   public async Task EnsureUnicityAsync(Region region, CancellationToken cancellationToken)
   {
-    string? streamId = await _regions.Where(x => x.World!.Id == region.WorldId.ToGuid() && x.Key == region.Key.Value)
-      .Select(x => x.StreamId)
-      .SingleOrDefaultAsync(cancellationToken);
-    if (streamId is not null && streamId != region.Id.Value)
+    Slug? key = null;
+
+    foreach (IEvent change in region.Changes)
     {
-      throw new PropertyConflictException<string>(region, new RegionId(streamId).EntityId, region.Key.Value, nameof(Region.Key));
+      if (change is RegionCreated created)
+      {
+        key = created.Key;
+      }
+      else if (change is RegionKeyChanged changed)
+      {
+        key = changed.Key;
+      }
+    }
+
+    if (key is not null)
+    {
+      string? streamId = await _regions.Where(x => x.World!.Id == region.WorldId.ToGuid() && x.Key == key.Value)
+        .Select(x => x.StreamId)
+        .SingleOrDefaultAsync(cancellationToken);
+      if (streamId is not null && streamId != region.Id.Value)
+      {
+        throw new PropertyConflictException<string>(region, new RegionId(streamId).EntityId, key.Value, nameof(Region.Key));
+      }
     }
   }
 
