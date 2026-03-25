@@ -8,6 +8,8 @@ internal class VarietyMoveValidator : AbstractValidator<VarietyMovePayload>
 {
   public VarietyMoveValidator(bool allowNullLevel = false)
   {
+    RuleFor(x => x.Move).NotEmpty();
+
     if (!allowNullLevel)
     {
       RuleFor(x => x.Level).NotNull();
