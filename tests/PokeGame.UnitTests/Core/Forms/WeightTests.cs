@@ -20,7 +20,7 @@ public class WeightTests
   {
     var exception = Assert.Throws<FluentValidation.ValidationException>(() => new Weight(0));
     Assert.Single(exception.Errors);
-    Assert.Contains(exception.Errors, e => e.ErrorCode == "InclusiveBetweenValidator" && e.PropertyName == "Value");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "GreaterThanValidator" && e.PropertyName == "Value");
   }
 
   [Fact(DisplayName = "ToString: it should return the correct value.")]
