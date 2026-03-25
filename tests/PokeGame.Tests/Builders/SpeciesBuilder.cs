@@ -10,14 +10,17 @@ public interface ISpeciesBuilder
 {
   ISpeciesBuilder WithId(SpeciesId? id);
   ISpeciesBuilder WithWorld(World? world);
-  ISpeciesBuilder WithCategory(PokemonCategory? category);
   ISpeciesBuilder WithNumber(Number? number);
+  ISpeciesBuilder WithCategory(PokemonCategory? category);
   ISpeciesBuilder WithKey(Slug? key);
+  ISpeciesBuilder WithName(Name? name);
   ISpeciesBuilder WithBaseFriendship(Friendship? baseFriendship);
   ISpeciesBuilder WithCatchRate(CatchRate? catchRate);
   ISpeciesBuilder WithGrowthRate(GrowthRate? growthRate);
   ISpeciesBuilder WithEggCycles(EggCycles? eggCycles);
   ISpeciesBuilder WithEggGroups(EggGroups? eggGroups);
+  ISpeciesBuilder WithUrl(Url? url);
+  ISpeciesBuilder WithNotes(Notes? notes);
   ISpeciesBuilder WithRegionalNumber(Region region, Number? number);
   ISpeciesBuilder WithRegionalNumber(RegionId regionId, Number? number);
   ISpeciesBuilder ClearChanges(bool clearChanges = true);
@@ -39,7 +42,10 @@ public class SpeciesBuilder : ISpeciesBuilder
   private GrowthRate? _growthRate = null;
   private SpeciesId? _id = null;
   private Slug? _key = null;
+  private Name? _name = null;
+  private Notes? _notes = null;
   private Number? _number = null;
+  private Url? _url = null;
   private World? _world = null;
 
   public SpeciesBuilder(Faker? faker = null)
@@ -59,21 +65,27 @@ public class SpeciesBuilder : ISpeciesBuilder
     return this;
   }
 
-  public ISpeciesBuilder WithCategory(PokemonCategory? category)
-  {
-    _category = category;
-    return this;
-  }
-
   public ISpeciesBuilder WithNumber(Number? number)
   {
     _number = number;
     return this;
   }
 
+  public ISpeciesBuilder WithCategory(PokemonCategory? category)
+  {
+    _category = category;
+    return this;
+  }
+
   public ISpeciesBuilder WithKey(Slug? key)
   {
     _key = key;
+    return this;
+  }
+
+  public ISpeciesBuilder WithName(Name? name)
+  {
+    _name = name;
     return this;
   }
 
@@ -107,6 +119,18 @@ public class SpeciesBuilder : ISpeciesBuilder
     return this;
   }
 
+  public ISpeciesBuilder WithUrl(Url? url)
+  {
+    _url = url;
+    return this;
+  }
+
+  public ISpeciesBuilder WithNotes(Notes? notes)
+  {
+    _notes = notes;
+    return this;
+  }
+
   public ISpeciesBuilder WithRegionalNumber(Region region, Number? number) => WithRegionalNumber(region.Id, number);
   public ISpeciesBuilder WithRegionalNumber(RegionId regionId, Number? number)
   {
@@ -136,6 +160,8 @@ public class SpeciesBuilder : ISpeciesBuilder
       ? new(number, category, key, baseFriendship, catchRate, growthRate, eggCycles, eggGroups, world.OwnerId, _id.Value)
       : new(world, number, category, key, baseFriendship, catchRate, growthRate, eggCycles, eggGroups);
 
+    species.Name = _name;
+
     species.Update(world.OwnerId);
 
     foreach (KeyValuePair<RegionId, Number?> regionalNumber in _regionalNumbers)
@@ -151,5 +177,33 @@ public class SpeciesBuilder : ISpeciesBuilder
     return species;
   }
 
-  // TODO(fpion): Examples
+  public static SpeciesAggregate Eevee(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+    .WithWorld(world)
+    .WithNumber(new Number(133))
+    .WithCategory(PokemonCategory.Standard)
+    .WithKey(new Slug("eevee"))
+    .WithName(new Name("Eevee"))
+    .WithBaseFriendship(new Friendship(70))
+    .WithCatchRate(new CatchRate(45))
+    .WithGrowthRate(GrowthRate.MediumFast)
+    .WithEggCycles(new EggCycles(35))
+    .WithEggGroups(new EggGroups(EggGroup.Field))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Eevee_(Pok%C3%A9mon)"))
+    .WithNotes(new Notes("Eevee is a “blank slate” Pokémon designed for multiple evolutions (8 total), with unique mechanics, cultural impact, and evolution methods across games and media."))
+    .Build();
+
+  public static SpeciesAggregate Pikachu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+    .WithWorld(world)
+    .WithNumber(new Number(25))
+    .WithCategory(PokemonCategory.Standard)
+    .WithKey(new Slug("pikachu"))
+    .WithName(new Name("Pikachu"))
+    .WithBaseFriendship(new Friendship(70))
+    .WithCatchRate(new CatchRate(190))
+    .WithGrowthRate(GrowthRate.MediumFast)
+    .WithEggCycles(new EggCycles(10))
+    .WithEggGroups(new EggGroups(EggGroup.Field, EggGroup.Fairy))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Pikachu_(Pok%C3%A9mon)"))
+    .WithNotes(new Notes("Iconic Pokémon: Pikachu has many exclusives (Z-Moves, events), a unique starter role, varied cries/designs, and major cultural and scientific impact."))
+    .Build();
 }

@@ -139,7 +139,7 @@ public class Variety : AggregateRoot, IEntityProvider
   public Variety(SpeciesAggregate species, bool isDefault, Slug key, UserId userId, VarietyId varietyId)
     : base(varietyId.StreamId)
   {
-    WorldMismatchException.ThrowIfMismatch(this, species, nameof(species));
+    WorldMismatchException.ThrowIfMismatch(Id, species, nameof(species));
 
     Raise(new VarietyCreated(species.Id, isDefault, key), userId.ActorId);
   }
