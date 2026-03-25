@@ -35,10 +35,10 @@ public readonly struct VarietyId : IEntityProvider
 
   public static VarietyId NewId(WorldId worldId) => new(worldId, Guid.NewGuid());
 
+  public Entity GetEntity() => new(Variety.EntityKind, EntityId, WorldId);
+
   public static bool operator ==(VarietyId left, VarietyId right) => left.Equals(right);
   public static bool operator !=(VarietyId left, VarietyId right) => !left.Equals(right);
-
-  public Entity GetEntity() => new(Variety.EntityKind, EntityId, WorldId);
 
   public override bool Equals([NotNullWhen(true)] object? obj) => obj is VarietyId id && id.Value == Value;
   public override int GetHashCode() => Value.GetHashCode();

@@ -2,6 +2,7 @@
 using Moq;
 using PokeGame.Builders;
 using PokeGame.Core.Moves;
+using PokeGame.Core.Species;
 using PokeGame.Core.Varieties.Models;
 
 namespace PokeGame.Core.Varieties;
@@ -15,6 +16,8 @@ public class VarietyManagerTests
   private readonly Faker _faker = new();
 
   private readonly Mock<IMoveQuerier> _moveQuerier = new();
+  private readonly Mock<IVarietyQuerier> _varietyQuerier = new();
+  private readonly Mock<IVarietyRepository> _varietyRepository = new();
 
   private readonly TestContext _context;
   private readonly VarietyManager _manager;
@@ -22,7 +25,54 @@ public class VarietyManagerTests
   public VarietyManagerTests()
   {
     _context = new(_faker);
-    _manager = new(_context, _moveQuerier.Object);
+    _manager = new(_context, _moveQuerier.Object, _varietyQuerier.Object, _varietyRepository.Object);
+  }
+
+  [Fact(DisplayName = "FindAsync: it should return the variety found by ID.")]
+  public async Task Given_FoundById_When_FindAsync_Then_VarietyReturned()
+  {
+    Variety variety = VarietyBuilder.Pikachu(_faker, _context.World);
+    _varietyRepository.Setup(x => x.LoadAsync(variety.Id, _cancellationToken)).ReturnsAsync(variety);
+
+    Variety found = await _manager.FindAsync($"  {variety.EntityId.ToString().ToUpperInvariant()}  ", PropertyName, _cancellationToken);
+    Assert.Same(variety, found);
+  }
+
+  [Fact(DisplayName = "FindAsync: it should return the variety found by key.")]
+  public async Task Given_FoundByKey_When_FindAsync_Then_VarietyReturned()
+  {
+    Variety variety = VarietyBuilder.Pikachu(_faker, _context.World);
+    _varietyRepository.Setup(x => x.LoadAsync(variety.Id, _cancellationToken)).ReturnsAsync(variety);
+
+    string key = $"  {variety.Key.Value.ToUpperInvariant()}  ";
+    _varietyQuerier.Setup(x => x.FindIdAsync(key, _cancellationToken)).ReturnsAsync(variety.Id);
+
+    Variety found = await _manager.FindAsync(key, PropertyName, _cancellationToken);
+    Assert.Same(variety, found);
+  }
+
+  [Fact(DisplayName = "FindAsync: it should throw InvalidOperationException when the variety was not loaded.")]
+  public async Task Given_NotLoaded_When_FindAsync_Then_InvalidOperationException()
+  {
+    Variety variety = VarietyBuilder.Pikachu(_faker, _context.World);
+    _varietyQuerier.Setup(x => x.FindIdAsync(variety.Key.Value, _cancellationToken)).ReturnsAsync(variety.Id);
+
+    var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await _manager.FindAsync(variety.Key.Value, PropertyName, _cancellationToken));
+    Assert.Equal($"The variety 'Id={variety.Id}' was not loaded.", exception.Message);
+  }
+
+  [Fact(DisplayName = "FindAsync: it should throw SpeciesNotFoundException when the species was not found.")]
+  public async Task Given_NotFound_When_FindAsync_Then_SpeciesNotFoundException()
+  {
+    string key = $"  {Guid.NewGuid().ToString().ToUpperInvariant()}  ";
+
+    var exception = await Assert.ThrowsAsync<SpeciesNotFoundException>(async () => await _manager.FindAsync(key, PropertyName, _cancellationToken));
+    Assert.Equal(_context.WorldUid, exception.WorldId);
+    Assert.Equal(key, exception.Species);
+    Assert.Equal(PropertyName, exception.PropertyName);
+
+    _varietyRepository.Verify(x => x.LoadAsync(new VarietyId(_context.WorldId, Guid.Parse(key)), _cancellationToken), Times.Once());
+    _varietyQuerier.Verify(x => x.FindIdAsync(key, _cancellationToken), Times.Once());
   }
 
   [Fact(DisplayName = "FindMovesAsync: it should not query the database if there is no payload.")]

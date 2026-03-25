@@ -2,21 +2,21 @@
 using Logitar;
 using PokeGame.Core.Worlds;
 
-namespace PokeGame.Core.Species;
+namespace PokeGame.Core.Varieties;
 
-public class SpeciesNotFoundException : NotFoundException
+public class VarietyNotFoundException : NotFoundException
 {
-  private const string ErrorMessage = "The specified species was not found.";
+  private const string ErrorMessage = "The specified variety was not found.";
 
   public Guid WorldId
   {
     get => (Guid)Data[nameof(WorldId)]!;
     private set => Data[nameof(WorldId)] = value;
   }
-  public string Species
+  public string Variety
   {
-    get => (string)Data[nameof(Species)]!;
-    private set => Data[nameof(Species)] = value;
+    get => (string)Data[nameof(Variety)]!;
+    private set => Data[nameof(Variety)] = value;
   }
   public string PropertyName
   {
@@ -30,23 +30,23 @@ public class SpeciesNotFoundException : NotFoundException
     {
       Error error = new(this.GetErrorCode(), ErrorMessage);
       error.Data[nameof(WorldId)] = WorldId;
-      error.Data[nameof(Species)] = Species;
+      error.Data[nameof(Variety)] = Variety;
       error.Data[nameof(PropertyName)] = PropertyName;
       return error;
     }
   }
 
-  public SpeciesNotFoundException(WorldId worldId, string species, string propertyName)
-    : base(BuildMessage(worldId, species, propertyName))
+  public VarietyNotFoundException(WorldId worldId, string variety, string propertyName)
+    : base(BuildMessage(worldId, variety, propertyName))
   {
     WorldId = worldId.ToGuid();
-    Species = species;
+    Variety = variety;
     PropertyName = propertyName;
   }
 
-  private static string BuildMessage(WorldId worldId, string species, string propertyName) => new ErrorMessageBuilder(ErrorMessage)
+  private static string BuildMessage(WorldId worldId, string variety, string propertyName) => new ErrorMessageBuilder(ErrorMessage)
     .AddData(nameof(WorldId), worldId.ToGuid())
-    .AddData(nameof(Species), species)
+    .AddData(nameof(Variety), variety)
     .AddData(nameof(PropertyName), propertyName)
     .Build();
 }

@@ -35,10 +35,10 @@ public readonly struct RegionId : IEntityProvider
 
   public static RegionId NewId(WorldId worldId) => new(worldId, Guid.NewGuid());
 
+  public Entity GetEntity() => new(Region.EntityKind, EntityId, WorldId);
+
   public static bool operator ==(RegionId left, RegionId right) => left.Equals(right);
   public static bool operator !=(RegionId left, RegionId right) => !left.Equals(right);
-
-  public Entity GetEntity() => new(Region.EntityKind, EntityId, WorldId);
 
   public override bool Equals([NotNullWhen(true)] object? obj) => obj is RegionId id && id.Value == Value;
   public override int GetHashCode() => Value.GetHashCode();

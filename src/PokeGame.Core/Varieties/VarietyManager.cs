@@ -1,10 +1,13 @@
 ﻿using PokeGame.Core.Moves;
 using PokeGame.Core.Varieties.Models;
+using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Varieties;
 
 public interface IVarietyManager
 {
+  Task<Variety> FindAsync(string idOrKey, string propertyName, CancellationToken cancellationToken = default);
+
   Task<IReadOnlyDictionary<MoveId, int?>> FindMovesAsync(
     IEnumerable<VarietyMovePayload> payloads,
     string propertyName,
@@ -15,11 +18,43 @@ internal class VarietyManager : IVarietyManager
 {
   private readonly IContext _context;
   private readonly IMoveQuerier _moveQuerier;
+  private readonly IVarietyQuerier _varietyQuerier;
+  private readonly IVarietyRepository _varietyRepository;
 
-  public VarietyManager(IContext context, IMoveQuerier moveQuerier)
+  public VarietyManager(
+    IContext context,
+    IMoveQuerier moveQuerier,
+    IVarietyQuerier varietyQuerier,
+    IVarietyRepository varietyRepository)
   {
     _context = context;
     _moveQuerier = moveQuerier;
+    _varietyQuerier = varietyQuerier;
+    _varietyRepository = varietyRepository;
+  }
+
+  public async Task<Variety> FindAsync(string idOrKey, string propertyName, CancellationToken cancellationToken)
+  {
+    WorldId worldId = _context.WorldId;
+
+    if (Guid.TryParse(idOrKey, out Guid id))
+    {
+      VarietyId varietyId = new(worldId, id);
+      Variety? variety = await _varietyRepository.LoadAsync(varietyId, cancellationToken);
+      if (variety is not null)
+      {
+        return variety;
+      }
+    }
+
+    VarietyId? foundId = await _varietyQuerier.FindIdAsync(idOrKey, cancellationToken);
+    if (!foundId.HasValue)
+    {
+      throw new VarietyNotFoundException(worldId, idOrKey, propertyName);
+    }
+
+    return await _varietyRepository.LoadAsync(foundId.Value, cancellationToken)
+      ?? throw new InvalidOperationException($"The variety 'Id={foundId}' was not loaded.");
   }
 
   public async Task<IReadOnlyDictionary<MoveId, int?>> FindMovesAsync(
