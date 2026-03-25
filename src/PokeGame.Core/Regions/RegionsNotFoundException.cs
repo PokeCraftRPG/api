@@ -52,7 +52,7 @@ public class RegionsNotFoundException : NotFoundException
     message.Append(nameof(PropertyName)).Append(": ").AppendLine(propertyName);
     if (regions.Any())
     {
-      message.Append(nameof(Regions)).Append(':').AppendLine();
+      message.Append(nameof(Regions)).AppendLine(":");
       regions = regions.Distinct();
       foreach (string region in regions)
       {

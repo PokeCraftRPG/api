@@ -52,7 +52,7 @@ public class MovesNotFoundException : NotFoundException
     message.Append(nameof(PropertyName)).Append(": ").AppendLine(propertyName);
     if (moves.Any())
     {
-      message.Append(nameof(Moves)).Append(':').AppendLine();
+      message.Append(nameof(Moves)).AppendLine(":");
       moves = moves.Distinct();
       foreach (string move in moves)
       {
