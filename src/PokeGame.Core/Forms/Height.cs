@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using PokeGame.Core.Validation;
 
 namespace PokeGame.Core.Forms;
 
