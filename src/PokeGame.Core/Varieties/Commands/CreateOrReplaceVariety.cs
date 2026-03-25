@@ -75,6 +75,7 @@ internal class CreateOrReplaceVarietyCommandHandler : ICommandHandler<CreateOrRe
         throw new ImmutablePropertyException<Guid>(variety, variety.SpeciesId.EntityId, species.EntityId, nameof(payload.Species));
       }
 
+      variety.SetDefault(payload.IsDefault, userId);
       variety.SetKey(key, userId);
     }
 

@@ -7,6 +7,7 @@ using PokeGame.Infrastructure.Entities;
 namespace PokeGame.Infrastructure.Handlers;
 
 internal class VarietyEvents : IEventHandler<VarietyCreated>,
+  IEventHandler<VarietyDefaultChanged>,
   IEventHandler<VarietyDeleted>,
   IEventHandler<VarietyEvolutionMoveChanged>,
   IEventHandler<VarietyKeyChanged>,
@@ -17,6 +18,7 @@ internal class VarietyEvents : IEventHandler<VarietyCreated>,
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IEventHandler<VarietyCreated>, VarietyEvents>();
+    services.AddTransient<IEventHandler<VarietyDefaultChanged>, VarietyEvents>();
     services.AddTransient<IEventHandler<VarietyDeleted>, VarietyEvents>();
     services.AddTransient<IEventHandler<VarietyEvolutionMoveChanged>, VarietyEvents>();
     services.AddTransient<IEventHandler<VarietyKeyChanged>, VarietyEvents>();
@@ -43,6 +45,17 @@ internal class VarietyEvents : IEventHandler<VarietyCreated>,
       variety = new(species, @event);
 
       _pokemon.Varieties.Add(variety);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(VarietyDefaultChanged @event, CancellationToken cancellationToken)
+  {
+    VarietyEntity? variety = await _pokemon.Varieties.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (variety is not null && variety.Version == (@event.Version - 1))
+    {
+      variety.SetDefault(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

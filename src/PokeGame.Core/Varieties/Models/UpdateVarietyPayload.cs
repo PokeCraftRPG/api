@@ -6,6 +6,8 @@ namespace PokeGame.Core.Varieties.Models;
 
 public record UpdateVarietyPayload
 {
+  public bool? IsDefault { get; set; }
+
   public string? Key { get; set; }
   public Optional<string>? Name { get; set; }
   public Optional<string>? Genus { get; set; }

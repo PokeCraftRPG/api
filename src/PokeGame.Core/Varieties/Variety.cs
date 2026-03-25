@@ -179,6 +179,19 @@ public class Variety : AggregateRoot, IEntityProvider
     _moves.Remove(@event.MoveId);
   }
 
+  public void SetDefault(UserId userId) => SetDefault(isDefault: true, userId);
+  public void SetDefault(bool isDefault, UserId userId)
+  {
+    if (IsDefault != isDefault)
+    {
+      Raise(new VarietyDefaultChanged(isDefault), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(VarietyDefaultChanged @event)
+  {
+    IsDefault = @event.IsDefault;
+  }
+
   public void SetEvolutionMove(Move move, UserId userId) => SetEvolutionMove(move.Id, userId);
   public void SetEvolutionMove(MoveId moveId, UserId userId)
   {

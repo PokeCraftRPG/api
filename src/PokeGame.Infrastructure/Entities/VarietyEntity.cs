@@ -73,6 +73,13 @@ internal class VarietyEntity : AggregateEntity
     return Moves.SingleOrDefault(x => x.Move?.StreamId == @event.MoveId.Value);
   }
 
+  public void SetDefault(VarietyDefaultChanged @event)
+  {
+    base.Update(@event);
+
+    IsDefault = @event.IsDefault;
+  }
+
   public void SetEvolutionMove(MoveEntity move, VarietyEvolutionMoveChanged @event)
   {
     base.Update(@event);

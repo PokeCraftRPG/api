@@ -49,6 +49,11 @@ internal class UpdateVarietyCommandHandler : ICommandHandler<UpdateVarietyComman
 
     UserId userId = _context.UserId;
 
+    if (payload.IsDefault.HasValue)
+    {
+      variety.SetDefault(payload.IsDefault.Value, userId);
+    }
+
     if (!string.IsNullOrWhiteSpace(payload.Key))
     {
       Slug key = new(payload.Key);
