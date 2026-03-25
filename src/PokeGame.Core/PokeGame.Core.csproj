@@ -23,10 +23,12 @@
 
   <ItemGroup>
     <Using Include="System.Diagnostics.CodeAnalysis" />
+    <Using Include="System.Text" />
+    <Using Include="System.Text.Json.Serialization" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="PokeGame.UnitTests"/>
+    <InternalsVisibleTo Include="PokeGame.UnitTests" />
   </ItemGroup>
 
 </Project>

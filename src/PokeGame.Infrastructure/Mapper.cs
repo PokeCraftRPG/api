@@ -5,6 +5,7 @@ using Logitar.EventSourcing;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
+using PokeGame.Core.Species.Models;
 using PokeGame.Core.Worlds.Models;
 using PokeGame.Infrastructure.Entities;
 
@@ -77,6 +78,35 @@ internal class Mapper
       Url = source.Url,
       Notes = source.Notes
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public SpeciesModel ToSpecies(SpeciesEntity source)
+  {
+    SpeciesModel destination = new()
+    {
+      Id = source.Id,
+      Number = source.Number,
+      Category = source.Category,
+      Key = source.Key,
+      Name = source.Name,
+      BaseFriendship = source.BaseFriendship,
+      CatchRate = source.CatchRate,
+      GrowthRate = source.GrowthRate,
+      EggCycles = source.EggCycles,
+      EggGroups = new EggGroupsModel(source.PrimaryEggGroup, source.SecondaryEggGroup),
+      Url = source.Url,
+      Notes = source.Notes
+    };
+
+    foreach (RegionalNumberEntity regionalNumber in source.RegionalNumbers)
+    {
+      RegionEntity region = regionalNumber.Region ?? throw new ArgumentException("The region is required.", nameof(source));
+      destination.RegionalNumbers.Add(new RegionalNumberModel(ToRegion(region), regionalNumber.Number));
+    }
 
     MapAggregate(source, destination);
 

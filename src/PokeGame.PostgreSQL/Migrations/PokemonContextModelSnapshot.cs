@@ -293,6 +293,151 @@ namespace PokeGame.PostgreSQL.Migrations
                     b.ToTable("Regions", "Pokemon");
                 });
 
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.RegionalNumberEntity", b =>
+                {
+                    b.Property<int>("SpeciesId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RegionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
+
+                    b.HasKey("SpeciesId", "RegionId");
+
+                    b.HasIndex("RegionId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("RegionalNumbers", "Pokemon");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.SpeciesEntity", b =>
+                {
+                    b.Property<int>("SpeciesId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("SpeciesId"));
+
+                    b.Property<byte>("BaseFriendship")
+                        .HasColumnType("smallint");
+
+                    b.Property<byte>("CatchRate")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte>("EggCycles")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("GrowthRate")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PrimaryEggGroup")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("SecondaryEggGroup")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("StreamId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Url")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("WorldId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("SpeciesId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("CreatedOn");
+
+                    b.HasIndex("StreamId")
+                        .IsUnique();
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.HasIndex("UpdatedOn");
+
+                    b.HasIndex("Version");
+
+                    b.HasIndex("WorldId", "BaseFriendship");
+
+                    b.HasIndex("WorldId", "CatchRate");
+
+                    b.HasIndex("WorldId", "Category");
+
+                    b.HasIndex("WorldId", "EggCycles");
+
+                    b.HasIndex("WorldId", "GrowthRate");
+
+                    b.HasIndex("WorldId", "Id")
+                        .IsUnique();
+
+                    b.HasIndex("WorldId", "Key")
+                        .IsUnique();
+
+                    b.HasIndex("WorldId", "Name");
+
+                    b.HasIndex("WorldId", "Number")
+                        .IsUnique();
+
+                    b.HasIndex("WorldId", "PrimaryEggGroup");
+
+                    b.HasIndex("WorldId", "SecondaryEggGroup");
+
+                    b.ToTable("Species", "Pokemon");
+                });
+
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.WorldEntity", b =>
                 {
                     b.Property<int>("WorldId")
@@ -404,6 +549,46 @@ namespace PokeGame.PostgreSQL.Migrations
                     b.Navigation("World");
                 });
 
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.RegionalNumberEntity", b =>
+                {
+                    b.HasOne("PokeGame.Infrastructure.Entities.RegionEntity", "Region")
+                        .WithMany("RegionalNumbers")
+                        .HasForeignKey("RegionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PokeGame.Infrastructure.Entities.SpeciesEntity", "Species")
+                        .WithMany("RegionalNumbers")
+                        .HasForeignKey("SpeciesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Region");
+
+                    b.Navigation("Species");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.SpeciesEntity", b =>
+                {
+                    b.HasOne("PokeGame.Infrastructure.Entities.WorldEntity", "World")
+                        .WithMany("Species")
+                        .HasForeignKey("WorldId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("World");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.RegionEntity", b =>
+                {
+                    b.Navigation("RegionalNumbers");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.SpeciesEntity", b =>
+                {
+                    b.Navigation("RegionalNumbers");
+                });
+
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.WorldEntity", b =>
                 {
                     b.Navigation("Abilities");
@@ -411,6 +596,8 @@ namespace PokeGame.PostgreSQL.Migrations
                     b.Navigation("Moves");
 
                     b.Navigation("Regions");
+
+                    b.Navigation("Species");
                 });
 #pragma warning restore 612, 618
         }

@@ -6,6 +6,7 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Species;
 using PokeGame.Core.Storages;
 using PokeGame.Core.Worlds;
 
@@ -18,6 +19,7 @@ public static class DependencyInjectionExtensions
     AbilityService.Register(services);
     MoveService.Register(services);
     RegionService.Register(services);
+    SpeciesService.Register(services);
     WorldService.Register(services);
     return services
       .AddLogitarEventSourcing()
