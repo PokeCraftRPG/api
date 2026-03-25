@@ -149,4 +149,57 @@ public class MoveBuilder : IMoveBuilder
 
     return move;
   }
+
+  public static Move Agility(Faker? faker = null, World? world = null) => new MoveBuilder(faker)
+    .WithWorld(world)
+    .WithType(PokemonType.Psychic)
+    .WithCategory(MoveCategory.Status)
+    .WithKey(new Slug("agility"))
+    .WithName(new Name("Agility"))
+    .WithDescription(new Description("The user relaxes and lightens its body to move faster. This sharply boosts its Speed stat."))
+    .WithPowerPoints(new PowerPoints(30))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Agility_(move)"))
+    .WithNotes(new Notes("Psychic status move that sharply raises the user’s Speed (+2 stages); no damage, ideal for acting first and setting up sweeps."))
+    .Build();
+
+  public static Move QuickAttack(Faker? faker = null, World? world = null) => new MoveBuilder(faker)
+    .WithWorld(world)
+    .WithType(PokemonType.Normal)
+    .WithCategory(MoveCategory.Physical)
+    .WithKey(new Slug("quick-attack"))
+    .WithName(new Name("Quick Attack"))
+    .WithDescription(new Description("The user lunges at the target to inflict damage, moving at blinding speed. This move always goes first."))
+    .WithAccuracy(new Accuracy(100))
+    .WithPower(new Power(40))
+    .WithPowerPoints(new PowerPoints(30))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Quick_Attack_(move)"))
+    .WithNotes(new Notes("Fast physical Normal move that always goes first (+1 priority), dealing 40 damage with perfect accuracy; simple, reliable early strike."))
+    .Build();
+
+  public static Move SweetKiss(Faker? faker = null, World? world = null) => new MoveBuilder(faker)
+    .WithWorld(world)
+    .WithType(PokemonType.Fairy)
+    .WithCategory(MoveCategory.Status)
+    .WithKey(new Slug("sweet-kiss"))
+    .WithName(new Name("Sweet Kiss"))
+    .WithDescription(new Description("The user kisses the target with a sweet, angelic cuteness that causes confusion."))
+    .WithAccuracy(new Accuracy(75))
+    .WithPowerPoints(new PowerPoints(10))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Sweet_Kiss_(move)"))
+    .WithNotes(new Notes("Fairy status move that confuses the target (75% accuracy); no damage, useful for disruption and control. \r\n"))
+    .Build();
+
+  public static Move ThunderShock(Faker? faker = null, World? world = null) => new MoveBuilder(faker)
+    .WithWorld(world)
+    .WithType(PokemonType.Electric)
+    .WithCategory(MoveCategory.Special)
+    .WithKey(new Slug("thunder-shock"))
+    .WithName(new Name("Thunder Shock"))
+    .WithDescription(new Description("The user attacks the target with a jolt of electricity. This may also leave the target with paralysis."))
+    .WithAccuracy(new Accuracy(100))
+    .WithPower(new Power(40))
+    .WithPowerPoints(new PowerPoints(30))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Thunder_Shock_(move)"))
+    .WithNotes(new Notes("Ranged Electric special attack: 40 power, 100% accuracy; on hit, target has a 10% chance to be paralyzed."))
+    .Build();
 }

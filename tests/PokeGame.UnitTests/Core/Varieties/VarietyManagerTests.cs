@@ -36,9 +36,9 @@ public class VarietyManagerTests
   [Fact(DisplayName = "FindMovesAsync: it should return the correct regional numbers.")]
   public async Task Given_Payloads_When_FindMovesAsync_Then_RegionalNumbers()
   {
-    Move thunderShock = new MoveBuilder(_faker).WithType(PokemonType.Electric).WithCategory(MoveCategory.Special).WithKey(new Slug("thunder-shock")).Build();
-    Move quickAttack = new MoveBuilder(_faker).WithType(PokemonType.Normal).WithCategory(MoveCategory.Physical).WithKey(new Slug("quick-attack")).Build();
-    Move sweetKiss = new MoveBuilder(_faker).WithType(PokemonType.Fairy).WithCategory(MoveCategory.Status).WithKey(new Slug("sweet-kiss")).Build();
+    Move thunderShock = MoveBuilder.ThunderShock(_faker);
+    Move quickAttack = MoveBuilder.QuickAttack(_faker);
+    Move sweetKiss = MoveBuilder.SweetKiss(_faker);
     MoveKey[] keys = new Move[] { thunderShock, quickAttack, sweetKiss }.Select(move => new MoveKey(move.Id, move.EntityId, move.Key.Value)).ToArray();
     _moveQuerier.Setup(x => x.ListKeysAsync(_cancellationToken)).ReturnsAsync(keys);
 
@@ -59,13 +59,13 @@ public class VarietyManagerTests
   [Fact(DisplayName = "FindMovesAsync: it should throw MovesNotFoundException when some moves were not found.")]
   public async Task Given_NotFound_When_FindMovesAsync_Then_MovesNotFoundException()
   {
-    Move thunderShock = new MoveBuilder(_faker).WithType(PokemonType.Electric).WithCategory(MoveCategory.Special).WithKey(new Slug("thunder-shock")).Build();
-    Move quickAttack = new MoveBuilder(_faker).WithType(PokemonType.Normal).WithCategory(MoveCategory.Physical).WithKey(new Slug("quick-attack")).Build();
+    Move thunderShock = MoveBuilder.ThunderShock(_faker);
+    Move quickAttack = MoveBuilder.QuickAttack(_faker);
     MoveKey[] keys = new Move[] { thunderShock, quickAttack }.Select(move => new MoveKey(move.Id, move.EntityId, move.Key.Value)).ToArray();
     _moveQuerier.Setup(x => x.ListKeysAsync(_cancellationToken)).ReturnsAsync(keys);
 
-    Move sweetKiss = new MoveBuilder(_faker).WithType(PokemonType.Fairy).WithCategory(MoveCategory.Status).WithKey(new Slug("sweet-kiss")).Build();
-    Move agility = new MoveBuilder(_faker).WithType(PokemonType.Psychic).WithCategory(MoveCategory.Status).WithKey(new Slug("agility")).Build();
+    Move sweetKiss = MoveBuilder.SweetKiss(_faker);
+    Move agility = MoveBuilder.Agility(_faker);
     VarietyMovePayload[] payloads =
     [
       new($"  {thunderShock.EntityId.ToString().ToUpperInvariant()}  "),
