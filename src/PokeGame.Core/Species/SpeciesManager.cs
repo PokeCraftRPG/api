@@ -45,16 +45,13 @@ internal class SpeciesManager : ISpeciesManager
     }
 
     speciesId = await _speciesQuerier.FindIdAsync(idOrKey, cancellationToken);
-    if (speciesId.HasValue)
+    if (!speciesId.HasValue)
     {
-      SpeciesAggregate? species = await _speciesRepository.LoadAsync(speciesId.Value, cancellationToken);
-      if (species is not null)
-      {
-        return species;
-      }
+      throw new SpeciesNotFoundException(worldId, idOrKey, propertyName);
     }
 
-    throw new SpeciesNotFoundException(worldId, idOrKey, propertyName);
+    return await _speciesRepository.LoadAsync(speciesId.Value, cancellationToken)
+      ?? throw new InvalidOperationException($"The species 'Id={speciesId}' was not loaded.");
   }
 
   public async Task<IReadOnlyDictionary<RegionId, Number?>> FindRegionalNumbersAsync(
