@@ -189,6 +189,20 @@ public class MoveBuilder : IMoveBuilder
     .WithNotes(new Notes("Fairy status move that confuses the target (75% accuracy); no damage, useful for disruption and control. \r\n"))
     .Build();
 
+  public static Move ThunderPunch(Faker? faker = null, World? world = null) => new MoveBuilder(faker)
+    .WithWorld(world)
+    .WithType(PokemonType.Electric)
+    .WithCategory(MoveCategory.Physical)
+    .WithKey(new Slug("thunder-punch"))
+    .WithName(new Name("Thunder Punch"))
+    .WithDescription(new Description("The target is attacked with an electrified punch. This may also leave the target with paralysis."))
+    .WithAccuracy(new Accuracy(100))
+    .WithPower(new Power(75))
+    .WithPowerPoints(new PowerPoints(15))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Thunder_Punch_(move)"))
+    .WithNotes(new Notes("Electric physical attack (75 power, 100% accuracy) hitting adjacent targets; has ~10% chance to paralyze, with some variation across games."))
+    .Build();
+
   public static Move ThunderShock(Faker? faker = null, World? world = null) => new MoveBuilder(faker)
     .WithWorld(world)
     .WithType(PokemonType.Electric)

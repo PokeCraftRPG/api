@@ -206,4 +206,19 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Pikachu_(Pok%C3%A9mon)"))
     .WithNotes(new Notes("Iconic Pokémon: Pikachu has many exclusives (Z-Moves, events), a unique starter role, varied cries/designs, and major cultural and scientific impact."))
     .Build();
+
+  public static SpeciesAggregate Raichu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+    .WithWorld(world)
+    .WithNumber(new Number(26))
+    .WithCategory(PokemonCategory.Standard)
+    .WithKey(new Slug("raichu"))
+    .WithName(new Name("Raichu"))
+    .WithBaseFriendship(new Friendship(70))
+    .WithCatchRate(new CatchRate(75))
+    .WithGrowthRate(GrowthRate.MediumFast)
+    .WithEggCycles(new EggCycles(10))
+    .WithEggGroups(new EggGroups(EggGroup.Field, EggGroup.Fairy))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Raichu_(Pok%C3%A9mon)"))
+    .WithNotes(new Notes("Raichu trivia: Mouse Pokémon; can discharge up to 100,000 volts; notable forms (Alolan, Mega) and unique traits across games and lore."))
+    .Build();
 }
