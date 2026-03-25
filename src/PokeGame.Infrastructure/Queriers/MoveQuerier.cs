@@ -3,6 +3,7 @@ using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
 using PokeGame.Core.Moves;
+using PokeGame.Core.Moves.Events;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Entities;
@@ -24,12 +25,29 @@ internal class MoveQuerier : IMoveQuerier
 
   public async Task EnsureUnicityAsync(Move move, CancellationToken cancellationToken)
   {
-    string? streamId = await _moves.Where(x => x.World!.Id == move.WorldId.ToGuid() && x.Key == move.Key.Value)
-      .Select(x => x.StreamId)
-      .SingleOrDefaultAsync(cancellationToken);
-    if (streamId is not null && streamId != move.Id.Value)
+    Slug? key = null;
+
+    foreach (IEvent change in move.Changes)
     {
-      throw new PropertyConflictException<string>(move, new MoveId(streamId).EntityId, move.Key.Value, nameof(Move.Key));
+      if (change is MoveCreated created)
+      {
+        key = created.Key;
+      }
+      else if (change is MoveKeyChanged changed)
+      {
+        key = changed.Key;
+      }
+    }
+
+    if (key is not null)
+    {
+      string? streamId = await _moves.Where(x => x.World!.Id == move.WorldId.ToGuid() && x.Key == key.Value)
+        .Select(x => x.StreamId)
+        .SingleOrDefaultAsync(cancellationToken);
+      if (streamId is not null && streamId != move.Id.Value)
+      {
+        throw new PropertyConflictException<string>(move, new MoveId(streamId).EntityId, key.Value, nameof(Move.Key));
+      }
     }
   }
 

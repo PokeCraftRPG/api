@@ -5,12 +5,21 @@ namespace PokeGame.Core.Abilities.Models;
 
 public record CreateOrReplaceAbilityPayload
 {
-  public string Key { get; set; } = string.Empty;
+  public string Key { get; set; }
   public string? Name { get; set; }
   public string? Description { get; set; }
 
   public string? Url { get; set; }
   public string? Notes { get; set; }
+
+  public CreateOrReplaceAbilityPayload() : this(string.Empty)
+  {
+  }
+
+  public CreateOrReplaceAbilityPayload(string key)
+  {
+    Key = key;
+  }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 

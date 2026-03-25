@@ -3,6 +3,7 @@ using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
+using PokeGame.Core.Abilities.Events;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Entities;
@@ -24,12 +25,29 @@ internal class AbilityQuerier : IAbilityQuerier
 
   public async Task EnsureUnicityAsync(Ability ability, CancellationToken cancellationToken)
   {
-    string? streamId = await _abilities.Where(x => x.World!.Id == ability.WorldId.ToGuid() && x.Key == ability.Key.Value)
-      .Select(x => x.StreamId)
-      .SingleOrDefaultAsync(cancellationToken);
-    if (streamId is not null && streamId != ability.Id.Value)
+    Slug? key = null;
+
+    foreach (IEvent change in ability.Changes)
     {
-      throw new PropertyConflictException<string>(ability, new AbilityId(streamId).EntityId, ability.Key.Value, nameof(Ability.Key));
+      if (change is AbilityCreated created)
+      {
+        key = created.Key;
+      }
+      else if (change is AbilityKeyChanged changed)
+      {
+        key = changed.Key;
+      }
+    }
+
+    if (key is not null)
+    {
+      string? streamId = await _abilities.Where(x => x.World!.Id == ability.WorldId.ToGuid() && x.Key == key.Value)
+        .Select(x => x.StreamId)
+        .SingleOrDefaultAsync(cancellationToken);
+      if (streamId is not null && streamId != ability.Id.Value)
+      {
+        throw new PropertyConflictException<string>(ability, new AbilityId(streamId).EntityId, key.Value, nameof(Ability.Key));
+      }
     }
   }
 

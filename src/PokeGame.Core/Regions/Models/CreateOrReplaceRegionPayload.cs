@@ -5,12 +5,21 @@ namespace PokeGame.Core.Regions.Models;
 
 public record CreateOrReplaceRegionPayload
 {
-  public string Key { get; set; } = string.Empty;
+  public string Key { get; set; }
   public string? Name { get; set; }
   public string? Description { get; set; }
 
   public string? Url { get; set; }
   public string? Notes { get; set; }
+
+  public CreateOrReplaceRegionPayload() : this(string.Empty)
+  {
+  }
+
+  public CreateOrReplaceRegionPayload(string key)
+  {
+    Key = key;
+  }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 
