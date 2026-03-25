@@ -8,6 +8,7 @@ using PokeGame.Core.Caching;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
+using PokeGame.Core.Varieties;
 using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Caching;
@@ -42,6 +43,7 @@ public static class DependencyInjectionExtensions
     MoveEvents.Register(services);
     RegionEvents.Register(services);
     SpeciesEvents.Register(services);
+    VarietyEvents.Register(services);
     WorldEvents.Register(services);
     return services;
   }
@@ -53,6 +55,7 @@ public static class DependencyInjectionExtensions
       .AddTransient<IMoveQuerier, MoveQuerier>()
       .AddTransient<IRegionQuerier, RegionQuerier>()
       .AddTransient<ISpeciesQuerier, SpeciesQuerier>()
+      .AddTransient<IVarietyQuerier, VarietyQuerier>()
       .AddTransient<IWorldQuerier, WorldQuerier>();
   }
 
@@ -63,6 +66,7 @@ public static class DependencyInjectionExtensions
       .AddTransient<IMoveRepository, MoveRepository>()
       .AddTransient<IRegionRepository, RegionRepository>()
       .AddTransient<ISpeciesRepository, SpeciesRepository>()
+      .AddTransient<IVarietyRepository, VarietyRepository>()
       .AddTransient<IWorldRepository, WorldRepository>();
   }
 }

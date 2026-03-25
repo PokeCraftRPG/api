@@ -11,7 +11,6 @@ public record CreateOrReplaceVarietyPayload
 
   public string Key { get; set; }
   public string? Name { get; set; }
-
   public string? Genus { get; set; }
   public string? Description { get; set; }
 
@@ -44,7 +43,6 @@ public record CreateOrReplaceVarietyPayload
 
       RuleFor(x => x.Key).Slug();
       When(x => !string.IsNullOrWhiteSpace(x.Name), () => RuleFor(x => x.Name!).Name());
-
       When(x => !string.IsNullOrWhiteSpace(x.Genus), () => RuleFor(x => x.Genus!).Genus());
       When(x => !string.IsNullOrWhiteSpace(x.Description), () => RuleFor(x => x.Description!).Description());
 

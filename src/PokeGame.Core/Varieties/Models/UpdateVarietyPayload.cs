@@ -8,7 +8,6 @@ public record UpdateVarietyPayload
 {
   public string? Key { get; set; }
   public Optional<string>? Name { get; set; }
-
   public Optional<string>? Genus { get; set; }
   public Optional<string>? Description { get; set; }
 
@@ -29,7 +28,6 @@ public record UpdateVarietyPayload
     {
       When(x => !string.IsNullOrWhiteSpace(x.Key), () => RuleFor(x => x.Key!).Slug());
       When(x => !string.IsNullOrWhiteSpace(x.Name?.Value), () => RuleFor(x => x.Name!.Value!).Name());
-
       When(x => !string.IsNullOrWhiteSpace(x.Genus?.Value), () => RuleFor(x => x.Genus!.Value!).Genus());
       When(x => !string.IsNullOrWhiteSpace(x.Description?.Value), () => RuleFor(x => x.Description!.Value!).Description());
 

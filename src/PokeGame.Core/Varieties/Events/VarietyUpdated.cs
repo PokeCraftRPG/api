@@ -5,7 +5,6 @@ namespace PokeGame.Core.Varieties.Events;
 public record VarietyUpdated : DomainEvent
 {
   public Optional<Name>? Name { get; set; }
-
   public Optional<Genus>? Genus { get; set; }
   public Optional<Description>? Description { get; set; }
 
