@@ -150,4 +150,6 @@ public class SpeciesBuilder : ISpeciesBuilder
 
     return species;
   }
+
+  // TODO(fpion): Examples
 }

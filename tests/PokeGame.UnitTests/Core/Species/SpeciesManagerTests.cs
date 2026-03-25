@@ -85,12 +85,11 @@ public class SpeciesManagerTests
   [Fact(DisplayName = "FindRegionalNumbersAsync: it should return the correct regional numbers.")]
   public async Task Given_Payloads_When_FindRegionalNumbersAsync_Then_RegionalNumbers()
   {
-    Region kanto = new RegionBuilder(_faker).WithKey(new Slug("kanto")).Build();
-    Region johto = new RegionBuilder(_faker).WithKey(new Slug("johto")).Build();
-    Region hoenn = new RegionBuilder(_faker).WithKey(new Slug("hoenn")).Build();
+    Region kanto = RegionBuilder.Kanto(_faker);
+    Region johto = RegionBuilder.Johto(_faker);
+    Region hoenn = RegionBuilder.Hoenn(_faker);
     RegionKey[] keys = new Region[] { kanto, johto, hoenn }.Select(region => new RegionKey(region.Id, region.EntityId, region.Key.Value)).ToArray();
     _regionQuerier.Setup(x => x.ListKeysAsync(_cancellationToken)).ReturnsAsync(keys);
-
 
     RegionalNumberPayload[] payloads =
     [
@@ -109,13 +108,13 @@ public class SpeciesManagerTests
   [Fact(DisplayName = "FindRegionalNumbersAsync: it should throw RegionsNotFoundException when some regions were not found.")]
   public async Task Given_NotFound_When_FindRegionalNumbersAsync_Then_RegionsNotFoundException()
   {
-    Region kanto = new RegionBuilder(_faker).WithKey(new Slug("kanto")).Build();
-    Region johto = new RegionBuilder(_faker).WithKey(new Slug("johto")).Build();
+    Region kanto = RegionBuilder.Kanto(_faker);
+    Region johto = RegionBuilder.Johto(_faker);
     RegionKey[] keys = new Region[] { kanto, johto }.Select(region => new RegionKey(region.Id, region.EntityId, region.Key.Value)).ToArray();
     _regionQuerier.Setup(x => x.ListKeysAsync(_cancellationToken)).ReturnsAsync(keys);
 
-    Region hoenn = new RegionBuilder(_faker).WithKey(new Slug("hoenn")).Build();
-    Region sinnoh = new RegionBuilder(_faker).WithKey(new Slug("sinnoh")).Build();
+    Region hoenn = RegionBuilder.Hoenn(_faker);
+    Region sinnoh = RegionBuilder.Sinnoh(_faker);
     RegionalNumberPayload[] payloads =
     [
       new() { Region = kanto.EntityId.ToString(), Number = 25 },
