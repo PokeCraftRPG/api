@@ -3,6 +3,16 @@ using PokeGame.Core.Forms.Validators;
 
 namespace PokeGame.Core.Forms;
 
+public interface IBaseStatistics
+{
+  byte HP { get; }
+  byte Attack { get; }
+  byte Defense { get; }
+  byte SpecialAttack { get; }
+  byte SpecialDefense { get; }
+  byte Speed { get; }
+}
+
 public record BaseStatistics : IBaseStatistics
 {
   public byte HP { get; }

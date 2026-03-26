@@ -122,4 +122,13 @@ public class AbilityBuilder : IAbilityBuilder
     .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Static_(Ability)"))
     .WithNotes(new Notes("On contact, 30% chance to paralyze the attacker (each hit can trigger). Outside battle, increases chance of encountering Electric-type Pokémon."))
     .Build();
+
+  public static Ability SurgeSurfer(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("surge-surfer"))
+    .WithName(new Name("Surge Surfer"))
+    .WithDescription(new Description("Doubles the Pokémon's Speed stat on Electric Terrain."))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Surge_Surfer_(Ability)"))
+    .WithNotes(new Notes("On Electric Terrain, this Pokémon’s Speed is doubled; no effect outside battle."))
+    .Build();
 }

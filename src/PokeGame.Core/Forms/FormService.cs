@@ -18,6 +18,7 @@ internal class FormService : IFormService
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IFormService, FormService>();
+    services.AddTransient<IFormManager, FormManager>();
     services.AddTransient<ICommandHandler<CreateOrReplaceFormCommand, CreateOrReplaceFormResult>, CreateOrReplaceFormCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateFormCommand, FormModel?>, UpdateFormCommandHandler>();
     services.AddTransient<IQueryHandler<ReadFormQuery, FormModel?>, ReadFormQueryHandler>();

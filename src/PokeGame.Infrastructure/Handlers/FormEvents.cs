@@ -84,6 +84,8 @@ internal class FormEvents : IEventHandler<FormCreated>,
     {
       form.Update(@event);
 
+      // TODO(fpion): Abilities
+
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
   }

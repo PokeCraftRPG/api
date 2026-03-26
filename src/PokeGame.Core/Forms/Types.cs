@@ -3,6 +3,12 @@ using PokeGame.Core.Forms.Validators;
 
 namespace PokeGame.Core.Forms;
 
+public interface ITypes
+{
+  PokemonType Primary { get; }
+  PokemonType? Secondary { get; }
+}
+
 public record Types : ITypes
 {
   public PokemonType Primary { get; }

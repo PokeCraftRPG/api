@@ -127,6 +127,7 @@ public class Form : AggregateRoot, IEntityProvider
     get => _abilities ?? throw new InvalidOperationException("The form was not initialized.");
     set
     {
+      // TODO(fpion): should be in the same world as the form
       if (_abilities != value)
       {
         _abilities = value;
@@ -238,6 +239,7 @@ public class Form : AggregateRoot, IEntityProvider
     FormId formId) : base(formId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(Id, variety, nameof(variety));
+    // TODO(fpion): abilities should be in the same world as the form
 
     Raise(new FormCreated(variety.Id, isDefault, key, height, weight, types, abilities, baseStatistics, yield, sprites), userId.ActorId);
   }
