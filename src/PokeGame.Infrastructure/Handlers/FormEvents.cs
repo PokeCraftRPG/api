@@ -1,6 +1,8 @@
 ﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using PokeGame.Core.Abilities;
+using PokeGame.Core.Forms;
 using PokeGame.Core.Forms.Events;
 using PokeGame.Infrastructure.Entities;
 
@@ -37,10 +39,9 @@ internal class FormEvents : IEventHandler<FormCreated>,
         ?? throw new InvalidOperationException($"The variety entity 'StreamId={@event.VarietyId}' was not found.");
 
       form = new(variety, @event);
+      await SetAbilitiesAsync(form, @event.Abilities, cancellationToken);
 
       _pokemon.Forms.Add(form);
-
-      // TODO(fpion): Abilities
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
@@ -86,9 +87,57 @@ internal class FormEvents : IEventHandler<FormCreated>,
     {
       form.Update(@event);
 
-      // TODO(fpion): Abilities
+      if (@event.Abilities is not null)
+      {
+        await SetAbilitiesAsync(form, @event.Abilities, cancellationToken);
+      }
 
       await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  private async Task SetAbilitiesAsync(FormEntity form, Abilities abilities, CancellationToken cancellationToken)
+  {
+    List<string> streamIds = new(capacity: 3)
+    {
+      abilities.Primary.Value
+    };
+    if (abilities.Secondary.HasValue)
+    {
+      streamIds.Add(abilities.Secondary.Value.Value);
+    }
+    if (abilities.Hidden.HasValue)
+    {
+      streamIds.Add(abilities.Hidden.Value.Value);
+    }
+    Dictionary<string, AbilityEntity> abilitiesById = await _pokemon.Abilities
+      .Where(x => streamIds.Contains(x.StreamId))
+      .ToDictionaryAsync(x => x.StreamId, x => x, cancellationToken);
+
+    Dictionary<AbilitySlot, AbilityEntity> slots = new(capacity: 3);
+    if (abilitiesById.TryGetValue(abilities.Primary.Value, out AbilityEntity? primary))
+    {
+      slots[AbilitySlot.Primary] = primary;
+    }
+    if (abilities.Secondary.HasValue && abilitiesById.TryGetValue(abilities.Secondary.Value.Value, out AbilityEntity? secondary))
+    {
+      slots[AbilitySlot.Secondary] = secondary;
+    }
+    if (abilities.Hidden.HasValue && abilitiesById.TryGetValue(abilities.Hidden.Value.Value, out AbilityEntity? hidden))
+    {
+      slots[AbilitySlot.Hidden] = hidden;
+    }
+
+    foreach (FormAbilityEntity ability in form.Abilities)
+    {
+      if (!slots.ContainsKey(ability.Slot))
+      {
+        _pokemon.FormAbilities.Remove(ability);
+      }
+    }
+    foreach (KeyValuePair<AbilitySlot, AbilityEntity> ability in slots)
+    {
+      form.SetAbility(ability.Key, ability.Value);
     }
   }
 }

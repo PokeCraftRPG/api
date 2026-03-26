@@ -1,6 +1,7 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
 using PokeGame.Core;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Forms.Events;
 
@@ -97,6 +98,20 @@ internal class FormEntity : AggregateEntity
       }
     }
     return actorIds;
+  }
+
+  public void SetAbility(AbilitySlot slot, AbilityEntity ability)
+  {
+    FormAbilityEntity? entity = Abilities.SingleOrDefault(a => a.Slot == slot);
+    if (entity is null)
+    {
+      entity = new FormAbilityEntity(this, ability, slot);
+      Abilities.Add(entity);
+    }
+    else
+    {
+      entity.SetAbility(ability);
+    }
   }
 
   public void SetDefault(FormDefaultChanged @event)
