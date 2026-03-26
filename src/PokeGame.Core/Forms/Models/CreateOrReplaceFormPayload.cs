@@ -21,7 +21,7 @@ public record CreateOrReplaceFormPayload
 
   public TypesModel Types { get; set; } = new();
   // TODO(fpion): Abilities
-  // TODO(fpion): BaseStatistics
+  public BaseStatisticsModel BaseStatistics { get; set; } = new();
   public YieldModel Yield { get; set; } = new();
   public SpritesModel Sprites { get; set; } = new();
 
@@ -57,7 +57,7 @@ public record CreateOrReplaceFormPayload
 
       RuleFor(x => x.Types).NotNull().SetValidator(new TypesValidator());
       // TODO(fpion): Abilities
-      // TODO(fpion): BaseStatistics
+      RuleFor(x => x.BaseStatistics).SetValidator(new BaseStatisticsValidator());
       RuleFor(x => x.Yield).SetValidator(new YieldValidator());
       RuleFor(x => x.Sprites).SetValidator(new SpritesValidator());
 

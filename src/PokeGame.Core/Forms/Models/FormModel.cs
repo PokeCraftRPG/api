@@ -20,7 +20,7 @@ public class FormModel : Aggregate
 
   public TypesModel Types { get; set; } = new();
   // TODO(fpion): Abilities
-  // TODO(fpion): BaseStatistics
+  public BaseStatisticsModel BaseStatistics { get; set; } = new();
   public YieldModel Yield { get; set; } = new();
   public SpritesModel Sprites { get; set; } = new();
 

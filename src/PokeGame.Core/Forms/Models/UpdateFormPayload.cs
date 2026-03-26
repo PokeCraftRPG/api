@@ -20,7 +20,7 @@ public record UpdateFormPayload
 
   public TypesModel? Types { get; set; }
   // TODO(fpion): Abilities
-  // TODO(fpion): BaseStatistics
+  public BaseStatisticsModel? BaseStatistics { get; set; }
   public YieldModel? Yield { get; set; }
   public SpritesModel? Sprites { get; set; }
 
@@ -42,7 +42,7 @@ public record UpdateFormPayload
 
       When(x => x.Types is not null, () => RuleFor(x => x.Types!).SetValidator(new TypesValidator()));
       // TODO(fpion): Abilities
-      // TODO(fpion): BaseStatistics
+      When(x => x.BaseStatistics is not null, () => RuleFor(x => x.BaseStatistics!).SetValidator(new BaseStatisticsValidator()));
       When(x => x.Yield is not null, () => RuleFor(x => x.Yield!).SetValidator(new YieldValidator()));
       When(x => x.Sprites is not null, () => RuleFor(x => x.Sprites!).SetValidator(new SpritesValidator()));
 

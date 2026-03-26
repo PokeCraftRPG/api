@@ -13,7 +13,7 @@ public class Form : AggregateRoot, IEntityProvider
   public bool HasUpdates => _updated.Name is not null || _updated.Description is not null
     || _updated.IsBattleOnly.HasValue || _updated.IsMega.HasValue
     || _updated.Height is not null || _updated.Weight is not null
-    || _updated.Types is not null || _updated.Yield is not null || _updated.Sprites is not null // TODO(fpion): Abilities, BaseStatistics
+    || _updated.Types is not null || _updated.BaseStatistics is not null || _updated.Yield is not null || _updated.Sprites is not null // TODO(fpion): Abilities
     || _updated.Url is not null || _updated.Note is not null;
 
   public new FormId Id => new(base.Id);
@@ -122,7 +122,19 @@ public class Form : AggregateRoot, IEntityProvider
     }
   }
   // TODO(fpion): Abilities
-  // TODO(fpion): BaseStatistics
+  private BaseStatistics? _baseStatistics = null;
+  public BaseStatistics BaseStatistics
+  {
+    get => _baseStatistics ?? throw new InvalidOperationException("The form was not initialized.");
+    set
+    {
+      if (_baseStatistics != value)
+      {
+        _baseStatistics = value;
+        _updated.BaseStatistics = value;
+      }
+    }
+  }
   private Yield? _yield = null;
   public Yield Yield
   {
@@ -183,17 +195,37 @@ public class Form : AggregateRoot, IEntityProvider
   {
   }
 
-  public Form(World world, Variety variety, bool isDefault, Slug key, Height height, Weight weight, Types types, Yield yield, Sprites sprites, UserId? userId = null)
-    : this(variety, isDefault, key, height, weight, types, yield, sprites, userId ?? world.OwnerId, FormId.NewId(world.Id))
+  public Form(
+    World world,
+    Variety variety,
+    bool isDefault,
+    Slug key,
+    Height height,
+    Weight weight,
+    Types types,
+    BaseStatistics baseStatistics,
+    Yield yield,
+    Sprites sprites,
+    UserId? userId = null) : this(variety, isDefault, key, height, weight, types, baseStatistics, yield, sprites, userId ?? world.OwnerId, FormId.NewId(world.Id))
   {
   }
 
-  public Form(Variety variety, bool isDefault, Slug key, Height height, Weight weight, Types types, Yield yield, Sprites sprites, UserId userId, FormId formId)
-    : base(formId.StreamId)
+  public Form(
+    Variety variety,
+    bool isDefault,
+    Slug key,
+    Height height,
+    Weight weight,
+    Types types,
+    BaseStatistics baseStatistics,
+    Yield yield,
+    Sprites sprites,
+    UserId userId,
+    FormId formId) : base(formId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(Id, variety, nameof(variety));
 
-    Raise(new FormCreated(variety.Id, isDefault, key, height, weight, types, yield, sprites), userId.ActorId);
+    Raise(new FormCreated(variety.Id, isDefault, key, height, weight, types, baseStatistics, yield, sprites), userId.ActorId);
   }
   protected virtual void Handle(FormCreated @event)
   {
@@ -206,6 +238,7 @@ public class Form : AggregateRoot, IEntityProvider
     _weight = @event.Weight;
 
     _types = @event.Types;
+    _baseStatistics = @event.BaseStatistics;
     _yield = @event.Yield;
     _sprites = @event.Sprites;
   }
@@ -287,7 +320,10 @@ public class Form : AggregateRoot, IEntityProvider
       _types = @event.Types;
     }
     // TODO(fpion): Abilities
-    // TODO(fpion): BaseStatistics
+    if (@event.BaseStatistics is not null)
+    {
+      _baseStatistics = @event.BaseStatistics;
+    }
     if (@event.Yield is not null)
     {
       _yield = @event.Yield;

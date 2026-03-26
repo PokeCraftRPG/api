@@ -31,6 +31,13 @@ internal class FormEntity : AggregateEntity
   public PokemonType PrimaryType { get; private set; }
   public PokemonType? SecondaryType { get; private set; }
 
+  public byte BaseHP { get; private set; }
+  public byte BaseAttack { get; private set; }
+  public byte BaseDefense { get; private set; }
+  public byte BaseSpecialAttack { get; private set; }
+  public byte BaseSpecialDefense { get; private set; }
+  public byte BaseSpeed { get; private set; }
+
   public int YieldExperience { get; private set; }
   public int YieldHP { get; private set; }
   public int YieldAttack { get; private set; }
@@ -64,6 +71,7 @@ internal class FormEntity : AggregateEntity
     Weight = @event.Weight.Value;
 
     SetTypes(@event.Types);
+    SetBaseStatistics(@event.BaseStatistics);
     SetYield(@event.Yield);
     SetSprites(@event.Sprites);
   }
@@ -131,6 +139,10 @@ internal class FormEntity : AggregateEntity
     {
       SetTypes(@event.Types);
     }
+    if (@event.BaseStatistics is not null)
+    {
+      SetBaseStatistics(@event.BaseStatistics);
+    }
     if (@event.Yield is not null)
     {
       SetYield(@event.Yield);
@@ -148,6 +160,16 @@ internal class FormEntity : AggregateEntity
     {
       Notes = @event.Note.Value?.Value;
     }
+  }
+
+  private void SetBaseStatistics(BaseStatistics baseStatistics)
+  {
+    BaseHP = baseStatistics.HP;
+    BaseAttack = baseStatistics.Attack;
+    BaseDefense = baseStatistics.Defense;
+    BaseSpecialAttack = baseStatistics.SpecialAttack;
+    BaseSpecialDefense = baseStatistics.SpecialDefense;
+    BaseSpeed = baseStatistics.Speed;
   }
 
   private void SetSprites(Sprites sprites)

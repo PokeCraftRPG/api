@@ -26,6 +26,7 @@ public class FormTests
     Height height = new(4);
     Weight weight = new(60);
     Types types = new(PokemonType.Electric);
+    BaseStatistics baseStatistics = new(35, 55, 40, 50, 50, 90);
     Yield yield = new(112, 0, 0, 0, 0, 0, 2);
     Sprites sprites = new(
       new Url("https://archives.bulbagarden.net/media/upload/8/85/HOME0025.png"),
@@ -34,7 +35,7 @@ public class FormTests
       new Url("https://archives.bulbagarden.net/media/upload/0/05/HOME0025_f_s.png"));
 
     var exception = Assert.Throws<WorldMismatchException>(
-      () => new Form(variety, isDefault: true, variety.Key, height, weight, types, yield, sprites, _world.OwnerId, formId));
+      () => new Form(variety, isDefault: true, variety.Key, height, weight, types, baseStatistics, yield, sprites, _world.OwnerId, formId));
     Assert.Equal(formId.GetEntity(), exception.Expected);
     Assert.Equal(variety.GetEntity(), Assert.Single(exception.Mismatched));
     Assert.Equal("variety", exception.ParamName);
