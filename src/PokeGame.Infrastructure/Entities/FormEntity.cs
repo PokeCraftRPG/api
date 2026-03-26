@@ -165,9 +165,9 @@ internal class FormEntity : AggregateEntity
     {
       Url = @event.Url.Value?.Value;
     }
-    if (@event.Note is not null)
+    if (@event.Notes is not null)
     {
-      Notes = @event.Note.Value?.Value;
+      Notes = @event.Notes.Value?.Value;
     }
   }
 

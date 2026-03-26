@@ -104,7 +104,7 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
     form.IsMega = payload.IsMega;
 
     form.Url = Url.TryCreate(payload.Url);
-    form.Note = Notes.TryCreate(payload.Notes);
+    form.Notes = Notes.TryCreate(payload.Notes);
 
     form.Update(userId);
 

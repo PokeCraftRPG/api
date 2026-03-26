@@ -221,4 +221,22 @@ public class VarietyBuilder : IVarietyBuilder
       .WithNotes(new Notes("This is the default variety."))
       .Build();
   }
+
+  public static Variety Raichu(Faker? faker = null, World? world = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new VarietyBuilder(faker)
+      .WithWorld(world)
+      .WithSpecies(SpeciesBuilder.Raichu(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("raichu"))
+      .WithName(new Name("Raichu"))
+      .WithGenus(new Genus("Mouse"))
+      .WithDescription(new Description("When its electricity builds, its muscles are stimulated, and it becomes more aggressive than usual."))
+      .WithGenderRatio(new GenderRatio(4))
+      .CanChangeForm()
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Raichu_(Pok%C3%A9mon)"))
+      .WithNotes(new Notes("This is the default variety."))
+      .Build();
+  }
 }

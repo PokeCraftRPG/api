@@ -20,5 +20,5 @@ public record FormUpdated : DomainEvent
   public Sprites? Sprites { get; set; }
 
   public Optional<Url>? Url { get; set; }
-  public Optional<Notes>? Note { get; set; }
+  public Optional<Notes>? Notes { get; set; }
 }

@@ -14,7 +14,7 @@ public class Form : AggregateRoot, IEntityProvider
     || _updated.IsBattleOnly.HasValue || _updated.IsMega.HasValue
     || _updated.Height is not null || _updated.Weight is not null
     || _updated.Types is not null || _updated.Abilities is not null || _updated.BaseStatistics is not null || _updated.Yield is not null || _updated.Sprites is not null
-    || _updated.Url is not null || _updated.Note is not null;
+    || _updated.Url is not null || _updated.Notes is not null;
 
   public new FormId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
@@ -127,7 +127,7 @@ public class Form : AggregateRoot, IEntityProvider
     get => _abilities ?? throw new InvalidOperationException("The form was not initialized.");
     set
     {
-      // TODO(fpion): should be in the same world as the form
+      ThrowIfMismatch(value, nameof(Abilities));
       if (_abilities != value)
       {
         _abilities = value;
@@ -188,21 +188,21 @@ public class Form : AggregateRoot, IEntityProvider
       }
     }
   }
-  private Notes? _note = null;
-  public Notes? Note
+  private Notes? _notes = null;
+  public Notes? Notes
   {
-    get => _note;
+    get => _notes;
     set
     {
-      if (_note != value)
+      if (_notes != value)
       {
-        _note = value;
-        _updated.Note = new Optional<Notes>(value);
+        _notes = value;
+        _updated.Notes = new Optional<Notes>(value);
       }
     }
   }
 
-  public long Size => Key.Size + (Name?.Size ?? 0) + (Description?.Size ?? 0) + (Url?.Size ?? 0) + (Note?.Size ?? 0) + Sprites.CalculateSize();
+  public long Size => Key.Size + (Name?.Size ?? 0) + (Description?.Size ?? 0) + (Url?.Size ?? 0) + (Notes?.Size ?? 0) + Sprites.CalculateSize();
 
   public Form() : base()
   {
@@ -239,7 +239,7 @@ public class Form : AggregateRoot, IEntityProvider
     FormId formId) : base(formId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(Id, variety, nameof(variety));
-    // TODO(fpion): abilities should be in the same world as the form
+    ThrowIfMismatch(abilities, nameof(abilities));
 
     Raise(new FormCreated(variety.Id, isDefault, key, height, weight, types, abilities, baseStatistics, yield, sprites), userId.ActorId);
   }
@@ -357,11 +357,33 @@ public class Form : AggregateRoot, IEntityProvider
     {
       _url = @event.Url.Value;
     }
-    if (@event.Note is not null)
+    if (@event.Notes is not null)
     {
-      _note = @event.Note.Value;
+      _notes = @event.Notes.Value;
     }
   }
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";
+
+  private void ThrowIfMismatch(Abilities abilities, string paramName)
+  {
+    List<IEntityProvider> mismatched = new(capacity: 3);
+    if (abilities.Primary.WorldId != WorldId)
+    {
+      mismatched.Add(abilities.Primary);
+    }
+    if (abilities.Secondary.HasValue && abilities.Secondary.Value.WorldId != WorldId)
+    {
+      mismatched.Add(abilities.Secondary.Value);
+    }
+    if (abilities.Hidden.HasValue && abilities.Hidden.Value.WorldId != WorldId)
+    {
+      mismatched.Add(abilities.Hidden.Value);
+    }
+
+    if (mismatched.Count > 0)
+    {
+      throw new WorldMismatchException(Id, mismatched, paramName);
+    }
+  }
 }

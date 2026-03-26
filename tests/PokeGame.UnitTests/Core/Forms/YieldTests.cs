@@ -6,7 +6,7 @@ public class YieldTests
   [Fact(DisplayName = "It should construct Yield from another instance.")]
   public void Given_Instance_When_ctor_Then_Yield()
   {
-    Yield instance = new(172, 0, 0, 0, 0, 0, 2);
+    Yield instance = new(112, 0, 0, 0, 0, 0, 2);
     Yield yield = new(instance);
     Assert.Equal(instance.Experience, yield.Experience);
     Assert.Equal(instance.HP, yield.HP);

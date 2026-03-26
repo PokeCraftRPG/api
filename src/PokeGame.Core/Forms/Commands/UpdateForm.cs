@@ -115,7 +115,7 @@ internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, For
     }
     if (payload.Note is not null)
     {
-      form.Note = Notes.TryCreate(payload.Note.Value);
+      form.Notes = Notes.TryCreate(payload.Note.Value);
     }
 
     form.Update(userId);
