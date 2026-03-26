@@ -55,6 +55,7 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
     Height height = new(payload.Height);
     Weight weight = new(payload.Weight);
     FormTypes types = new(payload.Types);
+    Yield yield = new(payload.Yield);
     Sprites sprites = new(
       new Url(payload.Sprites.Default),
       new Url(payload.Sprites.Shiny),
@@ -66,7 +67,7 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
     {
       await _permissionService.CheckAsync(Actions.CreateForm, cancellationToken);
 
-      form = new(variety, payload.IsDefault, key, height, weight, types, sprites, userId, formId);
+      form = new(variety, payload.IsDefault, key, height, weight, types, yield, sprites, userId, formId);
       created = true;
     }
     else
@@ -81,6 +82,13 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
       form.SetDefault(payload.IsDefault, userId);
       form.SetKey(key, userId);
 
+      form.Height = height;
+      form.Weight = weight;
+
+      form.Types = types;
+      // TODO(fpion): Abilities
+      // TODO(fpion): BaseStatistics
+      form.Yield = yield;
       form.Sprites = sprites;
     }
 
@@ -89,13 +97,6 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
 
     form.IsBattleOnly = payload.IsBattleOnly;
     form.IsMega = payload.IsMega;
-
-    form.Height = new Height(payload.Height);
-    form.Weight = new Weight(payload.Weight);
-
-    // TODO(fpion): Abilities
-    // TODO(fpion): BaseStatistics
-    // TODO(fpion): Yield
 
     form.Url = Url.TryCreate(payload.Url);
     form.Note = Notes.TryCreate(payload.Notes);

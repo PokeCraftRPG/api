@@ -21,7 +21,7 @@ public class FormModel : Aggregate
   public FormTypesModel Types { get; set; } = new();
   // TODO(fpion): Abilities
   // TODO(fpion): BaseStatistics
-  // TODO(fpion): Yield
+  public YieldModel Yield { get; set; } = new();
   public SpritesModel Sprites { get; set; } = new();
 
   public string? Url { get; set; }

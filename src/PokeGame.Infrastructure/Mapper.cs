@@ -133,7 +133,7 @@ internal class Mapper
       Types = new FormTypesModel(source.PrimaryType, source.SecondaryType),
       // TODO(fpion): Abilities
       // TODO(fpion): BaseStatistics
-      // TODO(fpion): Yield
+      Yield = new YieldModel(source.YieldExperience, source.YieldHP, source.YieldAttack, source.YieldDefense, source.YieldSpecialAttack, source.YieldSpecialDefense, source.YieldSpeed),
       Sprites = new SpritesModel(source.SpriteDefault, source.SpriteShiny, source.SpriteAlternative, source.SpriteAlternativeShiny),
       Url = source.Url,
       Notes = source.Notes

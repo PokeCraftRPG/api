@@ -21,7 +21,7 @@ public record UpdateFormPayload
   public FormTypesModel? Types { get; set; }
   // TODO(fpion): Abilities
   // TODO(fpion): BaseStatistics
-  // TODO(fpion): Yield
+  public YieldModel? Yield { get; set; }
   public SpritesModel? Sprites { get; set; }
 
   public Optional<string>? Url { get; set; }
@@ -43,7 +43,7 @@ public record UpdateFormPayload
       When(x => x.Types is not null, () => RuleFor(x => x.Types!).SetValidator(new FormTypesValidator()));
       // TODO(fpion): Abilities
       // TODO(fpion): BaseStatistics
-      // TODO(fpion): Yield
+      When(x => x.Yield is not null, () => RuleFor(x => x.Yield!).SetValidator(new YieldValidator()));
       When(x => x.Sprites is not null, () => RuleFor(x => x.Sprites!).SetValidator(new SpritesValidator()));
 
       When(x => !string.IsNullOrWhiteSpace(x.Url?.Value), () => RuleFor(x => x.Url!.Value!).Url());

@@ -87,7 +87,10 @@ internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, For
     }
     // TODO(fpion): Abilities
     // TODO(fpion): BaseStatistics
-    // TODO(fpion): Yield
+    if (payload.Yield is not null)
+    {
+      form.Yield = new Yield(payload.Yield);
+    }
     if (payload.Sprites is not null)
     {
       form.Sprites = new Sprites(

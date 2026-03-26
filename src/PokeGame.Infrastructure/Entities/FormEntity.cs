@@ -31,6 +31,14 @@ internal class FormEntity : AggregateEntity
   public PokemonType PrimaryType { get; private set; }
   public PokemonType? SecondaryType { get; private set; }
 
+  public int YieldExperience { get; private set; }
+  public int YieldHP { get; private set; }
+  public int YieldAttack { get; private set; }
+  public int YieldDefense { get; private set; }
+  public int YieldSpecialAttack { get; private set; }
+  public int YieldSpecialDefense { get; private set; }
+  public int YieldSpeed { get; private set; }
+
   public string SpriteDefault { get; private set; } = string.Empty;
   public string SpriteShiny { get; private set; } = string.Empty;
   public string? SpriteAlternative { get; private set; }
@@ -56,6 +64,7 @@ internal class FormEntity : AggregateEntity
     Weight = @event.Weight.Value;
 
     SetTypes(@event.Types);
+    SetYield(@event.Yield);
     SetSprites(@event.Sprites);
   }
 
@@ -122,6 +131,10 @@ internal class FormEntity : AggregateEntity
     {
       SetTypes(@event.Types);
     }
+    if (@event.Yield is not null)
+    {
+      SetYield(@event.Yield);
+    }
     if (@event.Sprites is not null)
     {
       SetSprites(@event.Sprites);
@@ -149,6 +162,17 @@ internal class FormEntity : AggregateEntity
   {
     PrimaryType = types.Primary;
     SecondaryType = types.Secondary;
+  }
+
+  private void SetYield(Yield yield)
+  {
+    YieldExperience = yield.Experience;
+    YieldHP = yield.HP;
+    YieldAttack = yield.Attack;
+    YieldDefense = yield.Defense;
+    YieldSpecialAttack = yield.SpecialAttack;
+    YieldSpecialDefense = yield.SpecialDefense;
+    YieldSpeed = yield.Speed;
   }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
