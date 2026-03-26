@@ -19,7 +19,7 @@ public class FormModel : Aggregate
   public int Weight { get; set; }
 
   public TypesModel Types { get; set; } = new();
-  // TODO(fpion): Abilities
+  public AbilitiesModel Abilities { get; set; } = new();
   public BaseStatisticsModel BaseStatistics { get; set; } = new();
   public YieldModel Yield { get; set; } = new();
   public SpritesModel Sprites { get; set; } = new();

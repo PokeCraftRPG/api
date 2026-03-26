@@ -19,7 +19,7 @@ public record UpdateFormPayload
   public int? Weight { get; set; }
 
   public TypesModel? Types { get; set; }
-  // TODO(fpion): Abilities
+  public AbilitiesPayload? Abilities { get; set; }
   public BaseStatisticsModel? BaseStatistics { get; set; }
   public YieldModel? Yield { get; set; }
   public SpritesModel? Sprites { get; set; }
@@ -41,7 +41,7 @@ public record UpdateFormPayload
       When(x => x.Weight.HasValue, () => RuleFor(x => x.Weight!.Value).Weight());
 
       When(x => x.Types is not null, () => RuleFor(x => x.Types!).SetValidator(new TypesValidator()));
-      // TODO(fpion): Abilities
+      When(x => x.Abilities is not null, () => RuleFor(x => x.Abilities!).SetValidator(new AbilitiesValidator()));
       When(x => x.BaseStatistics is not null, () => RuleFor(x => x.BaseStatistics!).SetValidator(new BaseStatisticsValidator()));
       When(x => x.Yield is not null, () => RuleFor(x => x.Yield!).SetValidator(new YieldValidator()));
       When(x => x.Sprites is not null, () => RuleFor(x => x.Sprites!).SetValidator(new SpritesValidator()));

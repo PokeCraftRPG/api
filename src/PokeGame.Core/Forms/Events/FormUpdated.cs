@@ -14,7 +14,7 @@ public record FormUpdated : DomainEvent
   public Weight? Weight { get; set; }
 
   public Types? Types { get; set; }
-  // TODO(fpion): Abilities
+  public Abilities? Abilities { get; set; }
   public BaseStatistics? BaseStatistics { get; set; }
   public Yield? Yield { get; set; }
   public Sprites? Sprites { get; set; }

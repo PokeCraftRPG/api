@@ -55,6 +55,7 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
     Height height = new(payload.Height);
     Weight weight = new(payload.Weight);
     Types types = new(payload.Types);
+    Abilities abilities = null!; // TODO(fpion): resolve Abilities
     BaseStatistics baseStatistics = new(payload.BaseStatistics);
     Yield yield = new(payload.Yield);
     Sprites sprites = new(
@@ -68,7 +69,7 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
     {
       await _permissionService.CheckAsync(Actions.CreateForm, cancellationToken);
 
-      form = new(variety, payload.IsDefault, key, height, weight, types, baseStatistics, yield, sprites, userId, formId);
+      form = new(variety, payload.IsDefault, key, height, weight, types, abilities, baseStatistics, yield, sprites, userId, formId);
       created = true;
     }
     else
@@ -87,7 +88,7 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
       form.Weight = weight;
 
       form.Types = types;
-      // TODO(fpion): Abilities
+      form.Abilities = abilities;
       form.BaseStatistics = baseStatistics;
       form.Yield = yield;
       form.Sprites = sprites;

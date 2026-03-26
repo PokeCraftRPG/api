@@ -10,10 +10,7 @@ public record FormCreated(
   Height Height,
   Weight Weight,
   Types Types,
+  Abilities Abilities,
   BaseStatistics BaseStatistics,
   Yield Yield,
   Sprites Sprites) : DomainEvent;
-
-/* TODO(fpion):
- * Abilities
- */

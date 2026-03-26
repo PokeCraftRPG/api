@@ -85,8 +85,14 @@ internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, For
     {
       form.Types = new Types(payload.Types);
     }
-    // TODO(fpion): Abilities
-    // TODO(fpion): BaseStatistics
+    if (payload.Abilities is not null)
+    {
+      form.Abilities = null!; // TODO(fpion): resolve Abilities
+    }
+    if (payload.BaseStatistics is not null)
+    {
+      form.BaseStatistics = new BaseStatistics(payload.BaseStatistics);
+    }
     if (payload.Yield is not null)
     {
       form.Yield = new Yield(payload.Yield);
