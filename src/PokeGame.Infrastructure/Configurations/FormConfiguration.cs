@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PokeGame.Core;
 using PokeGame.Infrastructure.Entities;
 
@@ -18,11 +19,22 @@ internal class FormConfiguration : AggregateConfiguration<FormEntity>, IEntityTy
     builder.HasIndex(x => new { x.WorldId, x.VarietyId, x.IsDefault });
     builder.HasIndex(x => new { x.WorldId, x.Key }).IsUnique();
     builder.HasIndex(x => new { x.WorldId, x.Name });
-    // TODO(fpion): complete
+    builder.HasIndex(x => new { x.WorldId, x.IsBattleOnly });
+    builder.HasIndex(x => new { x.WorldId, x.IsMega });
+    builder.HasIndex(x => new { x.WorldId, x.Height });
+    builder.HasIndex(x => new { x.WorldId, x.Weight });
+    builder.HasIndex(x => new { x.WorldId, x.PrimaryType });
+    builder.HasIndex(x => new { x.WorldId, x.SecondaryType });
+    builder.HasIndex(x => new { x.WorldId, x.YieldExperience });
 
     builder.Property(x => x.Key).HasMaxLength(Slug.MaximumLength);
     builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
-    // TODO(fpion): complete
+    builder.Property(x => x.PrimaryType).HasMaxLength(Constants.PokemonTypeMaximumLength).HasConversion(new EnumToStringConverter<PokemonType>());
+    builder.Property(x => x.SecondaryType).HasMaxLength(Constants.PokemonTypeMaximumLength).HasConversion(new EnumToStringConverter<PokemonType>());
+    builder.Property(x => x.SpriteDefault).HasMaxLength(Url.MaximumLength);
+    builder.Property(x => x.SpriteShiny).HasMaxLength(Url.MaximumLength);
+    builder.Property(x => x.SpriteAlternative).HasMaxLength(Url.MaximumLength);
+    builder.Property(x => x.SpriteAlternativeShiny).HasMaxLength(Url.MaximumLength);
     builder.Property(x => x.Url).HasMaxLength(Url.MaximumLength);
 
     builder.HasOne(x => x.World).WithMany(x => x.Forms).OnDelete(DeleteBehavior.Restrict);
