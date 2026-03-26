@@ -54,6 +54,8 @@ internal class FormEntity : AggregateEntity
   public string? Url { get; private set; }
   public string? Notes { get; private set; }
 
+  public List<FormAbilityEntity> Abilities { get; private set; } = [];
+
   public FormEntity(VarietyEntity variety, FormCreated @event) : base(@event)
   {
     Id = new FormId(@event.StreamId).EntityId;
@@ -86,6 +88,13 @@ internal class FormEntity : AggregateEntity
     if (Variety is not null)
     {
       actorIds.AddRange(Variety.GetActorIds());
+    }
+    foreach (FormAbilityEntity formAbility in Abilities)
+    {
+      if (formAbility.Ability is not null)
+      {
+        actorIds.AddRange(formAbility.Ability.GetActorIds());
+      }
     }
     return actorIds;
   }

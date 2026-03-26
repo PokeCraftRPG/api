@@ -2,6 +2,7 @@
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Moves.Models;
@@ -131,13 +132,35 @@ internal class Mapper
       Height = source.Height,
       Weight = source.Weight,
       Types = new TypesModel(source.PrimaryType, source.SecondaryType),
-      // TODO(fpion): Abilities
       BaseStatistics = new BaseStatisticsModel(source.BaseHP, source.BaseAttack, source.BaseDefense, source.BaseSpecialAttack, source.BaseSpecialDefense, source.BaseSpeed),
       Yield = new YieldModel(source.YieldExperience, source.YieldHP, source.YieldAttack, source.YieldDefense, source.YieldSpecialAttack, source.YieldSpecialDefense, source.YieldSpeed),
       Sprites = new SpritesModel(source.SpriteDefault, source.SpriteShiny, source.SpriteAlternative, source.SpriteAlternativeShiny),
       Url = source.Url,
       Notes = source.Notes
     };
+
+    foreach (FormAbilityEntity formAbility in source.Abilities)
+    {
+      if (formAbility.Ability is null)
+      {
+        throw new ArgumentException("The ability is required.", nameof(source));
+      }
+      AbilityModel ability = ToAbility(formAbility.Ability);
+      switch (formAbility.Slot)
+      {
+        case AbilitySlot.Primary:
+          destination.Abilities.Primary = ability;
+          break;
+        case AbilitySlot.Secondary:
+          destination.Abilities.Secondary = ability;
+          break;
+        case AbilitySlot.Hidden:
+          destination.Abilities.Hidden = ability;
+          break;
+        default:
+          throw new NotSupportedException($"The ability slot '{formAbility.Slot}' is not supported.");
+      }
+    }
 
     MapAggregate(source, destination);
 

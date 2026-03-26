@@ -66,8 +66,9 @@ internal class FormQuerier : IFormQuerier
   }
   public async Task<FormModel?> ReadAsync(FormId id, CancellationToken cancellationToken)
   {
-    FormEntity? form = await _forms.AsNoTracking()
+    FormEntity? form = await _forms.AsNoTracking().AsSplitQuery()
       .Where(x => x.StreamId == id.Value && x.World!.Id == _context.WorldUid)
+      .Include(x => x.Abilities).ThenInclude(x => x.Ability)
       .Include(x => x.Variety!).ThenInclude(x => x!.Species!).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
       .Include(x => x.Variety!).ThenInclude(x => x!.Moves).ThenInclude(x => x.Move)
       .SingleOrDefaultAsync(cancellationToken);
@@ -75,8 +76,9 @@ internal class FormQuerier : IFormQuerier
   }
   public async Task<FormModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
-    FormEntity? form = await _forms.AsNoTracking()
+    FormEntity? form = await _forms.AsNoTracking().AsSplitQuery()
       .Where(x => x.Id == id && x.World!.Id == _context.WorldUid)
+      .Include(x => x.Abilities).ThenInclude(x => x.Ability)
       .Include(x => x.Variety!).ThenInclude(x => x!.Species!).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
       .Include(x => x.Variety!).ThenInclude(x => x!.Moves).ThenInclude(x => x.Move)
       .SingleOrDefaultAsync(cancellationToken);
@@ -84,8 +86,9 @@ internal class FormQuerier : IFormQuerier
   }
   public async Task<FormModel?> ReadAsync(string key, CancellationToken cancellationToken)
   {
-    FormEntity? form = await _forms.AsNoTracking()
+    FormEntity? form = await _forms.AsNoTracking().AsSplitQuery()
       .Where(x => x.Key == Slug.Normalize(key) && x.World!.Id == _context.WorldUid)
+      .Include(x => x.Abilities).ThenInclude(x => x.Ability)
       .Include(x => x.Variety!).ThenInclude(x => x!.Species!).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
       .Include(x => x.Variety!).ThenInclude(x => x!.Moves).ThenInclude(x => x.Move)
       .SingleOrDefaultAsync(cancellationToken);
