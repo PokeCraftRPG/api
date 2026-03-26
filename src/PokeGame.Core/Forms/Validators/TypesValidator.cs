@@ -2,9 +2,9 @@
 
 namespace PokeGame.Core.Forms.Validators;
 
-internal class FormTypesValidator : AbstractValidator<IFormTypes>
+internal class TypesValidator : AbstractValidator<ITypes>
 {
-  public FormTypesValidator()
+  public TypesValidator()
   {
     RuleFor(x => x.Primary).IsInEnum();
     RuleFor(x => x.Secondary).IsInEnum().NotEqual(x => x.Primary);

@@ -108,8 +108,8 @@ public class Form : AggregateRoot, IEntityProvider
     }
   }
 
-  private FormTypes? _types = null;
-  public FormTypes Types
+  private Types? _types = null;
+  public Types Types
   {
     get => _types ?? throw new InvalidOperationException("The form was not initialized.");
     set
@@ -183,12 +183,12 @@ public class Form : AggregateRoot, IEntityProvider
   {
   }
 
-  public Form(World world, Variety variety, bool isDefault, Slug key, Height height, Weight weight, FormTypes types, Yield yield, Sprites sprites, UserId? userId = null)
+  public Form(World world, Variety variety, bool isDefault, Slug key, Height height, Weight weight, Types types, Yield yield, Sprites sprites, UserId? userId = null)
     : this(variety, isDefault, key, height, weight, types, yield, sprites, userId ?? world.OwnerId, FormId.NewId(world.Id))
   {
   }
 
-  public Form(Variety variety, bool isDefault, Slug key, Height height, Weight weight, FormTypes types, Yield yield, Sprites sprites, UserId userId, FormId formId)
+  public Form(Variety variety, bool isDefault, Slug key, Height height, Weight weight, Types types, Yield yield, Sprites sprites, UserId userId, FormId formId)
     : base(formId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(Id, variety, nameof(variety));

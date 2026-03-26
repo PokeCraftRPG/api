@@ -25,7 +25,7 @@ public class FormTests
 
     Height height = new(4);
     Weight weight = new(60);
-    FormTypes types = new(PokemonType.Electric);
+    Types types = new(PokemonType.Electric);
     Yield yield = new(112, 0, 0, 0, 0, 0, 2);
     Sprites sprites = new(
       new Url("https://archives.bulbagarden.net/media/upload/8/85/HOME0025.png"),

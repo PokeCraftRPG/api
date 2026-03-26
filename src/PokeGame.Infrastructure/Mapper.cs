@@ -130,7 +130,7 @@ internal class Mapper
       IsMega = source.IsMega,
       Height = source.Height,
       Weight = source.Weight,
-      Types = new FormTypesModel(source.PrimaryType, source.SecondaryType),
+      Types = new TypesModel(source.PrimaryType, source.SecondaryType),
       // TODO(fpion): Abilities
       // TODO(fpion): BaseStatistics
       Yield = new YieldModel(source.YieldExperience, source.YieldHP, source.YieldAttack, source.YieldDefense, source.YieldSpecialAttack, source.YieldSpecialDefense, source.YieldSpeed),

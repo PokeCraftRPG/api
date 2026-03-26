@@ -1,6 +1,6 @@
 ﻿namespace PokeGame.Core.Forms;
 
-public interface IFormTypes
+public interface ITypes
 {
   PokemonType Primary { get; }
   PokemonType? Secondary { get; }

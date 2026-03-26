@@ -18,7 +18,7 @@ public record UpdateFormPayload
   public int? Height { get; set; }
   public int? Weight { get; set; }
 
-  public FormTypesModel? Types { get; set; }
+  public TypesModel? Types { get; set; }
   // TODO(fpion): Abilities
   // TODO(fpion): BaseStatistics
   public YieldModel? Yield { get; set; }
@@ -40,7 +40,7 @@ public record UpdateFormPayload
       When(x => x.Height.HasValue, () => RuleFor(x => x.Height!.Value).Height());
       When(x => x.Weight.HasValue, () => RuleFor(x => x.Weight!.Value).Weight());
 
-      When(x => x.Types is not null, () => RuleFor(x => x.Types!).SetValidator(new FormTypesValidator()));
+      When(x => x.Types is not null, () => RuleFor(x => x.Types!).SetValidator(new TypesValidator()));
       // TODO(fpion): Abilities
       // TODO(fpion): BaseStatistics
       When(x => x.Yield is not null, () => RuleFor(x => x.Yield!).SetValidator(new YieldValidator()));

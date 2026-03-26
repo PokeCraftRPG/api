@@ -83,7 +83,7 @@ internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, For
 
     if (payload.Types is not null)
     {
-      form.Types = new FormTypes(payload.Types);
+      form.Types = new Types(payload.Types);
     }
     // TODO(fpion): Abilities
     // TODO(fpion): BaseStatistics

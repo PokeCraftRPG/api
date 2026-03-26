@@ -54,7 +54,7 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
     Slug key = new(payload.Key);
     Height height = new(payload.Height);
     Weight weight = new(payload.Weight);
-    FormTypes types = new(payload.Types);
+    Types types = new(payload.Types);
     Yield yield = new(payload.Yield);
     Sprites sprites = new(
       new Url(payload.Sprites.Default),
