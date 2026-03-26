@@ -51,6 +51,14 @@ internal class AbilityQuerier : IAbilityQuerier
     }
   }
 
+  public async Task<IReadOnlyCollection<AbilityKey>> ListKeysAsync(CancellationToken cancellationToken)
+  {
+    var keys = await _abilities.Where(x => x.World!.Id == _context.WorldUid)
+      .Select(x => new { x.StreamId, x.Id, x.Key })
+      .ToArrayAsync(cancellationToken);
+    return keys.Select(key => new AbilityKey(new AbilityId(key.StreamId), key.Id, key.Key)).ToList().AsReadOnly();
+  }
+
   public async Task<AbilityModel> ReadAsync(Ability ability, CancellationToken cancellationToken)
   {
     return await ReadAsync(ability.Id, cancellationToken) ?? throw new InvalidOperationException($"The ability entity '{ability}' was not found.");

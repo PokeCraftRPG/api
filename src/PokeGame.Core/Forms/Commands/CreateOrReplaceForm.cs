@@ -12,6 +12,7 @@ internal record CreateOrReplaceFormCommand(CreateOrReplaceFormPayload Payload, G
 internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrReplaceFormCommand, CreateOrReplaceFormResult>
 {
   private readonly IContext _context;
+  private readonly IFormManager _formManager;
   private readonly IFormQuerier _formQuerier;
   private readonly IFormRepository _formRepository;
   private readonly IPermissionService _permissionService;
@@ -20,6 +21,7 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
 
   public CreateOrReplaceFormCommandHandler(
     IContext context,
+    IFormManager formManager,
     IFormQuerier formQuerier,
     IFormRepository formRepository,
     IPermissionService permissionService,
@@ -27,6 +29,7 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
     IVarietyManager varietyManager)
   {
     _context = context;
+    _formManager = formManager;
     _formQuerier = formQuerier;
     _formRepository = formRepository;
     _permissionService = permissionService;
@@ -55,7 +58,7 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
     Height height = new(payload.Height);
     Weight weight = new(payload.Weight);
     Types types = new(payload.Types);
-    Abilities abilities = null!; // TODO(fpion): resolve Abilities
+    Abilities abilities = await _formManager.FindAbilitiesAsync(payload.Abilities, nameof(payload.Abilities), cancellationToken);
     BaseStatistics baseStatistics = new(payload.BaseStatistics);
     Yield yield = new(payload.Yield);
     Sprites sprites = new(

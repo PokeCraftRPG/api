@@ -10,6 +10,7 @@ internal record UpdateFormCommand(Guid Id, UpdateFormPayload Payload) : ICommand
 internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, FormModel?>
 {
   private readonly IContext _context;
+  private readonly IFormManager _formManager;
   private readonly IFormQuerier _formQuerier;
   private readonly IFormRepository _formRepository;
   private readonly IPermissionService _permissionService;
@@ -17,12 +18,14 @@ internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, For
 
   public UpdateFormCommandHandler(
     IContext context,
+    IFormManager formManager,
     IFormQuerier formQuerier,
     IFormRepository formRepository,
     IPermissionService permissionService,
     IStorageService storageService)
   {
     _context = context;
+    _formManager = formManager;
     _formQuerier = formQuerier;
     _formRepository = formRepository;
     _permissionService = permissionService;
@@ -87,7 +90,7 @@ internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, For
     }
     if (payload.Abilities is not null)
     {
-      form.Abilities = null!; // TODO(fpion): resolve Abilities
+      form.Abilities = await _formManager.FindAbilitiesAsync(payload.Abilities, nameof(payload.Abilities), cancellationToken);
     }
     if (payload.BaseStatistics is not null)
     {
