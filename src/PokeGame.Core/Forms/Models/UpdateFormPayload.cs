@@ -25,7 +25,7 @@ public record UpdateFormPayload
   public SpritesModel? Sprites { get; set; }
 
   public Optional<string>? Url { get; set; }
-  public Optional<string>? Note { get; set; }
+  public Optional<string>? Notes { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 
@@ -47,7 +47,7 @@ public record UpdateFormPayload
       When(x => x.Sprites is not null, () => RuleFor(x => x.Sprites!).SetValidator(new SpritesValidator()));
 
       When(x => !string.IsNullOrWhiteSpace(x.Url?.Value), () => RuleFor(x => x.Url!.Value!).Url());
-      When(x => !string.IsNullOrWhiteSpace(x.Note?.Value), () => RuleFor(x => x.Note!.Value!).Notes());
+      When(x => !string.IsNullOrWhiteSpace(x.Notes?.Value), () => RuleFor(x => x.Notes!.Value!).Notes());
     }
   }
 }

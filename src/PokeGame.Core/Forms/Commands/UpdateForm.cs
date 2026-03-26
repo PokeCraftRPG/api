@@ -113,9 +113,9 @@ internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, For
     {
       form.Url = Url.TryCreate(payload.Url.Value);
     }
-    if (payload.Note is not null)
+    if (payload.Notes is not null)
     {
-      form.Notes = Notes.TryCreate(payload.Note.Value);
+      form.Notes = Notes.TryCreate(payload.Notes.Value);
     }
 
     form.Update(userId);
