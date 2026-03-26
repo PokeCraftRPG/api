@@ -13,7 +13,7 @@ public class Form : AggregateRoot, IEntityProvider
   public bool HasUpdates => _updated.Name is not null || _updated.Description is not null
     || _updated.IsBattleOnly.HasValue || _updated.IsMega.HasValue
     || _updated.Height is not null || _updated.Weight is not null
-    || _updated.Types is not null // TODO(fpion): Abilities, BaseStatistics, Yield, Sprites
+    || _updated.Types is not null || _updated.Sprites is not null // TODO(fpion): Abilities, BaseStatistics, Yield
     || _updated.Url is not null || _updated.Note is not null;
 
   public new FormId Id => new(base.Id);
@@ -124,7 +124,19 @@ public class Form : AggregateRoot, IEntityProvider
   // TODO(fpion): Abilities
   // TODO(fpion): BaseStatistics
   // TODO(fpion): Yield
-  // TODO(fpion): Sprites
+  private Sprites? _sprites = null;
+  public Sprites Sprites
+  {
+    get => _sprites ?? throw new InvalidOperationException("The form was not initialized.");
+    set
+    {
+      if (_sprites != value)
+      {
+        _sprites = value;
+        _updated.Sprites = value;
+      }
+    }
+  }
 
   private Url? _url = null;
   public Url? Url
@@ -153,23 +165,23 @@ public class Form : AggregateRoot, IEntityProvider
     }
   }
 
-  public long Size => Key.Size + (Name?.Size ?? 0) + (Description?.Size ?? 0) + (Url?.Size ?? 0) + (Note?.Size ?? 0);
+  public long Size => Key.Size + (Name?.Size ?? 0) + (Description?.Size ?? 0) + (Url?.Size ?? 0) + (Note?.Size ?? 0) + Sprites.CalculateSize();
 
   public Form() : base()
   {
   }
 
-  public Form(World world, Variety variety, bool isDefault, Slug key, UserId? userId = null)
-    : this(variety, isDefault, key, userId ?? world.OwnerId, FormId.NewId(world.Id))
+  public Form(World world, Variety variety, bool isDefault, Slug key, Height height, Weight weight, FormTypes types, Sprites sprites, UserId? userId = null)
+    : this(variety, isDefault, key, height, weight, types, sprites, userId ?? world.OwnerId, FormId.NewId(world.Id))
   {
   }
 
-  public Form(Variety variety, bool isDefault, Slug key, UserId userId, FormId formId)
+  public Form(Variety variety, bool isDefault, Slug key, Height height, Weight weight, FormTypes types, Sprites sprites, UserId userId, FormId formId)
     : base(formId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(Id, variety, nameof(variety));
 
-    Raise(new FormCreated(variety.Id, isDefault, key), userId.ActorId);
+    Raise(new FormCreated(variety.Id, isDefault, key, height, weight, types, sprites), userId.ActorId);
   }
   protected virtual void Handle(FormCreated @event)
   {
@@ -177,6 +189,12 @@ public class Form : AggregateRoot, IEntityProvider
     IsDefault = @event.IsDefault;
 
     _key = @event.Key;
+
+    _height = @event.Height;
+    _weight = @event.Weight;
+
+    _types = @event.Types;
+    _sprites = @event.Sprites;
   }
 
   public void Delete(UserId userId)
@@ -258,7 +276,10 @@ public class Form : AggregateRoot, IEntityProvider
     // TODO(fpion): Abilities
     // TODO(fpion): BaseStatistics
     // TODO(fpion): Yield
-    // TODO(fpion): Sprites
+    if (@event.Sprites is not null)
+    {
+      _sprites = @event.Sprites;
+    }
 
     if (@event.Url is not null)
     {

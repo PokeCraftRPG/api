@@ -3,12 +3,10 @@ using PokeGame.Core.Varieties;
 
 namespace PokeGame.Core.Forms.Events;
 
-public record FormCreated(VarietyId VarietyId, bool IsDefault, Slug Key) : DomainEvent;
+public record FormCreated(VarietyId VarietyId, bool IsDefault, Slug Key, Height Height, Weight Weight, FormTypes Types, Sprites Sprites) : DomainEvent;
 
 /* TODO(fpion):
- * IsBattleOnly & IsMega
- * Height & Weight
- * Types & Abilities
- * Base Statistics & Yield
- * Sprites
+ * Abilities
+ * Base Statistics
+ * Yield
  */

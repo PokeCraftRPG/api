@@ -88,7 +88,14 @@ internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, For
     // TODO(fpion): Abilities
     // TODO(fpion): BaseStatistics
     // TODO(fpion): Yield
-    // TODO(fpion): Sprites
+    if (payload.Sprites is not null)
+    {
+      form.Sprites = new Sprites(
+        new Url(payload.Sprites.Default),
+        new Url(payload.Sprites.Shiny),
+        Url.TryCreate(payload.Sprites.Alternative),
+        Url.TryCreate(payload.Sprites.AlternativeShiny));
+    }
 
     if (payload.Url is not null)
     {

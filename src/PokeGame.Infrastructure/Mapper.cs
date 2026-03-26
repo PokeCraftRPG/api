@@ -134,7 +134,7 @@ internal class Mapper
       // TODO(fpion): Abilities
       // TODO(fpion): BaseStatistics
       // TODO(fpion): Yield
-      // TODO(fpion): Sprites
+      Sprites = new SpritesModel(source.SpriteDefault, source.SpriteShiny, source.SpriteAlternative, source.SpriteAlternativeShiny),
       Url = source.Url,
       Notes = source.Notes
     };

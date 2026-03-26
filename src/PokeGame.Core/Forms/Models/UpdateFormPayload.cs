@@ -22,7 +22,7 @@ public record UpdateFormPayload
   // TODO(fpion): Abilities
   // TODO(fpion): BaseStatistics
   // TODO(fpion): Yield
-  // TODO(fpion): Sprites
+  public SpritesModel? Sprites { get; set; }
 
   public Optional<string>? Url { get; set; }
   public Optional<string>? Note { get; set; }
@@ -44,7 +44,7 @@ public record UpdateFormPayload
       // TODO(fpion): Abilities
       // TODO(fpion): BaseStatistics
       // TODO(fpion): Yield
-      // TODO(fpion): Sprites
+      When(x => x.Sprites is not null, () => RuleFor(x => x.Sprites!).SetValidator(new SpritesValidator()));
 
       When(x => !string.IsNullOrWhiteSpace(x.Url?.Value), () => RuleFor(x => x.Url!.Value!).Url());
       When(x => !string.IsNullOrWhiteSpace(x.Note?.Value), () => RuleFor(x => x.Note!.Value!).Notes());

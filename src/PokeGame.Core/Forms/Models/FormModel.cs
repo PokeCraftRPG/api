@@ -22,7 +22,7 @@ public class FormModel : Aggregate
   // TODO(fpion): Abilities
   // TODO(fpion): BaseStatistics
   // TODO(fpion): Yield
-  // TODO(fpion): Sprites
+  public SpritesModel Sprites { get; set; } = new();
 
   public string? Url { get; set; }
   public string? Notes { get; set; }

@@ -17,7 +17,7 @@ public record FormUpdated : DomainEvent
   // TODO(fpion): Abilities
   // TODO(fpion): BaseStatistics
   // TODO(fpion): Yield
-  // TODO(fpion): Sprites
+  public Sprites? Sprites { get; set; }
 
   public Optional<Url>? Url { get; set; }
   public Optional<Notes>? Note { get; set; }

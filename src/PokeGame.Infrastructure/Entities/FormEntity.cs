@@ -31,6 +31,11 @@ internal class FormEntity : AggregateEntity
   public PokemonType PrimaryType { get; private set; }
   public PokemonType? SecondaryType { get; private set; }
 
+  public string SpriteDefault { get; private set; } = string.Empty;
+  public string SpriteShiny { get; private set; } = string.Empty;
+  public string? SpriteAlternative { get; private set; }
+  public string? SpriteAlternativeShiny { get; private set; }
+
   public string? Url { get; private set; }
   public string? Notes { get; private set; }
 
@@ -46,6 +51,12 @@ internal class FormEntity : AggregateEntity
     IsDefault = @event.IsDefault;
 
     Key = @event.Key.Value;
+
+    Height = @event.Height.Value;
+    Weight = @event.Weight.Value;
+
+    SetTypes(@event.Types);
+    SetSprites(@event.Sprites);
   }
 
   private FormEntity() : base()
@@ -109,8 +120,11 @@ internal class FormEntity : AggregateEntity
 
     if (@event.Types is not null)
     {
-      PrimaryType = @event.Types.Primary;
-      SecondaryType = @event.Types.Secondary;
+      SetTypes(@event.Types);
+    }
+    if (@event.Sprites is not null)
+    {
+      SetSprites(@event.Sprites);
     }
 
     if (@event.Url is not null)
@@ -121,6 +135,20 @@ internal class FormEntity : AggregateEntity
     {
       Notes = @event.Note.Value?.Value;
     }
+  }
+
+  private void SetSprites(Sprites sprites)
+  {
+    SpriteDefault = sprites.Default.Value;
+    SpriteShiny = sprites.Shiny.Value;
+    SpriteAlternative = sprites.Alternative?.Value;
+    SpriteAlternativeShiny = sprites.AlternativeShiny?.Value;
+  }
+
+  private void SetTypes(FormTypes types)
+  {
+    PrimaryType = types.Primary;
+    SecondaryType = types.Secondary;
   }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
