@@ -51,13 +51,22 @@ internal class VarietyQuerier : IVarietyQuerier
     }
   }
 
+  public async Task<VarietyId?> FindIdAsync(string key, CancellationToken cancellationToken)
+  {
+    string normalized = Slug.Normalize(key);
+    string? streamId = await _varieties.Where(x => x.World!.Id == _context.WorldUid && x.Key == normalized)
+      .Select(x => x.StreamId)
+      .SingleOrDefaultAsync(cancellationToken);
+    return streamId is null ? null : new VarietyId(streamId);
+  }
+
   public async Task<VarietyModel> ReadAsync(Variety variety, CancellationToken cancellationToken)
   {
     return await ReadAsync(variety.Id, cancellationToken) ?? throw new InvalidOperationException($"The variety entity '{variety}' was not found.");
   }
   public async Task<VarietyModel?> ReadAsync(VarietyId id, CancellationToken cancellationToken)
   {
-    VarietyEntity? variety = await _varieties.AsNoTracking()
+    VarietyEntity? variety = await _varieties.AsNoTracking().AsSplitQuery()
       .Where(x => x.StreamId == id.Value && x.World!.Id == _context.WorldUid)
       .Include(x => x.Species!).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
       .Include(x => x.Moves).ThenInclude(x => x.Move)
@@ -66,7 +75,7 @@ internal class VarietyQuerier : IVarietyQuerier
   }
   public async Task<VarietyModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
-    VarietyEntity? variety = await _varieties.AsNoTracking()
+    VarietyEntity? variety = await _varieties.AsNoTracking().AsSplitQuery()
       .Where(x => x.Id == id && x.World!.Id == _context.WorldUid)
       .Include(x => x.Species!).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
       .Include(x => x.Moves).ThenInclude(x => x.Move)
@@ -75,7 +84,7 @@ internal class VarietyQuerier : IVarietyQuerier
   }
   public async Task<VarietyModel?> ReadAsync(string key, CancellationToken cancellationToken)
   {
-    VarietyEntity? variety = await _varieties.AsNoTracking()
+    VarietyEntity? variety = await _varieties.AsNoTracking().AsSplitQuery()
       .Where(x => x.Key == Slug.Normalize(key) && x.World!.Id == _context.WorldUid)
       .Include(x => x.Species!).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
       .Include(x => x.Moves).ThenInclude(x => x.Move)

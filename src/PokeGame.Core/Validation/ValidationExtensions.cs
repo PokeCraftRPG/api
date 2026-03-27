@@ -34,6 +34,11 @@ public static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(Varieties.Genus.MaximumLength);
   }
 
+  public static IRuleBuilderOptions<T, int> Height<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThan(0);
+  }
+
   public static IRuleBuilderOptions<T, int> Level<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
     return ruleBuilder.InclusiveBetween(Pokemon.Level.MinimumValue, Pokemon.Level.MaximumValue);
@@ -72,5 +77,10 @@ public static class ValidationExtensions
   public static IRuleBuilderOptions<T, string> Url<T>(this IRuleBuilderInitial<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Core.Url.MaximumLength).SetValidator(new UrlValidator<T>());
+  }
+
+  public static IRuleBuilderOptions<T, int> Weight<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThan(0);
   }
 }

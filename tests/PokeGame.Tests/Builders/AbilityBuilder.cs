@@ -105,5 +105,30 @@ public class AbilityBuilder : IAbilityBuilder
     return ability;
   }
 
-  // TODO(fpion): Examples
+  public static Ability LightningRod(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("lightning-rod"))
+    .WithName(new Name("Lightning Rod"))
+    .WithDescription(new Description("The Pokémon draws in all Electric-type moves. Instead of taking damage from them, its Sp. Atk stat is boosted."))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Lightning_Rod_(Ability)"))
+    .WithNotes(new Notes("Draws all Electric-type moves to itself, nullifies their damage, and boosts Sp. Atk."))
+    .Build();
+
+  public static Ability Static(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("static"))
+    .WithName(new Name("Static"))
+    .WithDescription(new Description("The Pokémon is charged with static electricity and may paralyze attackers that make direct contact with it."))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Static_(Ability)"))
+    .WithNotes(new Notes("On contact, 30% chance to paralyze the attacker (each hit can trigger). Outside battle, increases chance of encountering Electric-type Pokémon."))
+    .Build();
+
+  public static Ability SurgeSurfer(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("surge-surfer"))
+    .WithName(new Name("Surge Surfer"))
+    .WithDescription(new Description("Doubles the Pokémon's Speed stat on Electric Terrain."))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Surge_Surfer_(Ability)"))
+    .WithNotes(new Notes("On Electric Terrain, this Pokémon’s Speed is doubled; no effect outside battle."))
+    .Build();
 }

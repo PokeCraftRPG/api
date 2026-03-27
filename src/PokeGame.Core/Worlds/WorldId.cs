@@ -2,7 +2,7 @@
 
 namespace PokeGame.Core.Worlds;
 
-public readonly struct WorldId
+public readonly struct WorldId : IEntityProvider
 {
   public StreamId StreamId { get; }
   public string Value => StreamId.Value;
@@ -24,6 +24,8 @@ public readonly struct WorldId
 
   public static WorldId NewId() => new(Guid.NewGuid());
   public Guid ToGuid() => Entity.Parse(Value, World.EntityKind).Id;
+
+  public Entity GetEntity() => new(World.EntityKind, ToGuid());
 
   public static bool operator ==(WorldId left, WorldId right) => left.Equals(right);
   public static bool operator !=(WorldId left, WorldId right) => !left.Equals(right);

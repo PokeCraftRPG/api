@@ -44,13 +44,9 @@ public class SpeciesNotFoundException : NotFoundException
     PropertyName = propertyName;
   }
 
-  private static string BuildMessage(WorldId worldId, string species, string propertyName)
-  {
-    StringBuilder message = new();
-    message.AppendLine(ErrorMessage);
-    message.Append(nameof(WorldId)).Append(": ").Append(worldId.ToGuid()).AppendLine();
-    message.Append(nameof(PropertyName)).Append(": ").AppendLine(propertyName);
-    message.Append(nameof(Species)).Append(": ").AppendLine(species);
-    return message.ToString();
-  }
+  private static string BuildMessage(WorldId worldId, string species, string propertyName) => new ErrorMessageBuilder(ErrorMessage)
+    .AddData(nameof(WorldId), worldId.ToGuid())
+    .AddData(nameof(Species), species)
+    .AddData(nameof(PropertyName), propertyName)
+    .Build();
 }

@@ -2,7 +2,9 @@
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
+using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
@@ -107,6 +109,57 @@ internal class Mapper
     {
       RegionEntity region = regionalNumber.Region ?? throw new ArgumentException("The region is required.", nameof(source));
       destination.RegionalNumbers.Add(new RegionalNumberModel(ToRegion(region), regionalNumber.Number));
+    }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public FormModel ToForm(FormEntity source)
+  {
+    VarietyEntity variety = source.Variety ?? throw new ArgumentException("The variety is required.", nameof(source));
+    FormModel destination = new()
+    {
+      Id = source.Id,
+      Variety = ToVariety(variety),
+      IsDefault = source.IsDefault,
+      Key = source.Key,
+      Name = source.Name,
+      Description = source.Description,
+      IsBattleOnly = source.IsBattleOnly,
+      IsMega = source.IsMega,
+      Height = source.Height,
+      Weight = source.Weight,
+      Types = new TypesModel(source.PrimaryType, source.SecondaryType),
+      BaseStatistics = new BaseStatisticsModel(source.BaseHP, source.BaseAttack, source.BaseDefense, source.BaseSpecialAttack, source.BaseSpecialDefense, source.BaseSpeed),
+      Yield = new YieldModel(source.YieldExperience, source.YieldHP, source.YieldAttack, source.YieldDefense, source.YieldSpecialAttack, source.YieldSpecialDefense, source.YieldSpeed),
+      Sprites = new SpritesModel(source.SpriteDefault, source.SpriteShiny, source.SpriteAlternative, source.SpriteAlternativeShiny),
+      Url = source.Url,
+      Notes = source.Notes
+    };
+
+    foreach (FormAbilityEntity formAbility in source.Abilities)
+    {
+      if (formAbility.Ability is null)
+      {
+        throw new ArgumentException("The ability is required.", nameof(source));
+      }
+      AbilityModel ability = ToAbility(formAbility.Ability);
+      switch (formAbility.Slot)
+      {
+        case AbilitySlot.Primary:
+          destination.Abilities.Primary = ability;
+          break;
+        case AbilitySlot.Secondary:
+          destination.Abilities.Secondary = ability;
+          break;
+        case AbilitySlot.Hidden:
+          destination.Abilities.Hidden = ability;
+          break;
+        default:
+          throw new NotSupportedException($"The ability slot '{formAbility.Slot}' is not supported.");
+      }
     }
 
     MapAggregate(source, destination);

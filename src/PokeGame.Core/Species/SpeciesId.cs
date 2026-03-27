@@ -3,7 +3,7 @@ using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Species;
 
-public readonly struct SpeciesId
+public readonly struct SpeciesId : IEntityProvider
 {
   public StreamId StreamId { get; }
   public string Value => StreamId.Value;
@@ -34,6 +34,8 @@ public readonly struct SpeciesId
   }
 
   public static SpeciesId NewId(WorldId worldId) => new(worldId, Guid.NewGuid());
+
+  public Entity GetEntity() => new(SpeciesAggregate.EntityKind, EntityId, WorldId);
 
   public static bool operator ==(SpeciesId left, SpeciesId right) => left.Equals(right);
   public static bool operator !=(SpeciesId left, SpeciesId right) => !left.Equals(right);

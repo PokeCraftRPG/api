@@ -102,6 +102,212 @@ namespace PokeGame.PostgreSQL.Migrations
                     b.ToTable("Abilities", "Pokemon");
                 });
 
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.FormAbilityEntity", b =>
+                {
+                    b.Property<int>("FormId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("AbilityId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Slot")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.HasKey("FormId", "AbilityId");
+
+                    b.HasIndex("AbilityId");
+
+                    b.HasIndex("FormId", "Slot")
+                        .IsUnique();
+
+                    b.ToTable("FormAbilities", "Pokemon");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.FormEntity", b =>
+                {
+                    b.Property<int>("FormId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("FormId"));
+
+                    b.Property<byte>("BaseAttack")
+                        .HasColumnType("smallint");
+
+                    b.Property<byte>("BaseDefense")
+                        .HasColumnType("smallint");
+
+                    b.Property<byte>("BaseHP")
+                        .HasColumnType("smallint");
+
+                    b.Property<byte>("BaseSpecialAttack")
+                        .HasColumnType("smallint");
+
+                    b.Property<byte>("BaseSpecialDefense")
+                        .HasColumnType("smallint");
+
+                    b.Property<byte>("BaseSpeed")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsBattleOnly")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsMega")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PrimaryType")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<string>("SecondaryType")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<string>("SpriteAlternative")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("SpriteAlternativeShiny")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("SpriteDefault")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("SpriteShiny")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<string>("StreamId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Url")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<int>("VarietyId")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Weight")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("WorldId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("YieldAttack")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("YieldDefense")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("YieldExperience")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("YieldHP")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("YieldSpecialAttack")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("YieldSpecialDefense")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("YieldSpeed")
+                        .HasColumnType("integer");
+
+                    b.HasKey("FormId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("CreatedOn");
+
+                    b.HasIndex("StreamId")
+                        .IsUnique();
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.HasIndex("UpdatedOn");
+
+                    b.HasIndex("VarietyId");
+
+                    b.HasIndex("Version");
+
+                    b.HasIndex("WorldId", "Height");
+
+                    b.HasIndex("WorldId", "Id")
+                        .IsUnique();
+
+                    b.HasIndex("WorldId", "IsBattleOnly");
+
+                    b.HasIndex("WorldId", "IsMega");
+
+                    b.HasIndex("WorldId", "Key")
+                        .IsUnique();
+
+                    b.HasIndex("WorldId", "Name");
+
+                    b.HasIndex("WorldId", "PrimaryType");
+
+                    b.HasIndex("WorldId", "SecondaryType");
+
+                    b.HasIndex("WorldId", "Weight");
+
+                    b.HasIndex("WorldId", "YieldExperience");
+
+                    b.HasIndex("WorldId", "VarietyId", "IsDefault");
+
+                    b.ToTable("Forms", "Pokemon");
+                });
+
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.MoveEntity", b =>
                 {
                     b.Property<int>("MoveId")
@@ -652,6 +858,44 @@ namespace PokeGame.PostgreSQL.Migrations
                     b.Navigation("World");
                 });
 
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.FormAbilityEntity", b =>
+                {
+                    b.HasOne("PokeGame.Infrastructure.Entities.AbilityEntity", "Ability")
+                        .WithMany("Forms")
+                        .HasForeignKey("AbilityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PokeGame.Infrastructure.Entities.FormEntity", "Form")
+                        .WithMany("Abilities")
+                        .HasForeignKey("FormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ability");
+
+                    b.Navigation("Form");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.FormEntity", b =>
+                {
+                    b.HasOne("PokeGame.Infrastructure.Entities.VarietyEntity", "Variety")
+                        .WithMany("Forms")
+                        .HasForeignKey("VarietyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PokeGame.Infrastructure.Entities.WorldEntity", "World")
+                        .WithMany("Forms")
+                        .HasForeignKey("WorldId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Variety");
+
+                    b.Navigation("World");
+                });
+
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.MoveEntity", b =>
                 {
                     b.HasOne("PokeGame.Infrastructure.Entities.WorldEntity", "World")
@@ -742,6 +986,16 @@ namespace PokeGame.PostgreSQL.Migrations
                     b.Navigation("Variety");
                 });
 
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.AbilityEntity", b =>
+                {
+                    b.Navigation("Forms");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.FormEntity", b =>
+                {
+                    b.Navigation("Abilities");
+                });
+
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.MoveEntity", b =>
                 {
                     b.Navigation("Varieties");
@@ -761,12 +1015,16 @@ namespace PokeGame.PostgreSQL.Migrations
 
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.VarietyEntity", b =>
                 {
+                    b.Navigation("Forms");
+
                     b.Navigation("Moves");
                 });
 
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.WorldEntity", b =>
                 {
                     b.Navigation("Abilities");
+
+                    b.Navigation("Forms");
 
                     b.Navigation("Moves");
 

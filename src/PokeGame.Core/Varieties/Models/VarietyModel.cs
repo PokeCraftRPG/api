@@ -1,4 +1,5 @@
 ﻿using Krakenar.Contracts;
+using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Species.Models;
 
 namespace PokeGame.Core.Varieties.Models;
@@ -19,7 +20,7 @@ public class VarietyModel : Aggregate
   public string? Notes { get; set; }
 
   public bool CanChangeForm { get; set; }
-  // TODO(fpion): Forms
+  public List<FormModel> Forms { get; set; } = [];
 
   public List<VarietyMoveModel> Moves { get; set; } = [];
 
