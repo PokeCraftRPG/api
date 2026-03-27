@@ -80,7 +80,7 @@ public class MoveIntegrationTests : IntegrationTests
     Assert.Equal(payload.Notes.Trim(), move.Notes);
   }
 
-  [Fact(DisplayName = "It should read an move by ID.")]
+  [Fact(DisplayName = "It should read a move by ID.")]
   public async Task Given_Id_When_Read_Then_Found()
   {
     Guid id = _move.EntityId;
@@ -89,7 +89,7 @@ public class MoveIntegrationTests : IntegrationTests
     Assert.Equal(id, move.Id);
   }
 
-  [Fact(DisplayName = "It should read an move by key.")]
+  [Fact(DisplayName = "It should read a move by key.")]
   public async Task Given_Key_When_Read_Then_Found()
   {
     MoveModel? move = await _moveService.ReadAsync(id: null, $" {_move.Key.Value.ToUpperInvariant()} ");

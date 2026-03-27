@@ -70,7 +70,7 @@ public class RegionIntegrationTests : IntegrationTests
     Assert.Equal(payload.Notes.Trim(), region.Notes);
   }
 
-  [Fact(DisplayName = "It should read an region by ID.")]
+  [Fact(DisplayName = "It should read a region by ID.")]
   public async Task Given_Id_When_Read_Then_Found()
   {
     Guid id = _region.EntityId;
@@ -79,7 +79,7 @@ public class RegionIntegrationTests : IntegrationTests
     Assert.Equal(id, region.Id);
   }
 
-  [Fact(DisplayName = "It should read an region by key.")]
+  [Fact(DisplayName = "It should read a region by key.")]
   public async Task Given_Key_When_Read_Then_Found()
   {
     RegionModel? region = await _regionService.ReadAsync(id: null, $" {_region.Key.Value.ToUpperInvariant()} ");
