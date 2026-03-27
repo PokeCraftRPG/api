@@ -73,4 +73,6 @@ public class SlugTests
   {
     Assert.Null(Slug.TryCreate(value));
   }
+
+  // TODO(fpion): ValidationException when the value is null, empty or white-space
 }

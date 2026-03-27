@@ -4,7 +4,7 @@ using PokeGame.Core.Species.Models;
 
 namespace PokeGame.Core.Species.Queries;
 
-internal record ReadSpeciesQuery(Guid? Id, string? Key) : IQuery<SpeciesModel?>;
+internal record ReadSpeciesQuery(Guid? Id, string? Key) : IQuery<SpeciesModel?>; // TODO(fpion): Number
 
 internal class ReadSpeciesQueryHandler : IQueryHandler<ReadSpeciesQuery, SpeciesModel?>
 {

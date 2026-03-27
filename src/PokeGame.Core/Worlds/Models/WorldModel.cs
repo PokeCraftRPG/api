@@ -8,5 +8,7 @@ public class WorldModel : Aggregate
   public string? Name { get; set; }
   public string? Description { get; set; }
 
+  // TODO(fpion): Owner
+
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
 }

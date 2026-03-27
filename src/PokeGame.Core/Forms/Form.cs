@@ -208,6 +208,8 @@ public class Form : AggregateRoot, IEntityProvider
   {
   }
 
+  // TODO(fpion): should we add IsBattleOnly and IsMega?
+
   public Form(
     World world,
     Variety variety,

@@ -44,6 +44,16 @@ public static class ValidationExtensions
     return ruleBuilder.InclusiveBetween(Pokemon.Level.MinimumValue, Pokemon.Level.MaximumValue);
   }
 
+  public static IRuleBuilderOptions<T, string> License<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty().MaximumLength(Trainers.License.MaximumLength);
+  }
+
+  public static IRuleBuilderOptions<T, int> Money<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThanOrEqualTo(0);
+  }
+
   public static IRuleBuilderOptions<T, string> Name<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Core.Name.MaximumLength);
