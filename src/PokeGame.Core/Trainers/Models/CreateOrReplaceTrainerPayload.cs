@@ -5,7 +5,7 @@ namespace PokeGame.Core.Trainers.Models;
 
 public record CreateOrReplaceTrainerPayload
 {
-  public Guid? UserId { get; set; }
+  public Guid? OwnerId { get; set; }
 
   public string License { get; set; } = string.Empty;
 
@@ -36,7 +36,7 @@ public record CreateOrReplaceTrainerPayload
   {
     public Validator()
     {
-      // TODO(fpion): License
+      RuleFor(x => x.License).License();
 
       RuleFor(x => x.Key).Slug();
       When(x => !string.IsNullOrWhiteSpace(x.Name), () => RuleFor(x => x.Name!).Name());

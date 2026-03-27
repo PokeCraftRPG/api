@@ -2,4 +2,4 @@
 
 namespace PokeGame.Core.Trainers.Events;
 
-public record TrainerCreated(Slug Key, TrainerGender Gender) : DomainEvent; // TODO(fpion): License
+public record TrainerCreated(License License, Slug Key, TrainerGender Gender) : DomainEvent;

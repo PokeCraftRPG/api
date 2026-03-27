@@ -25,12 +25,14 @@ internal class TrainerQuerier : ITrainerQuerier
 
   public async Task EnsureUnicityAsync(Trainer trainer, CancellationToken cancellationToken)
   {
+    License? license = null;
     Slug? key = null;
 
     foreach (IEvent change in trainer.Changes)
     {
       if (change is TrainerCreated created)
       {
+        license = created.License;
         key = created.Key;
       }
       else if (change is TrainerKeyChanged changed)
@@ -39,7 +41,16 @@ internal class TrainerQuerier : ITrainerQuerier
       }
     }
 
-    // TODO(fpion): License
+    if (license is not null)
+    {
+      string? streamId = await _trainers.Where(x => x.World!.Id == trainer.WorldId.ToGuid() && x.License == license.Value)
+        .Select(x => x.StreamId)
+        .SingleOrDefaultAsync(cancellationToken);
+      if (streamId is not null && streamId != trainer.Id.Value)
+      {
+        throw new PropertyConflictException<string>(trainer, new TrainerId(streamId).EntityId, license.Value, nameof(Trainer.License));
+      }
+    }
 
     if (key is not null)
     {

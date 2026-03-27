@@ -4,7 +4,7 @@ namespace PokeGame.Core.Trainers.Models;
 
 public class TrainerModel : Aggregate
 {
-  public Guid? UserId { get; set; }
+  public Guid? OwnerId { get; set; }
 
   public string License { get; set; } = string.Empty;
 

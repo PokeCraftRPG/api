@@ -53,12 +53,17 @@ internal class CreateOrReplaceTrainerCommandHandler : ICommandHandler<CreateOrRe
     {
       await _permissionService.CheckAsync(Actions.CreateTrainer, cancellationToken);
 
-      trainer = new(key, payload.Gender, userId, trainerId);
+      trainer = new(new License(payload.License), key, payload.Gender, userId, trainerId);
       created = true;
     }
     else
     {
       await _permissionService.CheckAsync(Actions.Update, trainer, cancellationToken);
+
+      if (payload.License != trainer.License.Value)
+      {
+        throw new ImmutablePropertyException<string>(trainer, trainer.License.Value, payload.License, nameof(payload.License));
+      }
 
       trainer.SetKey(key, userId);
       trainer.Gender = payload.Gender;
@@ -74,6 +79,8 @@ internal class CreateOrReplaceTrainerCommandHandler : ICommandHandler<CreateOrRe
     trainer.Notes = Notes.TryCreate(payload.Notes);
 
     trainer.Update(userId);
+
+    // TODO(fpion): OwnerId
 
     await _trainerQuerier.EnsureUnicityAsync(trainer, cancellationToken);
 

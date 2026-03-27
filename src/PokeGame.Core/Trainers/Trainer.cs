@@ -17,7 +17,10 @@ public class Trainer : AggregateRoot, IEntityProvider
   public WorldId WorldId => Id.WorldId;
   public Guid EntityId => Id.EntityId;
 
-  // TODO(fpion): License
+  public UserId? OwnerId { get; private set; }
+
+  private License? _license = null;
+  public License License => _license ?? throw new InvalidOperationException("The trainer was not initialized.");
 
   private Slug? _key = null;
   public Slug Key => _key ?? throw new InvalidOperationException("The trainer was not initialized.");
@@ -119,25 +122,31 @@ public class Trainer : AggregateRoot, IEntityProvider
     }
   }
 
-  public long Size => Key.Size + (Name?.Size ?? 0) + (Description?.Size ?? 0) + (Sprite?.Size ?? 0) + (Url?.Size ?? 0) + (Notes?.Size ?? 0); // TODO(fpion): License
+  public long Size => License.Size + Key.Size + (Name?.Size ?? 0) + (Description?.Size ?? 0) + (Sprite?.Size ?? 0) + (Url?.Size ?? 0) + (Notes?.Size ?? 0);
 
   public Trainer() : base()
   {
   }
 
-  public Trainer(World world, Slug key, TrainerGender gender, UserId? userId = null)
-    : this(key, gender, userId ?? world.OwnerId, TrainerId.NewId(world.Id))
+  public Trainer(World world, License license, Slug key, TrainerGender gender, UserId? userId = null)
+    : this(license, key, gender, userId ?? world.OwnerId, TrainerId.NewId(world.Id))
   {
   }
 
-  public Trainer(Slug key, TrainerGender gender, UserId userId, TrainerId trainerId)
+  public Trainer(License license, Slug key, TrainerGender gender, UserId userId, TrainerId trainerId)
     : base(trainerId.StreamId)
   {
-    Raise(new TrainerCreated(key, gender), userId.ActorId);
-  }
+    if (!Enum.IsDefined(gender))
+    {
+      throw new ArgumentOutOfRangeException(nameof(gender));
+    }
 
+    Raise(new TrainerCreated(license, key, gender), userId.ActorId);
+  }
   protected virtual void Handle(TrainerCreated @event)
   {
+    _license = @event.License;
+
     _key = @event.Key;
 
     _gender = @event.Gender;
@@ -160,10 +169,21 @@ public class Trainer : AggregateRoot, IEntityProvider
       Raise(new TrainerKeyChanged(key), userId.ActorId);
     }
   }
-
   protected virtual void Handle(TrainerKeyChanged @event)
   {
     _key = @event.Key;
+  }
+
+  public void SetOwner(UserId? ownerId, UserId userId)
+  {
+    if (OwnerId != ownerId)
+    {
+      Raise(new TrainerOwnershipChanged(ownerId), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(TrainerOwnershipChanged @event)
+  {
+    OwnerId = @event.OwnerId;
   }
 
   public void Update(UserId userId)
@@ -174,7 +194,6 @@ public class Trainer : AggregateRoot, IEntityProvider
       _updated = new();
     }
   }
-
   protected virtual void Handle(TrainerUpdated @event)
   {
     if (@event.Name is not null)

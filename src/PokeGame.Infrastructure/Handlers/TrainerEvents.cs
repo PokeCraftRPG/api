@@ -8,13 +8,18 @@ using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Handlers;
 
-internal class TrainerEvents : IEventHandler<TrainerCreated>, IEventHandler<TrainerDeleted>, IEventHandler<TrainerKeyChanged>, IEventHandler<TrainerUpdated>
+internal class TrainerEvents : IEventHandler<TrainerCreated>,
+  IEventHandler<TrainerDeleted>,
+  IEventHandler<TrainerKeyChanged>,
+  IEventHandler<TrainerOwnershipChanged>,
+  IEventHandler<TrainerUpdated>
 {
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IEventHandler<TrainerCreated>, TrainerEvents>();
     services.AddTransient<IEventHandler<TrainerDeleted>, TrainerEvents>();
     services.AddTransient<IEventHandler<TrainerKeyChanged>, TrainerEvents>();
+    services.AddTransient<IEventHandler<TrainerOwnershipChanged>, TrainerEvents>();
     services.AddTransient<IEventHandler<TrainerUpdated>, TrainerEvents>();
   }
 
@@ -59,6 +64,17 @@ internal class TrainerEvents : IEventHandler<TrainerCreated>, IEventHandler<Trai
     if (trainer is not null && trainer.Version == (@event.Version - 1))
     {
       trainer.SetKey(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(TrainerOwnershipChanged @event, CancellationToken cancellationToken)
+  {
+    TrainerEntity? trainer = await _pokemon.Trainers.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (trainer is not null && trainer.Version == (@event.Version - 1))
+    {
+      trainer.SetOwner(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

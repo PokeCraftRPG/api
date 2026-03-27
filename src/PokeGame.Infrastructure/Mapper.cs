@@ -173,7 +173,7 @@ internal class Mapper
     TrainerModel destination = new()
     {
       Id = source.Id,
-      // TODO(fpion): UserId
+      OwnerId = source.OwnerId,
       License = source.License,
       Key = source.Key,
       Name = source.Name,

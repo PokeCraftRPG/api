@@ -82,6 +82,8 @@ internal class UpdateTrainerCommandHandler : ICommandHandler<UpdateTrainerComman
 
     trainer.Update(userId);
 
+    // TODO(fpion): OwnerId
+
     await _trainerQuerier.EnsureUnicityAsync(trainer, cancellationToken);
 
     await _storageService.ExecuteWithQuotaAsync(
