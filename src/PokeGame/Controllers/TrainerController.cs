@@ -28,14 +28,21 @@ public class TrainerController : ControllerBase
   [HttpGet("{id}")]
   public async Task<ActionResult<TrainerModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
-    TrainerModel? trainer = await _trainerService.ReadAsync(id, key: null, cancellationToken);
+    TrainerModel? trainer = await _trainerService.ReadAsync(id, license: null, key: null, cancellationToken);
     return trainer is null ? NotFound() : Ok(trainer);
   }
 
   [HttpGet("key:{key}")]
   public async Task<ActionResult<TrainerModel>> ReadAsync(string key, CancellationToken cancellationToken)
   {
-    TrainerModel? trainer = await _trainerService.ReadAsync(id: null, key, cancellationToken);
+    TrainerModel? trainer = await _trainerService.ReadAsync(id: null, license: null, key, cancellationToken);
+    return trainer is null ? NotFound() : Ok(trainer);
+  }
+
+  [HttpGet("license:{license}")]
+  public async Task<ActionResult<TrainerModel>> ReadByLicenseAsync(string license, CancellationToken cancellationToken)
+  {
+    TrainerModel? trainer = await _trainerService.ReadAsync(id: null, license, key: null, cancellationToken);
     return trainer is null ? NotFound() : Ok(trainer);
   }
 

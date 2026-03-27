@@ -42,7 +42,7 @@ public class ReadMoveQueryHandlerTests
     Assert.Same(move, result);
   }
 
-  [Fact(DisplayName = "It should throw TooManyResultsException when many abilities were found.")]
+  [Fact(DisplayName = "It should throw TooManyResultsException when many moves were found.")]
   public async Task Given_ManyFound_When_ExecuteAsync_Then_TooManyResultsException()
   {
     MoveModel move1 = new()

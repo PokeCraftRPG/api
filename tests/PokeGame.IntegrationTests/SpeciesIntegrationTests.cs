@@ -101,7 +101,7 @@ public class SpeciesIntegrationTests : IntegrationTests
     Assert.Contains(species.RegionalNumbers, x => x.Region.Id == _johto.EntityId && x.Number == 22);
   }
 
-  [Fact(DisplayName = "It should read an species by ID.")]
+  [Fact(DisplayName = "It should read a species by ID.")]
   public async Task Given_Id_When_Read_Then_Found()
   {
     Guid id = _species.EntityId;
@@ -110,10 +110,18 @@ public class SpeciesIntegrationTests : IntegrationTests
     Assert.Equal(id, species.Id);
   }
 
-  [Fact(DisplayName = "It should read an species by key.")]
+  [Fact(DisplayName = "It should read a species by key.")]
   public async Task Given_Key_When_Read_Then_Found()
   {
-    SpeciesModel? species = await _speciesService.ReadAsync(id: null, $" {_species.Key.Value.ToUpperInvariant()} ");
+    SpeciesModel? species = await _speciesService.ReadAsync(id: null, number: null, $" {_species.Key.Value.ToUpperInvariant()} ");
+    Assert.NotNull(species);
+    Assert.Equal(_species.EntityId, species.Id);
+  }
+
+  [Fact(DisplayName = "It should read a species by number.")]
+  public async Task Given_Number_When_Read_Then_Found()
+  {
+    SpeciesModel? species = await _speciesService.ReadAsync(id: null, _species.Number.Value);
     Assert.NotNull(species);
     Assert.Equal(_species.EntityId, species.Id);
   }

@@ -17,13 +17,14 @@ public class DescriptionTests
     Assert.Equal(value.Trim(), description.Value);
   }
 
-  [Fact(DisplayName = "ctor: it should throw ValidationException when the value is too long.")]
-  public void Given_TooLong_When_ctor_Then_ValidationException()
+  [Theory(DisplayName = "ctor: it should throw ValidationException when the value is empty.")]
+  [InlineData("")]
+  [InlineData("  ")]
+  public void Given_Empty_When_ctor_Then_ValidationException(string value)
   {
-    string value = _faker.Random.String(Description.MaximumLength + 1);
     var exception = Assert.Throws<FluentValidation.ValidationException>(() => new Description(value));
     Assert.Single(exception.Errors);
-    Assert.Contains(exception.Errors, e => e.ErrorCode == "MaximumLengthValidator" && e.PropertyName == "Value");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "Value");
   }
 
   [Fact(DisplayName = "Size: it should return the correct size.")]
@@ -58,6 +59,4 @@ public class DescriptionTests
   {
     Assert.Null(Description.TryCreate(value));
   }
-
-  // TODO(fpion): ValidationException when the value is null, empty or white-space
 }

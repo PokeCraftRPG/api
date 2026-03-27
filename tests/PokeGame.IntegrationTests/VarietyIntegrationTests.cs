@@ -107,7 +107,7 @@ public class VarietyIntegrationTests : IntegrationTests
     Assert.Contains(variety.Moves, x => x.Move.Id == _thunderShock.EntityId && x.Level == 1);
   }
 
-  [Fact(DisplayName = "It should read an variety by ID.")]
+  [Fact(DisplayName = "It should read a variety by ID.")]
   public async Task Given_Id_When_Read_Then_Found()
   {
     Guid id = _variety.EntityId;
@@ -116,7 +116,7 @@ public class VarietyIntegrationTests : IntegrationTests
     Assert.Equal(id, variety.Id);
   }
 
-  [Fact(DisplayName = "It should read an variety by key.")]
+  [Fact(DisplayName = "It should read a variety by key.")]
   public async Task Given_Key_When_Read_Then_Found()
   {
     VarietyModel? variety = await _varietyService.ReadAsync(id: null, $" {_variety.Key.Value.ToUpperInvariant()} ");

@@ -1,4 +1,5 @@
 ﻿using Krakenar.Contracts;
+using Krakenar.Contracts.Actors;
 
 namespace PokeGame.Core.Worlds.Models;
 
@@ -8,7 +9,7 @@ public class WorldModel : Aggregate
   public string? Name { get; set; }
   public string? Description { get; set; }
 
-  // TODO(fpion): Owner
+  public Actor Owner { get; set; } = new();
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
 }

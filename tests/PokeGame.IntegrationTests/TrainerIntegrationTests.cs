@@ -7,7 +7,7 @@ using PokeGame.Core.Trainers.Models;
 namespace PokeGame;
 
 [Trait(Traits.Category, Categories.Integration)]
-public class TrainerIntegrationTests : IntegrationTests // TODO(fpion): tests have invalid display names, e.g. an form, or 'replace the existing'
+public class TrainerIntegrationTests : IntegrationTests
 {
   private readonly ITrainerRepository _trainerRepository;
   private readonly ITrainerService _trainerService;
@@ -78,7 +78,7 @@ public class TrainerIntegrationTests : IntegrationTests // TODO(fpion): tests ha
     Assert.Equal(payload.Notes.Trim(), trainer.Notes);
   }
 
-  [Fact(DisplayName = "It should read an trainer by ID.")]
+  [Fact(DisplayName = "It should read a trainer by ID.")]
   public async Task Given_Id_When_Read_Then_Found()
   {
     Guid id = _trainer.EntityId;
@@ -87,10 +87,18 @@ public class TrainerIntegrationTests : IntegrationTests // TODO(fpion): tests ha
     Assert.Equal(id, trainer.Id);
   }
 
-  [Fact(DisplayName = "It should read an trainer by key.")]
+  [Fact(DisplayName = "It should read a trainer by key.")]
   public async Task Given_Key_When_Read_Then_Found()
   {
-    TrainerModel? trainer = await _trainerService.ReadAsync(id: null, $" {_trainer.Key.Value.ToUpperInvariant()} ");
+    TrainerModel? trainer = await _trainerService.ReadAsync(id: null, license: null, $" {_trainer.Key.Value.ToUpperInvariant()} ");
+    Assert.NotNull(trainer);
+    Assert.Equal(_trainer.EntityId, trainer.Id);
+  }
+
+  [Fact(DisplayName = "It should read a trainer by license.")]
+  public async Task Given_License_When_Read_Then_Found()
+  {
+    TrainerModel? trainer = await _trainerService.ReadAsync(id: null, $" {_trainer.License.Value.ToUpperInvariant()} ");
     Assert.NotNull(trainer);
     Assert.Equal(_trainer.EntityId, trainer.Id);
   }

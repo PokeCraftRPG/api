@@ -128,8 +128,6 @@ public class Trainer : AggregateRoot, IEntityProvider
   {
   }
 
-  // TODO(fpion): should we add Money and Owner?
-
   public Trainer(World world, License license, Slug key, TrainerGender gender, UserId? userId = null)
     : this(license, key, gender, userId ?? world.OwnerId, TrainerId.NewId(world.Id))
   {

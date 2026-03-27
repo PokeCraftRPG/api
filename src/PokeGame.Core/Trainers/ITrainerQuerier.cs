@@ -10,4 +10,5 @@ public interface ITrainerQuerier
   Task<TrainerModel?> ReadAsync(TrainerId id, CancellationToken cancellationToken = default);
   Task<TrainerModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
   Task<TrainerModel?> ReadAsync(string key, CancellationToken cancellationToken = default);
+  Task<TrainerModel?> ReadByLicenseAsync(string key, CancellationToken cancellationToken = default);
 }

@@ -17,6 +17,17 @@ public class SlugTests
     Assert.Equal(SlugValue, slug.Value);
   }
 
+  [Theory(DisplayName = "ctor: it should throw ValidationException when the value is empty.")]
+  [InlineData("")]
+  [InlineData("  ")]
+  public void Given_Empty_When_ctor_Then_ValidationException(string value)
+  {
+    var exception = Assert.Throws<FluentValidation.ValidationException>(() => new Slug(value));
+    Assert.Equal(2, exception.Errors.Count());
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "Value");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "SlugValidator" && e.PropertyName == "Value");
+  }
+
   [Fact(DisplayName = "ctor: it should throw ValidationException when the value is not valid.")]
   public void Given_Invalid_When_ctor_Then_ValidationException()
   {
@@ -73,6 +84,4 @@ public class SlugTests
   {
     Assert.Null(Slug.TryCreate(value));
   }
-
-  // TODO(fpion): ValidationException when the value is null, empty or white-space
 }

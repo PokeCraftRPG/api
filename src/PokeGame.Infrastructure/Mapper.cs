@@ -226,7 +226,8 @@ internal class Mapper
       Id = source.Id,
       Key = source.Key,
       Name = source.Name,
-      Description = source.Description
+      Description = source.Description,
+      Owner = FindActor(source.OwnerId)
     };
 
     MapAggregate(source, destination);

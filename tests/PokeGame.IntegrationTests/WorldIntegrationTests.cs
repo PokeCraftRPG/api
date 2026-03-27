@@ -51,6 +51,7 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Equal(payload.Key.ToLowerInvariant(), world.Key);
     Assert.Equal(payload.Name.Trim(), world.Name);
     Assert.Equal(payload.Description.Trim(), world.Description);
+    Assert.Equal(Actor, world.Owner);
   }
 
   [Fact(DisplayName = "It should read a world by ID.")]
@@ -94,6 +95,7 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Equal(payload.Key.ToLowerInvariant(), world.Key);
     Assert.Equal(payload.Name.Trim(), world.Name);
     Assert.Equal(payload.Description.Trim(), world.Description);
+    Assert.Equal(Actor, world.Owner);
   }
 
   [Fact(DisplayName = "It should throw PropertyConflictException when there is a key conflict.")]
@@ -135,5 +137,6 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Equal(World.Key.Value, world.Key);
     Assert.Equal(payload.Name.Value?.Trim(), world.Name);
     Assert.Equal(payload.Description.Value?.Trim(), world.Description);
+    Assert.Equal(Actor, world.Owner);
   }
 }

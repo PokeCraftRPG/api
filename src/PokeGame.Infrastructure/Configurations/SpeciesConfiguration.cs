@@ -33,8 +33,8 @@ internal class SpeciesConfiguration : AggregateConfiguration<SpeciesEntity>, IEn
     builder.HasIndex(x => new { x.WorldId, x.SecondaryEggGroup });
 
     builder.Property(x => x.Category).HasMaxLength(CategoryMaximumLength).HasConversion(new EnumToStringConverter<PokemonCategory>());
-    builder.Property(x => x.Key).HasMaxLength(Slug.MaximumLength);
-    builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
+    builder.Property(x => x.Key).HasMaxLength(Constants.SlugMaximumLength);
+    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
     builder.Property(x => x.GrowthRate).HasMaxLength(GrowthRateMaximumLength).HasConversion(new EnumToStringConverter<GrowthRate>());
     builder.Property(x => x.PrimaryEggGroup).HasMaxLength(EggGroupMaximumLength).HasConversion(new EnumToStringConverter<EggGroup>());
     builder.Property(x => x.SecondaryEggGroup).HasMaxLength(EggGroupMaximumLength).HasConversion(new EnumToStringConverter<EggGroup>());

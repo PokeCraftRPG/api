@@ -111,6 +111,14 @@ internal class SpeciesQuerier : ISpeciesQuerier
       .SingleOrDefaultAsync(cancellationToken);
     return species is null ? null : await MapAsync(species, cancellationToken);
   }
+  public async Task<SpeciesModel?> ReadAsync(int number, CancellationToken cancellationToken)
+  {
+    SpeciesEntity? species = await _species.AsNoTracking()
+      .Where(x => x.Number == number && x.World!.Id == _context.WorldUid)
+      .Include(x => x.RegionalNumbers).ThenInclude(x => x.Region)
+      .SingleOrDefaultAsync(cancellationToken);
+    return species is null ? null : await MapAsync(species, cancellationToken);
+  }
   public async Task<SpeciesModel?> ReadAsync(string key, CancellationToken cancellationToken)
   {
     SpeciesEntity? species = await _species.AsNoTracking()

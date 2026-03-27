@@ -17,6 +17,16 @@ public class LicenseTests
     Assert.Equal(LicenseValue, license.Value);
   }
 
+  [Theory(DisplayName = "ctor: it should throw ValidationException when the value is empty.")]
+  [InlineData("")]
+  [InlineData("  ")]
+  public void Given_Empty_When_ctor_Then_ValidationException(string value)
+  {
+    var exception = Assert.Throws<FluentValidation.ValidationException>(() => new License(value));
+    Assert.Single(exception.Errors);
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "Value");
+  }
+
   [Fact(DisplayName = "ctor: it should throw ValidationException when the value is too long.")]
   public void Given_TooLong_When_ctor_Then_ValidationException()
   {
@@ -65,6 +75,4 @@ public class LicenseTests
   {
     Assert.Null(License.TryCreate(value));
   }
-
-  // TODO(fpion): ValidationException when the value is null, empty or white-space
 }

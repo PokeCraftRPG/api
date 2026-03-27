@@ -42,7 +42,7 @@ public class ReadRegionQueryHandlerTests
     Assert.Same(region, result);
   }
 
-  [Fact(DisplayName = "It should throw TooManyResultsException when many abilities were found.")]
+  [Fact(DisplayName = "It should throw TooManyResultsException when many regions were found.")]
   public async Task Given_ManyFound_When_ExecuteAsync_Then_TooManyResultsException()
   {
     RegionModel region1 = new()

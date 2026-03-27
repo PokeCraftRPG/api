@@ -23,8 +23,8 @@ internal class VarietyConfiguration : AggregateConfiguration<VarietyEntity>, IEn
     builder.HasIndex(x => new { x.WorldId, x.GenderRatio });
     builder.HasIndex(x => new { x.WorldId, x.CanChangeForm });
 
-    builder.Property(x => x.Key).HasMaxLength(Slug.MaximumLength);
-    builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
+    builder.Property(x => x.Key).HasMaxLength(Constants.SlugMaximumLength);
+    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
     builder.Property(x => x.Genus).HasMaxLength(Genus.MaximumLength);
     builder.Property(x => x.Url).HasMaxLength(Url.MaximumLength);
 

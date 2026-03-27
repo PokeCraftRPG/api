@@ -9,7 +9,7 @@ namespace PokeGame.Core.Trainers;
 public interface ITrainerService
 {
   Task<CreateOrReplaceTrainerResult> CreateOrReplaceAsync(CreateOrReplaceTrainerPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
-  Task<TrainerModel?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
+  Task<TrainerModel?> ReadAsync(Guid? id = null, string? license = null, string? key = null, CancellationToken cancellationToken = default);
   Task<TrainerModel?> UpdateAsync(Guid id, UpdateTrainerPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -38,9 +38,9 @@ internal class TrainerService : ITrainerService
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
-  public async Task<TrainerModel?> ReadAsync(Guid? id, string? key, CancellationToken cancellationToken)
+  public async Task<TrainerModel?> ReadAsync(Guid? id, string? license, string? key, CancellationToken cancellationToken)
   {
-    ReadTrainerQuery query = new(id, key);
+    ReadTrainerQuery query = new(id, license, key);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 

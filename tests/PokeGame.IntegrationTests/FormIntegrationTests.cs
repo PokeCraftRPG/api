@@ -116,7 +116,7 @@ public class FormIntegrationTests : IntegrationTests
     Assert.Equal(_lightningRod.EntityId, form.Abilities.Hidden.Id);
   }
 
-  [Fact(DisplayName = "It should read an form by ID.")]
+  [Fact(DisplayName = "It should read a form by ID.")]
   public async Task Given_Id_When_Read_Then_Found()
   {
     Guid id = _form.EntityId;
@@ -125,7 +125,7 @@ public class FormIntegrationTests : IntegrationTests
     Assert.Equal(id, form.Id);
   }
 
-  [Fact(DisplayName = "It should read an form by key.")]
+  [Fact(DisplayName = "It should read a form by key.")]
   public async Task Given_Key_When_Read_Then_Found()
   {
     FormModel? form = await _formService.ReadAsync(id: null, $" {_form.Key.Value.ToUpperInvariant()} ");

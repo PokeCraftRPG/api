@@ -18,8 +18,8 @@ internal class AbilityConfiguration : AggregateConfiguration<AbilityEntity>, IEn
     builder.HasIndex(x => new { x.WorldId, x.Key }).IsUnique();
     builder.HasIndex(x => new { x.WorldId, x.Name });
 
-    builder.Property(x => x.Key).HasMaxLength(Slug.MaximumLength);
-    builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
+    builder.Property(x => x.Key).HasMaxLength(Constants.SlugMaximumLength);
+    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
     builder.Property(x => x.Url).HasMaxLength(Url.MaximumLength);
 
     builder.HasOne(x => x.World).WithMany(x => x.Abilities).OnDelete(DeleteBehavior.Restrict);
