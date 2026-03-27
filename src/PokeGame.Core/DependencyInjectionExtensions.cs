@@ -3,6 +3,7 @@ using Logitar.EventSourcing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Abilities;
+using PokeGame.Core.Accounts;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
@@ -20,6 +21,7 @@ public static class DependencyInjectionExtensions
   public static IServiceCollection AddPokeGameCore(this IServiceCollection services)
   {
     AbilityService.Register(services);
+    AccountService.Register(services);
     FormService.Register(services);
     MoveService.Register(services);
     RegionService.Register(services);

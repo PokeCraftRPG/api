@@ -15,6 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Krakenar.Client" Version="2.0.2" />
     <PackageReference Include="Logitar.EventSourcing.EntityFrameworkCore.Relational" Version="10.1.1" />
   </ItemGroup>
 
@@ -29,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="PokeGame.IntegrationTests"/>
+    <InternalsVisibleTo Include="PokeGame.IntegrationTests" />
   </ItemGroup>
 
 </Project>

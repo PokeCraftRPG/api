@@ -1,0 +1,6 @@
+﻿namespace PokeGame.Settings;
+
+public record SessionCookieSettings
+{
+  public SameSiteMode SameSite { get; set; }
+}

@@ -1,4 +1,5 @@
 ﻿using Microsoft.OpenApi;
+using PokeGame.Middlewares;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace PokeGame.Extensions;
@@ -10,8 +11,8 @@ internal class AddHeaderParameters : IOperationFilter
     operation.Parameters?.Add(new OpenApiParameter
     {
       In = ParameterLocation.Header,
-      Name = "X-World", // TODO(fpion): ResolveWorld.Header,
-      Description = "Enter your world ID in the input below:"
+      Name = ResolveWorld.Header,
+      Description = "Enter your world ID or key in the input below:"
     });
   }
 }

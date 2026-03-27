@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Users;
 using Logitar.EventSourcing;
@@ -11,10 +12,14 @@ namespace PokeGame;
 
 public class TestContext : IContext
 {
+  private readonly Faker _faker;
+
   public TestContext(Faker? faker = null)
   {
-    User = new UserBuilder(faker).Build();
-    World = new WorldBuilder(faker).WithUser(User).Build();
+    _faker = faker ?? new();
+
+    User = new UserBuilder(_faker).Build();
+    World = new WorldBuilder(_faker).WithUser(User).Build();
   }
 
   public Actor Actor => User is null ? new() : new(User);
@@ -26,4 +31,10 @@ public class TestContext : IContext
   public World? World { get; set; }
   public WorldId WorldId => World?.Id ?? throw new InvalidOperationException("The world has not been initialized.");
   public Guid WorldUid => WorldId.ToGuid();
+
+  public IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes() =>
+  [
+    new("AdditionalInformation", $@"{{""User-Agent"":""{_faker.Internet.UserAgent()}""}}"),
+    new("IpAddress", _faker.Internet.Ip())
+  ];
 }
