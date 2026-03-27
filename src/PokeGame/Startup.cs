@@ -22,6 +22,8 @@ internal class Startup : StartupBase
     base.ConfigureServices(services);
 
     services.AddControllers();
+    services.AddHttpContextAccessor();
+    services.AddProblemDetails();
 
     ApiSettings apiSettings = ApiSettings.Initialize(_configuration);
     services.AddSingleton(apiSettings);
@@ -33,8 +35,8 @@ internal class Startup : StartupBase
     services.AddPokeGameCore();
     services.AddPokeGameInfrastructure();
     services.AddPokeGamePostgreSQL(_configuration);
-    services.AddKrakenarClient(_configuration);
     services.AddSingleton<IContext, HttpApplicationContext>();
+    services.AddKrakenarClient(_configuration);
   }
 
   public override void Configure(IApplicationBuilder builder)
