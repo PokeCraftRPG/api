@@ -9,7 +9,7 @@ namespace PokeGame.Core.Species;
 public interface ISpeciesService
 {
   Task<CreateOrReplaceSpeciesResult> CreateOrReplaceAsync(CreateOrReplaceSpeciesPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
-  Task<SpeciesModel?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
+  Task<SpeciesModel?> ReadAsync(Guid? id = null, int? number = null, string? key = null, CancellationToken cancellationToken = default);
   Task<SpeciesModel?> UpdateAsync(Guid id, UpdateSpeciesPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -39,9 +39,9 @@ internal class SpeciesService : ISpeciesService
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
-  public async Task<SpeciesModel?> ReadAsync(Guid? id, string? key, CancellationToken cancellationToken)
+  public async Task<SpeciesModel?> ReadAsync(Guid? id, int? number, string? key, CancellationToken cancellationToken)
   {
-    ReadSpeciesQuery query = new(id, key);
+    ReadSpeciesQuery query = new(id, number, key);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 

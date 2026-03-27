@@ -11,5 +11,6 @@ public interface ISpeciesQuerier
   Task<SpeciesModel> ReadAsync(SpeciesAggregate species, CancellationToken cancellationToken = default);
   Task<SpeciesModel?> ReadAsync(SpeciesId id, CancellationToken cancellationToken = default);
   Task<SpeciesModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
+  Task<SpeciesModel?> ReadAsync(int number, CancellationToken cancellationToken = default);
   Task<SpeciesModel?> ReadAsync(string key, CancellationToken cancellationToken = default);
 }

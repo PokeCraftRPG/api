@@ -28,14 +28,21 @@ public class SpeciesController : ControllerBase
   [HttpGet("{id}")]
   public async Task<ActionResult<SpeciesModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
-    SpeciesModel? species = await _speciesService.ReadAsync(id, key: null, cancellationToken);
+    SpeciesModel? species = await _speciesService.ReadAsync(id, number: null, key: null, cancellationToken);
     return species is null ? NotFound() : Ok(species);
   }
 
   [HttpGet("key:{key}")]
   public async Task<ActionResult<SpeciesModel>> ReadAsync(string key, CancellationToken cancellationToken)
   {
-    SpeciesModel? species = await _speciesService.ReadAsync(id: null, key, cancellationToken);
+    SpeciesModel? species = await _speciesService.ReadAsync(id: null, number: null, key, cancellationToken);
+    return species is null ? NotFound() : Ok(species);
+  }
+
+  [HttpGet("number:{number}")]
+  public async Task<ActionResult<SpeciesModel>> ReadAsync(int number, CancellationToken cancellationToken)
+  {
+    SpeciesModel? species = await _speciesService.ReadAsync(id: null, number, key: null, cancellationToken);
     return species is null ? NotFound() : Ok(species);
   }
 
