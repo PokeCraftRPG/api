@@ -1,4 +1,5 @@
-﻿using PokeGame.Core.Worlds;
+﻿using Logitar.EventSourcing;
+using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Events;
 
 namespace PokeGame.Infrastructure.Entities;
@@ -34,6 +35,8 @@ internal class WorldEntity : AggregateEntity
   private WorldEntity() : base()
   {
   }
+
+  public override IReadOnlyCollection<ActorId> GetActorIds() => base.GetActorIds().Concat([new ActorId(OwnerId)]).ToList().AsReadOnly();
 
   public void SetKey(WorldKeyChanged evnet)
   {

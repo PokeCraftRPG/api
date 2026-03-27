@@ -8,6 +8,9 @@ public readonly struct UserId
   public ActorId ActorId { get; }
   public string Value => ActorId.Value;
 
+  public Guid? RealmId { get; }
+  public Guid EntityId { get; }
+
   // TODO(fpion): RealmId
   // TODO(fpion): EntityId
 
