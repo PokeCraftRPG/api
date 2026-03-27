@@ -5,8 +5,6 @@ namespace PokeGame.Core;
 
 public record Notes
 {
-  public const int MaximumLength = 1000; // TODO(fpion): remove this
-
   public string Value { get; }
   public long Size => Value.Length;
 

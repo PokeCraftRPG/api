@@ -15,6 +15,25 @@ public class UrlTests
     Assert.Equal(value.Trim(), url.Value);
   }
 
+  [Theory(DisplayName = "ctor: it should throw ValidationException when the value is empty.")]
+  [InlineData("")]
+  [InlineData("  ")]
+  public void Given_Empty_When_ctor_Then_ValidationException(string value)
+  {
+    var exception = Assert.Throws<FluentValidation.ValidationException>(() => new Url(value));
+    Assert.Equal(2, exception.Errors.Count());
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "Value");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "UrlValidator" && e.PropertyName == "Value");
+  }
+
+  [Fact(DisplayName = "ctor: it should throw ValidationException when the value is valid.")]
+  public void Given_Invalid_When_ctor_Then_ValidationException()
+  {
+    var exception = Assert.Throws<FluentValidation.ValidationException>(() => new Url("invalid"));
+    Assert.Single(exception.Errors);
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "UrlValidator" && e.PropertyName == "Value");
+  }
+
   [Fact(DisplayName = "ctor: it should throw ValidationException when the value is too long.")]
   public void Given_TooLong_When_ctor_Then_ValidationException()
   {
@@ -56,7 +75,4 @@ public class UrlTests
   {
     Assert.Null(Url.TryCreate(value));
   }
-
-  // TODO(fpion): ValidationException when the value is null, empty or white-space
-  // TODO(fpion): ValidationException when the value is not a valid URL
 }
