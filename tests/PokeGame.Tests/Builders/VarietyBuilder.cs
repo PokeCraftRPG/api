@@ -222,12 +222,12 @@ public class VarietyBuilder : IVarietyBuilder
       .Build();
   }
 
-  public static Variety Raichu(Faker? faker = null, World? world = null)
+  public static Variety Raichu(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new VarietyBuilder(faker)
       .WithWorld(world)
-      .WithSpecies(SpeciesBuilder.Raichu(faker, world))
+      .WithSpecies(species ?? SpeciesBuilder.Raichu(faker, world))
       .IsDefault()
       .WithKey(new Slug("raichu"))
       .WithName(new Name("Raichu"))
