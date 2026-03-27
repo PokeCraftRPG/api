@@ -8,8 +8,6 @@ namespace PokeGame.Infrastructure.Configurations;
 
 internal class FormAbilityConfiguration : IEntityTypeConfiguration<FormAbilityEntity>
 {
-  private const int AbilitySlotMaximumLength = 10;
-
   public void Configure(EntityTypeBuilder<FormAbilityEntity> builder)
   {
     builder.ToTable(nameof(PokemonContext.FormAbilities), PokemonContext.Schema);
@@ -17,7 +15,7 @@ internal class FormAbilityConfiguration : IEntityTypeConfiguration<FormAbilityEn
 
     builder.HasIndex(x => new { x.FormId, x.Slot }).IsUnique();
 
-    builder.Property(x => x.Slot).HasMaxLength(AbilitySlotMaximumLength).HasConversion(new EnumToStringConverter<AbilitySlot>());
+    builder.Property(x => x.Slot).HasMaxLength(Constants.AbilitySlotMaximumLength).HasConversion(new EnumToStringConverter<AbilitySlot>());
 
     builder.HasOne(x => x.Form).WithMany(x => x.Abilities).OnDelete(DeleteBehavior.Cascade);
     builder.HasOne(x => x.Ability).WithMany(x => x.Forms).OnDelete(DeleteBehavior.Cascade);

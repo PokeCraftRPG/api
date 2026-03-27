@@ -29,8 +29,8 @@ internal class MoveConfiguration : AggregateConfiguration<MoveEntity>, IEntityTy
 
     builder.Property(x => x.Type).HasMaxLength(Constants.PokemonTypeMaximumLength).HasConversion(new EnumToStringConverter<PokemonType>());
     builder.Property(x => x.Category).HasMaxLength(CategoryMaximumLength).HasConversion(new EnumToStringConverter<MoveCategory>());
-    builder.Property(x => x.Key).HasMaxLength(Slug.MaximumLength);
-    builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
+    builder.Property(x => x.Key).HasMaxLength(Constants.SlugMaximumLength);
+    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
     builder.Property(x => x.Url).HasMaxLength(Url.MaximumLength);
 
     builder.HasOne(x => x.World).WithMany(x => x.Moves).OnDelete(DeleteBehavior.Restrict);

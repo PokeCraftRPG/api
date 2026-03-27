@@ -9,7 +9,7 @@ namespace PokeGame.Infrastructure.Configurations;
 
 internal class TrainerConfiguration : AggregateConfiguration<TrainerEntity>, IEntityTypeConfiguration<TrainerEntity>
 {
-  private const int GenderMaximumLength = 6;
+  private const int GenderMaximumLength = 8;
 
   public override void Configure(EntityTypeBuilder<TrainerEntity> builder)
   {
@@ -27,8 +27,8 @@ internal class TrainerConfiguration : AggregateConfiguration<TrainerEntity>, IEn
     builder.HasIndex(x => new { x.WorldId, x.PartySize });
 
     builder.Property(x => x.License).HasMaxLength(License.MaximumLength);
-    builder.Property(x => x.Key).HasMaxLength(Slug.MaximumLength);
-    builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
+    builder.Property(x => x.Key).HasMaxLength(Constants.SlugMaximumLength);
+    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
     builder.Property(x => x.Gender).HasMaxLength(GenderMaximumLength).HasConversion(new EnumToStringConverter<TrainerGender>());
     builder.Property(x => x.Sprite).HasMaxLength(Url.MaximumLength);
     builder.Property(x => x.Url).HasMaxLength(Url.MaximumLength);

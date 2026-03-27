@@ -27,8 +27,8 @@ internal class FormConfiguration : AggregateConfiguration<FormEntity>, IEntityTy
     builder.HasIndex(x => new { x.WorldId, x.SecondaryType });
     builder.HasIndex(x => new { x.WorldId, x.YieldExperience });
 
-    builder.Property(x => x.Key).HasMaxLength(Slug.MaximumLength);
-    builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
+    builder.Property(x => x.Key).HasMaxLength(Constants.SlugMaximumLength);
+    builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
     builder.Property(x => x.PrimaryType).HasMaxLength(Constants.PokemonTypeMaximumLength).HasConversion(new EnumToStringConverter<PokemonType>());
     builder.Property(x => x.SecondaryType).HasMaxLength(Constants.PokemonTypeMaximumLength).HasConversion(new EnumToStringConverter<PokemonType>());
     builder.Property(x => x.SpriteDefault).HasMaxLength(Url.MaximumLength);
