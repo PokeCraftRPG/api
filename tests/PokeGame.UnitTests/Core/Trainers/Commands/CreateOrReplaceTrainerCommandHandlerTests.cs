@@ -73,7 +73,7 @@ public class CreateOrReplaceTrainerCommandHandlerTests
 
     CreateOrReplaceTrainerPayload payload = new()
     {
-      License = "Q-123456-3",
+      License = trainer.License.Value,
       Key = "ash-ketchum",
       Name = "Ash Ketchum",
       Description = "Ash is a legendary Trainer known for Pikachu, constant youth, and mastering multiple battle styles across regions and generations.",

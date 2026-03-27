@@ -60,7 +60,7 @@ internal class CreateOrReplaceTrainerCommandHandler : ICommandHandler<CreateOrRe
     {
       await _permissionService.CheckAsync(Actions.Update, trainer, cancellationToken);
 
-      if (payload.License != trainer.License.Value)
+      if (License.Normalize(payload.License) != trainer.License.Value)
       {
         throw new ImmutablePropertyException<string>(trainer, trainer.License.Value, payload.License, nameof(payload.License));
       }

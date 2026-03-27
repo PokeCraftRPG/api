@@ -120,7 +120,7 @@ public class TrainerBuilder : ITrainerBuilder
   public Trainer Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    License license = _license ?? new("Q-123456-3");
+    License license = _license ?? _faker.TrainerLicense();
     Slug key = _key ?? new("a-trainer");
     TrainerGender gender = _gender ?? _faker.PickRandom<TrainerGender>();
 

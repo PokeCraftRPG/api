@@ -54,6 +54,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     await pokemon.Forms.ExecuteDeleteAsync();
     await pokemon.Varieties.ExecuteDeleteAsync();
     await pokemon.Species.ExecuteDeleteAsync();
+    await pokemon.Trainers.ExecuteDeleteAsync();
     await pokemon.Regions.ExecuteDeleteAsync();
     await pokemon.Moves.ExecuteDeleteAsync();
     await pokemon.Abilities.ExecuteDeleteAsync();
