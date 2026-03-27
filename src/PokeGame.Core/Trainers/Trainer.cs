@@ -57,7 +57,7 @@ public class Trainer : AggregateRoot, IEntityProvider
     get => _gender;
     set
     {
-      if (!Enum.IsDefined(Gender))
+      if (!Enum.IsDefined(value))
       {
         throw new ArgumentOutOfRangeException(nameof(Gender));
       }
