@@ -90,7 +90,15 @@ public class TrainerIntegrationTests : IntegrationTests // TODO(fpion): tests ha
   [Fact(DisplayName = "It should read an trainer by key.")]
   public async Task Given_Key_When_Read_Then_Found()
   {
-    TrainerModel? trainer = await _trainerService.ReadAsync(id: null, $" {_trainer.Key.Value.ToUpperInvariant()} ");
+    TrainerModel? trainer = await _trainerService.ReadAsync(id: null, license: null, $" {_trainer.Key.Value.ToUpperInvariant()} ");
+    Assert.NotNull(trainer);
+    Assert.Equal(_trainer.EntityId, trainer.Id);
+  }
+
+  [Fact(DisplayName = "It should read an trainer by license.")]
+  public async Task Given_License_When_Read_Then_Found()
+  {
+    TrainerModel? trainer = await _trainerService.ReadAsync(id: null, $" {_trainer.License.Value.ToUpperInvariant()} ");
     Assert.NotNull(trainer);
     Assert.Equal(_trainer.EntityId, trainer.Id);
   }

@@ -89,6 +89,13 @@ internal class TrainerQuerier : ITrainerQuerier
       .SingleOrDefaultAsync(cancellationToken);
     return trainer is null ? null : await MapAsync(trainer, cancellationToken);
   }
+  public async Task<TrainerModel?> ReadByLicenseAsync(string license, CancellationToken cancellationToken)
+  {
+    TrainerEntity? trainer = await _trainers.AsNoTracking()
+      .Where(x => x.License == License.Normalize(license) && x.World!.Id == _context.WorldUid)
+      .SingleOrDefaultAsync(cancellationToken);
+    return trainer is null ? null : await MapAsync(trainer, cancellationToken);
+  }
 
   private async Task<TrainerModel> MapAsync(TrainerEntity trainer, CancellationToken cancellationToken)
   {
