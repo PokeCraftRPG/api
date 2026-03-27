@@ -5,8 +5,6 @@ namespace PokeGame.Core.Trainers.Models;
 
 public record CreateOrReplaceTrainerPayload
 {
-  public Guid? OwnerId { get; set; }
-
   public string License { get; set; } = string.Empty;
 
   public string Key { get; set; } = string.Empty;

@@ -27,4 +27,6 @@ public class PokemonContext : DbContext
   {
     modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
   }
+
+  // TODO(fpion): refactor all MaxLengths
 }

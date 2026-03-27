@@ -80,8 +80,6 @@ internal class CreateOrReplaceTrainerCommandHandler : ICommandHandler<CreateOrRe
 
     trainer.Update(userId);
 
-    // TODO(fpion): OwnerId
-
     await _trainerQuerier.EnsureUnicityAsync(trainer, cancellationToken);
 
     await _storageService.ExecuteWithQuotaAsync(

@@ -173,7 +173,6 @@ internal class Mapper
     TrainerModel destination = new()
     {
       Id = source.Id,
-      OwnerId = source.OwnerId,
       License = source.License,
       Key = source.Key,
       Name = source.Name,

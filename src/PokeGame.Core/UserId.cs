@@ -8,6 +8,9 @@ public readonly struct UserId
   public ActorId ActorId { get; }
   public string Value => ActorId.Value;
 
+  // TODO(fpion): RealmId
+  // TODO(fpion): EntityId
+
   public UserId(ActorId actorId)
   {
     _ = Entity.Parse(actorId.Value, ActorType.User.ToString());
