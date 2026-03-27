@@ -17,8 +17,8 @@ public class NotesTests
     Assert.Equal(value.Trim(), notes.Value);
   }
 
-  [Fact(DisplayName = "ctor: it should throw ValidationException when the value is not valid.")]
-  public void Given_Invalid_When_ctor_Then_ValidationException()
+  [Fact(DisplayName = "ctor: it should throw ValidationException when the value is too long.")]
+  public void Given_TooLong_When_ctor_Then_ValidationException()
   {
     string value = _faker.Random.String(Notes.MaximumLength + 1);
     var exception = Assert.Throws<FluentValidation.ValidationException>(() => new Notes(value));
@@ -58,4 +58,6 @@ public class NotesTests
   {
     Assert.Null(Notes.TryCreate(value));
   }
+
+  // TODO(fpion): ValidationException when the value is null, empty or white-space
 }

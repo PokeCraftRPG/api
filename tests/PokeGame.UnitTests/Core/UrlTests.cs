@@ -15,8 +15,8 @@ public class UrlTests
     Assert.Equal(value.Trim(), url.Value);
   }
 
-  [Fact(DisplayName = "ctor: it should throw ValidationException when the value is not valid.")]
-  public void Given_Invalid_When_ctor_Then_ValidationException()
+  [Fact(DisplayName = "ctor: it should throw ValidationException when the value is too long.")]
+  public void Given_TooLong_When_ctor_Then_ValidationException()
   {
     string value = string.Join('/', _faker.Internet.Url(), _faker.Random.String(Url.MaximumLength, 'a', 'z'));
     var exception = Assert.Throws<FluentValidation.ValidationException>(() => new Url(value));
@@ -56,4 +56,7 @@ public class UrlTests
   {
     Assert.Null(Url.TryCreate(value));
   }
+
+  // TODO(fpion): ValidationException when the value is null, empty or white-space
+  // TODO(fpion): ValidationException when the value is not a valid URL
 }

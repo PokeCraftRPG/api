@@ -22,7 +22,7 @@ internal class TrainerEntity : AggregateEntity
 
   public TrainerGender Gender { get; private set; }
   public int Money { get; private set; }
-  public int PartySize { get; private set; } // TODO(fpion): is this a computed?
+  public int PartySize { get; private set; }
 
   public string? Sprite { get; private set; }
   public string? Url { get; private set; }

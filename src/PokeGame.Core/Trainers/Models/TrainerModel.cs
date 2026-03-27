@@ -14,7 +14,7 @@ public class TrainerModel : Aggregate
 
   public TrainerGender Gender { get; set; }
   public int Money { get; set; }
-  public int PartySize { get; set; } // TODO(fpion): is this a computed?
+  public int PartySize { get; set; }
 
   public string? Sprite { get; set; }
   public string? Url { get; set; }
