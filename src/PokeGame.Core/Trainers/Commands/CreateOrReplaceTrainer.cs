@@ -19,15 +19,15 @@ internal class CreateOrReplaceTrainerCommandHandler : ICommandHandler<CreateOrRe
   public CreateOrReplaceTrainerCommandHandler(
     IContext context,
     IPermissionService permissionService,
+    IStorageService storageService,
     ITrainerQuerier trainerQuerier,
-    ITrainerRepository trainerRepository,
-    IStorageService storageService)
+    ITrainerRepository trainerRepository)
   {
     _context = context;
     _permissionService = permissionService;
+    _storageService = storageService;
     _trainerQuerier = trainerQuerier;
     _trainerRepository = trainerRepository;
-    _storageService = storageService;
   }
 
   public async Task<CreateOrReplaceTrainerResult> HandleAsync(CreateOrReplaceTrainerCommand command, CancellationToken cancellationToken)

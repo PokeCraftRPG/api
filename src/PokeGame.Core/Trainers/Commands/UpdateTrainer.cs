@@ -18,15 +18,15 @@ internal class UpdateTrainerCommandHandler : ICommandHandler<UpdateTrainerComman
   public UpdateTrainerCommandHandler(
     IContext context,
     IPermissionService permissionService,
+    IStorageService storageService,
     ITrainerQuerier trainerQuerier,
-    ITrainerRepository trainerRepository,
-    IStorageService storageService)
+    ITrainerRepository trainerRepository)
   {
     _context = context;
     _permissionService = permissionService;
+    _storageService = storageService;
     _trainerQuerier = trainerQuerier;
     _trainerRepository = trainerRepository;
-    _storageService = storageService;
   }
 
   public async Task<TrainerModel?> HandleAsync(UpdateTrainerCommand command, CancellationToken cancellationToken)
