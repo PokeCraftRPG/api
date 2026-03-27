@@ -30,8 +30,8 @@ public class UserIdTests
     Actor actor = new(apiKey);
     ActorId actorId = actor.GetActorId();
     var exception = Assert.Throws<ArgumentException>(() => new UserId(actorId));
-    Assert.Equal("value", exception.ParamName);
-    Assert.StartsWith("The entity kind 'User' was expected, but 'ApiKey' was received.", exception.Message);
+    Assert.Equal("actorId", exception.ParamName);
+    Assert.StartsWith("The actor must be a user.", exception.Message);
   }
 
   [Fact(DisplayName = "ctor: it should throw ArgumentException when the actor is the System.")]
@@ -40,7 +40,7 @@ public class UserIdTests
     Actor actor = new();
     ActorId actorId = actor.GetActorId();
     var exception = Assert.Throws<ArgumentException>(() => new UserId(actorId));
-    Assert.Equal("value", exception.ParamName);
-    Assert.StartsWith("The entity kind 'User' was expected, but 'System' was received.", exception.Message);
+    Assert.Equal("actorId", exception.ParamName);
+    Assert.StartsWith("The actor must be a user.", exception.Message);
   }
 }

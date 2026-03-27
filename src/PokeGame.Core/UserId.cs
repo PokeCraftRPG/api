@@ -1,5 +1,6 @@
 ﻿using Krakenar.Contracts.Actors;
 using Logitar.EventSourcing;
+using PokeGame.Core.Actors;
 
 namespace PokeGame.Core;
 
@@ -11,13 +12,17 @@ public readonly struct UserId
   public Guid? RealmId { get; }
   public Guid EntityId { get; }
 
-  // TODO(fpion): RealmId
-  // TODO(fpion): EntityId
-
   public UserId(ActorId actorId)
   {
-    _ = Entity.Parse(actorId.Value, ActorType.User.ToString());
+    Actor actor = actorId.ToActor();
+    if (actor.Type != ActorType.User)
+    {
+      throw new ArgumentException("The actor must be a user.", nameof(actorId));
+    }
+
     ActorId = actorId;
+    RealmId = actor.RealmId;
+    EntityId = actor.Id;
   }
 
   public UserId(string value) : this(new ActorId(value))
