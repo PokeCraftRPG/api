@@ -131,6 +131,8 @@ public class Variety : AggregateRoot, IEntityProvider
   {
   }
 
+  // TODO(fpion): should we add GenderRatio and CanChangeForm?
+
   public Variety(World world, SpeciesAggregate species, bool isDefault, Slug key, UserId? userId = null)
     : this(species, isDefault, key, userId ?? world.OwnerId, VarietyId.NewId(world.Id))
   {

@@ -126,6 +126,8 @@ public class Move : AggregateRoot, IEntityProvider
   {
   }
 
+  // TODO(fpion): should we add Accuracy and Power?
+
   public Move(World world, PokemonType type, MoveCategory category, Slug key, PowerPoints? powerPoints = null, UserId? userId = null)
     : this(type, category, key, powerPoints ?? new PowerPoints(PowerPoints.MinimumValue), userId ?? world.OwnerId, MoveId.NewId(world.Id))
   {
