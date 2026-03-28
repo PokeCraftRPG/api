@@ -49,6 +49,11 @@ public static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(Trainers.License.MaximumLength);
   }
 
+  public static IRuleBuilderOptions<T, string> Locale<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty().MaximumLength(16).SetValidator(new LocaleValidator<T>());
+  }
+
   public static IRuleBuilderOptions<T, int> Money<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
     return ruleBuilder.GreaterThanOrEqualTo(0);

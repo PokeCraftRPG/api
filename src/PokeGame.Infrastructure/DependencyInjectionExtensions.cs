@@ -58,7 +58,10 @@ public static class DependencyInjectionExtensions
   private static IServiceCollection AddKrakenarGateways(this IServiceCollection services)
   {
     return services
+      .AddSingleton<IMessageGateway, MessageGateway>()
+      .AddSingleton<IOneTimePasswordGateway, OneTimePasswordGateway>()
       .AddSingleton<ISessionGateway, SessionGateway>()
+      .AddSingleton<ITokenGateway, TokenGateway>()
       .AddSingleton<IUserGateway, UserGateway>();
   }
 

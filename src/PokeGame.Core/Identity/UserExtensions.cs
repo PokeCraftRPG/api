@@ -3,7 +3,7 @@ using Krakenar.Contracts.Users;
 
 namespace PokeGame.Core.Identity;
 
-internal static class UserExtensions
+public static class UserExtensions
 {
   private const string MultiFactorAuthenticationModeKey = "MultiFactorAuthenticationMode";
   private const string ProfileCompletedOnKey = "ProfileCompletedOn";
