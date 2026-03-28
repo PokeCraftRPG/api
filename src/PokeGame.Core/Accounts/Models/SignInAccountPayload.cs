@@ -7,6 +7,7 @@ public record SignInAccountPayload
 {
   public string Locale { get; set; } = string.Empty;
   public Credentials? Credentials { get; set; }
+  public string? Token { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 

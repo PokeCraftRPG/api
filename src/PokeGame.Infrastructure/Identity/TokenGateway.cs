@@ -24,6 +24,15 @@ internal class TokenGateway : ITokenGateway
   {
     return await CreateAsync(isConsumable: true, TimeSpan.FromDays(7), EmailVerificationType, user, email: null, cancellationToken);
   }
+  public async Task<ValidatedToken> ValidateEmailVerificationAsync(string token, CancellationToken cancellationToken)
+  {
+    ValidateTokenPayload payload = new(token)
+    {
+      Consume = true,
+      Type = EmailVerificationType
+    };
+    return await _tokenService.ValidateAsync(payload, cancellationToken);
+  }
 
   public async Task<string> CreateProfileCompletionAsync(User user, CancellationToken cancellationToken)
   {

@@ -1,5 +1,6 @@
 ﻿using Krakenar.Contracts.Passwords;
 using Krakenar.Contracts.Sessions;
+using Krakenar.Contracts.Tokens;
 using Krakenar.Contracts.Users;
 using Logitar.CQRS;
 using PokeGame.Core.Accounts.Models;
@@ -40,6 +41,10 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     {
       return await HandleCredentialsAsync(payload.Credentials, payload.Locale, cancellationToken);
     }
+    if (!string.IsNullOrWhiteSpace(payload.Token))
+    {
+      return await HandleTokenAsync(payload.Token, cancellationToken);
+    }
 
     throw new InvalidOperationException("The sign-in payload is not valid.");
   }
@@ -68,11 +73,9 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     }
 
     MultiFactorAuthenticationMode multiFactorAuthenticationMode = user.GetMultiFactorAuthenticationMode();
-    bool isProfileCompleted = user.IsProfileCompleted();
-    Session session;
-    if (multiFactorAuthenticationMode == MultiFactorAuthenticationMode.None && isProfileCompleted)
+    if (multiFactorAuthenticationMode == MultiFactorAuthenticationMode.None && user.IsProfileCompleted())
     {
-      session = await _sessionGateway.SignInAsync(user, credentials.Password, cancellationToken);
+      Session session = await _sessionGateway.SignInAsync(user, credentials.Password, cancellationToken);
       return SignInAccountResult.Success(session);
     }
 
@@ -83,13 +86,42 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
       return SignInAccountResult.MultiFactorAuthenticationMessageSent(messageId, multiFactorAuthenticationMode);
     }
 
-    if (!isProfileCompleted)
+    return await EnsureProfileIsCompletedAsync(user, cancellationToken);
+  }
+
+  private async Task<SignInAccountResult> HandleTokenAsync(string token, CancellationToken cancellationToken)
+  {
+    ValidatedToken validatedToken = await _tokenGateway.ValidateEmailVerificationAsync(token, cancellationToken);
+    Email email = validatedToken.Email ?? throw new ArgumentException("No email address was retrieved from the token.", token);
+    email.IsVerified = true;
+
+    User user;
+    if (validatedToken.Subject is null)
+    {
+      user = await _userGateway.CreateAsync(email, cancellationToken);
+    }
+    else
+    {
+      Guid userId = Guid.Parse(validatedToken.Subject);
+      user = await _userGateway.FindAsync(userId, cancellationToken);
+      if (user.Email is null || !user.Email.Address.Trim().Equals(email.Address.Trim(), StringComparison.InvariantCultureIgnoreCase) || !email.IsVerified)
+      {
+        user = await _userGateway.UpdateEmailAsync(user, email, cancellationToken);
+      }
+    }
+
+    return await EnsureProfileIsCompletedAsync(user, cancellationToken);
+  }
+
+  private async Task<SignInAccountResult> EnsureProfileIsCompletedAsync(User user, CancellationToken cancellationToken)
+  {
+    if (!user.IsProfileCompleted())
     {
       string token = await _tokenGateway.CreateProfileCompletionAsync(user, cancellationToken);
       return SignInAccountResult.CompleteProfile(token);
     }
 
-    session = await _sessionGateway.CreateAsync(user, cancellationToken);
+    Session session = await _sessionGateway.CreateAsync(user, cancellationToken);
     return SignInAccountResult.Success(session);
   }
 }
