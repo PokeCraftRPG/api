@@ -83,7 +83,7 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     {
       OneTimePassword oneTimePassword = await _oneTimePasswordGateway.CreateAsync(user, OneTimePasswordOptions.MultiFactorAuthentication, cancellationToken);
       Guid messageId = await _messageGateway.SendMultiFactorAuthenticationAsync(user, locale, oneTimePassword, cancellationToken);
-      return SignInAccountResult.MultiFactorAuthenticationMessageSent(messageId, multiFactorAuthenticationMode);
+      return SignInAccountResult.MultiFactorAuthenticationMessageSent(oneTimePassword, messageId, multiFactorAuthenticationMode);
     }
 
     return await EnsureProfileIsCompletedAsync(user, cancellationToken);

@@ -1,4 +1,5 @@
-﻿using Krakenar.Contracts.Sessions;
+﻿using Krakenar.Contracts.Passwords;
+using Krakenar.Contracts.Sessions;
 using PokeGame.Core.Identity;
 
 namespace PokeGame.Core.Accounts.Models;
@@ -21,9 +22,9 @@ public record SignInAccountResult
     EmailVerificationMessageId = id
   };
 
-  public static SignInAccountResult MultiFactorAuthenticationMessageSent(Guid id, MultiFactorAuthenticationMode mode) => new()
+  public static SignInAccountResult MultiFactorAuthenticationMessageSent(OneTimePassword oneTimePassword, Guid messageId, MultiFactorAuthenticationMode multiFactorAuthenticationMode) => new()
   {
-    MultiFactorAuthenticationMessage = new MultiFactorAuthenticationMessage(id, mode)
+    MultiFactorAuthenticationMessage = new MultiFactorAuthenticationMessage(oneTimePassword, messageId, multiFactorAuthenticationMode)
   };
 
   public static SignInAccountResult RequirePassword() => new()
