@@ -45,6 +45,10 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     {
       return await HandleTokenAsync(payload.Token, cancellationToken);
     }
+    if (payload.OneTimePassword is not null)
+    {
+      return await HandleOneTimePasswordValidation(payload.OneTimePassword, cancellationToken);
+    }
 
     throw new InvalidOperationException("The sign-in payload is not valid.");
   }
@@ -81,7 +85,7 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
 
     if (multiFactorAuthenticationMode != MultiFactorAuthenticationMode.None)
     {
-      OneTimePassword oneTimePassword = await _oneTimePasswordGateway.CreateAsync(user, OneTimePasswordOptions.MultiFactorAuthentication, cancellationToken);
+      OneTimePassword oneTimePassword = await _oneTimePasswordGateway.CreateMultiFactorAuthenticationAsync(user, cancellationToken);
       Guid messageId = await _messageGateway.SendMultiFactorAuthenticationAsync(user, locale, oneTimePassword, cancellationToken);
       return SignInAccountResult.MultiFactorAuthenticationMessageSent(oneTimePassword, messageId, multiFactorAuthenticationMode);
     }
@@ -110,6 +114,12 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
       }
     }
 
+    return await EnsureProfileIsCompletedAsync(user, cancellationToken);
+  }
+
+  private async Task<SignInAccountResult> HandleOneTimePasswordValidation(OneTimePasswordValidation validation, CancellationToken cancellationToken)
+  {
+    User user = await _oneTimePasswordGateway.ValidateMultiFactorAuthenticationAsync(validation, cancellationToken);
     return await EnsureProfileIsCompletedAsync(user, cancellationToken);
   }
 

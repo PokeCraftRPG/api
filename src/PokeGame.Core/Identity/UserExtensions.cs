@@ -10,7 +10,7 @@ public static class UserExtensions
 
   public static MultiFactorAuthenticationMode GetMultiFactorAuthenticationMode(this User user)
   {
-    CustomAttribute? customAttribute = user.TryGetCustomAttribute(MultiFactorAuthenticationModeKey);
+    CustomAttribute? customAttribute = user.GetCustomAttribute(MultiFactorAuthenticationModeKey);
     if (customAttribute is null)
     {
       return MultiFactorAuthenticationMode.None;
@@ -24,7 +24,7 @@ public static class UserExtensions
 
   public static bool IsProfileCompleted(this User user)
   {
-    CustomAttribute? customAttribute = user.TryGetCustomAttribute(ProfileCompletedOnKey);
+    CustomAttribute? customAttribute = user.GetCustomAttribute(ProfileCompletedOnKey);
     if (customAttribute is null)
     {
       return false;
@@ -36,11 +36,7 @@ public static class UserExtensions
     throw new ArgumentException($"The user does not have a valid '{ProfileCompletedOnKey}' custom attribute.", nameof(user));
   }
 
-  private static CustomAttribute FindCustomAttribute(this User user, string key)
-  {
-    return user.TryGetCustomAttribute(key) ?? throw new ArgumentException($"The user '{user}' does not have a custom attribute '{key}'.", nameof(user));
-  }
-  private static CustomAttribute? TryGetCustomAttribute(this User user, string key)
+  private static CustomAttribute? GetCustomAttribute(this User user, string key)
   {
     CustomAttribute[] customAttributes = user.CustomAttributes.Where(x => x.Key == key).ToArray();
     if (customAttributes.Length > 1)
