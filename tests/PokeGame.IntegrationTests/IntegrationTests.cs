@@ -1,4 +1,6 @@
 ﻿using Bogus;
+using Krakenar.Client.Sessions;
+using Krakenar.Client.Users;
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.CQRS;
@@ -6,6 +8,7 @@ using Logitar.EventSourcing.EntityFrameworkCore.Relational;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Caching;
@@ -21,6 +24,8 @@ public abstract class IntegrationTests : IAsyncLifetime
 
   protected Faker Faker { get; } = new();
   protected IServiceProvider ServiceProvider { get; }
+  protected Mock<ISessionClient> SessionClient { get; } = new();
+  protected Mock<IUserClient> UserClient { get; } = new();
 
   protected Actor Actor => _context.Actor;
   protected World World => _context.World ?? throw new InvalidOperationException("The world has not been initialized.");
@@ -41,6 +46,9 @@ public abstract class IntegrationTests : IAsyncLifetime
     services.AddPokeGameCore();
     services.AddPokeGameInfrastructure();
     services.AddPokeGamePostgreSQL(connectionString);
+
+    services.AddSingleton(SessionClient.Object);
+    services.AddSingleton(UserClient.Object);
 
     ServiceProvider = services.BuildServiceProvider();
   }
