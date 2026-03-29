@@ -19,6 +19,8 @@ public record SignInAccountPayload
       RuleFor(x => x.Locale).Locale();
       When(x => x.Credentials is not null, () => RuleFor(x => x.Credentials!).SetValidator(new CredentialsValidator()));
       When(x => x.OneTimePassword is not null, () => RuleFor(x => x.OneTimePassword!).SetValidator(new OneTimePasswordValidationValidator()));
+
+      // TODO(fpion): exactly 1 property.
     }
   }
 }

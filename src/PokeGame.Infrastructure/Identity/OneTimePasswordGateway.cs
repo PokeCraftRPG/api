@@ -14,8 +14,6 @@ internal class OneTimePasswordGateway : IOneTimePasswordGateway
   private const int Length = 6;
   private const int MaximumAttempts = 5;
 
-  private const string PurposeKey = "Purpose"; // TODO(fpion): refactor
-
   private const string MultiFactorAuthenticationPurpose = "MultiFactorAuthentication";
 
   private readonly IOneTimePasswordClient _oneTimePasswordClient;
@@ -33,7 +31,7 @@ internal class OneTimePasswordGateway : IOneTimePasswordGateway
       ExpiresOn = DateTime.UtcNow.AddHours(1),
       MaximumAttempts = MaximumAttempts
     };
-    payload.CustomAttributes.Add(new CustomAttribute(PurposeKey, MultiFactorAuthenticationPurpose));
+    payload.CustomAttributes.Add(new CustomAttribute(OneTimePasswordExtensions.PurposeKey, MultiFactorAuthenticationPurpose));
     RequestContext context = new RequestContextBuilder(cancellationToken).WithUser(user).Build();
     return await _oneTimePasswordClient.CreateAsync(payload, context);
   }
@@ -44,6 +42,6 @@ internal class OneTimePasswordGateway : IOneTimePasswordGateway
     RequestContext context = new RequestContextBuilder(cancellationToken).Build();
     OneTimePassword validated = await _oneTimePasswordClient.ValidateAsync(oneTimePassword.Id, payload, context) ?? throw new NotImplementedException(); // TODO(fpion): implement
     validated.EnsurePurpose(MultiFactorAuthenticationPurpose);
-    return validated.User ?? throw new NotImplementedException(); // TODO(fpion): implement
+    return validated.User ?? throw new InvalidOperationException("The One-Time Password (OTP) is not associated to a user.");
   }
 }

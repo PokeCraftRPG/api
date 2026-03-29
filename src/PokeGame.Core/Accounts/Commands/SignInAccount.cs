@@ -107,7 +107,7 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     else
     {
       Guid userId = Guid.Parse(validatedToken.Subject);
-      user = await _userGateway.FindAsync(userId, cancellationToken);
+      user = await _userGateway.FindAsync(userId, cancellationToken) ?? throw new InvalidOperationException($"The user 'Id={userId}' was not found.");
       if (user.Email is null || !user.Email.Address.Trim().Equals(email.Address.Trim(), StringComparison.InvariantCultureIgnoreCase) || !email.IsVerified)
       {
         user = await _userGateway.UpdateEmailAsync(user, email, cancellationToken);

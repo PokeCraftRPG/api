@@ -5,7 +5,7 @@ namespace PokeGame.Core.Identity;
 
 public static class OneTimePasswordExtensions
 {
-  private const string PurposeKey = "Purpose"; // TODO(fpion): refactor
+  public const string PurposeKey = "Purpose";
 
   public static void EnsurePurpose(this OneTimePassword oneTimePassword, string purpose)
   {

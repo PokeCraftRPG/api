@@ -27,10 +27,10 @@ internal class UserGateway : IUserGateway
     return result.User ?? throw new InvalidOperationException("The created user should not be null.");
   }
 
-  public async Task<User> FindAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<User?> FindAsync(Guid id, CancellationToken cancellationToken)
   {
     RequestContext context = new RequestContextBuilder(cancellationToken).Build();
-    return await _userClient.ReadAsync(id, uniqueName: null, customIdentifier: null, context) ?? throw new InvalidOperationException($"The user 'Id={id}' was not found.");
+    return await _userClient.ReadAsync(id, uniqueName: null, customIdentifier: null, context);
   }
 
   public async Task<User?> FindAsync(string emailAddress, CancellationToken cancellationToken)
