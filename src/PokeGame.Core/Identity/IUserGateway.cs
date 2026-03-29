@@ -4,6 +4,7 @@ namespace PokeGame.Core.Identity;
 
 public interface IUserGateway
 {
+  Task<User> AuthenticateAsync(User user, string password, CancellationToken cancellationToken = default);
   Task<User> CreateAsync(Email email, CancellationToken cancellationToken = default);
   Task<User?> FindAsync(Guid id, CancellationToken cancellationToken = default);
   Task<User?> FindAsync(string emailAddress, CancellationToken cancellationToken = default);

@@ -16,6 +16,13 @@ internal class UserGateway : IUserGateway
     _userClient = userClient;
   }
 
+  public async Task<User> AuthenticateAsync(User user, string password, CancellationToken cancellationToken)
+  {
+    AuthenticateUserPayload payload = new(user.Id.ToString(), password);
+    RequestContext context = new RequestContextBuilder(cancellationToken).WithUser(user).Build();
+    return await _userClient.AuthenticateAsync(payload, context);
+  }
+
   public async Task<User> CreateAsync(Email email, CancellationToken cancellationToken)
   {
     CreateOrReplaceUserPayload payload = new(email.Address)

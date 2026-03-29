@@ -82,6 +82,10 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
       Session session = await _sessionGateway.SignInAsync(user, credentials.Password, cancellationToken);
       return SignInAccountResult.Success(session);
     }
+    else
+    {
+      user = await _userGateway.AuthenticateAsync(user, credentials.Password, cancellationToken);
+    }
 
     if (multiFactorAuthenticationMode != MultiFactorAuthenticationMode.None)
     {
@@ -108,7 +112,7 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     {
       Guid userId = Guid.Parse(validatedToken.Subject);
       user = await _userGateway.FindAsync(userId, cancellationToken) ?? throw new InvalidOperationException($"The user 'Id={userId}' was not found.");
-      if (user.Email is null || !user.Email.Address.Trim().Equals(email.Address.Trim(), StringComparison.InvariantCultureIgnoreCase) || !email.IsVerified)
+      if (user.Email is null || !user.Email.Address.Trim().Equals(email.Address.Trim(), StringComparison.InvariantCultureIgnoreCase) || !user.Email.IsVerified)
       {
         user = await _userGateway.UpdateEmailAsync(user, email, cancellationToken);
       }
