@@ -16,12 +16,14 @@ public record OneTimePasswordValidation
     Id = id;
     Code = code;
   }
-}
 
-internal class OneTimePasswordValidationValidator : AbstractValidator<OneTimePasswordValidation>
-{
-  public OneTimePasswordValidationValidator()
+  public void Validate() => new Validator().ValidateAndThrow(this);
+
+  private class Validator : AbstractValidator<OneTimePasswordValidation>
   {
-    RuleFor(x => x.Code).NotEmpty();
+    public Validator()
+    {
+      RuleFor(x => x.Code).NotEmpty();
+    }
   }
 }

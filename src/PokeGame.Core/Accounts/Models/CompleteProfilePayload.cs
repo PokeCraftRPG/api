@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Krakenar.Contracts.Settings;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Validation;
 
@@ -16,36 +17,41 @@ public record CompleteProfilePayload
 
   public DateTime? DateOfBirth { get; set; }
   public string? Gender { get; set; }
+  public string Locale { get; set; }
   public string TimeZone { get; set; }
 
-  public CompleteProfilePayload() : this(string.Empty, string.Empty, string.Empty, string.Empty)
+  public CompleteProfilePayload() : this(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty)
   {
   }
 
-  public CompleteProfilePayload(string token, string firstName, string lastName, string timeZone)
+  public CompleteProfilePayload(string token, string firstName, string lastName, string locale, string timeZone)
   {
     Token = token;
     FirstName = firstName;
     LastName = lastName;
+    Locale = locale;
     TimeZone = timeZone;
   }
-}
 
-internal class CompleteProfilePayloadValidator : AbstractValidator<CompleteProfilePayload>
-{
-  public CompleteProfilePayloadValidator()
+  public void Validate(IPasswordSettings passwordSettings) => new Validator(passwordSettings).ValidateAndThrow(this);
+
+  private class Validator : AbstractValidator<CompleteProfilePayload>
   {
-    RuleFor(x => x.Token).NotEmpty();
+    public Validator(IPasswordSettings passwordSettings)
+    {
+      RuleFor(x => x.Token).NotEmpty();
 
-    // TODO(fpion): When(x => x.Password is not null, () => RuleFor(x => x.Password!).Password(passwordSettings));
-    RuleFor(x => x.MultiFactorAuthenticationMode).IsInEnum();
-    When(x => x.MultiFactorAuthenticationMode != MultiFactorAuthenticationMode.None, () => RuleFor(x => x.Password).NotNull());
+      When(x => x.Password is not null, () => RuleFor(x => x.Password!).Password(passwordSettings));
+      RuleFor(x => x.MultiFactorAuthenticationMode).IsInEnum();
+      When(x => x.MultiFactorAuthenticationMode != MultiFactorAuthenticationMode.None, () => RuleFor(x => x.Password).NotNull());
 
-    RuleFor(x => x.FirstName).Name();
-    RuleFor(x => x.LastName).Name();
+      RuleFor(x => x.FirstName).Name();
+      RuleFor(x => x.LastName).Name();
 
-    When(x => x.DateOfBirth.HasValue, () => RuleFor(x => x.DateOfBirth!.Value).DateOfBirth());
-    When(x => !string.IsNullOrWhiteSpace(x.Gender), () => RuleFor(x => x.Gender!).Gender());
-    RuleFor(x => x.TimeZone).TimeZone();
+      When(x => x.DateOfBirth.HasValue, () => RuleFor(x => x.DateOfBirth!.Value).DateOfBirth());
+      When(x => !string.IsNullOrWhiteSpace(x.Gender), () => RuleFor(x => x.Gender!).Gender());
+      RuleFor(x => x.Locale).Locale();
+      RuleFor(x => x.TimeZone).TimeZone();
+    }
   }
 }

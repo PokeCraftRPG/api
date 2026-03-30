@@ -21,6 +21,7 @@ public class SignInAccountCredentialsTests
 
   private readonly Mock<IMessageGateway> _messageGateway = new();
   private readonly Mock<IOneTimePasswordGateway> _oneTimePasswordGateway = new();
+  private readonly Mock<IRealmGateway> _realmGateway = new();
   private readonly Mock<ISessionGateway> _sessionGateway = new();
   private readonly Mock<ITokenGateway> _tokenGateway = new();
   private readonly Mock<IUserGateway> _userGateway = new();
@@ -29,7 +30,7 @@ public class SignInAccountCredentialsTests
 
   public SignInAccountCredentialsTests()
   {
-    _handler = new(_messageGateway.Object, _oneTimePasswordGateway.Object, _sessionGateway.Object, _tokenGateway.Object, _userGateway.Object);
+    _handler = new(_messageGateway.Object, _oneTimePasswordGateway.Object, _realmGateway.Object, _sessionGateway.Object, _tokenGateway.Object, _userGateway.Object);
   }
 
   [Fact(DisplayName = "It should create a new session when the user has no MFA and has completed its profile.")]
@@ -43,8 +44,7 @@ public class SignInAccountCredentialsTests
 
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
-      Credentials = new Credentials(user.Email.Address, PasswordString)
+      Credentials = new Credentials(_faker.Locale, user.Email.Address, PasswordString)
     };
     SignInAccountCommand command = new(payload);
 
@@ -66,8 +66,7 @@ public class SignInAccountCredentialsTests
 
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
-      Credentials = new Credentials(user.Email.Address)
+      Credentials = new Credentials(_faker.Locale, user.Email.Address)
     };
     SignInAccountCommand command = new(payload);
 
@@ -86,8 +85,7 @@ public class SignInAccountCredentialsTests
 
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
-      Credentials = new Credentials(user.Email.Address, PasswordString)
+      Credentials = new Credentials(_faker.Locale, user.Email.Address, PasswordString)
     };
     SignInAccountCommand command = new(payload);
 
@@ -112,8 +110,7 @@ public class SignInAccountCredentialsTests
 
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
-      Credentials = new Credentials(user.Email.Address, PasswordString)
+      Credentials = new Credentials(_faker.Locale, user.Email.Address, PasswordString)
     };
     SignInAccountCommand command = new(payload);
 
@@ -121,7 +118,7 @@ public class SignInAccountCredentialsTests
     _oneTimePasswordGateway.Setup(x => x.CreateMultiFactorAuthenticationAsync(user, _cancellationToken)).ReturnsAsync(oneTimePassword);
 
     Guid messageId = Guid.NewGuid();
-    _messageGateway.Setup(x => x.SendMultiFactorAuthenticationAsync(user, payload.Locale, oneTimePassword, _cancellationToken)).ReturnsAsync(messageId);
+    _messageGateway.Setup(x => x.SendMultiFactorAuthenticationAsync(user, payload.Credentials.Locale, oneTimePassword, _cancellationToken)).ReturnsAsync(messageId);
 
     SignInAccountResult result = await _handler.HandleAsync(command, _cancellationToken);
     Assert.NotNull(result.MultiFactorAuthenticationMessage);
@@ -135,8 +132,7 @@ public class SignInAccountCredentialsTests
   {
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
-      Credentials = new Credentials(_faker.Internet.Email())
+      Credentials = new Credentials(_faker.Locale, _faker.Internet.Email())
     };
     SignInAccountCommand command = new(payload);
 
@@ -144,7 +140,7 @@ public class SignInAccountCredentialsTests
     _tokenGateway.Setup(x => x.CreateEmailVerificationAsync(payload.Credentials.EmailAddress, _cancellationToken)).ReturnsAsync(token);
 
     Guid messageId = Guid.NewGuid();
-    _messageGateway.Setup(x => x.SendEmailVerificationAsync(payload.Credentials.EmailAddress, payload.Locale, token, _cancellationToken)).ReturnsAsync(messageId);
+    _messageGateway.Setup(x => x.SendEmailVerificationAsync(payload.Credentials.EmailAddress, payload.Credentials.Locale, token, _cancellationToken)).ReturnsAsync(messageId);
 
     SignInAccountResult result = await _handler.HandleAsync(command, _cancellationToken);
     Assert.Equal(messageId, result.EmailVerificationMessageId);
@@ -159,8 +155,7 @@ public class SignInAccountCredentialsTests
 
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
-      Credentials = new Credentials(user.Email.Address)
+      Credentials = new Credentials(_faker.Locale, user.Email.Address)
     };
     SignInAccountCommand command = new(payload);
 
@@ -168,9 +163,26 @@ public class SignInAccountCredentialsTests
     _tokenGateway.Setup(x => x.CreateEmailVerificationAsync(user, _cancellationToken)).ReturnsAsync(token);
 
     Guid messageId = Guid.NewGuid();
-    _messageGateway.Setup(x => x.SendEmailVerificationAsync(user, payload.Locale, token, _cancellationToken)).ReturnsAsync(messageId);
+    _messageGateway.Setup(x => x.SendEmailVerificationAsync(user, payload.Credentials.Locale, token, _cancellationToken)).ReturnsAsync(messageId);
 
     SignInAccountResult result = await _handler.HandleAsync(command, _cancellationToken);
     Assert.Equal(messageId, result.EmailVerificationMessageId);
+  }
+
+  [Fact(DisplayName = "It should throw ValidationException when the payload is not valid.")]
+  public async Task Given_InvalidPayload_When_Credentials_Then_ValidationException()
+  {
+    SignInAccountPayload payload = new()
+    {
+      Credentials = new Credentials(_faker.Random.String(20, 'a', 'z'), "aa@@bb..cc", "    ")
+    };
+    SignInAccountCommand command = new(payload);
+
+    var exception = await Assert.ThrowsAsync<FluentValidation.ValidationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal(4, exception.Errors.Count());
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "MaximumLengthValidator" && e.PropertyName == "Locale");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "LocaleValidator" && e.PropertyName == "Locale");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "EmailValidator" && e.PropertyName == "EmailAddress");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "Password");
   }
 }

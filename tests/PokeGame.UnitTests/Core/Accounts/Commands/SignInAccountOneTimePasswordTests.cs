@@ -18,6 +18,7 @@ public class SignInAccountOneTimePasswordTests
 
   private readonly Mock<IMessageGateway> _messageGateway = new();
   private readonly Mock<IOneTimePasswordGateway> _oneTimePasswordGateway = new();
+  private readonly Mock<IRealmGateway> _realmGateway = new();
   private readonly Mock<ISessionGateway> _sessionGateway = new();
   private readonly Mock<ITokenGateway> _tokenGateway = new();
   private readonly Mock<IUserGateway> _userGateway = new();
@@ -26,7 +27,7 @@ public class SignInAccountOneTimePasswordTests
 
   public SignInAccountOneTimePasswordTests()
   {
-    _handler = new(_messageGateway.Object, _oneTimePasswordGateway.Object, _sessionGateway.Object, _tokenGateway.Object, _userGateway.Object);
+    _handler = new(_messageGateway.Object, _oneTimePasswordGateway.Object, _realmGateway.Object, _sessionGateway.Object, _tokenGateway.Object, _userGateway.Object);
   }
 
   [Fact(DisplayName = "It should return a profile completion token when the user has not completed its profile.")]
@@ -34,7 +35,6 @@ public class SignInAccountOneTimePasswordTests
   {
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
       OneTimePassword = new OneTimePasswordValidation(Guid.NewGuid(), _faker.Random.String(6, '0', '9'))
     };
     SignInAccountCommand command = new(payload);
@@ -54,7 +54,6 @@ public class SignInAccountOneTimePasswordTests
   {
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
       OneTimePassword = new OneTimePasswordValidation(Guid.NewGuid(), _faker.Random.String(6, '0', '9'))
     };
     SignInAccountCommand command = new(payload);
@@ -69,5 +68,19 @@ public class SignInAccountOneTimePasswordTests
     SignInAccountResult result = await _handler.HandleAsync(command, _cancellationToken);
     Assert.NotNull(result.Session);
     Assert.Same(session, result.Session);
+  }
+
+  [Fact(DisplayName = "It should throw ValidationException when the payload is not valid.")]
+  public async Task Given_InvalidPayload_When_OneTimePassword_Then_ValidationException()
+  {
+    SignInAccountPayload payload = new()
+    {
+      OneTimePassword = new OneTimePasswordValidation(Guid.Empty, string.Empty)
+    };
+    SignInAccountCommand command = new(payload);
+
+    var exception = await Assert.ThrowsAsync<FluentValidation.ValidationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Single(exception.Errors);
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "Code");
   }
 }

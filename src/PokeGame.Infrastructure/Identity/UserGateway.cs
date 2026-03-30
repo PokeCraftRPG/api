@@ -25,7 +25,7 @@ internal class UserGateway : IUserGateway
     return await _userClient.AuthenticateAsync(payload, context);
   }
 
-  public async Task<User> CompleteProfileAsync(Guid id, CompleteProfilePayload profile, string locale, CancellationToken cancellationToken)
+  public async Task<User> CompleteProfileAsync(Guid id, CompleteProfilePayload profile, CancellationToken cancellationToken)
   {
     UpdateUserPayload payload = new()
     {
@@ -35,7 +35,7 @@ internal class UserGateway : IUserGateway
       LastName = new Change<string>(profile.LastName),
       Birthdate = new Change<DateTime?>(profile.DateOfBirth),
       Gender = new Change<string>(profile.Gender is null ? null : UserHelper.NormalizeGender(profile.Gender)),
-      Locale = new Change<string>(locale),
+      Locale = new Change<string>(profile.Locale),
       TimeZone = new Change<string>(profile.TimeZone)
     };
     payload.CustomAttributes.Add(new CustomAttribute(UserHelper.MultiFactorAuthenticationModeKey, profile.MultiFactorAuthenticationMode.ToString()));

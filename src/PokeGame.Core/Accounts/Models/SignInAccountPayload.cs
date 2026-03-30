@@ -1,11 +1,9 @@
 ﻿using FluentValidation;
-using PokeGame.Core.Validation;
 
 namespace PokeGame.Core.Accounts.Models;
 
 public record SignInAccountPayload
 {
-  public string Locale { get; set; } = string.Empty;
   public Credentials? Credentials { get; set; }
   public string? Token { get; set; }
   public OneTimePasswordValidation? OneTimePassword { get; set; }
@@ -17,12 +15,31 @@ public record SignInAccountPayload
   {
     public Validator()
     {
-      RuleFor(x => x.Locale).Locale();
-      When(x => x.Credentials is not null, () => RuleFor(x => x.Credentials!).SetValidator(new CredentialsValidator()));
-      When(x => x.OneTimePassword is not null, () => RuleFor(x => x.OneTimePassword!).SetValidator(new OneTimePasswordValidationValidator()));
-      When(x => x.Profile is not null, () => RuleFor(x => x.Profile!).SetValidator(new CompleteProfilePayloadValidator()));
+      RuleFor(x => x).Must(BeValid)
+        .WithErrorCode("SignInAccountValidator")
+        .WithMessage(x => $"Exactly one of the following must be specified: {string.Join(", ", nameof(x.Credentials), nameof(x.Token), nameof(x.OneTimePassword), nameof(x.Token))}.");
+    }
 
-      // TODO(fpion): exactly 1 property.
+    private static bool BeValid(SignInAccountPayload payload)
+    {
+      int count = 0;
+      if (payload.Credentials is not null)
+      {
+        count++;
+      }
+      if (payload.Token is not null)
+      {
+        count++;
+      }
+      if (payload.OneTimePassword is not null)
+      {
+        count++;
+      }
+      if (payload.Profile is not null)
+      {
+        count++;
+      }
+      return count == 1;
     }
   }
 }

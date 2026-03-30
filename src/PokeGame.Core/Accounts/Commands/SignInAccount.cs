@@ -1,4 +1,5 @@
 ﻿using Krakenar.Contracts.Passwords;
+using Krakenar.Contracts.Realms;
 using Krakenar.Contracts.Sessions;
 using Krakenar.Contracts.Tokens;
 using Krakenar.Contracts.Users;
@@ -14,6 +15,7 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
 {
   private readonly IMessageGateway _messageGateway;
   private readonly IOneTimePasswordGateway _oneTimePasswordGateway;
+  private readonly IRealmGateway _realmGateway;
   private readonly ISessionGateway _sessionGateway;
   private readonly ITokenGateway _tokenGateway;
   private readonly IUserGateway _userGateway;
@@ -21,12 +23,14 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
   public SignInAccountCommandHandler(
     IMessageGateway messageGateway,
     IOneTimePasswordGateway oneTimePasswordGateway,
+    IRealmGateway realmGateway,
     ISessionGateway sessionGateway,
     ITokenGateway tokenGateway,
     IUserGateway userGateway)
   {
     _messageGateway = messageGateway;
     _oneTimePasswordGateway = oneTimePasswordGateway;
+    _realmGateway = realmGateway;
     _sessionGateway = sessionGateway;
     _tokenGateway = tokenGateway;
     _userGateway = userGateway;
@@ -39,9 +43,9 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
 
     if (payload.Credentials is not null)
     {
-      return await HandleCredentialsAsync(payload.Credentials, payload.Locale, cancellationToken);
+      return await HandleCredentialsAsync(payload.Credentials, cancellationToken);
     }
-    if (!string.IsNullOrWhiteSpace(payload.Token))
+    if (payload.Token is not null)
     {
       return await HandleTokenAsync(payload.Token, cancellationToken);
     }
@@ -51,14 +55,16 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     }
     if (payload.Profile is not null)
     {
-      return await HandleProfileAsync(payload.Profile, payload.Locale, cancellationToken);
+      return await HandleProfileAsync(payload.Profile, cancellationToken);
     }
 
     throw new InvalidOperationException("The sign-in payload is not valid.");
   }
 
-  private async Task<SignInAccountResult> HandleCredentialsAsync(Credentials credentials, string locale, CancellationToken cancellationToken)
+  private async Task<SignInAccountResult> HandleCredentialsAsync(Credentials credentials, CancellationToken cancellationToken)
   {
+    credentials.Validate();
+
     User? user = await _userGateway.FindAsync(credentials.EmailAddress, cancellationToken);
     if (user is null || !user.HasPassword)
     {
@@ -66,12 +72,12 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
       if (user is null)
       {
         string token = await _tokenGateway.CreateEmailVerificationAsync(credentials.EmailAddress, cancellationToken);
-        messageId = await _messageGateway.SendEmailVerificationAsync(credentials.EmailAddress, locale, token, cancellationToken);
+        messageId = await _messageGateway.SendEmailVerificationAsync(credentials.EmailAddress, credentials.Locale, token, cancellationToken);
       }
       else
       {
         string token = await _tokenGateway.CreateEmailVerificationAsync(user, cancellationToken);
-        messageId = await _messageGateway.SendEmailVerificationAsync(user, locale, token, cancellationToken);
+        messageId = await _messageGateway.SendEmailVerificationAsync(user, credentials.Locale, token, cancellationToken);
       }
       return SignInAccountResult.EmailVerificationMessageSent(messageId);
     }
@@ -94,7 +100,7 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     if (multiFactorAuthenticationMode != MultiFactorAuthenticationMode.None)
     {
       OneTimePassword oneTimePassword = await _oneTimePasswordGateway.CreateMultiFactorAuthenticationAsync(user, cancellationToken);
-      Guid messageId = await _messageGateway.SendMultiFactorAuthenticationAsync(user, locale, oneTimePassword, cancellationToken);
+      Guid messageId = await _messageGateway.SendMultiFactorAuthenticationAsync(user, credentials.Locale, oneTimePassword, cancellationToken);
       return SignInAccountResult.MultiFactorAuthenticationMessageSent(oneTimePassword, messageId, multiFactorAuthenticationMode);
     }
 
@@ -127,19 +133,24 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
 
   private async Task<SignInAccountResult> HandleOneTimePasswordValidation(OneTimePasswordValidation validation, CancellationToken cancellationToken)
   {
+    validation.Validate();
     User user = await _oneTimePasswordGateway.ValidateMultiFactorAuthenticationAsync(validation, cancellationToken);
     return await EnsureProfileIsCompletedAsync(user, cancellationToken);
   }
 
-  private async Task<SignInAccountResult> HandleProfileAsync(CompleteProfilePayload profile, string locale, CancellationToken cancellationToken)
+  private async Task<SignInAccountResult> HandleProfileAsync(CompleteProfilePayload profile, CancellationToken cancellationToken)
   {
+    Realm realm = await _realmGateway.FindAsync(cancellationToken);
+    profile.Validate(realm.PasswordSettings);
+
     ValidatedToken validatedToken = await _tokenGateway.ValidateProfileCompletionAsync(profile.Token, cancellationToken);
     if (validatedToken.Subject is null)
     {
       throw new ArgumentException("No subject was retrieved from the token.", nameof(profile));
     }
+
     Guid userId = Guid.Parse(validatedToken.Subject);
-    User user = await _userGateway.CompleteProfileAsync(userId, profile, locale, cancellationToken);
+    User user = await _userGateway.CompleteProfileAsync(userId, profile, cancellationToken);
     return await EnsureProfileIsCompletedAsync(user, cancellationToken);
   }
 

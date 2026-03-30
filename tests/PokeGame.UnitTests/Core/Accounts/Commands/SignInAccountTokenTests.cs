@@ -19,6 +19,7 @@ public class SignInAccountTokenTests
 
   private readonly Mock<IMessageGateway> _messageGateway = new();
   private readonly Mock<IOneTimePasswordGateway> _oneTimePasswordGateway = new();
+  private readonly Mock<IRealmGateway> _realmGateway = new();
   private readonly Mock<ISessionGateway> _sessionGateway = new();
   private readonly Mock<ITokenGateway> _tokenGateway = new();
   private readonly Mock<IUserGateway> _userGateway = new();
@@ -27,7 +28,7 @@ public class SignInAccountTokenTests
 
   public SignInAccountTokenTests()
   {
-    _handler = new(_messageGateway.Object, _oneTimePasswordGateway.Object, _sessionGateway.Object, _tokenGateway.Object, _userGateway.Object);
+    _handler = new(_messageGateway.Object, _oneTimePasswordGateway.Object, _realmGateway.Object, _sessionGateway.Object, _tokenGateway.Object, _userGateway.Object);
   }
 
   [Fact(DisplayName = "It should create a user and return a profile completion token when the token has no subject.")]
@@ -35,7 +36,6 @@ public class SignInAccountTokenTests
   {
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
       Token = "token"
     };
     SignInAccountCommand command = new(payload);
@@ -61,7 +61,6 @@ public class SignInAccountTokenTests
   {
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
       Token = "token"
     };
     SignInAccountCommand command = new(payload);
@@ -91,7 +90,6 @@ public class SignInAccountTokenTests
   {
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
       Token = "token"
     };
     SignInAccountCommand command = new(payload);
@@ -123,7 +121,6 @@ public class SignInAccountTokenTests
   {
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
       Token = "token"
     };
     SignInAccountCommand command = new(payload);
@@ -146,7 +143,6 @@ public class SignInAccountTokenTests
 
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
       Token = "token"
     };
     SignInAccountCommand command = new(payload);
@@ -179,7 +175,6 @@ public class SignInAccountTokenTests
 
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
       Token = "token"
     };
     SignInAccountCommand command = new(payload);
@@ -214,7 +209,6 @@ public class SignInAccountTokenTests
 
     SignInAccountPayload payload = new()
     {
-      Locale = _faker.Locale,
       Token = "token"
     };
     SignInAccountCommand command = new(payload);

@@ -60,6 +60,7 @@ public static class DependencyInjectionExtensions
     return services
       .AddSingleton<IMessageGateway, MessageGateway>()
       .AddSingleton<IOneTimePasswordGateway, OneTimePasswordGateway>()
+      .AddSingleton<IRealmGateway, RealmGateway>()
       .AddSingleton<ISessionGateway, SessionGateway>()
       .AddSingleton<ITokenGateway, TokenGateway>()
       .AddSingleton<IUserGateway, UserGateway>();
