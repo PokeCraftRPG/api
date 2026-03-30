@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Krakenar.Client;
 using Krakenar.Client.Sessions;
 using Krakenar.Client.Users;
 using Krakenar.Contracts.Actors;
@@ -41,6 +42,7 @@ public abstract class IntegrationTests : IAsyncLifetime
 
     ServiceCollection services = new();
     services.AddSingleton(configuration);
+    services.AddSingleton(KrakenarSettings.Initialize(configuration));
     services.AddSingleton<IContext>(_context);
 
     services.AddPokeGameCore();
@@ -73,6 +75,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     await events.Streams.ExecuteDeleteAsync();
 
     _context.User = new UserBuilder(Faker).Build();
+    UserClient.Setup(x => x.ReadAsync(_context.User.Id, uniqueName: null, customIdentifier: null, It.IsAny<RequestContext>())).ReturnsAsync(_context.User);
     ICacheService cacheService = ServiceProvider.GetRequiredService<ICacheService>();
     cacheService.SetActor(new Actor(_context.User));
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Logitar.EventSourcing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PokeGame.Core;
@@ -19,6 +20,7 @@ internal class TrainerConfiguration : AggregateConfiguration<TrainerEntity>, IEn
     builder.HasKey(x => x.TrainerId);
 
     builder.HasIndex(x => new { x.WorldId, x.Id }).IsUnique();
+    builder.HasIndex(x => new { x.WorldId, x.UserId });
     builder.HasIndex(x => new { x.WorldId, x.License }).IsUnique();
     builder.HasIndex(x => new { x.WorldId, x.Key }).IsUnique();
     builder.HasIndex(x => new { x.WorldId, x.Name });
@@ -26,6 +28,7 @@ internal class TrainerConfiguration : AggregateConfiguration<TrainerEntity>, IEn
     builder.HasIndex(x => new { x.WorldId, x.Money });
     builder.HasIndex(x => new { x.WorldId, x.PartySize });
 
+    builder.Property(x => x.OwnerId).HasMaxLength(ActorId.MaximumLength);
     builder.Property(x => x.License).HasMaxLength(License.MaximumLength);
     builder.Property(x => x.Key).HasMaxLength(Constants.SlugMaximumLength);
     builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);

@@ -1,4 +1,9 @@
-﻿using Logitar.CQRS;
+﻿using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Users;
+using Logitar.CQRS;
+using Logitar.EventSourcing;
+using PokeGame.Core.Actors;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Storages;
 using PokeGame.Core.Trainers.Models;
@@ -15,19 +20,22 @@ internal class CreateOrReplaceTrainerCommandHandler : ICommandHandler<CreateOrRe
   private readonly IStorageService _storageService;
   private readonly ITrainerRepository _trainerRepository;
   private readonly ITrainerQuerier _trainerQuerier;
+  private readonly IUserGateway _userGateway;
 
   public CreateOrReplaceTrainerCommandHandler(
     IContext context,
     IPermissionService permissionService,
     IStorageService storageService,
     ITrainerQuerier trainerQuerier,
-    ITrainerRepository trainerRepository)
+    ITrainerRepository trainerRepository,
+    IUserGateway userGateway)
   {
     _context = context;
     _permissionService = permissionService;
     _storageService = storageService;
     _trainerQuerier = trainerQuerier;
     _trainerRepository = trainerRepository;
+    _userGateway = userGateway;
   }
 
   public async Task<CreateOrReplaceTrainerResult> HandleAsync(CreateOrReplaceTrainerCommand command, CancellationToken cancellationToken)
@@ -79,6 +87,17 @@ internal class CreateOrReplaceTrainerCommandHandler : ICommandHandler<CreateOrRe
     trainer.Notes = Notes.TryCreate(payload.Notes);
 
     trainer.Update(userId);
+
+    UserId? ownerId = null;
+    if (payload.OwnerId.HasValue)
+    {
+      // TODO(fpion): trainer should be a world member; refactor with UpdateTrainer.
+      User user = await _userGateway.FindAsync(payload.OwnerId.Value, cancellationToken) ?? throw new UserNotFoundException(payload.OwnerId.Value, nameof(payload.OwnerId));
+      Actor actor = new(user);
+      ActorId actorId = actor.GetActorId();
+      ownerId = new(actorId);
+    }
+    trainer.SetOwnership(ownerId, userId);
 
     await _trainerQuerier.EnsureUnicityAsync(trainer, cancellationToken);
 

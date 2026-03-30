@@ -108,6 +108,7 @@ public class TrainerIntegrationTests : IntegrationTests
   {
     CreateOrReplaceTrainerPayload payload = new()
     {
+      OwnerId = Actor.Id,
       License = _trainer.License.Value.ToLowerInvariant(),
       Key = "ash-ketchum",
       Name = " Ash Ketchum ",
@@ -126,7 +127,7 @@ public class TrainerIntegrationTests : IntegrationTests
 
     TrainerModel trainer = result.Trainer;
     Assert.Equal(id, trainer.Id);
-    Assert.Equal(3, trainer.Version);
+    Assert.Equal(4, trainer.Version);
     Assert.Equal(Actor, trainer.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, trainer.UpdatedOn, TimeSpan.FromSeconds(10));
 
@@ -139,6 +140,7 @@ public class TrainerIntegrationTests : IntegrationTests
     Assert.Equal(payload.Sprite, trainer.Sprite);
     Assert.Equal(payload.Url, trainer.Url);
     Assert.Equal(payload.Notes.Trim(), trainer.Notes);
+    Assert.Equal(Actor, trainer.Owner);
   }
 
   [Fact(DisplayName = "It should throw PropertyConflictException when there is a key conflict.")]
@@ -182,9 +184,17 @@ public class TrainerIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should update an existing trainer.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
+    _trainer.SetOwnership(World.OwnerId, World.OwnerId);
+    await _trainerRepository.SaveAsync(_trainer);
+
+    _trainer = (await _trainerRepository.LoadAsync(_trainer.Id))!;
+    Assert.NotNull(_trainer);
+    Assert.Equal(World.OwnerId, _trainer.OwnerId);
+
     Guid id = _trainer.EntityId;
     UpdateTrainerPayload payload = new()
     {
+      OwnerId = new Optional<Guid?>(null),
       Name = new Optional<string>(" Ash Ketchum "),
       Description = new Optional<string>("  Ash is a legendary Trainer known for Pikachu, constant youth, and mastering multiple battle styles across regions and generations.  "),
       Gender = TrainerGender.Male,
@@ -198,7 +208,7 @@ public class TrainerIntegrationTests : IntegrationTests
     Assert.NotNull(trainer);
 
     Assert.Equal(id, trainer.Id);
-    Assert.Equal(2, trainer.Version);
+    Assert.Equal(4, trainer.Version);
     Assert.Equal(Actor, trainer.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, trainer.UpdatedOn, TimeSpan.FromSeconds(10));
 
@@ -211,5 +221,10 @@ public class TrainerIntegrationTests : IntegrationTests
     Assert.Equal(payload.Sprite.Value, trainer.Sprite);
     Assert.Equal(payload.Url.Value, trainer.Url);
     Assert.Equal(payload.Notes.Value?.Trim(), trainer.Notes);
+    Assert.Null(trainer.Owner);
+
+    _trainer = (await _trainerRepository.LoadAsync(_trainer.Id))!;
+    Assert.NotNull(_trainer);
+    Assert.Null(_trainer.OwnerId);
   }
 }

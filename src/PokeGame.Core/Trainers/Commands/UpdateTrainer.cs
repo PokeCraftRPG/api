@@ -1,4 +1,9 @@
-﻿using Logitar.CQRS;
+﻿using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Users;
+using Logitar.CQRS;
+using Logitar.EventSourcing;
+using PokeGame.Core.Actors;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Storages;
 using PokeGame.Core.Trainers.Models;
@@ -14,19 +19,22 @@ internal class UpdateTrainerCommandHandler : ICommandHandler<UpdateTrainerComman
   private readonly IStorageService _storageService;
   private readonly ITrainerRepository _trainerRepository;
   private readonly ITrainerQuerier _trainerQuerier;
+  private readonly IUserGateway _userGateway;
 
   public UpdateTrainerCommandHandler(
     IContext context,
     IPermissionService permissionService,
     IStorageService storageService,
     ITrainerQuerier trainerQuerier,
-    ITrainerRepository trainerRepository)
+    ITrainerRepository trainerRepository,
+    IUserGateway userGateway)
   {
     _context = context;
     _permissionService = permissionService;
     _storageService = storageService;
     _trainerQuerier = trainerQuerier;
     _trainerRepository = trainerRepository;
+    _userGateway = userGateway;
   }
 
   public async Task<TrainerModel?> HandleAsync(UpdateTrainerCommand command, CancellationToken cancellationToken)
@@ -81,6 +89,20 @@ internal class UpdateTrainerCommandHandler : ICommandHandler<UpdateTrainerComman
     }
 
     trainer.Update(userId);
+
+    if (payload.OwnerId is not null)
+    {
+      UserId? ownerId = null;
+      if (payload.OwnerId.Value.HasValue)
+      {
+        // TODO(fpion): trainer should be a world member; refactor with CreateOrReplaceTrainer.
+        User user = await _userGateway.FindAsync(payload.OwnerId.Value.Value, cancellationToken) ?? throw new UserNotFoundException(payload.OwnerId.Value.Value, nameof(payload.OwnerId));
+        Actor actor = new(user);
+        ActorId actorId = actor.GetActorId();
+        ownerId = new(actorId);
+      }
+      trainer.SetOwnership(ownerId, userId);
+    }
 
     await _trainerQuerier.EnsureUnicityAsync(trainer, cancellationToken);
 

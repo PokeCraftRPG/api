@@ -5,6 +5,8 @@ namespace PokeGame.Core.Trainers.Models;
 
 public record UpdateTrainerPayload
 {
+  public Optional<Guid?>? OwnerId { get; set; }
+
   public string? Key { get; set; }
   public Optional<string>? Name { get; set; }
   public Optional<string>? Description { get; set; }

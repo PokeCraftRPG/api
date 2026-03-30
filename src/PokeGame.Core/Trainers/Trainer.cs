@@ -17,7 +17,7 @@ public class Trainer : AggregateRoot, IEntityProvider
   public WorldId WorldId => Id.WorldId;
   public Guid EntityId => Id.EntityId;
 
-  // TODO(fpion): OwnerId
+  public UserId? OwnerId { get; private set; }
 
   private License? _license = null;
   public License License => _license ?? throw new InvalidOperationException("The trainer was not initialized.");
@@ -172,6 +172,18 @@ public class Trainer : AggregateRoot, IEntityProvider
   protected virtual void Handle(TrainerKeyChanged @event)
   {
     _key = @event.Key;
+  }
+
+  public void SetOwnership(UserId? ownerId, UserId userId)
+  {
+    if (OwnerId != ownerId)
+    {
+      Raise(new TrainerOwnershipChanged(ownerId), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(TrainerOwnershipChanged @event)
+  {
+    OwnerId = @event.OwnerId;
   }
 
   public void Update(UserId userId)

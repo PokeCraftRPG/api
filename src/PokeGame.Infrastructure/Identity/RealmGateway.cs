@@ -7,9 +7,9 @@ namespace PokeGame.Infrastructure.Identity;
 internal class RealmGateway : IRealmGateway
 {
   private readonly IRealmService _realmService;
-  private readonly KrakenarSettings _settings;
+  private readonly IKrakenarSettings _settings;
 
-  public RealmGateway(IRealmService realmService, KrakenarSettings settings)
+  public RealmGateway(IRealmService realmService, IKrakenarSettings settings)
   {
     _realmService = realmService;
     _settings = settings;
