@@ -136,7 +136,7 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     ValidatedToken validatedToken = await _tokenGateway.ValidateProfileCompletionAsync(profile.Token, cancellationToken);
     if (validatedToken.Subject is null)
     {
-      throw new NotImplementedException(); // TODO(fpion): implement
+      throw new ArgumentException("No subject was retrieved from the token.", nameof(profile));
     }
     Guid userId = Guid.Parse(validatedToken.Subject);
     User user = await _userGateway.CompleteProfileAsync(userId, profile, locale, cancellationToken);
