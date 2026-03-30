@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.Validators;
 using Logitar;
+using PokeGame.Core.Identity;
 
 namespace PokeGame.Core.Validation;
 
@@ -15,7 +16,7 @@ internal class GenderValidator<T> : IPropertyValidator<T, string>
     if (knownValues is not null)
     {
       _knownValues.Clear();
-      _knownValues.AddRange(knownValues.Select(Normalize));
+      _knownValues.AddRange(knownValues.Select(UserHelper.NormalizeGender));
     }
   }
 
@@ -24,7 +25,5 @@ internal class GenderValidator<T> : IPropertyValidator<T, string>
     return $"'{{PropertyName}}' must be one of the following: {string.Join(", ", _knownValues)}.";
   }
 
-  public bool IsValid(ValidationContext<T> context, string value) => _knownValues.Contains(Normalize(value));
-
-  private static string Normalize(string value) => value.Trim().ToLowerInvariant();
+  public bool IsValid(ValidationContext<T> context, string value) => _knownValues.Contains(UserHelper.NormalizeGender(value));
 }
