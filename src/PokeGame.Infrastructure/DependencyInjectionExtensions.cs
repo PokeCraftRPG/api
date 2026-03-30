@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Caching;
 using PokeGame.Core.Forms;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
@@ -15,6 +16,7 @@ using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Caching;
 using PokeGame.Infrastructure.Handlers;
+using PokeGame.Infrastructure.Identity;
 using PokeGame.Infrastructure.Queriers;
 using PokeGame.Infrastructure.Repositories;
 using PokeGame.Infrastructure.Settings;
@@ -29,6 +31,7 @@ public static class DependencyInjectionExtensions
       .AddLogitarEventSourcingWithEntityFrameworkCoreRelational()
       .AddMemoryCache()
       .AddEventHandlers()
+      .AddKrakenarGateways()
       .AddQueriers()
       .AddRepositories()
       .AddSingleton(serviceProvider => CachingSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
@@ -50,6 +53,17 @@ public static class DependencyInjectionExtensions
     VarietyEvents.Register(services);
     WorldEvents.Register(services);
     return services;
+  }
+
+  private static IServiceCollection AddKrakenarGateways(this IServiceCollection services)
+  {
+    return services
+      .AddSingleton<IMessageGateway, MessageGateway>()
+      .AddSingleton<IOneTimePasswordGateway, OneTimePasswordGateway>()
+      .AddSingleton<IRealmGateway, RealmGateway>()
+      .AddSingleton<ISessionGateway, SessionGateway>()
+      .AddSingleton<ITokenGateway, TokenGateway>()
+      .AddSingleton<IUserGateway, UserGateway>();
   }
 
   private static IServiceCollection AddQueriers(this IServiceCollection services)

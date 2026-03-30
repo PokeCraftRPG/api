@@ -1,5 +1,6 @@
 ﻿using Bogus;
 using Krakenar.Contracts.Localization;
+using Krakenar.Contracts.Realms;
 using Krakenar.Contracts.Users;
 using Logitar;
 
@@ -7,6 +8,8 @@ namespace PokeGame.Builders;
 
 public interface IUserBuilder
 {
+  IUserBuilder WithRealm(Realm? realm);
+
   User Build();
 }
 
@@ -14,9 +17,17 @@ public class UserBuilder : IUserBuilder
 {
   private readonly Faker _faker;
 
+  private Realm? _realm = null;
+
   public UserBuilder(Faker? faker = null)
   {
     _faker = faker ?? new();
+  }
+
+  public IUserBuilder WithRealm(Realm? realm)
+  {
+    _realm = realm;
+    return this;
   }
 
   public User Build()
@@ -25,7 +36,7 @@ public class UserBuilder : IUserBuilder
     {
       Id = Guid.NewGuid(),
       Version = 1,
-      Realm = new RealmBuilder().Build(),
+      Realm = _realm ?? new RealmBuilder().Build(),
       Email = new Email(_faker.Person.Email, isVerified: true),
       IsConfirmed = true,
       FirstName = _faker.Person.FirstName,

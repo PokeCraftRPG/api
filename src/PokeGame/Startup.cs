@@ -1,6 +1,8 @@
-﻿using PokeGame.Core;
+﻿using Krakenar.Client;
+using PokeGame.Core;
 using PokeGame.Extensions;
 using PokeGame.Infrastructure;
+using PokeGame.Middlewares;
 using PokeGame.PostgreSQL;
 using PokeGame.Settings;
 
@@ -20,6 +22,8 @@ internal class Startup : StartupBase
     base.ConfigureServices(services);
 
     services.AddControllers();
+    services.AddHttpContextAccessor();
+    services.AddProblemDetails();
 
     ApiSettings apiSettings = ApiSettings.Initialize(_configuration);
     services.AddSingleton(apiSettings);
@@ -32,6 +36,7 @@ internal class Startup : StartupBase
     services.AddPokeGameInfrastructure();
     services.AddPokeGamePostgreSQL(_configuration);
     services.AddSingleton<IContext, HttpApplicationContext>();
+    services.AddKrakenarClient(_configuration);
   }
 
   public override void Configure(IApplicationBuilder builder)
@@ -50,6 +55,7 @@ internal class Startup : StartupBase
     }
 
     application.UseHttpsRedirection();
+    application.UseMiddleware<ResolveWorld>();
 
     application.MapControllers();
   }
