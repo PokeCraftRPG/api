@@ -25,12 +25,17 @@ internal class UserGateway : IUserGateway
     return await _userClient.AuthenticateAsync(payload, context);
   }
 
-  public async Task<User> CompleteProfileAsync(Guid id, CompleteProfilePayload profile, CancellationToken cancellationToken)
+  public async Task<User> CompleteProfileAsync(Guid id, CompleteProfilePayload profile, PhonePayload? phone, CancellationToken cancellationToken)
   {
+    if (profile.MultiFactorAuthenticationMode == MultiFactorAuthenticationMode.Phone && phone is null)
+    {
+      throw new ArgumentNullException(nameof(phone), "A phone number is required when Phone Multi-Factor Authentication is enabled.");
+    }
+
     UpdateUserPayload payload = new()
     {
       Password = profile.Password is null ? null : new ChangePasswordPayload(profile.Password),
-      // TODO(fpion): Phone
+      Phone = new Change<PhonePayload>(phone),
       FirstName = new Change<string>(profile.FirstName),
       LastName = new Change<string>(profile.LastName),
       Birthdate = new Change<DateTime?>(profile.DateOfBirth),
@@ -39,7 +44,7 @@ internal class UserGateway : IUserGateway
       TimeZone = new Change<string>(profile.TimeZone)
     };
     payload.CustomAttributes.Add(new CustomAttribute(UserHelper.MultiFactorAuthenticationModeKey, profile.MultiFactorAuthenticationMode.ToString()));
-    payload.CustomAttributes.Add(new CustomAttribute(UserHelper.ProfileCompletedOnKey, DateTime.UtcNow.ToISOString()));
+    payload.CustomAttributes.Add(new CustomAttribute(UserHelper.ProfileCompletedOnKey, DateTime.Now.ToISOString()));
     RequestContext context = new RequestContextBuilder(cancellationToken).WithUserId(id).Build();
     return await _userClient.UpdateAsync(id, payload, context) ?? throw new InvalidOperationException($"The updated user 'Id={id}' should not be null.");
   }

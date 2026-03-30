@@ -38,7 +38,7 @@ public class SignInAccountCredentialsTests
   {
     User user = new UserBuilder(_faker).Build();
     user.HasPassword = true;
-    user.CustomAttributes.Add(new CustomAttribute("ProfileCompletedOn", DateTime.UtcNow.ToISOString()));
+    user.CustomAttributes.Add(new CustomAttribute("ProfileCompletedOn", DateTime.Now.ToISOString()));
     Assert.NotNull(user.Email);
     _userGateway.Setup(x => x.FindAsync(user.Email.Address, _cancellationToken)).ReturnsAsync(user);
 

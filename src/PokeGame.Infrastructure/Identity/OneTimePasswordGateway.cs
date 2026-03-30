@@ -40,7 +40,7 @@ internal class OneTimePasswordGateway : IOneTimePasswordGateway
   {
     ValidateOneTimePasswordPayload payload = new(oneTimePassword.Code);
     RequestContext context = new RequestContextBuilder(cancellationToken).Build();
-    OneTimePassword validated = await _oneTimePasswordClient.ValidateAsync(oneTimePassword.Id, payload, context) ?? throw new NotImplementedException(); // TODO(fpion): implement
+    OneTimePassword validated = await _oneTimePasswordClient.ValidateAsync(oneTimePassword.Id, payload, context) ?? throw new OneTimePasswordNotFoundException(oneTimePassword.Id);
     validated.EnsurePurpose(MultiFactorAuthenticationPurpose);
     return validated.User ?? throw new InvalidOperationException("The One-Time Password (OTP) is not associated to a user.");
   }

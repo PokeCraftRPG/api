@@ -95,7 +95,7 @@ public class SignInAccountTokenTests
     SignInAccountCommand command = new(payload);
 
     User user = new UserBuilder(_faker).Build();
-    user.CustomAttributes.Add(new CustomAttribute("ProfileCompletedOn", DateTime.UtcNow.ToISOString()));
+    user.CustomAttributes.Add(new CustomAttribute("ProfileCompletedOn", DateTime.Now.ToISOString()));
     Assert.NotNull(user.Email);
     _userGateway.Setup(x => x.FindAsync(user.Id, _cancellationToken)).ReturnsAsync(user);
 
@@ -138,7 +138,7 @@ public class SignInAccountTokenTests
   {
     User user = new UserBuilder(_faker).Build();
     user.Email = null;
-    user.CustomAttributes.Add(new CustomAttribute("ProfileCompletedOn", DateTime.UtcNow.ToISOString()));
+    user.CustomAttributes.Add(new CustomAttribute("ProfileCompletedOn", DateTime.Now.ToISOString()));
     _userGateway.Setup(x => x.FindAsync(user.Id, _cancellationToken)).ReturnsAsync(user);
 
     SignInAccountPayload payload = new()
@@ -170,7 +170,7 @@ public class SignInAccountTokenTests
   public async Task Given_UserEmailDiffers_When_Token_Then_EmailUpdated()
   {
     User user = new UserBuilder(_faker).Build();
-    user.CustomAttributes.Add(new CustomAttribute("ProfileCompletedOn", DateTime.UtcNow.ToISOString()));
+    user.CustomAttributes.Add(new CustomAttribute("ProfileCompletedOn", DateTime.Now.ToISOString()));
     _userGateway.Setup(x => x.FindAsync(user.Id, _cancellationToken)).ReturnsAsync(user);
 
     SignInAccountPayload payload = new()
@@ -204,7 +204,7 @@ public class SignInAccountTokenTests
     User user = new UserBuilder(_faker).Build();
     Assert.NotNull(user.Email);
     user.Email = new Email(user.Email.Address, isVerified: false);
-    user.CustomAttributes.Add(new CustomAttribute("ProfileCompletedOn", DateTime.UtcNow.ToISOString()));
+    user.CustomAttributes.Add(new CustomAttribute("ProfileCompletedOn", DateTime.Now.ToISOString()));
     _userGateway.Setup(x => x.FindAsync(user.Id, _cancellationToken)).ReturnsAsync(user);
 
     SignInAccountPayload payload = new()

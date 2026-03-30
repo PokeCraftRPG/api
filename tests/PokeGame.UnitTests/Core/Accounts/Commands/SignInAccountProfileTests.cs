@@ -60,7 +60,7 @@ public class SignInAccountProfileTests
     validatedToken.Subject = user.Id.ToString();
     _tokenGateway.Setup(x => x.ValidateProfileCompletionAsync(payload.Profile.Token, _cancellationToken)).ReturnsAsync(validatedToken);
 
-    _userGateway.Setup(x => x.CompleteProfileAsync(user.Id, payload.Profile, _cancellationToken)).ReturnsAsync(user);
+    _userGateway.Setup(x => x.CompleteProfileAsync(user.Id, payload.Profile, null, _cancellationToken)).ReturnsAsync(user);
 
     string token = "token";
     _tokenGateway.Setup(x => x.CreateProfileCompletionAsync(user, _cancellationToken)).ReturnsAsync(token);
@@ -73,7 +73,7 @@ public class SignInAccountProfileTests
   public async Task Given_ProfileCompleted_When_Profile_Then_Session()
   {
     User user = new UserBuilder(_faker).WithRealm(_realm).Build();
-    user.CustomAttributes.Add(new CustomAttribute("ProfileCompletedOn", DateTime.UtcNow.ToISOString()));
+    user.CustomAttributes.Add(new CustomAttribute("ProfileCompletedOn", DateTime.Now.ToISOString()));
 
     SignInAccountPayload payload = new()
     {
@@ -94,7 +94,7 @@ public class SignInAccountProfileTests
     validatedToken.Subject = user.Id.ToString();
     _tokenGateway.Setup(x => x.ValidateProfileCompletionAsync(payload.Profile.Token, _cancellationToken)).ReturnsAsync(validatedToken);
 
-    _userGateway.Setup(x => x.CompleteProfileAsync(user.Id, payload.Profile, _cancellationToken)).ReturnsAsync(user);
+    _userGateway.Setup(x => x.CompleteProfileAsync(user.Id, payload.Profile, null, _cancellationToken)).ReturnsAsync(user);
 
     Session session = new(user);
     _sessionGateway.Setup(x => x.CreateAsync(user, _cancellationToken)).ReturnsAsync(session);

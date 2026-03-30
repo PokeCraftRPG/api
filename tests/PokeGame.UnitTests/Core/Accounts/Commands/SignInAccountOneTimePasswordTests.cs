@@ -59,7 +59,7 @@ public class SignInAccountOneTimePasswordTests
     SignInAccountCommand command = new(payload);
 
     User user = new UserBuilder(_faker).Build();
-    user.CustomAttributes.Add(new CustomAttribute("ProfileCompletedOn", DateTime.UtcNow.ToISOString()));
+    user.CustomAttributes.Add(new CustomAttribute("ProfileCompletedOn", DateTime.Now.ToISOString()));
     _oneTimePasswordGateway.Setup(x => x.ValidateMultiFactorAuthenticationAsync(payload.OneTimePassword, _cancellationToken)).ReturnsAsync(user);
 
     Session session = new(user);

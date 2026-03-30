@@ -7,12 +7,18 @@ public static class OneTimePasswordExtensions
 {
   public const string PurposeKey = "Purpose";
 
+  public static string? GetPurpose(this OneTimePassword oneTimePassword)
+  {
+    CustomAttribute? customAttribute = oneTimePassword.GetCustomAttribute(PurposeKey);
+    return customAttribute?.Value;
+  }
+
   public static void EnsurePurpose(this OneTimePassword oneTimePassword, string purpose)
   {
     CustomAttribute? customAttribute = oneTimePassword.GetCustomAttribute(PurposeKey);
     if (customAttribute is null || customAttribute.Value != purpose)
     {
-      throw new NotImplementedException(); // TODO(fpion): implement
+      throw new InvalidOneTimePasswordException(oneTimePassword, purpose);
     }
   }
 

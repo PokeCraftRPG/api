@@ -150,7 +150,8 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     }
 
     Guid userId = Guid.Parse(validatedToken.Subject);
-    User user = await _userGateway.CompleteProfileAsync(userId, profile, cancellationToken);
+    PhonePayload? phone = validatedToken.GetPhone();
+    User user = await _userGateway.CompleteProfileAsync(userId, profile, phone, cancellationToken);
     return await EnsureProfileIsCompletedAsync(user, cancellationToken);
   }
 
