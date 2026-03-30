@@ -19,6 +19,7 @@
     <PackageReference Include="Krakenar.Contracts" Version="2.0.2" />
     <PackageReference Include="Logitar.CQRS" Version="10.1.0" />
     <PackageReference Include="Logitar.EventSourcing" Version="10.1.1" />
+    <PackageReference Include="NodaTime" Version="3.3.1" />
   </ItemGroup>
 
   <ItemGroup>

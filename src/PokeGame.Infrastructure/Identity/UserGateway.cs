@@ -3,6 +3,8 @@ using Krakenar.Client.Users;
 using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Krakenar.Contracts.Users;
+using Logitar;
+using PokeGame.Core.Accounts.Models;
 using PokeGame.Core.Identity;
 
 namespace PokeGame.Infrastructure.Identity;
@@ -21,6 +23,25 @@ internal class UserGateway : IUserGateway
     AuthenticateUserPayload payload = new(user.Id.ToString(), password);
     RequestContext context = new RequestContextBuilder(cancellationToken).WithUser(user).Build();
     return await _userClient.AuthenticateAsync(payload, context);
+  }
+
+  public async Task<User> CompleteProfileAsync(Guid id, CompleteProfilePayload profile, string locale, CancellationToken cancellationToken)
+  {
+    UpdateUserPayload payload = new()
+    {
+      Password = profile.Password is null ? null : new ChangePasswordPayload(profile.Password),
+      // TODO(fpion): Phone
+      FirstName = new Change<string>(profile.FirstName),
+      LastName = new Change<string>(profile.LastName),
+      Birthdate = new Change<DateTime?>(profile.DateOfBirth),
+      Gender = new Change<string>(profile.Gender is null ? null : UserHelper.NormalizeGender(profile.Gender)),
+      Locale = new Change<string>(locale),
+      TimeZone = new Change<string>(profile.TimeZone)
+    };
+    payload.CustomAttributes.Add(new CustomAttribute(UserHelper.MultiFactorAuthenticationModeKey, profile.MultiFactorAuthenticationMode.ToString()));
+    payload.CustomAttributes.Add(new CustomAttribute(UserHelper.ProfileCompletedOnKey, DateTime.UtcNow.ToISOString()));
+    RequestContext context = new RequestContextBuilder(cancellationToken).WithUserId(id).Build();
+    return await _userClient.UpdateAsync(id, payload, context) ?? throw new InvalidOperationException($"The updated user 'Id={id}' should not be null.");
   }
 
   public async Task<User> CreateAsync(Email email, CancellationToken cancellationToken)

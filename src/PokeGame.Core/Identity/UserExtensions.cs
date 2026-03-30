@@ -5,12 +5,9 @@ namespace PokeGame.Core.Identity;
 
 public static class UserExtensions
 {
-  private const string MultiFactorAuthenticationModeKey = "MultiFactorAuthenticationMode";
-  private const string ProfileCompletedOnKey = "ProfileCompletedOn";
-
   public static MultiFactorAuthenticationMode GetMultiFactorAuthenticationMode(this User user)
   {
-    CustomAttribute? customAttribute = user.GetCustomAttribute(MultiFactorAuthenticationModeKey);
+    CustomAttribute? customAttribute = user.GetCustomAttribute(UserHelper.MultiFactorAuthenticationModeKey);
     if (customAttribute is null)
     {
       return MultiFactorAuthenticationMode.None;
@@ -19,12 +16,12 @@ public static class UserExtensions
     {
       return multiFactorAuthenticationMode;
     }
-    throw new ArgumentException($"The user does not have a valid '{MultiFactorAuthenticationModeKey}' custom attribute.", nameof(user));
+    throw new ArgumentException($"The user does not have a valid '{UserHelper.MultiFactorAuthenticationModeKey}' custom attribute.", nameof(user));
   }
 
   public static bool IsProfileCompleted(this User user)
   {
-    CustomAttribute? customAttribute = user.GetCustomAttribute(ProfileCompletedOnKey);
+    CustomAttribute? customAttribute = user.GetCustomAttribute(UserHelper.ProfileCompletedOnKey);
     if (customAttribute is null)
     {
       return false;
@@ -33,7 +30,7 @@ public static class UserExtensions
     {
       return true;
     }
-    throw new ArgumentException($"The user does not have a valid '{ProfileCompletedOnKey}' custom attribute.", nameof(user));
+    throw new ArgumentException($"The user does not have a valid '{UserHelper.ProfileCompletedOnKey}' custom attribute.", nameof(user));
   }
 
   private static CustomAttribute? GetCustomAttribute(this User user, string key)

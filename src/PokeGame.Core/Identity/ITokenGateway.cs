@@ -10,4 +10,5 @@ public interface ITokenGateway
   Task<ValidatedToken> ValidateEmailVerificationAsync(string token, CancellationToken cancellationToken = default);
 
   Task<string> CreateProfileCompletionAsync(User user, CancellationToken cancellationToken = default);
+  Task<ValidatedToken> ValidateProfileCompletionAsync(string token, CancellationToken cancellationToken = default);
 }

@@ -49,6 +49,10 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     {
       return await HandleOneTimePasswordValidation(payload.OneTimePassword, cancellationToken);
     }
+    if (payload.Profile is not null)
+    {
+      return await HandleProfileAsync(payload.Profile, payload.Locale, cancellationToken);
+    }
 
     throw new InvalidOperationException("The sign-in payload is not valid.");
   }
@@ -124,6 +128,18 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
   private async Task<SignInAccountResult> HandleOneTimePasswordValidation(OneTimePasswordValidation validation, CancellationToken cancellationToken)
   {
     User user = await _oneTimePasswordGateway.ValidateMultiFactorAuthenticationAsync(validation, cancellationToken);
+    return await EnsureProfileIsCompletedAsync(user, cancellationToken);
+  }
+
+  private async Task<SignInAccountResult> HandleProfileAsync(CompleteProfilePayload profile, string locale, CancellationToken cancellationToken)
+  {
+    ValidatedToken validatedToken = await _tokenGateway.ValidateProfileCompletionAsync(profile.Token, cancellationToken);
+    if (validatedToken.Subject is null)
+    {
+      throw new NotImplementedException(); // TODO(fpion): implement
+    }
+    Guid userId = Guid.Parse(validatedToken.Subject);
+    User user = await _userGateway.CompleteProfileAsync(userId, profile, locale, cancellationToken);
     return await EnsureProfileIsCompletedAsync(user, cancellationToken);
   }
 

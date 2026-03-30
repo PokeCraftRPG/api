@@ -38,6 +38,15 @@ internal class TokenGateway : ITokenGateway
   {
     return await CreateAsync(isConsumable: true, TimeSpan.FromHours(1), ProfileCompletionType, user, email: null, cancellationToken);
   }
+  public async Task<ValidatedToken> ValidateProfileCompletionAsync(string token, CancellationToken cancellationToken)
+  {
+    ValidateTokenPayload payload = new(token)
+    {
+      Consume = true,
+      Type = ProfileCompletionType
+    };
+    return await _tokenService.ValidateAsync(payload, cancellationToken);
+  }
 
   private async Task<string> CreateAsync(
     bool isConsumable,

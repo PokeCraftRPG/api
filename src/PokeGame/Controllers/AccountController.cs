@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PokeGame.Core.Accounts;
 using PokeGame.Core.Accounts.Models;
+using PokeGame.Extensions;
 
 namespace PokeGame.Controllers;
 
@@ -18,6 +19,10 @@ public class AccountController : ControllerBase
   public async Task<ActionResult<SignInAccountResult>> SignInAsync([FromBody] SignInAccountPayload payload, CancellationToken cancellationToken)
   {
     SignInAccountResult result = await _accountService.SignInAsync(payload, cancellationToken);
+    if (result.Session is not null)
+    {
+      HttpContext.SignIn(result.Session);
+    }
     return Ok(result);
   }
 }

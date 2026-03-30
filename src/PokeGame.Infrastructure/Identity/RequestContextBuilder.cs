@@ -6,6 +6,7 @@ namespace PokeGame.Infrastructure.Identity;
 public interface IRequestContextBuilder
 {
   IRequestContextBuilder WithUser(User? user);
+  IRequestContextBuilder WithUserId(Guid? userId);
 
   RequestContext Build();
 }
@@ -14,7 +15,7 @@ internal class RequestContextBuilder : IRequestContextBuilder
 {
   private readonly CancellationToken _cancellationToken;
 
-  private User? _user = null;
+  private Guid? _userId = null;
 
   public RequestContextBuilder(CancellationToken cancellationToken = default)
   {
@@ -23,7 +24,13 @@ internal class RequestContextBuilder : IRequestContextBuilder
 
   public IRequestContextBuilder WithUser(User? user)
   {
-    _user = user;
+    _userId = user?.Id;
+    return this;
+  }
+
+  public IRequestContextBuilder WithUserId(Guid? userId)
+  {
+    _userId = userId;
     return this;
   }
 
@@ -31,9 +38,9 @@ internal class RequestContextBuilder : IRequestContextBuilder
   {
     RequestContext context = new(_cancellationToken);
 
-    if (_user is not null)
+    if (_userId.HasValue)
     {
-      context.User = _user.Id.ToString();
+      context.User = _userId.Value.ToString();
     }
 
     return context;
