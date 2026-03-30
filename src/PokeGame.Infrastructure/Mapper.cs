@@ -180,9 +180,10 @@ internal class Mapper
       Gender = source.Gender,
       Money = source.Money,
       PartySize = source.PartySize,
+      Sprite = source.Sprite,
       Url = source.Url,
       Notes = source.Notes,
-      Sprite = source.Sprite
+      Owner = TryFindActor(source.OwnerId)
     };
 
     MapAggregate(source, destination);

@@ -1,8 +1,13 @@
 ﻿using Bogus;
+using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Users;
 using Moq;
 using PokeGame.Builders;
+using PokeGame.Core.Actors;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Storages;
+using PokeGame.Core.Trainers.Events;
 using PokeGame.Core.Trainers.Models;
 
 namespace PokeGame.Core.Trainers.Commands;
@@ -17,6 +22,7 @@ public class CreateOrReplaceTrainerCommandHandlerTests
   private readonly Mock<ITrainerQuerier> _trainerQuerier = new();
   private readonly Mock<ITrainerRepository> _trainerRepository = new();
   private readonly Mock<IStorageService> _storageService = new();
+  private readonly Mock<IUserGateway> _userGateway = new();
 
   private readonly TestContext _context;
   private readonly CreateOrReplaceTrainerCommandHandler _handler;
@@ -24,7 +30,7 @@ public class CreateOrReplaceTrainerCommandHandlerTests
   public CreateOrReplaceTrainerCommandHandlerTests()
   {
     _context = new(_faker);
-    _handler = new(_context, _permissionService.Object, _storageService.Object, _trainerQuerier.Object, _trainerRepository.Object);
+    _handler = new(_context, _permissionService.Object, _storageService.Object, _trainerQuerier.Object, _trainerRepository.Object, _userGateway.Object);
   }
 
   [Theory(DisplayName = "It should create a new trainer.")]
@@ -71,8 +77,12 @@ public class CreateOrReplaceTrainerCommandHandlerTests
     Trainer trainer = new TrainerBuilder(_faker).WithWorld(_context.World).ClearChanges().Build();
     _trainerRepository.Setup(x => x.LoadAsync(trainer.Id, _cancellationToken)).ReturnsAsync(trainer);
 
+    User owner = new UserBuilder(_faker).Build();
+    _userGateway.Setup(x => x.FindAsync(owner.Id, _cancellationToken)).ReturnsAsync(owner);
+
     CreateOrReplaceTrainerPayload payload = new()
     {
+      OwnerId = owner.Id,
       License = trainer.License.Value,
       Key = "ash-ketchum",
       Name = "Ash Ketchum",
@@ -95,6 +105,10 @@ public class CreateOrReplaceTrainerCommandHandlerTests
     _permissionService.Verify(x => x.CheckAsync(Actions.Update, trainer, _cancellationToken), Times.Once());
     _trainerQuerier.Verify(x => x.EnsureUnicityAsync(trainer, _cancellationToken), Times.Once());
     _storageService.Verify(x => x.ExecuteWithQuotaAsync(trainer, It.IsAny<Func<Task>>(), _cancellationToken), Times.Once());
+
+    UserId ownerId = new(new Actor(owner).GetActorId());
+    Assert.Equal(ownerId, trainer.OwnerId);
+    Assert.Contains(trainer.Changes, change => change is TrainerOwnershipChanged ownership && ownership.OwnerId == ownerId && ownership.ActorId == _context.UserId.ActorId);
   }
 
   [Fact(DisplayName = "It should throw ImmutablePropertyException when the license has changed.")]
@@ -124,6 +138,29 @@ public class CreateOrReplaceTrainerCommandHandlerTests
     Assert.Equal(trainer.License.Value, exception.ExpectedValue);
     Assert.Equal(payload.License, exception.AttemptedValue);
     Assert.Equal("License", exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw UserNotFoundException when the user was not found.")]
+  public async Task Given_UserNotFound_When_HandleAsync_Then_UserNotFoundException()
+  {
+    CreateOrReplaceTrainerPayload payload = new()
+    {
+      OwnerId = Guid.NewGuid(),
+      License = "Q-940401-9",
+      Key = "ash-ketchum",
+      Name = "Ash Ketchum",
+      Description = "Ash is a legendary Trainer known for Pikachu, constant youth, and mastering multiple battle styles across regions and generations.",
+      Gender = TrainerGender.Male,
+      Money = 987654,
+      Sprite = "https://archives.bulbagarden.net/media/upload/thumb/c/cd/Ash_JN.png/800px-Ash_JN.png",
+      Url = "https://bulbapedia.bulbagarden.net/wiki/Ash_Ketchum",
+      Notes = "Ash provides rich lore: timeless setting, unique feats, and rare mechanics (Mega, Z-Moves, Dynamax) useful for narrative and rule inspiration."
+    };
+    CreateOrReplaceTrainerCommand command = new(payload, Id: null);
+
+    var exception = await Assert.ThrowsAsync<UserNotFoundException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal(payload.OwnerId, exception.UserId);
+    Assert.Equal("OwnerId", exception.PropertyName);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the payload is not valid.")]

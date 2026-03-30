@@ -1,4 +1,5 @@
 ﻿using Krakenar.Contracts;
+using Krakenar.Contracts.Actors;
 
 namespace PokeGame.Core.Trainers.Models;
 
@@ -18,7 +19,7 @@ public class TrainerModel : Aggregate
   public string? Url { get; set; }
   public string? Notes { get; set; }
 
-  // TODO(fpion): Owner
+  public Actor? Owner { get; set; }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
 }

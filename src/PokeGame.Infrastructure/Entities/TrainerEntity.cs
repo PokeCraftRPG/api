@@ -1,4 +1,5 @@
-﻿using PokeGame.Core.Trainers;
+﻿using Logitar.EventSourcing;
+using PokeGame.Core.Trainers;
 using PokeGame.Core.Trainers.Events;
 
 namespace PokeGame.Infrastructure.Entities;
@@ -10,6 +11,9 @@ internal class TrainerEntity : AggregateEntity
   public WorldEntity? World { get; private set; }
   public int WorldId { get; private set; }
   public Guid Id { get; private set; }
+
+  public string? OwnerId { get; private set; }
+  public Guid? UserId { get; private set; }
 
   public string License { get; private set; } = string.Empty;
 
@@ -43,11 +47,29 @@ internal class TrainerEntity : AggregateEntity
   {
   }
 
+  public override IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    if (OwnerId is not null)
+    {
+      actorIds.Add(new ActorId(OwnerId));
+    }
+    return actorIds;
+  }
+
   public void SetKey(TrainerKeyChanged @event)
   {
     base.Update(@event);
 
     Key = @event.Key.Value;
+  }
+
+  public void SetOwnership(TrainerOwnershipChanged @event)
+  {
+    base.Update(@event);
+
+    OwnerId = @event.OwnerId?.Value;
+    UserId = @event.OwnerId?.EntityId;
   }
 
   public void Update(TrainerUpdated @event)
