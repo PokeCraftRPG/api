@@ -23,6 +23,11 @@ internal class WorldQuerier : IWorldQuerier
     _worlds = pokemon.Worlds;
   }
 
+  public async Task<int> CountAsync(CancellationToken cancellationToken)
+  {
+    return await _worlds.CountAsync(x => x.OwnerId == _context.UserId.Value, cancellationToken);
+  }
+
   public async Task EnsureUnicityAsync(World world, CancellationToken cancellationToken)
   {
     Slug? key = null;
