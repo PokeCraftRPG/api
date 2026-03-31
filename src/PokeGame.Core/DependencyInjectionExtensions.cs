@@ -26,6 +26,7 @@ public static class DependencyInjectionExtensions
     AccountService.Register(services);
     FormService.Register(services);
     ItemService.Register(services);
+    MembershipService.Register(services);
     MoveService.Register(services);
     RegionService.Register(services);
     SpeciesService.Register(services);
