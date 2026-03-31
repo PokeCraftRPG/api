@@ -31,6 +31,7 @@ public static class DependencyInjectionExtensions
     WorldService.Register(services);
     return services
       .AddLogitarEventSourcing()
+      .AddSingleton(serviceProvider => PermissionSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddSingleton(serviceProvider => RetrySettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddTransient<ICommandBus, CommandBus>()
       .AddTransient<IQueryBus, QueryBus>()
