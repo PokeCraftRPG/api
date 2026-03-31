@@ -12,7 +12,9 @@ internal record PermissionSettings
   public static PermissionSettings Initialize(IConfiguration configuration)
   {
     PermissionSettings settings = configuration.GetSection(SectionKey).Get<PermissionSettings>() ?? new PermissionSettings();
+
     settings.WorldLimit = EnvironmentHelper.GetInt32("PERMISSIONS_WORLD_LIMIT", settings.WorldLimit);
+
     return settings;
   }
 }

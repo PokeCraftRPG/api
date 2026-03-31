@@ -1,34 +1,31 @@
 ﻿using FluentValidation;
 using PokeGame.Core.Validation;
 
-namespace PokeGame.Core.Accounts.Models;
+namespace PokeGame.Core.Membership.Models;
 
-public record Credentials
+public record SendMembershipInvitationPayload
 {
   public string Locale { get; set; }
   public string EmailAddress { get; set; }
-  public string? Password { get; set; }
 
-  public Credentials() : this(string.Empty, string.Empty)
+  public SendMembershipInvitationPayload() : this(string.Empty, string.Empty)
   {
   }
 
-  public Credentials(string locale, string emailAddress, string? password = null)
+  public SendMembershipInvitationPayload(string locale, string emailAddress)
   {
     Locale = locale;
     EmailAddress = emailAddress;
-    Password = password;
   }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 
-  private class Validator : AbstractValidator<Credentials>
+  private class Validator : AbstractValidator<SendMembershipInvitationPayload>
   {
     public Validator()
     {
       RuleFor(x => x.Locale).Locale();
       RuleFor(x => x.EmailAddress).EmailAddressValue();
-      When(x => x.Password is not null, () => RuleFor(x => x.Password).NotEmpty());
     }
   }
 }

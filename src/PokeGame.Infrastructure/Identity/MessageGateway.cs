@@ -9,6 +9,7 @@ namespace PokeGame.Infrastructure.Identity;
 internal class MessageGateway : IMessageGateway
 {
   private const string EmailVerificationTemplate = "EmailVerification";
+  private const string MembershipInvitationTemplate = "MembershipInvitation";
   private const string MultiFactorAuthenticationTemplate = "MultiFactorAuthentication";
 
   private const string OneTimePasswordKey = "OneTimePassword";
@@ -23,15 +24,26 @@ internal class MessageGateway : IMessageGateway
 
   public async Task<Guid> SendEmailVerificationAsync(string emailAddress, string locale, string token, CancellationToken cancellationToken)
   {
-    RecipientPayload recipients = new(new EmailPayload(emailAddress));
+    RecipientPayload recipient = new(new EmailPayload(emailAddress));
     Variable variables = new(TokenKey, token);
-    return (await SendAsync(SenderKind.Email, EmailVerificationTemplate, [recipients], ignoreUserLocale: true, locale, [variables], cancellationToken)).Ids.Single();
+    return (await SendAsync(SenderKind.Email, EmailVerificationTemplate, [recipient], ignoreUserLocale: true, locale, [variables], cancellationToken)).Ids.Single();
   }
   public async Task<Guid> SendEmailVerificationAsync(User user, string locale, string token, CancellationToken cancellationToken)
   {
-    RecipientPayload recipients = new(user.Id);
+    RecipientPayload recipient = new(user.Id);
     Variable variables = new(TokenKey, token);
-    return (await SendAsync(SenderKind.Email, EmailVerificationTemplate, [recipients], ignoreUserLocale: true, locale, [variables], cancellationToken)).Ids.Single();
+    return (await SendAsync(SenderKind.Email, EmailVerificationTemplate, [recipient], ignoreUserLocale: true, locale, [variables], cancellationToken)).Ids.Single();
+  }
+
+  public async Task SendMembershipInvitationAsync(IEmail email, string locale, CancellationToken cancellationToken)
+  {
+    RecipientPayload recipient = new(new EmailPayload(email.Address, email.IsVerified));
+    await SendAsync(SenderKind.Email, MembershipInvitationTemplate, [recipient], ignoreUserLocale: false, locale, variables: null, cancellationToken);
+  }
+  public async Task SendMembershipInvitationAsync(User user, string locale, CancellationToken cancellationToken)
+  {
+    RecipientPayload recipient = new(user.Id);
+    await SendAsync(SenderKind.Email, MembershipInvitationTemplate, [recipient], ignoreUserLocale: false, locale, variables: null, cancellationToken);
   }
 
   public async Task<Guid> SendMultiFactorAuthenticationAsync(User user, string locale, OneTimePassword oneTimePassword, CancellationToken cancellationToken)
@@ -42,9 +54,9 @@ internal class MessageGateway : IMessageGateway
       MultiFactorAuthenticationMode.Phone => SenderKind.Phone,
       _ => throw new ArgumentException("The Multi-Factor Authentication mode is not valid.", nameof(user)),
     };
-    RecipientPayload recipients = new(user.Id);
+    RecipientPayload recipient = new(user.Id);
     Variable variable = new(OneTimePasswordKey, oneTimePassword.Password ?? throw new ArgumentException("The one-time password is required.", nameof(oneTimePassword)));
-    return (await SendAsync(senderKind, GetMultiFactorAuthenticationTemplate(senderKind), [recipients], ignoreUserLocale: true, locale, [variable], cancellationToken)).Ids.Single();
+    return (await SendAsync(senderKind, GetMultiFactorAuthenticationTemplate(senderKind), [recipient], ignoreUserLocale: true, locale, [variable], cancellationToken)).Ids.Single();
   }
 
   private async Task<SentMessages> SendAsync(
