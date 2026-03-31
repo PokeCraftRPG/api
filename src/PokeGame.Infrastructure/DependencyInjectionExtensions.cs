@@ -10,6 +10,7 @@ using PokeGame.Core.Identity;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
+using PokeGame.Core.Storages;
 using PokeGame.Core.Trainers;
 using PokeGame.Core.Varieties;
 using PokeGame.Core.Worlds;
@@ -49,6 +50,7 @@ public static class DependencyInjectionExtensions
     MoveEvents.Register(services);
     RegionEvents.Register(services);
     SpeciesEvents.Register(services);
+    StorageEvents.Register(services);
     TrainerEvents.Register(services);
     VarietyEvents.Register(services);
     WorldEvents.Register(services);
@@ -87,6 +89,7 @@ public static class DependencyInjectionExtensions
       .AddTransient<IMoveRepository, MoveRepository>()
       .AddTransient<IRegionRepository, RegionRepository>()
       .AddTransient<ISpeciesRepository, SpeciesRepository>()
+      .AddTransient<IStorageRepository, StorageRepository>()
       .AddTransient<ITrainerRepository, TrainerRepository>()
       .AddTransient<IVarietyRepository, VarietyRepository>()
       .AddTransient<IWorldRepository, WorldRepository>();

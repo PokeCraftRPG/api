@@ -15,6 +15,7 @@ internal class WorldEntity : AggregateEntity
   public string? Name { get; private set; }
   public string? Description { get; private set; }
 
+  public StorageSummaryEntity? StorageSummary { get; private set; }
   public List<AbilityEntity> Abilities { get; private set; } = [];
   public List<FormEntity> Forms { get; private set; } = [];
   public List<MoveEntity> Moves { get; private set; } = [];
