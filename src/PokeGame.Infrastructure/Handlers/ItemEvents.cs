@@ -10,6 +10,8 @@ namespace PokeGame.Infrastructure.Handlers;
 
 internal class ItemEvents : IEventHandler<ItemCreated>, IEventHandler<ItemDeleted>, IEventHandler<ItemKeyChanged>, IEventHandler<ItemUpdated>
 {
+  // TODO(fpion): 9× Properties
+
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IEventHandler<ItemCreated>, ItemEvents>();

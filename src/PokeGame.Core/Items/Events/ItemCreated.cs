@@ -2,4 +2,4 @@
 
 namespace PokeGame.Core.Items.Events;
 
-public record ItemCreated(Slug Key) : DomainEvent;
+public record ItemCreated(ItemCategory Category, Slug Key) : DomainEvent;

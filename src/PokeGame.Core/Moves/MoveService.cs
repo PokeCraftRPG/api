@@ -18,6 +18,7 @@ internal class MoveService : IMoveService
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IMoveService, MoveService>();
+    services.AddTransient<IMoveManager, MoveManager>();
     services.AddTransient<ICommandHandler<CreateOrReplaceMoveCommand, CreateOrReplaceMoveResult>, CreateOrReplaceMoveCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateMoveCommand, MoveModel?>, UpdateMoveCommandHandler>();
     services.AddTransient<IQueryHandler<ReadMoveQuery, MoveModel?>, ReadMoveQueryHandler>();

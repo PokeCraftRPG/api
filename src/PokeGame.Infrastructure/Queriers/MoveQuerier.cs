@@ -51,6 +51,15 @@ internal class MoveQuerier : IMoveQuerier
     }
   }
 
+  public async Task<MoveId?> FindIdAsync(string key, CancellationToken cancellationToken)
+  {
+    string normalized = Slug.Normalize(key);
+    string? streamId = await _moves.Where(x => x.World!.Id == _context.WorldUid && x.Key == normalized)
+      .Select(x => x.StreamId)
+      .SingleOrDefaultAsync(cancellationToken);
+    return streamId is null ? null : new MoveId(streamId);
+  }
+
   public async Task<IReadOnlyCollection<MoveKey>> ListKeysAsync(CancellationToken cancellationToken)
   {
     var keys = await _moves.Where(x => x.World!.Id == _context.WorldUid)

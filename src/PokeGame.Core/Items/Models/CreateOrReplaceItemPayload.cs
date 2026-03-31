@@ -15,6 +15,16 @@ public record CreateOrReplaceItemPayload
   public string? Url { get; set; }
   public string? Notes { get; set; }
 
+  public BattleItemPropertiesModel? BattleItem { get; set; }
+  public BerryPropertiesModel? Berry { get; set; }
+  public KeyItemPropertiesModel? KeyItem { get; set; }
+  public MaterialPropertiesModel? Material { get; set; }
+  public MedicinePropertiesModel? Medicine { get; set; }
+  public OtherItemPropertiesModel? OtherItem { get; set; }
+  public PokeBallPropertiesModel? PokeBall { get; set; }
+  public TechnicalMachinePropertiesPayload? TechnicalMachine { get; set; }
+  public TreasurePropertiesModel? Treasure { get; set; }
+
   public CreateOrReplaceItemPayload() : this(string.Empty)
   {
   }
@@ -39,6 +49,8 @@ public record CreateOrReplaceItemPayload
       When(x => !string.IsNullOrWhiteSpace(x.Sprite), () => RuleFor(x => x.Sprite!).Url());
       When(x => !string.IsNullOrWhiteSpace(x.Url), () => RuleFor(x => x.Url!).Url());
       When(x => !string.IsNullOrWhiteSpace(x.Notes), () => RuleFor(x => x.Notes!).Notes());
+
+      // TODO(fpion): Category/Properties
     }
   }
 }

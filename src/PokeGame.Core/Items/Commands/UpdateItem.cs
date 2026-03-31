@@ -1,5 +1,7 @@
 ﻿using Logitar.CQRS;
 using PokeGame.Core.Items.Models;
+using PokeGame.Core.Items.Properties;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Storages;
 
@@ -12,6 +14,7 @@ internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, Ite
   private readonly IContext _context;
   private readonly IItemQuerier _itemQuerier;
   private readonly IItemRepository _itemRepository;
+  private readonly IMoveManager _moveManager;
   private readonly IPermissionService _permissionService;
   private readonly IStorageService _storageService;
 
@@ -19,12 +22,14 @@ internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, Ite
     IContext context,
     IItemQuerier itemQuerier,
     IItemRepository itemRepository,
+    IMoveManager moveManager,
     IPermissionService permissionService,
     IStorageService storageService)
   {
     _context = context;
     _itemQuerier = itemQuerier;
     _itemRepository = itemRepository;
+    _moveManager = moveManager;
     _permissionService = permissionService;
     _storageService = storageService;
   }
@@ -78,6 +83,12 @@ internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, Ite
 
     item.Update(userId);
 
+    ItemProperties? properties = await GetPropertiesAsync(payload, cancellationToken);
+    if (properties is not null)
+    {
+      item.SetProperties(properties, userId);
+    }
+
     await _itemQuerier.EnsureUnicityAsync(item, cancellationToken);
 
     await _storageService.ExecuteWithQuotaAsync(
@@ -87,4 +98,54 @@ internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, Ite
 
     return await _itemQuerier.ReadAsync(item, cancellationToken);
   }
+
+  private async Task<ItemProperties> GetPropertiesAsync(UpdateItemPayload payload, CancellationToken cancellationToken)
+  {
+    List<ItemProperties> properties = new(capacity: 9);
+
+    if (payload.BattleItem is not null)
+    {
+      properties.Add(new BattleItemProperties(payload.BattleItem));
+    }
+    if (payload.Berry is not null)
+    {
+      properties.Add(new BerryProperties(payload.Berry));
+    }
+    if (payload.KeyItem is not null)
+    {
+      properties.Add(new KeyItemProperties(payload.KeyItem));
+    }
+    if (payload.Material is not null)
+    {
+      properties.Add(new MaterialProperties(payload.Material));
+    }
+    if (payload.Medicine is not null)
+    {
+      properties.Add(new MedicineProperties(payload.Medicine));
+    }
+    if (payload.OtherItem is not null)
+    {
+      properties.Add(new OtherItemProperties(payload.OtherItem));
+    }
+    if (payload.PokeBall is not null)
+    {
+      properties.Add(new PokeBallProperties(payload.PokeBall));
+    }
+    if (payload.TechnicalMachine is not null)
+    {
+      string propertyName = string.Join('.', nameof(payload.TechnicalMachine), nameof(payload.TechnicalMachine.Move));
+      Move move = await _moveManager.FindAsync(payload.TechnicalMachine.Move, propertyName, cancellationToken);
+      properties.Add(new TechnicalMachineProperties(move));
+    }
+    if (payload.Treasure is not null)
+    {
+      properties.Add(new TreasureProperties(payload.Treasure));
+    }
+
+    if (properties.Count > 1)
+    {
+      throw new ArgumentException("Many properties were provided, exactly one is expected.", nameof(payload));
+    }
+    return properties.SingleOrDefault() ?? throw new ArgumentException("No property was provided, exactly one is expected.", nameof(payload));
+  } // TODO(fpion): refactor
 }

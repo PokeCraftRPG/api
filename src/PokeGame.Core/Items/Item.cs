@@ -1,5 +1,6 @@
 ﻿using Logitar.EventSourcing;
 using PokeGame.Core.Items.Events;
+using PokeGame.Core.Items.Properties;
 using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Items;
@@ -16,6 +17,8 @@ public class Item : AggregateRoot, IEntityProvider
   public new ItemId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
   public Guid EntityId => Id.EntityId;
+
+  public ItemCategory Category { get; private set; }
 
   private Slug? _key = null;
   public Slug Key => _key ?? throw new InvalidOperationException("The item was not initialized.");
@@ -100,24 +103,36 @@ public class Item : AggregateRoot, IEntityProvider
     }
   }
 
+  private ItemProperties? _properties = null;
+  public ItemProperties Properties => _properties ?? throw new InvalidOperationException("The item was not initialized.");
+
   public long Size => Key.Size + (Name?.Size ?? 0) + (Description?.Size ?? 0) + (Sprite?.Size ?? 0) + (Url?.Size ?? 0) + (Notes?.Size ?? 0);
 
   public Item() : base()
   {
   }
 
-  public Item(World world, Slug key, UserId? userId = null)
-    : this(key, userId ?? world.OwnerId, ItemId.NewId(world.Id))
+  public Item(World world, Slug key, ItemProperties properties, UserId? userId = null)
+    : this(key, properties, userId ?? world.OwnerId, ItemId.NewId(world.Id))
   {
   }
 
-  public Item(Slug key, UserId userId, ItemId itemId)
+  public Item(Slug key, ItemProperties properties, UserId userId, ItemId itemId)
     : base(itemId.StreamId)
   {
-    Raise(new ItemCreated(key), userId.ActorId);
+    if (!Enum.IsDefined(properties.Category))
+    {
+      throw new ArgumentOutOfRangeException(nameof(properties), "The item category is not defined.");
+    }
+
+    Raise(new ItemCreated(properties.Category, key), userId.ActorId);
+
+    SetProperties(properties, userId);
   }
   protected virtual void Handle(ItemCreated @event)
   {
+    Category = @event.Category;
+
     _key = @event.Key;
   }
 
@@ -141,6 +156,87 @@ public class Item : AggregateRoot, IEntityProvider
   protected virtual void Handle(ItemKeyChanged @event)
   {
     _key = @event.Key;
+  }
+
+  public void SetProperties(ItemProperties properties, UserId userId)
+  {
+    if (Category != properties.Category)
+    {
+      throw new ArgumentException($"Cannot set properties of category '{properties.Category}' on an item in category '{Category}'.", nameof(properties));
+    }
+
+    // TODO(fpion): change is not handled correctly!
+
+    switch (properties.Category)
+    {
+      case ItemCategory.BattleItem:
+        Raise(new BattleItemPropertiesChanged((BattleItemProperties)properties), userId.ActorId);
+        break;
+      case ItemCategory.Berry:
+        Raise(new BerryPropertiesChanged((BerryProperties)properties), userId.ActorId);
+        break;
+      case ItemCategory.KeyItem:
+        Raise(new KeyItemPropertiesChanged((KeyItemProperties)properties), userId.ActorId);
+        break;
+      case ItemCategory.Material:
+        Raise(new MaterialPropertiesChanged((MaterialProperties)properties), userId.ActorId);
+        break;
+      case ItemCategory.Medicine:
+        Raise(new MedicinePropertiesChanged((MedicineProperties)properties), userId.ActorId);
+        break;
+      case ItemCategory.OtherItem:
+        Raise(new OtherItemPropertiesChanged((OtherItemProperties)properties), userId.ActorId);
+        break;
+      case ItemCategory.PokeBall:
+        Raise(new PokeBallPropertiesChanged((PokeBallProperties)properties), userId.ActorId);
+        break;
+      case ItemCategory.TechnicalMachine:
+        TechnicalMachineProperties technicalMachineProperties = (TechnicalMachineProperties)properties;
+        WorldMismatchException.ThrowIfMismatch(Id, technicalMachineProperties.MoveId, nameof(properties));
+        Raise(new TechnicalMachinePropertiesChanged(technicalMachineProperties), userId.ActorId);
+        break;
+      case ItemCategory.Treasure:
+        Raise(new TreasurePropertiesChanged((TreasureProperties)properties), userId.ActorId);
+        break;
+      default:
+        throw new ItemCategoryNotSupportedException(properties.Category);
+    }
+  }
+  protected virtual void Handle(BattleItemPropertiesChanged @event)
+  {
+    _properties = @event.Properties;
+  }
+  protected virtual void Handle(BerryPropertiesChanged @event)
+  {
+    _properties = @event.Properties;
+  }
+  protected virtual void Handle(KeyItemPropertiesChanged @event)
+  {
+    _properties = @event.Properties;
+  }
+  protected virtual void Handle(MaterialPropertiesChanged @event)
+  {
+    _properties = @event.Properties;
+  }
+  protected virtual void Handle(MedicinePropertiesChanged @event)
+  {
+    _properties = @event.Properties;
+  }
+  protected virtual void Handle(OtherItemPropertiesChanged @event)
+  {
+    _properties = @event.Properties;
+  }
+  protected virtual void Handle(PokeBallPropertiesChanged @event)
+  {
+    _properties = @event.Properties;
+  }
+  protected virtual void Handle(TechnicalMachinePropertiesChanged @event)
+  {
+    _properties = @event.Properties;
+  }
+  protected virtual void Handle(TreasurePropertiesChanged @event)
+  {
+    _properties = @event.Properties;
   }
 
   public void Update(UserId userId)
