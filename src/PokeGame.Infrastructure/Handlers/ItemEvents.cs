@@ -8,12 +8,17 @@ using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Handlers;
 
-internal class ItemEvents : IEventHandler<ItemCreated>, IEventHandler<ItemDeleted>, IEventHandler<ItemKeyChanged>, IEventHandler<ItemUpdated>
+internal class ItemEvents : IEventHandler<BattleItemPropertiesChanged>,
+  IEventHandler<ItemCreated>,
+  IEventHandler<ItemDeleted>,
+  IEventHandler<ItemKeyChanged>,
+  IEventHandler<ItemUpdated>
 {
-  // TODO(fpion): 9× Properties
+  // TODO(fpion): 8× Properties
 
   public static void Register(IServiceCollection services)
   {
+    services.AddTransient<IEventHandler<BattleItemPropertiesChanged>, ItemEvents>();
     services.AddTransient<IEventHandler<ItemCreated>, ItemEvents>();
     services.AddTransient<IEventHandler<ItemDeleted>, ItemEvents>();
     services.AddTransient<IEventHandler<ItemKeyChanged>, ItemEvents>();
@@ -25,6 +30,17 @@ internal class ItemEvents : IEventHandler<ItemCreated>, IEventHandler<ItemDelete
   public ItemEvents(PokemonContext pokemon)
   {
     _pokemon = pokemon;
+  }
+
+  public async Task HandleAsync(BattleItemPropertiesChanged @event, CancellationToken cancellationToken)
+  {
+    ItemEntity? item = await _pokemon.Items.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (item is not null && item.Version == (@event.Version - 1))
+    {
+      item.SetProperties(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
   }
 
   public async Task HandleAsync(ItemCreated @event, CancellationToken cancellationToken)
