@@ -5,6 +5,8 @@ using Logitar.EventSourcing;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Forms.Models;
+using PokeGame.Core.Items;
+using PokeGame.Core.Items.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
@@ -92,6 +94,64 @@ internal class Mapper
           break;
         default:
           throw new NotSupportedException($"The ability slot '{formAbility.Slot}' is not supported.");
+      }
+    }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public ItemModel ToItem(ItemEntity source)
+  {
+    ItemModel destination = new()
+    {
+      Id = source.Id,
+      Category = source.Category,
+      Key = source.Key,
+      Name = source.Name,
+      Description = source.Description,
+      Price = source.Price,
+      Sprite = source.Sprite,
+      Url = source.Url,
+      Notes = source.Notes
+    };
+
+    if (source.Category == ItemCategory.TechnicalMachine)
+    {
+      MoveEntity move = source.Move ?? throw new ArgumentException("The move is required.", nameof(source));
+      destination.TechnicalMachine = new TechnicalMachinePropertiesModel(ToMove(move));
+    }
+    else if (source.Properties is not null)
+    {
+      switch (source.Category)
+      {
+        case ItemCategory.BattleItem:
+          destination.BattleItem = PokemonSerializer.Instance.Deserialize<BattleItemPropertiesModel>(source.Properties);
+          break;
+        case ItemCategory.Berry:
+          destination.Berry = PokemonSerializer.Instance.Deserialize<BerryPropertiesModel>(source.Properties);
+          break;
+        case ItemCategory.KeyItem:
+          destination.KeyItem = PokemonSerializer.Instance.Deserialize<KeyItemPropertiesModel>(source.Properties);
+          break;
+        case ItemCategory.Material:
+          destination.Material = PokemonSerializer.Instance.Deserialize<MaterialPropertiesModel>(source.Properties);
+          break;
+        case ItemCategory.Medicine:
+          destination.Medicine = PokemonSerializer.Instance.Deserialize<MedicinePropertiesModel>(source.Properties);
+          break;
+        case ItemCategory.OtherItem:
+          destination.OtherItem = PokemonSerializer.Instance.Deserialize<OtherItemPropertiesModel>(source.Properties);
+          break;
+        case ItemCategory.PokeBall:
+          destination.PokeBall = PokemonSerializer.Instance.Deserialize<PokeBallPropertiesModel>(source.Properties);
+          break;
+        case ItemCategory.Treasure:
+          destination.Treasure = PokemonSerializer.Instance.Deserialize<TreasurePropertiesModel>(source.Properties);
+          break;
+        default:
+          throw new ItemCategoryNotSupportedException(source.Category);
       }
     }
 

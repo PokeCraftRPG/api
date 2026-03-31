@@ -17,6 +17,7 @@ internal class EventSerializer : Logitar.EventSourcing.Infrastructure.EventSeria
     SerializerOptions.Converters.Add(new GenderRatioConverter());
     SerializerOptions.Converters.Add(new GenusConverter());
     SerializerOptions.Converters.Add(new HeightConverter());
+    SerializerOptions.Converters.Add(new ItemIdConverter());
     SerializerOptions.Converters.Add(new LevelConverter());
     SerializerOptions.Converters.Add(new LicenseConverter());
     SerializerOptions.Converters.Add(new MoneyConverter());
@@ -26,9 +27,11 @@ internal class EventSerializer : Logitar.EventSourcing.Infrastructure.EventSeria
     SerializerOptions.Converters.Add(new NumberConverter());
     SerializerOptions.Converters.Add(new PowerConverter());
     SerializerOptions.Converters.Add(new PowerPointsConverter());
+    SerializerOptions.Converters.Add(new PriceConverter());
     SerializerOptions.Converters.Add(new RegionIdConverter());
     SerializerOptions.Converters.Add(new SlugConverter());
     SerializerOptions.Converters.Add(new SpeciesIdConverter());
+    SerializerOptions.Converters.Add(new StorageIdConverter());
     SerializerOptions.Converters.Add(new TrainerIdConverter());
     SerializerOptions.Converters.Add(new UrlConverter());
     SerializerOptions.Converters.Add(new UserIdConverter());

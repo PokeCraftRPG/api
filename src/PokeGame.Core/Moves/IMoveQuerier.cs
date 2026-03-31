@@ -6,6 +6,8 @@ public interface IMoveQuerier
 {
   Task EnsureUnicityAsync(Move move, CancellationToken cancellationToken = default);
 
+  Task<MoveId?> FindIdAsync(string key, CancellationToken cancellationToken = default);
+
   Task<IReadOnlyCollection<MoveKey>> ListKeysAsync(CancellationToken cancellationToken = default);
 
   Task<MoveModel> ReadAsync(Move move, CancellationToken cancellationToken = default);

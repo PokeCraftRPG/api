@@ -15,6 +15,7 @@ internal class PermissionService : IPermissionService
   [
     Actions.CreateAbility,
     Actions.CreateForm,
+    Actions.CreateItem,
     Actions.CreateMove,
     Actions.CreateRegion,
     Actions.CreateSpecies,

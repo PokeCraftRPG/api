@@ -148,6 +148,11 @@ public static class ValidationExtensions
     return ruleBuilder.InclusiveBetween(Moves.PowerPoints.MinimumValue, Moves.PowerPoints.MaximumValue);
   }
 
+  public static IRuleBuilderOptions<T, int> Price<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThan(0);
+  }
+
   public static IRuleBuilderOptions<T, string> Slug<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Core.Slug.MaximumLength).SetValidator(new SlugValidator<T>());
