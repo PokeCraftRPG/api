@@ -68,6 +68,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     await pokemon.Regions.ExecuteDeleteAsync();
     await pokemon.Moves.ExecuteDeleteAsync();
     await pokemon.Abilities.ExecuteDeleteAsync();
+    await pokemon.StorageSummary.ExecuteDeleteAsync();
     await pokemon.Worlds.ExecuteDeleteAsync();
 
     EventContext events = ServiceProvider.GetRequiredService<EventContext>();

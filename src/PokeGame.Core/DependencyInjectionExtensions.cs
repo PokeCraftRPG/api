@@ -33,6 +33,7 @@ public static class DependencyInjectionExtensions
       .AddLogitarEventSourcing()
       .AddSingleton(serviceProvider => PermissionSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddSingleton(serviceProvider => RetrySettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
+      .AddSingleton(serviceProvider => StorageSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddTransient<ICommandBus, CommandBus>()
       .AddTransient<IQueryBus, QueryBus>()
       .AddTransient<IPermissionService, PermissionService>()

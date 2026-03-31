@@ -18,6 +18,8 @@ public class PokemonContext : DbContext
   internal DbSet<RegionalNumberEntity> RegionalNumbers => Set<RegionalNumberEntity>();
   internal DbSet<RegionEntity> Regions => Set<RegionEntity>();
   internal DbSet<SpeciesEntity> Species => Set<SpeciesEntity>();
+  internal DbSet<StorageDetailEntity> StorageDetail => Set<StorageDetailEntity>();
+  internal DbSet<StorageSummaryEntity> StorageSummary => Set<StorageSummaryEntity>();
   internal DbSet<TrainerEntity> Trainers => Set<TrainerEntity>();
   internal DbSet<VarietyEntity> Varieties => Set<VarietyEntity>();
   internal DbSet<VarietyMoveEntity> VarietyMoves => Set<VarietyMoveEntity>();
