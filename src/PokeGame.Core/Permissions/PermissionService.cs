@@ -1,4 +1,5 @@
-﻿using PokeGame.Core.Worlds;
+﻿using PokeGame.Core.Membership;
+using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Models;
 
 namespace PokeGame.Core.Permissions;
@@ -11,18 +12,6 @@ public interface IPermissionService
 
 internal class PermissionService : IPermissionService
 {
-  private readonly HashSet<string> _createActions =
-  [
-    Actions.CreateAbility,
-    Actions.CreateForm,
-    Actions.CreateItem,
-    Actions.CreateMove,
-    Actions.CreateRegion,
-    Actions.CreateSpecies,
-    Actions.CreateTrainer,
-    Actions.CreateVariety
-  ];
-
   private readonly IContext _context;
   private readonly PermissionSettings _settings;
   private readonly IWorldQuerier _worldQuerier;
@@ -53,11 +42,15 @@ internal class PermissionService : IPermissionService
     }
     else if (resource is World world)
     {
-      isAllowed = world.OwnerId == _context.UserId;
+      isAllowed = IsAllowed(action, world);
+    }
+    else if (resource is MembershipInvitation invitation)
+    {
+      isAllowed = IsAllowed(action, invitation);
     }
     else
     {
-      isAllowed = entity.WorldId == _context.WorldId && _context.IsWorldOwner;
+      isAllowed = IsAllowed(action, entity);
     }
 
     if (!isAllowed)
@@ -66,17 +59,34 @@ internal class PermissionService : IPermissionService
     }
   }
 
-  private async Task<bool> IsAllowedAsync(string action, CancellationToken cancellationToken)
+  private async Task<bool> IsAllowedAsync(string action, CancellationToken cancellationToken) => action switch
   {
-    if (action == Actions.CreateWorld)
-    {
-      int count = await _worldQuerier.CountAsync(cancellationToken);
-      return count < _settings.WorldLimit;
-    }
-    else if (_createActions.Contains(action))
-    {
-      return _context.IsWorldOwner;
-    }
-    return false;
+    Actions.CreateAbility or Actions.CreateForm or Actions.CreateItem or Actions.CreateMove or Actions.CreateRegion or Actions.CreateSpecies
+      or Actions.CreateTrainer or Actions.CreateVariety => _context.IsWorldOwner,
+    Actions.CreateWorld => await CanCreateWorldAsync(cancellationToken),
+    _ => false,
+  };
+  private async Task<bool> CanCreateWorldAsync(CancellationToken cancellationToken)
+  {
+    int count = await _worldQuerier.CountAsync(cancellationToken);
+    return count < _settings.WorldLimit;
   }
+
+  private bool IsAllowed(string action, Entity entity) => action switch
+  {
+    Actions.Update => entity.WorldId == _context.WorldId && _context.IsWorldOwner,
+    _ => false,
+  };
+
+  private bool IsAllowed(string action, MembershipInvitation invitation) => action switch
+  {
+    Actions.Accept => invitation.InviteeId == _context.UserId,
+    _ => false,
+  };
+
+  private bool IsAllowed(string action, World world) => action switch
+  {
+    Actions.SendMembershipInvitation or Actions.Update => world.OwnerId == _context.UserId,
+    _ => false,
+  };
 }

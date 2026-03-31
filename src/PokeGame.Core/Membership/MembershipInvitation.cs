@@ -49,6 +49,33 @@ public class MembershipInvitation : AggregateRoot, IEntityProvider
     ExpiresOn = @event.ExpiresOn;
   }
 
+  public void Accept()
+  {
+    if (!InviteeId.HasValue)
+    {
+      throw new InvalidOperationException("A membership invitation can only be accepted by the invitee.");
+    }
+    else if (IsExpired())
+    {
+      throw new MembershipInvitationExpiredException(this);
+    }
+
+    switch (Status)
+    {
+      case MembershipInvitationStatus.Accepted:
+        return;
+      case MembershipInvitationStatus.Pending:
+        Raise(new MembershipInvitationAccepted(), InviteeId.Value.ActorId);
+        return;
+      default:
+        throw new MembershipInvitationNotPendingException(this);
+    }
+  }
+  protected virtual void Handle(MembershipInvitationAccepted _)
+  {
+    Status = MembershipInvitationStatus.Accepted;
+  }
+
   public void Delete(UserId userId)
   {
     if (!IsDeleted)

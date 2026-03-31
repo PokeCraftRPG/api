@@ -5,6 +5,7 @@ using Logitar.EventSourcing;
 using PokeGame.Core.Actors;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership.Models;
+using PokeGame.Core.Permissions;
 
 namespace PokeGame.Core.Membership.Commands;
 
@@ -17,6 +18,7 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
   private readonly IMembershipInvitationRepository _membershipInvitationRepository;
   private readonly MembershipSettings _membershipSettings;
   private readonly IMessageGateway _messageGateway;
+  private readonly IPermissionService _permissionService;
   private readonly IUserGateway _userGateway;
 
   public SendMembershipInvitationCommandHandler(
@@ -25,6 +27,7 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     IMembershipInvitationRepository membershipInvitationRepository,
     MembershipSettings membershipSettings,
     IMessageGateway messageGateway,
+    IPermissionService permissionService,
     IUserGateway userGateway)
   {
     _context = context;
@@ -32,6 +35,7 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     _membershipInvitationRepository = membershipInvitationRepository;
     _membershipSettings = membershipSettings;
     _messageGateway = messageGateway;
+    _permissionService = permissionService;
     _userGateway = userGateway;
   }
 
@@ -39,6 +43,8 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
   {
     SendMembershipInvitationPayload payload = command.Payload;
     payload.Validate();
+
+    await _permissionService.CheckAsync(Actions.SendMembershipInvitation, cancellationToken);
 
     ReadOnlyEmail email = new(payload.EmailAddress);
     await _membershipInvitationQuerier.EnsureNonePendingAsync(email, cancellationToken);

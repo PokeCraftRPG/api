@@ -2,6 +2,7 @@
 
 public static class Actions
 {
+  public const string Accept = "Accept";
   public const string CreateAbility = "CreateAbility";
   public const string CreateForm = "CreateForm";
   public const string CreateItem = "CreateItem";
@@ -11,5 +12,6 @@ public static class Actions
   public const string CreateTrainer = "CreateTrainer";
   public const string CreateVariety = "CreateVariety";
   public const string CreateWorld = "CreateWorld";
+  public const string SendMembershipInvitation = "SendMembershipInvitation";
   public const string Update = "Update";
 }

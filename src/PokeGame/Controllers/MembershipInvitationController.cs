@@ -18,10 +18,17 @@ public class MembershipInvitationController : ControllerBase
     _membershipService = membershipService;
   }
 
+  [HttpPatch("{id}/accept")]
+  public async Task<ActionResult<MembershipInvitationModel?>> AcceptAsync(Guid id, CancellationToken cancellationToken)
+  {
+    MembershipInvitationModel? invitation = await _membershipService.AcceptInvitationAsync(id, cancellationToken);
+    return invitation is null ? NotFound() : Ok(invitation);
+  }
+
   [HttpPost("{id}")]
   public async Task<ActionResult<MembershipInvitationModel?>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
-    MembershipInvitationModel? invitation = await _membershipService.ReadAsync(id, cancellationToken);
+    MembershipInvitationModel? invitation = await _membershipService.ReadInvitationAsync(id, cancellationToken);
     return invitation is null ? NotFound() : Ok(invitation);
   }
 
