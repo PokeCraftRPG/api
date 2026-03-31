@@ -11,13 +11,14 @@ public record ReadOnlyEmail : IEmail
 
   public ReadOnlyEmail(string address, bool isVerified = false)
   {
-    Address = address;
+    Address = address.Trim();
     IsVerified = isVerified;
+    new Validator().ValidateAndThrow(this);
   }
 
   public override string ToString() => Address;
 
-  private class Validator : AbstractValidator<Email>
+  private class Validator : AbstractValidator<ReadOnlyEmail>
   {
     public Validator()
     {
