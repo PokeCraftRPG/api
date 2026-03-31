@@ -11,8 +11,6 @@
 - MedicineProperties
 - MoveManager
 - PokeBallProperties
-- Price
-- ReadItemQueryHandler
 - StatisticChanges
 - UpdateItemCommandHandler
 - UpdateItemPayload (TODO)
