@@ -12,9 +12,11 @@ internal class ItemEvents : IEventHandler<BattleItemPropertiesChanged>,
   IEventHandler<ItemCreated>,
   IEventHandler<ItemDeleted>,
   IEventHandler<ItemKeyChanged>,
-  IEventHandler<ItemUpdated>
+  IEventHandler<ItemUpdated>,
+  IEventHandler<KeyItemPropertiesChanged>,
+  IEventHandler<OtherItemPropertiesChanged>
 {
-  // TODO(fpion): 8× Properties
+  // TODO(fpion): 6× Properties
 
   public static void Register(IServiceCollection services)
   {
@@ -23,6 +25,8 @@ internal class ItemEvents : IEventHandler<BattleItemPropertiesChanged>,
     services.AddTransient<IEventHandler<ItemDeleted>, ItemEvents>();
     services.AddTransient<IEventHandler<ItemKeyChanged>, ItemEvents>();
     services.AddTransient<IEventHandler<ItemUpdated>, ItemEvents>();
+    services.AddTransient<IEventHandler<KeyItemPropertiesChanged>, ItemEvents>();
+    services.AddTransient<IEventHandler<OtherItemPropertiesChanged>, ItemEvents>();
   }
 
   private readonly PokemonContext _pokemon;
@@ -88,6 +92,28 @@ internal class ItemEvents : IEventHandler<BattleItemPropertiesChanged>,
     if (item is not null && item.Version == (@event.Version - 1))
     {
       item.Update(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(KeyItemPropertiesChanged @event, CancellationToken cancellationToken)
+  {
+    ItemEntity? item = await _pokemon.Items.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (item is not null && item.Version == (@event.Version - 1))
+    {
+      item.SetProperties(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(OtherItemPropertiesChanged @event, CancellationToken cancellationToken)
+  {
+    ItemEntity? item = await _pokemon.Items.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (item is not null && item.Version == (@event.Version - 1))
+    {
+      item.SetProperties(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
