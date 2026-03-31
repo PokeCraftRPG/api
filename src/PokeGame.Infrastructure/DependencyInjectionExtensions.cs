@@ -7,6 +7,7 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Caching;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Items;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
@@ -47,6 +48,7 @@ public static class DependencyInjectionExtensions
   {
     AbilityEvents.Register(services);
     FormEvents.Register(services);
+    ItemEvents.Register(services);
     MoveEvents.Register(services);
     RegionEvents.Register(services);
     SpeciesEvents.Register(services);
@@ -73,6 +75,7 @@ public static class DependencyInjectionExtensions
     return services
       .AddTransient<IAbilityQuerier, AbilityQuerier>()
       .AddTransient<IFormQuerier, FormQuerier>()
+      .AddTransient<IItemQuerier, ItemQuerier>()
       .AddTransient<IMoveQuerier, MoveQuerier>()
       .AddTransient<IRegionQuerier, RegionQuerier>()
       .AddTransient<ISpeciesQuerier, SpeciesQuerier>()
@@ -86,6 +89,7 @@ public static class DependencyInjectionExtensions
     return services
       .AddTransient<IAbilityRepository, AbilityRepository>()
       .AddTransient<IFormRepository, FormRepository>()
+      .AddTransient<IItemRepository, ItemRepository>()
       .AddTransient<IMoveRepository, MoveRepository>()
       .AddTransient<IRegionRepository, RegionRepository>()
       .AddTransient<ISpeciesRepository, SpeciesRepository>()

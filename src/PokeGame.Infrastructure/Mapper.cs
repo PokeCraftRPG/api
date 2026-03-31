@@ -5,6 +5,7 @@ using Logitar.EventSourcing;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Forms.Models;
+using PokeGame.Core.Items.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
@@ -94,6 +95,25 @@ internal class Mapper
           throw new NotSupportedException($"The ability slot '{formAbility.Slot}' is not supported.");
       }
     }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public ItemModel ToItem(ItemEntity source)
+  {
+    ItemModel destination = new()
+    {
+      Id = source.Id,
+      Key = source.Key,
+      Name = source.Name,
+      Description = source.Description,
+      Price = source.Price,
+      Sprite = source.Sprite,
+      Url = source.Url,
+      Notes = source.Notes
+    };
 
     MapAggregate(source, destination);
 
