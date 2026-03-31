@@ -14,8 +14,8 @@ public class MembershipInvitation : AggregateRoot, IEntityProvider
   public WorldId WorldId => Id.WorldId;
   public Guid EntityId => Id.EntityId;
 
-  private Email? _email = null;
-  public Email Email => _email ?? throw new InvalidOperationException("The membership invitation was not initialized.");
+  private ReadOnlyEmail? _email = null;
+  public ReadOnlyEmail Email => _email ?? throw new InvalidOperationException("The membership invitation was not initialized.");
   public UserId? InviteeId { get; private set; }
 
   public MembershipInvitationStatus Status { get; private set; }
@@ -25,12 +25,12 @@ public class MembershipInvitation : AggregateRoot, IEntityProvider
   {
   }
 
-  public MembershipInvitation(World world, Email email, UserId? inviteeId, DateTime? expiresOn)
+  public MembershipInvitation(World world, ReadOnlyEmail email, UserId? inviteeId, DateTime? expiresOn)
     : this(email, inviteeId, expiresOn, world.OwnerId, MembershipInvitationId.NewId(world.Id))
   {
   }
 
-  public MembershipInvitation(Email email, UserId? inviteeId, DateTime? expiresOn, UserId userId, MembershipInvitationId membershipInvitationId)
+  public MembershipInvitation(ReadOnlyEmail email, UserId? inviteeId, DateTime? expiresOn, UserId userId, MembershipInvitationId membershipInvitationId)
     : base(membershipInvitationId.StreamId)
   {
     if (expiresOn.HasValue && expiresOn.Value.AsUniversalTime() <= DateTime.UtcNow)

@@ -5,7 +5,6 @@ using Logitar.EventSourcing;
 using PokeGame.Core.Actors;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership.Models;
-using Email = PokeGame.Core.Identity.Email;
 
 namespace PokeGame.Core.Membership.Commands;
 
@@ -41,7 +40,7 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     SendMembershipInvitationPayload payload = command.Payload;
     payload.Validate();
 
-    Email email = new(payload.EmailAddress);
+    ReadOnlyEmail email = new(payload.EmailAddress);
     await _membershipInvitationQuerier.EnsureNonePendingAsync(email, cancellationToken);
 
     User? user = await _userGateway.FindAsync(payload.EmailAddress, cancellationToken);

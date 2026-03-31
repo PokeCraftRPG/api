@@ -4,12 +4,12 @@ using PokeGame.Core.Validation;
 
 namespace PokeGame.Core.Identity;
 
-public record Email : IEmail
+public record ReadOnlyEmail : IEmail
 {
   public string Address { get; }
   public bool IsVerified { get; }
 
-  public Email(string address, bool isVerified = false)
+  public ReadOnlyEmail(string address, bool isVerified = false)
   {
     Address = address;
     IsVerified = isVerified;
