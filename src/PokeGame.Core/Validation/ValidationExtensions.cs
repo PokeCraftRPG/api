@@ -31,6 +31,11 @@ public static class ValidationExtensions
     return ruleBuilder.GreaterThan((byte)0);
   }
 
+  public static IRuleBuilderOptions<T, string> EmailAddressValue<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty().MaximumLength(byte.MaxValue).EmailAddress();
+  }
+
   public static IRuleBuilderOptions<T, DateTime> Future<T>(this IRuleBuilder<T, DateTime> ruleBuilder, DateTime? moment = null)
   {
     return ruleBuilder.SetValidator(new FutureValidator<T>(moment));

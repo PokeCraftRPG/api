@@ -6,6 +6,7 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Accounts;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Items;
+using PokeGame.Core.Membership;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Regions;
@@ -33,6 +34,7 @@ public static class DependencyInjectionExtensions
     WorldService.Register(services);
     return services
       .AddLogitarEventSourcing()
+      .AddSingleton(serviceProvider => MembershipSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddSingleton(serviceProvider => PermissionSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddSingleton(serviceProvider => RetrySettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddSingleton(serviceProvider => StorageSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))

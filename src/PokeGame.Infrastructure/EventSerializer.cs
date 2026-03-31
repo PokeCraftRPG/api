@@ -20,6 +20,7 @@ internal class EventSerializer : Logitar.EventSourcing.Infrastructure.EventSeria
     SerializerOptions.Converters.Add(new ItemIdConverter());
     SerializerOptions.Converters.Add(new LevelConverter());
     SerializerOptions.Converters.Add(new LicenseConverter());
+    SerializerOptions.Converters.Add(new MembershipInvitationIdConverter());
     SerializerOptions.Converters.Add(new MoneyConverter());
     SerializerOptions.Converters.Add(new MoveIdConverter());
     SerializerOptions.Converters.Add(new NameConverter());
