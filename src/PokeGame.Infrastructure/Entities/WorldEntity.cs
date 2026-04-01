@@ -54,6 +54,8 @@ internal class WorldEntity : AggregateEntity
 
   public void GrantMembership(WorldMembershipGranted @event)
   {
+    base.Update(@event);
+
     MemberEntity? member = Members.SingleOrDefault(x => x.MemberKey == @event.UserId.Value);
     if (member is null)
     {
@@ -64,6 +66,14 @@ internal class WorldEntity : AggregateEntity
     {
       member.Grant(@event);
     }
+  }
+
+  public void RevokeMembership(WorldMembershipRevoked @event)
+  {
+    base.Update(@event);
+
+    MemberEntity? member = Members.SingleOrDefault(x => x.MemberKey == @event.UserId.Value);
+    member?.Revoke(@event);
   }
 
   public void SetKey(WorldKeyChanged @event)

@@ -59,6 +59,12 @@ internal class MemberEntity
     RevokedOn = null;
   }
 
+  public void Revoke(WorldMembershipRevoked @event)
+  {
+    RevokedBy = @event.ActorId?.Value;
+    RevokedOn = @event.OccurredOn.AsUniversalTime();
+  }
+
   public override bool Equals(object? obj) => obj is MemberEntity member && member.MemberId == MemberId;
   public override int GetHashCode() => MemberId.GetHashCode();
   public override string ToString() => $"{MemberKey} | {base.ToString()} (MemberId={MemberId})";
