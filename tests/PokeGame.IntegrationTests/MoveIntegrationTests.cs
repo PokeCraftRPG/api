@@ -170,8 +170,7 @@ public class MoveIntegrationTests : IntegrationTests
   {
     Move sweetKiss = MoveBuilder.SweetKiss(Faker, World);
     Move thunderPunch = MoveBuilder.ThunderPunch(Faker, World);
-    Move thunderShock = MoveBuilder.ThunderShock(Faker, World);
-    await _moveRepository.SaveAsync([sweetKiss, thunderPunch, thunderShock]);
+    await _moveRepository.SaveAsync([sweetKiss, thunderPunch]);
 
     SearchMovesPayload payload = new()
     {
@@ -188,7 +187,7 @@ public class MoveIntegrationTests : IntegrationTests
         Assert.Equal(thunderPunch.EntityId, move.Id);
         break;
       case MoveCategory.Special:
-        Assert.Equal(thunderShock.EntityId, move.Id);
+        Assert.Equal(_move.EntityId, move.Id);
         break;
       case MoveCategory.Status:
         Assert.Equal(sweetKiss.EntityId, move.Id);
@@ -205,8 +204,7 @@ public class MoveIntegrationTests : IntegrationTests
     Move agility = MoveBuilder.Agility(Faker, World);
     Move quickAttack = MoveBuilder.QuickAttack(Faker, World);
     Move sweetKiss = MoveBuilder.SweetKiss(Faker, World);
-    Move thunderShock = MoveBuilder.ThunderShock(Faker, World);
-    await _moveRepository.SaveAsync([agility, quickAttack, sweetKiss, thunderShock]);
+    await _moveRepository.SaveAsync([agility, quickAttack, sweetKiss]);
 
     SearchMovesPayload payload = new()
     {
@@ -220,7 +218,7 @@ public class MoveIntegrationTests : IntegrationTests
     switch (payload.Type)
     {
       case PokemonType.Electric:
-        Assert.Equal(thunderShock.EntityId, move.Id);
+        Assert.Equal(_move.EntityId, move.Id);
         break;
       case PokemonType.Fairy:
         Assert.Equal(sweetKiss.EntityId, move.Id);

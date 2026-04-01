@@ -66,7 +66,10 @@ internal class CreateOrReplaceItemCommandHandler : ICommandHandler<CreateOrRepla
     {
       await _permissionService.CheckAsync(Actions.Update, item, cancellationToken);
 
-      payload.Validate(item.Category);
+      if (properties.Category != item.Category)
+      {
+        throw new ImmutablePropertyException<ItemCategory>(item, item.Category, properties.Category, properties.Category.ToString());
+      }
 
       item.SetKey(key, userId);
       item.SetProperties(properties, userId);

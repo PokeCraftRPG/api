@@ -86,6 +86,10 @@ internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, Ite
     ItemProperties? properties = await GetPropertiesAsync(payload, cancellationToken);
     if (properties is not null)
     {
+      if (properties.Category != item.Category)
+      {
+        throw new ImmutablePropertyException<ItemCategory>(item, item.Category, properties.Category, properties.Category.ToString());
+      }
       item.SetProperties(properties, userId);
     }
 

@@ -165,41 +165,42 @@ public class Item : AggregateRoot, IEntityProvider
       throw new ArgumentException($"Cannot set properties of category '{properties.Category}' on an item in category '{Category}'.", nameof(properties));
     }
 
-    // TODO(fpion): change is not handled correctly!
-
-    switch (properties.Category)
+    if (_properties != properties)
     {
-      case ItemCategory.BattleItem:
-        Raise(new BattleItemPropertiesChanged((BattleItemProperties)properties), userId.ActorId);
-        break;
-      case ItemCategory.Berry:
-        Raise(new BerryPropertiesChanged((BerryProperties)properties), userId.ActorId);
-        break;
-      case ItemCategory.KeyItem:
-        Raise(new KeyItemPropertiesChanged((KeyItemProperties)properties), userId.ActorId);
-        break;
-      case ItemCategory.Material:
-        Raise(new MaterialPropertiesChanged((MaterialProperties)properties), userId.ActorId);
-        break;
-      case ItemCategory.Medicine:
-        Raise(new MedicinePropertiesChanged((MedicineProperties)properties), userId.ActorId);
-        break;
-      case ItemCategory.OtherItem:
-        Raise(new OtherItemPropertiesChanged((OtherItemProperties)properties), userId.ActorId);
-        break;
-      case ItemCategory.PokeBall:
-        Raise(new PokeBallPropertiesChanged((PokeBallProperties)properties), userId.ActorId);
-        break;
-      case ItemCategory.TechnicalMachine:
-        TechnicalMachineProperties technicalMachineProperties = (TechnicalMachineProperties)properties;
-        WorldMismatchException.ThrowIfMismatch(Id, technicalMachineProperties.MoveId, nameof(properties));
-        Raise(new TechnicalMachinePropertiesChanged(technicalMachineProperties), userId.ActorId);
-        break;
-      case ItemCategory.Treasure:
-        Raise(new TreasurePropertiesChanged((TreasureProperties)properties), userId.ActorId);
-        break;
-      default:
-        throw new ItemCategoryNotSupportedException(properties.Category);
+      switch (properties.Category)
+      {
+        case ItemCategory.BattleItem:
+          Raise(new BattleItemPropertiesChanged((BattleItemProperties)properties), userId.ActorId);
+          break;
+        case ItemCategory.Berry:
+          Raise(new BerryPropertiesChanged((BerryProperties)properties), userId.ActorId);
+          break;
+        case ItemCategory.KeyItem:
+          Raise(new KeyItemPropertiesChanged((KeyItemProperties)properties), userId.ActorId);
+          break;
+        case ItemCategory.Material:
+          Raise(new MaterialPropertiesChanged((MaterialProperties)properties), userId.ActorId);
+          break;
+        case ItemCategory.Medicine:
+          Raise(new MedicinePropertiesChanged((MedicineProperties)properties), userId.ActorId);
+          break;
+        case ItemCategory.OtherItem:
+          Raise(new OtherItemPropertiesChanged((OtherItemProperties)properties), userId.ActorId);
+          break;
+        case ItemCategory.PokeBall:
+          Raise(new PokeBallPropertiesChanged((PokeBallProperties)properties), userId.ActorId);
+          break;
+        case ItemCategory.TechnicalMachine:
+          TechnicalMachineProperties technicalMachineProperties = (TechnicalMachineProperties)properties;
+          WorldMismatchException.ThrowIfMismatch(Id, technicalMachineProperties.MoveId, nameof(properties));
+          Raise(new TechnicalMachinePropertiesChanged(technicalMachineProperties), userId.ActorId);
+          break;
+        case ItemCategory.Treasure:
+          Raise(new TreasurePropertiesChanged((TreasureProperties)properties), userId.ActorId);
+          break;
+        default:
+          throw new ItemCategoryNotSupportedException(properties.Category);
+      }
     }
   }
   protected virtual void Handle(BattleItemPropertiesChanged @event)
