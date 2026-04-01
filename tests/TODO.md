@@ -2,8 +2,6 @@
 
 ## Unit
 
-- BattleItemProperties
-- BerryProperties
 - CreateOrReplaceItemCommandHandler
 - CreateOrReplaceItemPayload (TODO)
 - Item
