@@ -3,6 +3,7 @@ using Moq;
 using PokeGame.Builders;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Membership.Commands;
 
@@ -12,17 +13,22 @@ public class CancelMembershipInvitationCommandHandlerTests
   private readonly CancellationToken _cancellationToken = default;
   private readonly Faker _faker = new();
 
-  private readonly TestContext _context;
   private readonly Mock<IMembershipInvitationQuerier> _membershipInvitationQuerier = new();
   private readonly Mock<IMembershipInvitationRepository> _membershipInvitationRepository = new();
   private readonly Mock<IPermissionService> _permissionService = new();
 
+  private readonly TestContext _context;
   private readonly CancelMembershipInvitationCommandHandler _handler;
+
+  private readonly World _world;
 
   public CancelMembershipInvitationCommandHandlerTests()
   {
     _context = new(_faker);
     _handler = new(_context, _membershipInvitationQuerier.Object, _membershipInvitationRepository.Object, _permissionService.Object);
+
+    Assert.NotNull(_context.World);
+    _world = _context.World;
   }
 
   [Fact(DisplayName = "It should cancel a membership invitation.")]
@@ -40,8 +46,7 @@ public class CancelMembershipInvitationCommandHandlerTests
     Assert.Same(model, result);
 
     Assert.Equal(MembershipInvitationStatus.Cancelled, invitation.Status);
-    Assert.NotNull(_context.World);
-    Assert.Empty(_context.World.Members);
+    Assert.Empty(_world.Members);
 
     _permissionService.Verify(x => x.CheckAsync(Actions.Cancel, invitation, _cancellationToken), Times.Once());
     _membershipInvitationRepository.Verify(x => x.SaveAsync(invitation, _cancellationToken), Times.Once());

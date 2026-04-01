@@ -1,4 +1,6 @@
 ﻿using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Search;
+using Logitar.Data;
 using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
@@ -15,12 +17,14 @@ internal class WorldQuerier : IWorldQuerier
   private readonly IActorService _actors;
   private readonly IContext _context;
   private readonly DbSet<WorldEntity> _worlds;
+  private readonly ISqlHelper _sql;
 
-  public WorldQuerier(IActorService actors, IContext context, PokemonContext pokemon)
+  public WorldQuerier(IActorService actors, IContext context, PokemonContext pokemon, ISqlHelper sql)
   {
     _actors = actors;
     _context = context;
     _worlds = pokemon.Worlds;
+    _sql = sql;
   }
 
   public async Task<int> CountAsync(CancellationToken cancellationToken)
@@ -64,6 +68,7 @@ internal class WorldQuerier : IWorldQuerier
   {
     WorldEntity? world = await _worlds.AsNoTracking()
       .Where(x => x.StreamId == id.Value && x.OwnerId == _context.UserId.Value)
+      .Include(x => x.Members)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
@@ -71,6 +76,7 @@ internal class WorldQuerier : IWorldQuerier
   {
     WorldEntity? world = await _worlds.AsNoTracking()
       .Where(x => x.Id == id && x.OwnerId == _context.UserId.Value)
+      .Include(x => x.Members)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
@@ -78,8 +84,57 @@ internal class WorldQuerier : IWorldQuerier
   {
     WorldEntity? world = await _worlds.AsNoTracking()
       .Where(x => x.Key == Slug.Normalize(key) && x.OwnerId == _context.UserId.Value)
+      .Include(x => x.Members)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
+  }
+
+  public async Task<SearchResults<WorldModel>> SearchAsync(SearchWorldsPayload payload, CancellationToken cancellationToken)
+  {
+    IQueryBuilder builder = _sql.Query(PokemonDb.Worlds.Table).SelectAll(PokemonDb.Worlds.Table)
+      .ApplyOwnerFilter(_context.UserId)
+      .ApplyIdFilter(PokemonDb.Worlds.Id, payload.Ids);
+    _sql.ApplyTextSearch(builder, payload.Search, PokemonDb.Worlds.Key, PokemonDb.Worlds.Name);
+
+    IQueryable<WorldEntity> query = _worlds.FromQuery(builder).AsNoTracking();
+
+    long total = await query.LongCountAsync(cancellationToken);
+
+    IOrderedQueryable<WorldEntity>? ordered = null;
+    foreach (WorldSortOption sort in payload.Sort)
+    {
+      switch (sort.Field)
+      {
+        case WorldSort.CreatedOn:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.CreatedOn) : query.OrderBy(x => x.CreatedOn))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.CreatedOn) : ordered.ThenBy(x => x.CreatedOn));
+          break;
+        case WorldSort.Key:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.Key) : query.OrderBy(x => x.Key))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.Key) : ordered.ThenBy(x => x.Key));
+          break;
+        case WorldSort.Name:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.Name) : ordered.ThenBy(x => x.Name));
+          break;
+        case WorldSort.UpdatedOn:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.UpdatedOn) : query.OrderBy(x => x.UpdatedOn))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.UpdatedOn) : ordered.ThenBy(x => x.UpdatedOn));
+          break;
+      }
+    }
+    query = ordered ?? query;
+
+    query = query.ApplyPaging(payload);
+
+    WorldEntity[] entities = await query.Include(x => x.Members).ToArrayAsync(cancellationToken);
+    IReadOnlyCollection<WorldModel> worlds = await MapAsync(entities, cancellationToken);
+
+    return new SearchResults<WorldModel>(worlds, total);
   }
 
   private async Task<WorldModel> MapAsync(WorldEntity world, CancellationToken cancellationToken)

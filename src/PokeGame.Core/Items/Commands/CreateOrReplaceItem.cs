@@ -145,5 +145,5 @@ internal class CreateOrReplaceItemCommandHandler : ICommandHandler<CreateOrRepla
       throw new ArgumentException("Many properties were provided, exactly one is expected.", nameof(payload));
     }
     return properties.SingleOrDefault() ?? throw new ArgumentException("No property was provided, exactly one is expected.", nameof(payload));
-  } // TODO(fpion): refactor
+  }
 }

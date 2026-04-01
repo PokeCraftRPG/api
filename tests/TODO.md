@@ -3,7 +3,6 @@
 ## Unit
 
 - CreateOrReplaceItemCommandHandler
-- ItemEvents (TODO)
 - UpdateItemCommandHandler
 
 ## Integration

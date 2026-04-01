@@ -1,6 +1,7 @@
 ﻿using Krakenar.Contracts.Search;
 using Logitar.Data;
 using Microsoft.EntityFrameworkCore;
+using PokeGame.Core;
 
 namespace PokeGame.Infrastructure;
 
@@ -14,6 +15,11 @@ internal static class QueryingExtensions
     }
 
     return query.Where(column, Operators.IsIn(ids.Distinct().Select(id => (object)id).ToArray()));
+  }
+
+  public static IQueryBuilder ApplyOwnerFilter(this IQueryBuilder query, UserId ownerId)
+  {
+    return query.Where(PokemonDb.Worlds.OwnerId, Operators.IsEqualTo(ownerId.Value));
   }
 
   public static IQueryable<T> ApplyPaging<T>(this IQueryable<T> query, SearchPayload payload)
@@ -33,6 +39,11 @@ internal static class QueryingExtensions
     return query;
   }
 
+  public static IQueryBuilder ApplyWorldFilter(this IQueryBuilder query, Guid worldId)
+  {
+    return query.Where(PokemonDb.Worlds.Id, Operators.IsEqualTo(worldId));
+  }
+
   public static IQueryable<T> FromQuery<T>(this DbSet<T> entities, IQueryBuilder query) where T : class
   {
     return entities.FromQuery(query.Build());
@@ -40,10 +51,5 @@ internal static class QueryingExtensions
   public static IQueryable<T> FromQuery<T>(this DbSet<T> entities, IQuery query) where T : class
   {
     return entities.FromSqlRaw(query.Text, query.Parameters.ToArray());
-  }
-
-  public static IQueryBuilder ApplyWorldFilter(this IQueryBuilder query, Guid worldId)
-  {
-    return query.Where(PokemonDb.Worlds.Id, Operators.IsEqualTo(worldId));
   }
 }

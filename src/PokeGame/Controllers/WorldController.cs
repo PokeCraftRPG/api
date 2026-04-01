@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Models;
 using PokeGame.Extensions;
+using PokeGame.Models.World;
 
 namespace PokeGame.Controllers;
 
@@ -44,6 +46,14 @@ public class WorldController : ControllerBase
   {
     CreateOrReplaceWorldResult result = await _worldService.CreateOrReplaceAsync(payload, id, cancellationToken);
     return ToActionResult(result);
+  }
+
+  [HttpGet]
+  public async Task<ActionResult<SearchResults<WorldModel>>> SearchAsync([FromQuery] SearchWorldsParameters parameters, CancellationToken cancellationToken)
+  {
+    SearchWorldsPayload payload = parameters.ToPayload();
+    SearchResults<WorldModel> worlds = await _worldService.SearchAsync(payload, cancellationToken);
+    return Ok(worlds);
   }
 
   [HttpPatch("{id}")]

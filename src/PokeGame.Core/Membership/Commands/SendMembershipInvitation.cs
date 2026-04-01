@@ -4,6 +4,7 @@ using PokeGame.Core.Actors;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Membership.Commands;
 
@@ -18,6 +19,7 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
   private readonly IMessageGateway _messageGateway;
   private readonly IPermissionService _permissionService;
   private readonly IUserGateway _userGateway;
+  private readonly IWorldRepository _worldRepository;
 
   public SendMembershipInvitationCommandHandler(
     IContext context,
@@ -26,7 +28,8 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     MembershipSettings membershipSettings,
     IMessageGateway messageGateway,
     IPermissionService permissionService,
-    IUserGateway userGateway)
+    IUserGateway userGateway,
+    IWorldRepository worldRepository)
   {
     _context = context;
     _membershipInvitationQuerier = membershipInvitationQuerier;
@@ -35,6 +38,7 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     _messageGateway = messageGateway;
     _permissionService = permissionService;
     _userGateway = userGateway;
+    _worldRepository = worldRepository;
   }
 
   public async Task<MembershipInvitationModel> HandleAsync(SendMembershipInvitationCommand command, CancellationToken cancellationToken)
@@ -47,13 +51,18 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     ReadOnlyEmail email = new(payload.EmailAddress);
     await _membershipInvitationQuerier.EnsureNonePendingAsync(email, cancellationToken);
 
-    User? user = await _userGateway.FindAsync(payload.EmailAddress, cancellationToken);
+    User? invitee = await _userGateway.FindAsync(payload.EmailAddress, cancellationToken);
     UserId? inviteeId = null;
-    if (user is not null)
+    if (invitee is not null)
     {
-      // TODO(fpion): load world and ensure user is not already a member (or retrieve from the context)
+      inviteeId = invitee.GetUserId();
 
-      inviteeId = user.GetUserId();
+      WorldId worldId = _context.WorldId;
+      World world = await _worldRepository.LoadAsync(worldId, cancellationToken) ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not loaded.");
+      if (world.IsMember(inviteeId.Value))
+      {
+        throw new MembershipConflictException(world, invitee, payload.EmailAddress, nameof(payload.EmailAddress));
+      }
     }
 
     DateTime expiresOn = DateTime.UtcNow.AddDays(_membershipSettings.InvitationLifetimeDays);
@@ -61,13 +70,13 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
 
     await _membershipInvitationRepository.SaveAsync(invitation, cancellationToken);
 
-    if (user is null)
+    if (invitee is null)
     {
       await _messageGateway.SendMembershipInvitationAsync(email, payload.Locale, cancellationToken);
     }
     else
     {
-      await _messageGateway.SendMembershipInvitationAsync(user, payload.Locale, cancellationToken);
+      await _messageGateway.SendMembershipInvitationAsync(invitee, payload.Locale, cancellationToken);
     }
 
     return await _membershipInvitationQuerier.ReadAsync(invitation, cancellationToken);
