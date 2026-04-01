@@ -6,6 +6,7 @@ namespace PokeGame.Core.Forms;
 public interface IFormManager
 {
   Task<Abilities> FindAbilitiesAsync(AbilitiesPayload payload, string propertyName, CancellationToken cancellationToken = default);
+  Task<Form> FindAsync(string form, string propertyName, CancellationToken cancellationToken = default);
 }
 
 internal class FormManager : IFormManager
@@ -43,5 +44,10 @@ internal class FormManager : IFormManager
       return abilityId;
     }
     throw new AbilityNotFoundException(_context.WorldId, idOrKey, propertyName);
+  }
+
+  public async Task<Form> FindAsync(string idOrKey, string propertyName, CancellationToken cancellationToken)
+  {
+    throw new NotImplementedException(); // TODO(fpion): implement
   }
 }
