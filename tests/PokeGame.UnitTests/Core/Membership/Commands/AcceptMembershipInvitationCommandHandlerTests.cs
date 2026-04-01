@@ -15,21 +15,25 @@ public class AcceptMembershipInvitationCommandHandlerTests
   private readonly CancellationToken _cancellationToken = default;
   private readonly Faker _faker = new();
 
-  private readonly User _invitee;
-
-  private readonly TestContext _context;
   private readonly Mock<IMembershipInvitationQuerier> _membershipInvitationQuerier = new();
   private readonly Mock<IMembershipInvitationRepository> _membershipInvitationRepository = new();
   private readonly Mock<IPermissionService> _permissionService = new();
   private readonly Mock<IWorldRepository> _worldRepository = new();
 
+  private readonly TestContext _context;
   private readonly AcceptMembershipInvitationCommandHandler _handler;
+
+  private readonly World _world;
+  private readonly User _invitee;
 
   public AcceptMembershipInvitationCommandHandlerTests()
   {
-    _invitee = new UserBuilder().Build();
     _context = new(_faker);
     _handler = new(_context, _membershipInvitationQuerier.Object, _membershipInvitationRepository.Object, _permissionService.Object, _worldRepository.Object);
+
+    Assert.NotNull(_context.World);
+    _world = _context.World;
+    _invitee = new UserBuilder().Build();
   }
 
   [Fact(DisplayName = "It should accept a membership invitation.")]
@@ -38,8 +42,7 @@ public class AcceptMembershipInvitationCommandHandlerTests
     MembershipInvitation invitation = new MembershipInvitationBuilder(_faker).WithWorld(_context.World).WithInvitee(_invitee).Build();
     _membershipInvitationRepository.Setup(x => x.LoadAsync(invitation.Id, _cancellationToken)).ReturnsAsync(invitation);
 
-    Assert.NotNull(_context.World);
-    _worldRepository.Setup(x => x.LoadAsync(_context.World.Id, _cancellationToken)).ReturnsAsync(_context.World);
+    _worldRepository.Setup(x => x.LoadAsync(_world.Id, _cancellationToken)).ReturnsAsync(_context.World);
 
     MembershipInvitationModel model = new();
     _membershipInvitationQuerier.Setup(x => x.ReadAsync(invitation, _cancellationToken)).ReturnsAsync(model);
@@ -50,11 +53,11 @@ public class AcceptMembershipInvitationCommandHandlerTests
     Assert.Same(model, result);
 
     Assert.Equal(MembershipInvitationStatus.Accepted, invitation.Status);
-    Assert.True(_context.World.IsMember(_invitee.GetUserId()));
+    Assert.True(_world.IsMember(_invitee.GetUserId()));
 
     _permissionService.Verify(x => x.CheckAsync(Actions.Accept, invitation, _cancellationToken), Times.Once());
     _membershipInvitationRepository.Verify(x => x.SaveAsync(invitation, _cancellationToken), Times.Once());
-    _worldRepository.Verify(x => x.SaveAsync(_context.World, _cancellationToken), Times.Once());
+    _worldRepository.Verify(x => x.SaveAsync(_world, _cancellationToken), Times.Once());
   }
 
   [Fact(DisplayName = "It should return null when the invitation was not found.")]
@@ -62,5 +65,17 @@ public class AcceptMembershipInvitationCommandHandlerTests
   {
     AcceptMembershipInvitationCommand command = new(Guid.NewGuid());
     Assert.Null(await _handler.HandleAsync(command, _cancellationToken));
+  }
+
+  [Fact(DisplayName = "It should throw InvalidOperationException when the world was not loaded.")]
+  public async Task Given_WorldNotLoaded_When_HandleAsync_Then_InvalidOperationException()
+  {
+    User invitee = new UserBuilder().Build();
+    MembershipInvitation invitation = new MembershipInvitationBuilder(_faker).WithWorld(_world).WithInvitee(invitee).Build();
+    _membershipInvitationRepository.Setup(x => x.LoadAsync(invitation.Id, _cancellationToken)).ReturnsAsync(invitation);
+
+    AcceptMembershipInvitationCommand command = new(invitation.EntityId);
+    var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal($"The world 'Id={_world.Id}' was not loaded.", exception.Message);
   }
 }

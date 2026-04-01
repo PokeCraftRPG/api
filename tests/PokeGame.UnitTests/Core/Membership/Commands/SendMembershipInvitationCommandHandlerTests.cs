@@ -14,22 +14,21 @@ public class SendMembershipInvitationCommandHandlerTests
   private readonly CancellationToken _cancellationToken = default;
   private readonly Faker _faker = new();
 
-  private readonly World _world;
-
   private readonly Mock<IMembershipInvitationQuerier> _membershipInvitationQuerier = new();
   private readonly Mock<IMembershipInvitationRepository> _membershipInvitationRepository = new();
   private readonly Mock<IMessageGateway> _messageGateway = new();
   private readonly Mock<IPermissionService> _permissionService = new();
   private readonly Mock<IUserGateway> _userGateway = new();
+  private readonly Mock<IWorldRepository> _worldRepository = new();
 
   private readonly TestContext _context;
   private readonly MembershipSettings _settings;
   private readonly SendMembershipInvitationCommandHandler _handler;
 
+  private readonly World _world;
+
   public SendMembershipInvitationCommandHandlerTests()
   {
-    _world = new WorldBuilder(_faker).Build();
-
     _context = new(_faker);
     _settings = new()
     {
@@ -43,7 +42,12 @@ public class SendMembershipInvitationCommandHandlerTests
       _settings,
       _messageGateway.Object,
       _permissionService.Object,
-      _userGateway.Object);
+      _userGateway.Object,
+      _worldRepository.Object);
+
+    Assert.NotNull(_context.World);
+    _world = _context.World;
+    _worldRepository.Setup(x => x.LoadAsync(_world.Id, _cancellationToken)).ReturnsAsync(_world);
   }
 
   [Fact(DisplayName = "It should send a membership invitation to a user.")]

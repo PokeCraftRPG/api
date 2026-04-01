@@ -5,6 +5,7 @@ using PokeGame.Builders;
 using PokeGame.Core.Actors;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Membership.Commands;
 
@@ -14,20 +15,24 @@ public class DeclineMembershipInvitationCommandHandlerTests
   private readonly CancellationToken _cancellationToken = default;
   private readonly Faker _faker = new();
 
-  private readonly User _invitee;
-
-  private readonly TestContext _context;
   private readonly Mock<IMembershipInvitationQuerier> _membershipInvitationQuerier = new();
   private readonly Mock<IMembershipInvitationRepository> _membershipInvitationRepository = new();
   private readonly Mock<IPermissionService> _permissionService = new();
 
+  private readonly TestContext _context;
   private readonly DeclineMembershipInvitationCommandHandler _handler;
+
+  private readonly World _world;
+  private readonly User _invitee;
 
   public DeclineMembershipInvitationCommandHandlerTests()
   {
-    _invitee = new UserBuilder().Build();
     _context = new(_faker);
     _handler = new(_context, _membershipInvitationQuerier.Object, _membershipInvitationRepository.Object, _permissionService.Object);
+
+    Assert.NotNull(_context.World);
+    _world = _context.World;
+    _invitee = new UserBuilder().Build();
   }
 
   [Fact(DisplayName = "It should decline a membership invitation.")]
@@ -45,8 +50,7 @@ public class DeclineMembershipInvitationCommandHandlerTests
     Assert.Same(model, result);
 
     Assert.Equal(MembershipInvitationStatus.Declined, invitation.Status);
-    Assert.NotNull(_context.World);
-    Assert.False(_context.World.IsMember(_invitee.GetUserId()));
+    Assert.False(_world.IsMember(_invitee.GetUserId()));
 
     _permissionService.Verify(x => x.CheckAsync(Actions.Decline, invitation, _cancellationToken), Times.Once());
     _membershipInvitationRepository.Verify(x => x.SaveAsync(invitation, _cancellationToken), Times.Once());

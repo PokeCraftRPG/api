@@ -1,23 +1,32 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Users;
+using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
+using PokeGame.Core.Actors;
+using PokeGame.Core.Caching;
 using PokeGame.Core.Trainers;
 using PokeGame.Core.Trainers.Models;
+using PokeGame.Core.Worlds;
 
 namespace PokeGame;
 
 [Trait(Traits.Category, Categories.Integration)]
 public class TrainerIntegrationTests : IntegrationTests
 {
+  private readonly ICacheService _cacheService;
   private readonly ITrainerRepository _trainerRepository;
   private readonly ITrainerService _trainerService;
+  private readonly IWorldRepository _worldRepository;
 
   private Trainer _trainer = null!;
 
   public TrainerIntegrationTests() : base()
   {
+    _cacheService = ServiceProvider.GetRequiredService<ICacheService>();
     _trainerRepository = ServiceProvider.GetRequiredService<ITrainerRepository>();
     _trainerService = ServiceProvider.GetRequiredService<ITrainerService>();
+    _worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
   }
 
   public override async Task InitializeAsync()
@@ -106,9 +115,16 @@ public class TrainerIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should replace an existing trainer.")]
   public async Task Given_Exists_When_CreateOrReplace_Then_Replaced()
   {
+    User member = new UserBuilder().Build();
+    Actor actor = new(member);
+    _cacheService.SetActor(actor);
+
+    World.GrantMembership(member.GetUserId(), World.OwnerId);
+    await _worldRepository.SaveAsync(World);
+
     CreateOrReplaceTrainerPayload payload = new()
     {
-      OwnerId = Actor.Id,
+      OwnerId = member.Id,
       License = _trainer.License.Value.ToLowerInvariant(),
       Key = "ash-ketchum",
       Name = " Ash Ketchum ",
@@ -140,7 +156,7 @@ public class TrainerIntegrationTests : IntegrationTests
     Assert.Equal(payload.Sprite, trainer.Sprite);
     Assert.Equal(payload.Url, trainer.Url);
     Assert.Equal(payload.Notes.Trim(), trainer.Notes);
-    Assert.Equal(Actor, trainer.Owner);
+    Assert.Equal(actor, trainer.Owner);
   }
 
   [Fact(DisplayName = "It should throw PropertyConflictException when there is a key conflict.")]

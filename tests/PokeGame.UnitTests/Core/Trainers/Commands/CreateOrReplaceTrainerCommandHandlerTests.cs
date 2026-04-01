@@ -3,11 +3,12 @@ using Krakenar.Contracts.Users;
 using Moq;
 using PokeGame.Builders;
 using PokeGame.Core.Actors;
-using PokeGame.Core.Identity;
+using PokeGame.Core.Membership;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Storages;
 using PokeGame.Core.Trainers.Events;
 using PokeGame.Core.Trainers.Models;
+using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Trainers.Commands;
 
@@ -21,15 +22,20 @@ public class CreateOrReplaceTrainerCommandHandlerTests
   private readonly Mock<ITrainerQuerier> _trainerQuerier = new();
   private readonly Mock<ITrainerRepository> _trainerRepository = new();
   private readonly Mock<IStorageService> _storageService = new();
-  private readonly Mock<IUserGateway> _userGateway = new();
+  private readonly Mock<IWorldRepository> _worldRepository = new();
 
   private readonly TestContext _context;
   private readonly CreateOrReplaceTrainerCommandHandler _handler;
 
+  private readonly World _world;
+
   public CreateOrReplaceTrainerCommandHandlerTests()
   {
     _context = new(_faker);
-    _handler = new(_context, _permissionService.Object, _storageService.Object, _trainerQuerier.Object, _trainerRepository.Object, _userGateway.Object);
+    _handler = new(_context, _permissionService.Object, _storageService.Object, _trainerQuerier.Object, _trainerRepository.Object, _worldRepository.Object);
+
+    Assert.NotNull(_context.World);
+    _world = _context.World;
   }
 
   [Theory(DisplayName = "It should create a new trainer.")]
@@ -73,11 +79,13 @@ public class CreateOrReplaceTrainerCommandHandlerTests
   [Fact(DisplayName = "It should replace the existing trainer.")]
   public async Task Given_Exists_When_HandleAsync_Then_Replaced()
   {
+    _worldRepository.Setup(x => x.LoadAsync(_world.Id, _cancellationToken)).ReturnsAsync(_world);
+
     Trainer trainer = new TrainerBuilder(_faker).WithWorld(_context.World).ClearChanges().Build();
     _trainerRepository.Setup(x => x.LoadAsync(trainer.Id, _cancellationToken)).ReturnsAsync(trainer);
 
-    User owner = new UserBuilder(_faker).Build();
-    _userGateway.Setup(x => x.FindAsync(owner.Id, _cancellationToken)).ReturnsAsync(owner);
+    User owner = new UserBuilder().Build();
+    _world.GrantMembership(owner.GetUserId(), _world.OwnerId);
 
     CreateOrReplaceTrainerPayload payload = new()
     {
@@ -139,9 +147,33 @@ public class CreateOrReplaceTrainerCommandHandlerTests
     Assert.Equal("License", exception.PropertyName);
   }
 
-  [Fact(DisplayName = "It should throw UserNotFoundException when the user was not found.")]
-  public async Task Given_UserNotFound_When_HandleAsync_Then_UserNotFoundException()
+  [Fact(DisplayName = "It should throw InvalidOperationException when the world was not loaded.")]
+  public async Task Given_WorldNotLoaded_When_HandleAsync_Then_InvalidOperationException()
   {
+    CreateOrReplaceTrainerPayload payload = new()
+    {
+      OwnerId = Guid.NewGuid(),
+      License = "Q-940401-9",
+      Key = "ash-ketchum",
+      Name = "Ash Ketchum",
+      Description = "Ash is a legendary Trainer known for Pikachu, constant youth, and mastering multiple battle styles across regions and generations.",
+      Gender = TrainerGender.Male,
+      Money = 987654,
+      Sprite = "https://archives.bulbagarden.net/media/upload/thumb/c/cd/Ash_JN.png/800px-Ash_JN.png",
+      Url = "https://bulbapedia.bulbagarden.net/wiki/Ash_Ketchum",
+      Notes = "Ash provides rich lore: timeless setting, unique feats, and rare mechanics (Mega, Z-Moves, Dynamax) useful for narrative and rule inspiration."
+    };
+    CreateOrReplaceTrainerCommand command = new(payload, Guid.NewGuid());
+
+    var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal($"The world 'Id={_world.Id}' was not loaded.", exception.Message);
+  }
+
+  [Fact(DisplayName = "It should throw MemberNotFoundException when the user was not found.")]
+  public async Task Given_UserNotFound_When_HandleAsync_Then_MemberNotFoundException()
+  {
+    _worldRepository.Setup(x => x.LoadAsync(_world.Id, _cancellationToken)).ReturnsAsync(_world);
+
     CreateOrReplaceTrainerPayload payload = new()
     {
       OwnerId = Guid.NewGuid(),
@@ -157,7 +189,8 @@ public class CreateOrReplaceTrainerCommandHandlerTests
     };
     CreateOrReplaceTrainerCommand command = new(payload, Id: null);
 
-    var exception = await Assert.ThrowsAsync<UserNotFoundException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    var exception = await Assert.ThrowsAsync<MemberNotFoundException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal(_context.WorldUid, exception.WorldId);
     Assert.Equal(payload.OwnerId, exception.UserId);
     Assert.Equal("OwnerId", exception.PropertyName);
   }
