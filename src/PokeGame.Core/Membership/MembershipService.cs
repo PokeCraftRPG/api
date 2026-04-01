@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Membership.Commands;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Membership.Queries;
+using PokeGame.Core.Worlds.Models;
 
 namespace PokeGame.Core.Membership;
 
@@ -12,6 +13,7 @@ public interface IMembershipService
   Task<MembershipInvitationModel?> CancelInvitationAsync(Guid id, CancellationToken cancellationToken = default);
   Task<MembershipInvitationModel?> DeclineInvitationAsync(Guid id, CancellationToken cancellationToken = default);
   Task<MembershipInvitationModel?> ReadInvitationAsync(Guid id, CancellationToken cancellationToken = default);
+  Task<WorldModel> RevokeAsync(Guid userId, CancellationToken cancellationToken = default);
   Task<MembershipInvitationModel> SendInvitationAsync(SendMembershipInvitationPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -22,6 +24,7 @@ internal class MembershipService : IMembershipService
     services.AddTransient<ICommandHandler<AcceptMembershipInvitationCommand, MembershipInvitationModel?>, AcceptMembershipInvitationCommandHandler>();
     services.AddTransient<ICommandHandler<CancelMembershipInvitationCommand, MembershipInvitationModel?>, CancelMembershipInvitationCommandHandler>();
     services.AddTransient<ICommandHandler<DeclineMembershipInvitationCommand, MembershipInvitationModel?>, DeclineMembershipInvitationCommandHandler>();
+    services.AddTransient<ICommandHandler<RevokeMembershipCommand, WorldModel>, RevokeMembershipCommandHandler>();
     services.AddTransient<ICommandHandler<SendMembershipInvitationCommand, MembershipInvitationModel>, SendMembershipInvitationCommandHandler>();
     services.AddTransient<IQueryHandler<ReadMembershipInvitationQuery, MembershipInvitationModel?>, ReadMembershipInvitationQueryHandler>();
   }
@@ -57,6 +60,12 @@ internal class MembershipService : IMembershipService
   {
     ReadMembershipInvitationQuery query = new(id);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
+  }
+
+  public async Task<WorldModel> RevokeAsync(Guid userId, CancellationToken cancellationToken)
+  {
+    RevokeMembershipCommand command = new(userId);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
   public async Task<MembershipInvitationModel> SendInvitationAsync(SendMembershipInvitationPayload payload, CancellationToken cancellationToken)

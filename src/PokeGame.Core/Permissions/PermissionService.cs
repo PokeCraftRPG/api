@@ -87,7 +87,7 @@ internal class PermissionService : IPermissionService
 
   private bool IsAllowed(string action, World world) => action switch
   {
-    Actions.SendMembershipInvitation or Actions.Update => world.OwnerId == _context.UserId,
+    Actions.RevokeMembership or Actions.SendMembershipInvitation or Actions.Update => world.OwnerId == _context.UserId,
     _ => false,
   };
 }

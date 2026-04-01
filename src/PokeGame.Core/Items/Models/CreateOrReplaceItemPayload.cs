@@ -35,7 +35,7 @@ public record CreateOrReplaceItemPayload
     Key = key;
   }
 
-  public void Validate(ItemCategory? category = null) => (category.HasValue ? new Validator(category.Value) : new()).ValidateAndThrow(this);
+  public void Validate() => new Validator().ValidateAndThrow(this);
 
   private class Validator : AbstractValidator<CreateOrReplaceItemPayload>
   {
@@ -57,25 +57,12 @@ public record CreateOrReplaceItemPayload
       When(x => x.PokeBall is not null, () => RuleFor(x => x.PokeBall!).SetValidator(new PokeBallValidator()));
 
       RuleFor(x => x).Must(BeValid)
-        .WithErrorCode("CreateOrReplaceItem")
+        .WithErrorCode("CreateOrReplaceItemValidator")
         .WithMessage(p =>
         {
           string[] properties = [nameof(p.BattleItem), nameof(p.Berry), nameof(p.Key), nameof(p.Material), nameof(p.Medicine), nameof(p.OtherItem), nameof(p.PokeBall), nameof(p.TechnicalMachine), nameof(p.Treasure)];
           return $"Exactly one of the following must be specified: {string.Join(", ", properties)}.";
         });
-    }
-
-    public Validator(ItemCategory category)
-    {
-      When(_ => category == ItemCategory.BattleItem, () => RuleFor(x => x.BattleItem).NotNull()).Otherwise(() => RuleFor(x => x.BattleItem).Null());
-      When(_ => category == ItemCategory.Berry, () => RuleFor(x => x.Berry).NotNull()).Otherwise(() => RuleFor(x => x.Berry).Null());
-      When(_ => category == ItemCategory.KeyItem, () => RuleFor(x => x.KeyItem).NotNull()).Otherwise(() => RuleFor(x => x.KeyItem).Null());
-      When(_ => category == ItemCategory.Material, () => RuleFor(x => x.Material).NotNull()).Otherwise(() => RuleFor(x => x.Material).Null());
-      When(_ => category == ItemCategory.Medicine, () => RuleFor(x => x.Medicine).NotNull()).Otherwise(() => RuleFor(x => x.Medicine).Null());
-      When(_ => category == ItemCategory.OtherItem, () => RuleFor(x => x.OtherItem).NotNull()).Otherwise(() => RuleFor(x => x.OtherItem).Null());
-      When(_ => category == ItemCategory.PokeBall, () => RuleFor(x => x.PokeBall).NotNull()).Otherwise(() => RuleFor(x => x.PokeBall).Null());
-      When(_ => category == ItemCategory.TechnicalMachine, () => RuleFor(x => x.TechnicalMachine).NotNull()).Otherwise(() => RuleFor(x => x.TechnicalMachine).Null());
-      When(_ => category == ItemCategory.Treasure, () => RuleFor(x => x.Treasure).NotNull()).Otherwise(() => RuleFor(x => x.Treasure).Null());
     }
 
     private static bool BeValid(CreateOrReplaceItemPayload payload)

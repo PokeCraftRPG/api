@@ -1,4 +1,5 @@
-﻿using Logitar.CQRS;
+﻿using Krakenar.Contracts.Search;
+using Logitar.CQRS;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Moves.Commands;
 using PokeGame.Core.Moves.Models;
@@ -10,6 +11,7 @@ public interface IMoveService
 {
   Task<CreateOrReplaceMoveResult> CreateOrReplaceAsync(CreateOrReplaceMovePayload payload, Guid? id = null, CancellationToken cancellationToken = default);
   Task<MoveModel?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
+  Task<SearchResults<MoveModel>> SearchAsync(SearchMovesPayload payload, CancellationToken cancellationToken = default);
   Task<MoveModel?> UpdateAsync(Guid id, UpdateMovePayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -22,6 +24,7 @@ internal class MoveService : IMoveService
     services.AddTransient<ICommandHandler<CreateOrReplaceMoveCommand, CreateOrReplaceMoveResult>, CreateOrReplaceMoveCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateMoveCommand, MoveModel?>, UpdateMoveCommandHandler>();
     services.AddTransient<IQueryHandler<ReadMoveQuery, MoveModel?>, ReadMoveQueryHandler>();
+    services.AddTransient<IQueryHandler<SearchMovesQuery, SearchResults<MoveModel>>, SearchMovesQueryHandler>();
   }
 
   private readonly ICommandBus _commandBus;
@@ -42,6 +45,12 @@ internal class MoveService : IMoveService
   public async Task<MoveModel?> ReadAsync(Guid? id, string? key, CancellationToken cancellationToken)
   {
     ReadMoveQuery query = new(id, key);
+    return await _queryBus.ExecuteAsync(query, cancellationToken);
+  }
+
+  public async Task<SearchResults<MoveModel>> SearchAsync(SearchMovesPayload payload, CancellationToken cancellationToken)
+  {
+    SearchMovesQuery query = new(payload);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 

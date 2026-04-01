@@ -76,7 +76,7 @@ public class World : AggregateRoot, IEntityProvider
 
   public void GrantMembership(UserId memberId, UserId userId)
   {
-    if (!_members.Contains(memberId))
+    if (!IsMember(memberId))
     {
       Raise(new WorldMembershipGranted(memberId), userId.ActorId);
     }
@@ -87,6 +87,18 @@ public class World : AggregateRoot, IEntityProvider
   }
 
   public bool IsMember(UserId userId) => _members.Contains(userId);
+
+  public void RevokeMembership(UserId memberId, UserId userId)
+  {
+    if (IsMember(memberId))
+    {
+      Raise(new WorldMembershipRevoked(memberId), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(WorldMembershipRevoked @event)
+  {
+    _members.Remove(@event.UserId);
+  }
 
   public void SetKey(Slug key, UserId userId)
   {

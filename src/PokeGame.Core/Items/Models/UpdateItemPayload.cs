@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using PokeGame.Core.Items.Validators;
 using PokeGame.Core.Validation;
 
 namespace PokeGame.Core.Items.Models;
@@ -41,7 +42,60 @@ public record UpdateItemPayload
       When(x => !string.IsNullOrWhiteSpace(x.Url?.Value), () => RuleFor(x => x.Url!.Value!).Url());
       When(x => !string.IsNullOrWhiteSpace(x.Notes?.Value), () => RuleFor(x => x.Notes!.Value!).Notes());
 
-      // TODO(fpion): Category/Properties
+      When(x => x.BattleItem is not null, () => RuleFor(x => x.BattleItem!).SetValidator(new BattleItemValidator()));
+      When(x => x.Berry is not null, () => RuleFor(x => x.Berry!).SetValidator(new BerryValidator()));
+      When(x => x.Medicine is not null, () => RuleFor(x => x.Medicine!).SetValidator(new MedicineValidator()));
+      When(x => x.PokeBall is not null, () => RuleFor(x => x.PokeBall!).SetValidator(new PokeBallValidator()));
+
+      RuleFor(x => x).Must(BeValid)
+        .WithErrorCode("UpdateItemValidator")
+        .WithMessage(p =>
+        {
+          string[] properties = [nameof(p.BattleItem), nameof(p.Berry), nameof(p.Key), nameof(p.Material), nameof(p.Medicine), nameof(p.OtherItem), nameof(p.PokeBall), nameof(p.TechnicalMachine), nameof(p.Treasure)];
+          return $"At most one of the following must be specified: {string.Join(", ", properties)}.";
+        });
+    }
+
+    private static bool BeValid(UpdateItemPayload payload)
+    {
+      int count = 0;
+      if (payload.BattleItem is not null)
+      {
+        count++;
+      }
+      if (payload.Berry is not null)
+      {
+        count++;
+      }
+      if (payload.KeyItem is not null)
+      {
+        count++;
+      }
+      if (payload.Material is not null)
+      {
+        count++;
+      }
+      if (payload.Medicine is not null)
+      {
+        count++;
+      }
+      if (payload.OtherItem is not null)
+      {
+        count++;
+      }
+      if (payload.PokeBall is not null)
+      {
+        count++;
+      }
+      if (payload.TechnicalMachine is not null)
+      {
+        count++;
+      }
+      if (payload.Treasure is not null)
+      {
+        count++;
+      }
+      return count == 1;
     }
   }
 }
