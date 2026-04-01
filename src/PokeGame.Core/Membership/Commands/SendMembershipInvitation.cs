@@ -51,17 +51,17 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     ReadOnlyEmail email = new(payload.EmailAddress);
     await _membershipInvitationQuerier.EnsureNonePendingAsync(email, cancellationToken);
 
-    User? user = await _userGateway.FindAsync(payload.EmailAddress, cancellationToken);
+    User? invitee = await _userGateway.FindAsync(payload.EmailAddress, cancellationToken);
     UserId? inviteeId = null;
-    if (user is not null)
+    if (invitee is not null)
     {
-      inviteeId = user.GetUserId();
+      inviteeId = invitee.GetUserId();
 
       WorldId worldId = _context.WorldId;
-      World world = await _worldRepository.LoadAsync(worldId, cancellationToken) ?? throw new InvalidOperationException($"The world 'Id={worldId}' wss not loaded.");
+      World world = await _worldRepository.LoadAsync(worldId, cancellationToken) ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not loaded.");
       if (world.IsMember(inviteeId.Value))
       {
-        throw new NotImplementedException(); // TODO(fpion): implement
+        throw new MembershipConflictException(world, invitee, payload.EmailAddress, nameof(payload.EmailAddress));
       }
     }
 
@@ -70,13 +70,13 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
 
     await _membershipInvitationRepository.SaveAsync(invitation, cancellationToken);
 
-    if (user is null)
+    if (invitee is null)
     {
       await _messageGateway.SendMembershipInvitationAsync(email, payload.Locale, cancellationToken);
     }
     else
     {
-      await _messageGateway.SendMembershipInvitationAsync(user, payload.Locale, cancellationToken);
+      await _messageGateway.SendMembershipInvitationAsync(invitee, payload.Locale, cancellationToken);
     }
 
     return await _membershipInvitationQuerier.ReadAsync(invitation, cancellationToken);

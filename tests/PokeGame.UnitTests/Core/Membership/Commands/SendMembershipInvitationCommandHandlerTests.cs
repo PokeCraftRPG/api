@@ -2,6 +2,7 @@
 using Krakenar.Contracts.Users;
 using Moq;
 using PokeGame.Builders;
+using PokeGame.Core.Actors;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Permissions;
@@ -47,12 +48,13 @@ public class SendMembershipInvitationCommandHandlerTests
 
     Assert.NotNull(_context.World);
     _world = _context.World;
-    _worldRepository.Setup(x => x.LoadAsync(_world.Id, _cancellationToken)).ReturnsAsync(_world);
   }
 
   [Fact(DisplayName = "It should send a membership invitation to a user.")]
   public async Task Given_UserFound_When_HandleAsync_Then_SentToUser()
   {
+    _worldRepository.Setup(x => x.LoadAsync(_world.Id, _cancellationToken)).ReturnsAsync(_world);
+
     SendMembershipInvitationPayload payload = new()
     {
       Locale = _faker.Locale,
@@ -103,6 +105,50 @@ public class SendMembershipInvitationCommandHandlerTests
       _cancellationToken), Times.Once());
     _membershipInvitationQuerier.Verify(x => x.EnsureNonePendingAsync(It.Is<ReadOnlyEmail>(e => e.Address == payload.EmailAddress && !e.IsVerified), _cancellationToken), Times.Once());
     _messageGateway.Verify(x => x.SendMembershipInvitationAsync(It.Is<ReadOnlyEmail>(e => e.Address == payload.EmailAddress && !e.IsVerified), payload.Locale, _cancellationToken), Times.Once());
+  }
+
+  [Fact(DisplayName = "It should throw InvalidOperationException when the world was not loaded.")]
+  public async Task Given_WorldNotLoaded_When_HandleAsync_Then_InvalidOperationException()
+  {
+    User invitee = new UserBuilder().Build();
+    Assert.NotNull(invitee.Email);
+    _userGateway.Setup(x => x.FindAsync(invitee.Email.Address, _cancellationToken)).ReturnsAsync(invitee);
+
+    SendMembershipInvitationPayload payload = new()
+    {
+      Locale = _faker.Locale,
+      EmailAddress = invitee.Email.Address
+    };
+    SendMembershipInvitationCommand command = new(payload);
+
+    var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal($"The world 'Id={_context.WorldId}' was not loaded.", exception.Message);
+  }
+
+  [Fact(DisplayName = "It should throw MembershipConflictException when the user is already a member.")]
+  public async Task Given_AlreadyMember_When_HandleAsync_Then_MembershipConflictException()
+  {
+    _worldRepository.Setup(x => x.LoadAsync(_world.Id, _cancellationToken)).ReturnsAsync(_world);
+
+    User member = new UserBuilder().Build();
+    Assert.NotNull(member.Email);
+    _userGateway.Setup(x => x.FindAsync(member.Email.Address, _cancellationToken)).ReturnsAsync(member);
+
+    _world.GrantMembership(member.GetUserId(), _world.OwnerId);
+
+    SendMembershipInvitationPayload payload = new()
+    {
+      Locale = _faker.Locale,
+      EmailAddress = member.Email.Address
+    };
+    SendMembershipInvitationCommand command = new(payload);
+
+    var exception = await Assert.ThrowsAsync<MembershipConflictException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
+    Assert.Equal(member.Realm?.Id, exception.RealmId);
+    Assert.Equal(member.Id, exception.UserId);
+    Assert.Equal(payload.EmailAddress, exception.EmailAddress);
+    Assert.Equal("EmailAddress", exception.PropertyName);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the payload is not valid.")]
