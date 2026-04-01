@@ -15,3 +15,4 @@
 ## Integration
 
 - ItemIntegrationTests
+- MembershipIntegrationTests

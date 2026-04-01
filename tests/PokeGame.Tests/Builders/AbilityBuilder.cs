@@ -114,6 +114,15 @@ public class AbilityBuilder : IAbilityBuilder
     .WithNotes(new Notes("Draws all Electric-type moves to itself, nullifies their damage, and boosts Sp. Atk."))
     .Build();
 
+  public static Ability SandVeil(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("sand-veil"))
+    .WithName(new Name("Sand Veil"))
+    .WithDescription(new Description("Boosts the Pokémon's evasiveness in a sandstorm."))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Sand_Veil_(Ability)"))
+    .WithNotes(new Notes("Boosts evasion in sandstorms and prevents sandstorm damage; reduces wild encounters in earlier gens, but has no effect outside battle in newer games."))
+    .Build();
+
   public static Ability Static(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
     .WithWorld(world)
     .WithKey(new Slug("static"))

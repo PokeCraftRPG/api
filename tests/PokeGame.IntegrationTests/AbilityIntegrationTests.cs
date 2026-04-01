@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
@@ -115,6 +116,31 @@ public class AbilityIntegrationTests : IntegrationTests
     Assert.Equal(payload.Description.Trim(), ability.Description);
     Assert.Equal(payload.Url, ability.Url);
     Assert.Equal(payload.Notes.Trim(), ability.Notes);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results.")]
+  public async Task Given_Payload_When_SearchAsync_Then_Results()
+  {
+    Ability lightningRod = AbilityBuilder.LightningRod(Faker, World);
+    Ability sandVeil = AbilityBuilder.SandVeil(Faker, World);
+    Ability @static = AbilityBuilder.Static(Faker, World);
+    Ability surgeSurfer = AbilityBuilder.SurgeSurfer(Faker, World);
+    await _abilityRepository.SaveAsync([lightningRod, sandVeil, @static, surgeSurfer]);
+
+    SearchAbilitiesPayload payload = new()
+    {
+      Ids = [lightningRod.EntityId, sandVeil.EntityId, Guid.Empty, surgeSurfer.EntityId],
+      Skip = 1,
+      Limit = 1
+    };
+    payload.Search.Terms.Add(new SearchTerm("s%"));
+    payload.Sort.Add(new AbilitySortOption(AbilitySort.Key, isDescending: true));
+
+    SearchResults<AbilityModel> results = await _abilityService.SearchAsync(payload);
+    Assert.Equal(2, results.Total);
+
+    AbilityModel ability = Assert.Single(results.Items);
+    Assert.Equal(sandVeil.EntityId, ability.Id);
   }
 
   [Fact(DisplayName = "It should throw PropertyConflictException when there is a key conflict.")]
