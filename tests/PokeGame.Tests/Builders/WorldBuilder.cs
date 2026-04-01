@@ -1,5 +1,4 @@
 ﻿using Bogus;
-using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Users;
 using PokeGame.Core;
 using PokeGame.Core.Actors;
@@ -74,8 +73,7 @@ public class WorldBuilder : IWorldBuilder
   public World Build()
   {
     User user = _user ?? new UserBuilder(_faker).Build();
-    Actor actor = new(user);
-    UserId userId = new(actor.GetActorId());
+    UserId userId = user.GetUserId();
     Slug key = _key ?? new("a-world");
 
     World world = new(userId, key, _id)

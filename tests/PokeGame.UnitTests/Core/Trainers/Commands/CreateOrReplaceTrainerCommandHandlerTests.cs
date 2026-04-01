@@ -1,5 +1,4 @@
 ﻿using Bogus;
-using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Users;
 using Moq;
 using PokeGame.Builders;
@@ -106,7 +105,7 @@ public class CreateOrReplaceTrainerCommandHandlerTests
     _trainerQuerier.Verify(x => x.EnsureUnicityAsync(trainer, _cancellationToken), Times.Once());
     _storageService.Verify(x => x.ExecuteWithQuotaAsync(trainer, It.IsAny<Func<Task>>(), _cancellationToken), Times.Once());
 
-    UserId ownerId = new(new Actor(owner).GetActorId());
+    UserId ownerId = owner.GetUserId();
     Assert.Equal(ownerId, trainer.OwnerId);
     Assert.Contains(trainer.Changes, change => change is TrainerOwnershipChanged ownership && ownership.OwnerId == ownerId && ownership.ActorId == _context.UserId.ActorId);
   }

@@ -76,6 +76,29 @@ public class MembershipInvitation : AggregateRoot, IEntityProvider
     Status = MembershipInvitationStatus.Accepted;
   }
 
+  public void Cancel(UserId userId)
+  {
+    if (IsExpired())
+    {
+      throw new MembershipInvitationExpiredException(this);
+    }
+
+    switch (Status)
+    {
+      case MembershipInvitationStatus.Cancelled:
+        return;
+      case MembershipInvitationStatus.Pending:
+        Raise(new MembershipInvitationCancelled(), userId.ActorId);
+        return;
+      default:
+        throw new MembershipInvitationNotPendingException(this);
+    }
+  }
+  protected virtual void Handle(MembershipInvitationCancelled _)
+  {
+    Status = MembershipInvitationStatus.Cancelled;
+  }
+
   public void Delete(UserId userId)
   {
     if (!IsDeleted)

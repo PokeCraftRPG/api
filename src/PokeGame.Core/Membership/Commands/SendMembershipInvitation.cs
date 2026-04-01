@@ -1,7 +1,5 @@
-﻿using Krakenar.Contracts.Actors;
-using Krakenar.Contracts.Users;
+﻿using Krakenar.Contracts.Users;
 using Logitar.CQRS;
-using Logitar.EventSourcing;
 using PokeGame.Core.Actors;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership.Models;
@@ -55,9 +53,7 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     {
       // TODO(fpion): load world and ensure user is not already a member (or retrieve from the context)
 
-      Actor actor = new(user);
-      ActorId actorId = actor.GetActorId();
-      inviteeId = new(actorId);
+      inviteeId = user.GetUserId();
     }
 
     DateTime expiresOn = DateTime.UtcNow.AddDays(_membershipSettings.InvitationLifetimeDays);

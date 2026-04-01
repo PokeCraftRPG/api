@@ -1,7 +1,6 @@
 ﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Users;
-using Logitar.EventSourcing;
 using PokeGame.Core;
 using PokeGame.Core.Actors;
 using PokeGame.Core.Worlds;
@@ -44,18 +43,7 @@ internal class HttpApplicationContext : IContext
 
   public IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes() => Context.GetSessionCustomAttributes();
 
-  public UserId? GetUserId()
-  {
-    User? user = Context.GetUser();
-    if (user is null)
-    {
-      return null;
-    }
-
-    Actor actor = new(user);
-    ActorId actorId = actor.GetActorId();
-    return new UserId(actorId);
-  }
+  public UserId? GetUserId() => Context.GetUser()?.GetUserId();
 
   public WorldModel? GetWorld() => Context.GetWorld();
 }

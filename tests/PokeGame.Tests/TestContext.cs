@@ -34,7 +34,7 @@ public class TestContext : IContext
   public WorldId WorldId => World?.Id ?? throw new InvalidOperationException("The world has not been initialized.");
   public Guid WorldUid => WorldId.ToGuid();
 
-  public bool IsWorldOwner => User is not null && World is not null && World.OwnerId == new UserId(new Actor(User).GetActorId());
+  public bool IsWorldOwner => World is not null && World.OwnerId == User?.GetUserId();
 
   public IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes() =>
   [
