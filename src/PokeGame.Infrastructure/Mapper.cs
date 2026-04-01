@@ -7,6 +7,7 @@ using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Items;
 using PokeGame.Core.Items.Models;
+using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
@@ -154,6 +155,22 @@ internal class Mapper
           throw new ItemCategoryNotSupportedException(source.Category);
       }
     }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public MembershipInvitationModel ToMembershipInvitation(MembershipInvitationEntity source)
+  {
+    MembershipInvitationModel destination = new()
+    {
+      Id = source.Id,
+      EmailAddress = source.EmailAddress,
+      Invitee = TryFindActor(source.InviteeId),
+      Status = source.Status,
+      ExpiresOn = source.ExpiresOn?.AsUniversalTime()
+    };
 
     MapAggregate(source, destination);
 
