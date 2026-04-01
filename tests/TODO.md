@@ -3,7 +3,6 @@
 ## Unit
 
 - CreateOrReplaceItemCommandHandler
-- CreateOrReplaceItemPayload (TODO)
 - Item
 - ItemEvents (TODO)
 - UpdateItemCommandHandler

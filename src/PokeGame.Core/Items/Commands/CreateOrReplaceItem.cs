@@ -66,6 +66,8 @@ internal class CreateOrReplaceItemCommandHandler : ICommandHandler<CreateOrRepla
     {
       await _permissionService.CheckAsync(Actions.Update, item, cancellationToken);
 
+      payload.Validate(item.Category);
+
       item.SetKey(key, userId);
       item.SetProperties(properties, userId);
     }
