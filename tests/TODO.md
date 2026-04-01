@@ -5,7 +5,6 @@
 - CreateOrReplaceItemCommandHandler
 - ItemEvents (TODO)
 - UpdateItemCommandHandler
-- UpdateItemPayload (TODO)
 
 ## Integration
 
