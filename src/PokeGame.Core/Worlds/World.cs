@@ -72,6 +72,12 @@ public class World : AggregateRoot, IEntityProvider
     }
   }
 
+  public UserId? FindMember(Guid userId)
+  {
+    UserId[] userIds = _members.Where(x => x.EntityId == userId).ToArray();
+    return userIds.Length == 1 ? userIds.Single() : null;
+  }
+
   public Entity GetEntity() => new(EntityKind, Id.ToGuid(), worldId: null, Size);
 
   public void GrantMembership(UserId memberId, UserId userId)

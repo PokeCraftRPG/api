@@ -161,6 +161,15 @@ internal class Mapper
     return destination;
   }
 
+  public MembershipModel ToMembership(MemberEntity member) => new()
+  {
+    Member = FindActor(member.MemberKey),
+    GrantedBy = FindActor(member.GrantedBy),
+    GrantedOn = member.GrantedOn.AsUniversalTime(),
+    RevokedBy = TryFindActor(member.RevokedBy),
+    RevokedOn = member.RevokedOn?.AsUniversalTime()
+  };
+
   public MembershipInvitationModel ToMembershipInvitation(MembershipInvitationEntity source)
   {
     MembershipInvitationModel destination = new()
@@ -309,6 +318,11 @@ internal class Mapper
     };
 
     MapAggregate(source, destination);
+
+    foreach (MemberEntity member in source.Members)
+    {
+      destination.Membership.Add(ToMembership(member));
+    }
 
     return destination;
   }

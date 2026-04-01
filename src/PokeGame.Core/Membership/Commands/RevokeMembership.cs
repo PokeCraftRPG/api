@@ -28,10 +28,10 @@ internal class RevokeMembershipCommandHandler : ICommandHandler<RevokeMembership
     World world = await _worldRepository.LoadAsync(worldId, cancellationToken) ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not loaded.");
     await _permissionService.CheckAsync(Actions.RevokeMembership, world, cancellationToken);
 
-    IEnumerable<UserId> memberIds = world.Members.Where(x => x.EntityId == command.UserId);
-    foreach (UserId memberId in memberIds)
+    UserId? memberId = world.FindMember(command.UserId);
+    if (memberId.HasValue)
     {
-      world.RevokeMembership(memberId, _context.UserId);
+      world.RevokeMembership(memberId.Value, _context.UserId);
     }
 
     await _worldRepository.SaveAsync(world, cancellationToken);

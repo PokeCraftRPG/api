@@ -64,6 +64,7 @@ internal class WorldQuerier : IWorldQuerier
   {
     WorldEntity? world = await _worlds.AsNoTracking()
       .Where(x => x.StreamId == id.Value && x.OwnerId == _context.UserId.Value)
+      .Include(x => x.Members)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
@@ -71,6 +72,7 @@ internal class WorldQuerier : IWorldQuerier
   {
     WorldEntity? world = await _worlds.AsNoTracking()
       .Where(x => x.Id == id && x.OwnerId == _context.UserId.Value)
+      .Include(x => x.Members)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
@@ -78,6 +80,7 @@ internal class WorldQuerier : IWorldQuerier
   {
     WorldEntity? world = await _worlds.AsNoTracking()
       .Where(x => x.Key == Slug.Normalize(key) && x.OwnerId == _context.UserId.Value)
+      .Include(x => x.Members)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }

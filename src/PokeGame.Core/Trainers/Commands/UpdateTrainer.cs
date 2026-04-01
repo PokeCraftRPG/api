@@ -1,10 +1,9 @@
-﻿using Krakenar.Contracts.Users;
-using Logitar.CQRS;
-using PokeGame.Core.Actors;
-using PokeGame.Core.Identity;
+﻿using Logitar.CQRS;
+using PokeGame.Core.Membership;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Storages;
 using PokeGame.Core.Trainers.Models;
+using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Trainers.Commands;
 
@@ -17,7 +16,7 @@ internal class UpdateTrainerCommandHandler : ICommandHandler<UpdateTrainerComman
   private readonly IStorageService _storageService;
   private readonly ITrainerRepository _trainerRepository;
   private readonly ITrainerQuerier _trainerQuerier;
-  private readonly IUserGateway _userGateway;
+  private readonly IWorldRepository _worldRepository;
 
   public UpdateTrainerCommandHandler(
     IContext context,
@@ -25,14 +24,14 @@ internal class UpdateTrainerCommandHandler : ICommandHandler<UpdateTrainerComman
     IStorageService storageService,
     ITrainerQuerier trainerQuerier,
     ITrainerRepository trainerRepository,
-    IUserGateway userGateway)
+    IWorldRepository worldRepository)
   {
     _context = context;
     _permissionService = permissionService;
     _storageService = storageService;
     _trainerQuerier = trainerQuerier;
     _trainerRepository = trainerRepository;
-    _userGateway = userGateway;
+    _worldRepository = worldRepository;
   }
 
   public async Task<TrainerModel?> HandleAsync(UpdateTrainerCommand command, CancellationToken cancellationToken)
@@ -93,9 +92,13 @@ internal class UpdateTrainerCommandHandler : ICommandHandler<UpdateTrainerComman
       UserId? ownerId = null;
       if (payload.OwnerId.Value.HasValue)
       {
-        // TODO(fpion): trainer should be a world member; refactor with CreateOrReplaceTrainer.
-        User user = await _userGateway.FindAsync(payload.OwnerId.Value.Value, cancellationToken) ?? throw new UserNotFoundException(payload.OwnerId.Value.Value, nameof(payload.OwnerId));
-        ownerId = user.GetUserId();
+        WorldId worldId = _context.WorldId;
+        World world = await _worldRepository.LoadAsync(worldId, cancellationToken) ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not loaded.");
+        ownerId = world.FindMember(payload.OwnerId.Value.Value);
+        if (!ownerId.HasValue)
+        {
+          throw new MemberNotFoundException(world.Id, payload.OwnerId.Value.Value, nameof(payload.OwnerId));
+        }
       }
       trainer.SetOwnership(ownerId, userId);
     }

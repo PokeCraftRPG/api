@@ -4,6 +4,7 @@ using PokeGame.Core.Actors;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Membership.Commands;
 
@@ -18,6 +19,7 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
   private readonly IMessageGateway _messageGateway;
   private readonly IPermissionService _permissionService;
   private readonly IUserGateway _userGateway;
+  private readonly IWorldRepository _worldRepository;
 
   public SendMembershipInvitationCommandHandler(
     IContext context,
@@ -26,7 +28,8 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     MembershipSettings membershipSettings,
     IMessageGateway messageGateway,
     IPermissionService permissionService,
-    IUserGateway userGateway)
+    IUserGateway userGateway,
+    IWorldRepository worldRepository)
   {
     _context = context;
     _membershipInvitationQuerier = membershipInvitationQuerier;
@@ -35,6 +38,7 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     _messageGateway = messageGateway;
     _permissionService = permissionService;
     _userGateway = userGateway;
+    _worldRepository = worldRepository;
   }
 
   public async Task<MembershipInvitationModel> HandleAsync(SendMembershipInvitationCommand command, CancellationToken cancellationToken)
@@ -51,9 +55,14 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     UserId? inviteeId = null;
     if (user is not null)
     {
-      // TODO(fpion): load world and ensure user is not already a member (or retrieve from the context)
-
       inviteeId = user.GetUserId();
+
+      WorldId worldId = _context.WorldId;
+      World world = await _worldRepository.LoadAsync(worldId, cancellationToken) ?? throw new InvalidOperationException($"The world 'Id={worldId}' wss not loaded.");
+      if (world.IsMember(inviteeId.Value))
+      {
+        throw new NotImplementedException(); // TODO(fpion): implement
+      }
     }
 
     DateTime expiresOn = DateTime.UtcNow.AddDays(_membershipSettings.InvitationLifetimeDays);
