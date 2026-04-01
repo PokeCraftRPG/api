@@ -53,8 +53,7 @@ internal class FormQuerier : IFormQuerier
 
   public async Task<FormId?> FindIdAsync(string key, CancellationToken cancellationToken)
   {
-    string normalized = Slug.Normalize(key);
-    string? streamId = await _forms.Where(x => x.World!.Id == _context.WorldUid && x.Key == normalized)
+    string? streamId = await _forms.Where(x => x.World!.Id == _context.WorldUid && x.Key == Slug.Normalize(key))
       .Select(x => x.StreamId)
       .SingleOrDefaultAsync(cancellationToken);
     return streamId is null ? null : new FormId(streamId);
