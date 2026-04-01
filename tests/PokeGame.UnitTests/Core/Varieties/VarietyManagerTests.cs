@@ -60,7 +60,7 @@ public class VarietyManagerTests
     Assert.Equal($"The variety 'Id={variety.Id}' was not loaded.", exception.Message);
   }
 
-  [Fact(DisplayName = "FindAsync: it should throw VarietyNotFoundException when the species was not found.")]
+  [Fact(DisplayName = "FindAsync: it should throw VarietyNotFoundException when the variety was not found.")]
   public async Task Given_NotFound_When_FindAsync_Then_VarietyNotFoundException()
   {
     string key = $"  {Guid.NewGuid().ToString().ToUpperInvariant()}  ";

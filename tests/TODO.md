@@ -9,9 +9,7 @@
 - Item
 - ItemEvents (TODO)
 - MedicineProperties
-- MoveManager
 - PokeBallProperties
-- StatisticChanges
 - UpdateItemCommandHandler
 - UpdateItemPayload (TODO)
 
