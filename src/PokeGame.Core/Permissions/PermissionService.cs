@@ -80,7 +80,7 @@ internal class PermissionService : IPermissionService
 
   private bool IsAllowed(string action, MembershipInvitation invitation) => action switch
   {
-    Actions.Accept => invitation.InviteeId == _context.UserId,
+    Actions.Accept or Actions.Decline => invitation.InviteeId == _context.UserId,
     _ => false,
   };
 

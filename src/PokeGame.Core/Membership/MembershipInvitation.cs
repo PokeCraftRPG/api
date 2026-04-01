@@ -99,6 +99,33 @@ public class MembershipInvitation : AggregateRoot, IEntityProvider
     Status = MembershipInvitationStatus.Cancelled;
   }
 
+  public void Decline()
+  {
+    if (!InviteeId.HasValue)
+    {
+      throw new InvalidOperationException("A membership invitation can only be declined by the invitee.");
+    }
+    else if (IsExpired())
+    {
+      throw new MembershipInvitationExpiredException(this);
+    }
+
+    switch (Status)
+    {
+      case MembershipInvitationStatus.Declined:
+        return;
+      case MembershipInvitationStatus.Pending:
+        Raise(new MembershipInvitationDeclined(), InviteeId.Value.ActorId);
+        return;
+      default:
+        throw new MembershipInvitationNotPendingException(this);
+    }
+  }
+  protected virtual void Handle(MembershipInvitationDeclined _)
+  {
+    Status = MembershipInvitationStatus.Declined;
+  }
+
   public void Delete(UserId userId)
   {
     if (!IsDeleted)

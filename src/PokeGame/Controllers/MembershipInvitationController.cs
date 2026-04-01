@@ -25,6 +25,13 @@ public class MembershipInvitationController : ControllerBase
     return invitation is null ? NotFound() : Ok(invitation);
   }
 
+  [HttpPatch("{id}/decline")]
+  public async Task<ActionResult<MembershipInvitationModel?>> DeclineAsync(Guid id, CancellationToken cancellationToken)
+  {
+    MembershipInvitationModel? invitation = await _membershipService.DeclineInvitationAsync(id, cancellationToken);
+    return invitation is null ? NotFound() : Ok(invitation);
+  }
+
   [HttpPost("{id}")]
   public async Task<ActionResult<MembershipInvitationModel?>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {

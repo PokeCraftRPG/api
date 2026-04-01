@@ -106,6 +106,48 @@ public class MembershipInvitationTests
     Assert.Equal("expiresOn", exception.ParamName);
   }
 
+  [Fact(DisplayName = "Decline: it should decline the invitation.")]
+  public void Given_Pending_When_Decline_Then_Declineed()
+  {
+    MembershipInvitation invitation = new MembershipInvitationBuilder(_faker).WithInvitee(_invitee).Build();
+    invitation.Decline();
+    Assert.Equal(MembershipInvitationStatus.Declined, invitation.Status);
+    Assert.Contains(invitation.Changes, change => change is MembershipInvitationDeclined declined && declined.ActorId == invitation.InviteeId?.ActorId);
+
+    invitation.ClearChanges();
+    invitation.Decline();
+    Assert.False(invitation.HasChanges);
+    Assert.Empty(invitation.Changes);
+  }
+
+  [Fact(DisplayName = "Decline: it should throw InvalidOperationException when the invitation has not invitee.")]
+  public void Given_NoInvitee_When_Decline_Then_InvalidOperationException()
+  {
+    MembershipInvitation invitation = new MembershipInvitationBuilder(_faker).Build();
+    var exception = Assert.Throws<InvalidOperationException>(invitation.Decline);
+    Assert.Equal("A membership invitation can only be declined by the invitee.", exception.Message);
+  }
+
+  [Fact(DisplayName = "Decline: it should throw MembershipInvitationExpiredException when the invitation has expired.")]
+  public void Given_Expired_When_Decline_Then_MembershipInvitationExpiredException()
+  {
+    MembershipInvitation invitation = new MembershipInvitationBuilder(_faker).WithInvitee(_invitee).IsExpired().Build();
+    var exception = Assert.Throws<MembershipInvitationExpiredException>(invitation.Decline);
+    Assert.Equal(invitation.WorldId.ToGuid(), exception.WorldId);
+    Assert.Equal(invitation.EntityId, exception.MembershipInvitationId);
+    Assert.Equal(invitation.ExpiresOn?.AsUniversalTime(), exception.ExpiredOn);
+  }
+
+  [Fact(DisplayName = "Decline: it should throw MembershipInvitationNotPendingException when the invitation is not pending.")]
+  public void Given_NotPending_When_Decline_Then_MembershipInvitationNotPendingException()
+  {
+    MembershipInvitation invitation = new MembershipInvitationBuilder(_faker).WithInvitee(_invitee).IsCancelled().Build();
+    var exception = Assert.Throws<MembershipInvitationNotPendingException>(invitation.Decline);
+    Assert.Equal(invitation.WorldId.ToGuid(), exception.WorldId);
+    Assert.Equal(invitation.EntityId, exception.MembershipInvitationId);
+    Assert.Equal(invitation.Status, exception.Status);
+  }
+
   [Theory(DisplayName = "IsExpired: it should return false when the invitation is not expired.")]
   [InlineData(false)]
   [InlineData(true)]

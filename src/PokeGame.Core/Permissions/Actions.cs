@@ -12,6 +12,7 @@ public static class Actions
   public const string CreateTrainer = "CreateTrainer";
   public const string CreateVariety = "CreateVariety";
   public const string CreateWorld = "CreateWorld";
+  public const string Decline = "Decline";
   public const string SendMembershipInvitation = "SendMembershipInvitation";
   public const string Update = "Update";
 }
