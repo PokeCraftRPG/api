@@ -1,4 +1,5 @@
-﻿using Logitar.EventSourcing;
+﻿using Logitar;
+using Logitar.EventSourcing;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Events;
 
@@ -15,15 +16,17 @@ internal class WorldEntity : AggregateEntity
   public string? Name { get; private set; }
   public string? Description { get; private set; }
 
-  public StorageSummaryEntity? StorageSummary { get; private set; }
   public List<AbilityEntity> Abilities { get; private set; } = [];
   public List<FormEntity> Forms { get; private set; } = [];
   public List<ItemEntity> Items { get; private set; } = [];
+  public List<MemberEntity> Members { get; private set; } = [];
+  public List<MembershipInvitationEntity> MembershipInvitations { get; private set; } = [];
   public List<MoveEntity> Moves { get; private set; } = [];
   public List<RegionEntity> Regions { get; private set; } = [];
   public List<SpeciesEntity> Species { get; private set; } = [];
   public List<TrainerEntity> Trainers { get; private set; } = [];
   public List<VarietyEntity> Varieties { get; private set; } = [];
+  public StorageSummaryEntity? StorageSummary { get; private set; }
 
   public WorldEntity(WorldCreated @event) : base(@event)
   {
@@ -38,13 +41,36 @@ internal class WorldEntity : AggregateEntity
   {
   }
 
-  public override IReadOnlyCollection<ActorId> GetActorIds() => base.GetActorIds().Concat([new ActorId(OwnerId)]).ToList().AsReadOnly();
-
-  public void SetKey(WorldKeyChanged evnet)
+  public override IReadOnlyCollection<ActorId> GetActorIds()
   {
-    base.Update(evnet);
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    actorIds.Add(new ActorId(OwnerId));
+    foreach (MemberEntity member in Members)
+    {
+      actorIds.AddRange(member.GetActorIds());
+    }
+    return actorIds;
+  }
 
-    Key = evnet.Key.Value;
+  public void GrantMembership(WorldMembershipGranted @event)
+  {
+    MemberEntity? member = Members.SingleOrDefault(x => x.MemberKey == @event.UserId.Value);
+    if (member is null)
+    {
+      member = new MemberEntity(this, @event);
+      Members.Add(member);
+    }
+    else
+    {
+      member.Grant(@event);
+    }
+  }
+
+  public void SetKey(WorldKeyChanged @event)
+  {
+    base.Update(@event);
+
+    Key = @event.Key.Value;
   }
 
   public void Update(WorldUpdated @event)

@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Extensions;
+using PokeGame.Models.Ability;
 
 namespace PokeGame.Controllers;
 
@@ -44,6 +46,14 @@ public class AbilityController : ControllerBase
   {
     CreateOrReplaceAbilityResult result = await _abilityService.CreateOrReplaceAsync(payload, id, cancellationToken);
     return ToActionResult(result);
+  }
+
+  [HttpGet]
+  public async Task<ActionResult<SearchResults<AbilityModel>>> SearchAsync([FromQuery] SearchAbilitiesParameters parameters, CancellationToken cancellationToken)
+  {
+    SearchAbilitiesPayload payload = parameters.ToPayload();
+    SearchResults<AbilityModel> abilities = await _abilityService.SearchAsync(payload, cancellationToken);
+    return Ok(abilities);
   }
 
   [HttpPatch("{id}")]

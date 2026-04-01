@@ -22,6 +22,7 @@ public static class DependencyInjectionExtensions
   {
     return services
       .AddLogitarEventSourcingWithEntityFrameworkCorePostgreSQL(connectionString)
-      .AddDbContext<PokemonContext>(options => options.UseNpgsql(connectionString, options => options.MigrationsAssembly("PokeGame.PostgreSQL")));
+      .AddDbContext<PokemonContext>(options => options.UseNpgsql(connectionString, options => options.MigrationsAssembly("PokeGame.PostgreSQL")))
+      .AddSingleton<ISqlHelper, PostgresHelper>();
   }
 }

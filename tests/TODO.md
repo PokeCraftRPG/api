@@ -2,8 +2,6 @@
 
 ## Unit
 
-- BattleItemProperties
-- BerryProperties
 - CreateOrReplaceItemCommandHandler
 - CreateOrReplaceItemPayload (TODO)
 - Item
@@ -15,3 +13,4 @@
 ## Integration
 
 - ItemIntegrationTests
+- MembershipIntegrationTests
