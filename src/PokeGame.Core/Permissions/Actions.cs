@@ -3,6 +3,7 @@
 public static class Actions
 {
   public const string Accept = "Accept";
+  public const string Cancel = "Cancel";
   public const string CreateAbility = "CreateAbility";
   public const string CreateForm = "CreateForm";
   public const string CreateItem = "CreateItem";

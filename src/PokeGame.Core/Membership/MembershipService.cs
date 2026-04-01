@@ -9,6 +9,7 @@ namespace PokeGame.Core.Membership;
 public interface IMembershipService
 {
   Task<MembershipInvitationModel?> AcceptInvitationAsync(Guid id, CancellationToken cancellationToken = default);
+  Task<MembershipInvitationModel?> CancelInvitationAsync(Guid id, CancellationToken cancellationToken = default);
   Task<MembershipInvitationModel?> DeclineInvitationAsync(Guid id, CancellationToken cancellationToken = default);
   Task<MembershipInvitationModel?> ReadInvitationAsync(Guid id, CancellationToken cancellationToken = default);
   Task<MembershipInvitationModel> SendInvitationAsync(SendMembershipInvitationPayload payload, CancellationToken cancellationToken = default);
@@ -19,6 +20,7 @@ internal class MembershipService : IMembershipService
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<ICommandHandler<AcceptMembershipInvitationCommand, MembershipInvitationModel?>, AcceptMembershipInvitationCommandHandler>();
+    services.AddTransient<ICommandHandler<CancelMembershipInvitationCommand, MembershipInvitationModel?>, CancelMembershipInvitationCommandHandler>();
     services.AddTransient<ICommandHandler<DeclineMembershipInvitationCommand, MembershipInvitationModel?>, DeclineMembershipInvitationCommandHandler>();
     services.AddTransient<ICommandHandler<SendMembershipInvitationCommand, MembershipInvitationModel>, SendMembershipInvitationCommandHandler>();
     services.AddTransient<IQueryHandler<ReadMembershipInvitationQuery, MembershipInvitationModel?>, ReadMembershipInvitationQueryHandler>();
@@ -36,6 +38,12 @@ internal class MembershipService : IMembershipService
   public async Task<MembershipInvitationModel?> AcceptInvitationAsync(Guid id, CancellationToken cancellationToken)
   {
     AcceptMembershipInvitationCommand command = new(id);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<MembershipInvitationModel?> CancelInvitationAsync(Guid id, CancellationToken cancellationToken)
+  {
+    CancelMembershipInvitationCommand command = new(id);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
