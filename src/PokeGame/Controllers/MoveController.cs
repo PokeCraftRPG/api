@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Extensions;
+using PokeGame.Models.Move;
 
 namespace PokeGame.Controllers;
 
@@ -44,6 +46,14 @@ public class MoveController : ControllerBase
   {
     CreateOrReplaceMoveResult result = await _moveService.CreateOrReplaceAsync(payload, id, cancellationToken);
     return ToActionResult(result);
+  }
+
+  [HttpGet]
+  public async Task<ActionResult<SearchResults<MoveModel>>> SearchAsync([FromQuery] SearchMovesParameters parameters, CancellationToken cancellationToken)
+  {
+    SearchMovesPayload payload = parameters.ToPayload();
+    SearchResults<MoveModel> moves = await _moveService.SearchAsync(payload, cancellationToken);
+    return Ok(moves);
   }
 
   [HttpPatch("{id}")]

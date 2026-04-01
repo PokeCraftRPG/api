@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Moves;
@@ -135,6 +136,105 @@ public class MoveIntegrationTests : IntegrationTests
     Assert.Equal(payload.PowerPoints, move.PowerPoints);
     Assert.Equal(payload.Url, move.Url);
     Assert.Equal(payload.Notes.Trim(), move.Notes);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results.")]
+  public async Task Given_Payload_When_SearchAsync_Then_Results()
+  {
+    Move agility = MoveBuilder.Agility(Faker, World);
+    Move quickAttack = MoveBuilder.QuickAttack(Faker, World);
+    Move sweetKiss = MoveBuilder.SweetKiss(Faker, World);
+    Move thunderPunch = MoveBuilder.ThunderPunch(Faker, World);
+    await _moveRepository.SaveAsync([agility, quickAttack, sweetKiss, thunderPunch]);
+
+    SearchMovesPayload payload = new()
+    {
+      Ids = [agility.EntityId, quickAttack.EntityId, Guid.Empty, thunderPunch.EntityId],
+      Skip = 1,
+      Limit = 1
+    };
+    payload.Search.Operator = SearchOperator.Or;
+    payload.Search.Terms.Add(new SearchTerm("%u%"));
+    payload.Search.Terms.Add(new SearchTerm("%w%"));
+    payload.Sort.Add(new MoveSortOption(MoveSort.Key, isDescending: true));
+
+    SearchResults<MoveModel> results = await _moveService.SearchAsync(payload);
+    Assert.Equal(2, results.Total);
+
+    MoveModel move = Assert.Single(results.Items);
+    Assert.Equal(quickAttack.EntityId, move.Id);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (Category).")]
+  public async Task Given_Category_When_SearchAsync_Then_Results()
+  {
+    Move sweetKiss = MoveBuilder.SweetKiss(Faker, World);
+    Move thunderPunch = MoveBuilder.ThunderPunch(Faker, World);
+    Move thunderShock = MoveBuilder.ThunderShock(Faker, World);
+    await _moveRepository.SaveAsync([sweetKiss, thunderPunch, thunderShock]);
+
+    SearchMovesPayload payload = new()
+    {
+      Category = Faker.PickRandom<MoveCategory>()
+    };
+
+    SearchResults<MoveModel> results = await _moveService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    MoveModel move = Assert.Single(results.Items);
+    switch (payload.Category)
+    {
+      case MoveCategory.Physical:
+        Assert.Equal(thunderPunch.EntityId, move.Id);
+        break;
+      case MoveCategory.Special:
+        Assert.Equal(thunderShock.EntityId, move.Id);
+        break;
+      case MoveCategory.Status:
+        Assert.Equal(sweetKiss.EntityId, move.Id);
+        break;
+      default:
+        Assert.Fail($"The move category '{payload.Category}' is not valid.");
+        break;
+    }
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (Type).")]
+  public async Task Given_Type_When_SearchAsync_Then_Results()
+  {
+    Move agility = MoveBuilder.Agility(Faker, World);
+    Move quickAttack = MoveBuilder.QuickAttack(Faker, World);
+    Move sweetKiss = MoveBuilder.SweetKiss(Faker, World);
+    Move thunderShock = MoveBuilder.ThunderShock(Faker, World);
+    await _moveRepository.SaveAsync([agility, quickAttack, sweetKiss, thunderShock]);
+
+    SearchMovesPayload payload = new()
+    {
+      Type = Faker.PickRandom(PokemonType.Electric, PokemonType.Fairy, PokemonType.Normal, PokemonType.Psychic)
+    };
+
+    SearchResults<MoveModel> results = await _moveService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    MoveModel move = Assert.Single(results.Items);
+    switch (payload.Type)
+    {
+      case PokemonType.Electric:
+        Assert.Equal(thunderShock.EntityId, move.Id);
+        break;
+      case PokemonType.Fairy:
+        Assert.Equal(sweetKiss.EntityId, move.Id);
+        break;
+      case PokemonType.Normal:
+        Assert.Equal(quickAttack.EntityId, move.Id);
+        break;
+      case PokemonType.Psychic:
+        Assert.Equal(agility.EntityId, move.Id);
+        break;
+      default:
+        Assert.Fail($"The Pokémon type '{payload.Type}' is not valid.");
+        break;
+    }
   }
 
   [Fact(DisplayName = "It should throw PropertyConflictException when there is a key conflict.")]
