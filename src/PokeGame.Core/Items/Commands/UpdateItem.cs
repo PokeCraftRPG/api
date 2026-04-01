@@ -103,7 +103,7 @@ internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, Ite
     return await _itemQuerier.ReadAsync(item, cancellationToken);
   }
 
-  private async Task<ItemProperties> GetPropertiesAsync(UpdateItemPayload payload, CancellationToken cancellationToken)
+  private async Task<ItemProperties?> GetPropertiesAsync(UpdateItemPayload payload, CancellationToken cancellationToken)
   {
     List<ItemProperties> properties = new(capacity: 9);
 
@@ -150,6 +150,6 @@ internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, Ite
     {
       throw new ArgumentException("Many properties were provided, exactly one is expected.", nameof(payload));
     }
-    return properties.SingleOrDefault() ?? throw new ArgumentException("No property was provided, exactly one is expected.", nameof(payload));
-  } // TODO(fpion): refactor
+    return properties.SingleOrDefault();
+  }
 }
