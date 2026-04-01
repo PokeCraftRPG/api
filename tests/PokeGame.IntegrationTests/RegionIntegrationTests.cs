@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Regions;
@@ -68,6 +69,33 @@ public class RegionIntegrationTests : IntegrationTests
     Assert.Equal(payload.Description.Trim(), region.Description);
     Assert.Equal(payload.Url, region.Url);
     Assert.Equal(payload.Notes.Trim(), region.Notes);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results.")]
+  public async Task Given_Payload_When_SearchAsync_Then_Results()
+  {
+    Region hoenn = RegionBuilder.Hoenn(Faker, World);
+    Region johto = RegionBuilder.Johto(Faker, World);
+    Region kanto = RegionBuilder.Kanto(Faker, World);
+    Region sinnoh = RegionBuilder.Sinnoh(Faker, World);
+    await _regionRepository.SaveAsync([hoenn, johto, kanto, sinnoh]);
+
+    SearchRegionsPayload payload = new()
+    {
+      Ids = [hoenn.EntityId, johto.EntityId, Guid.Empty, sinnoh.EntityId],
+      Skip = 1,
+      Limit = 1
+    };
+    payload.Search.Operator = SearchOperator.Or;
+    payload.Search.Terms.Add(new SearchTerm("%nn%"));
+    payload.Search.Terms.Add(new SearchTerm("k%"));
+    payload.Sort.Add(new RegionSortOption(RegionSort.Key, isDescending: true));
+
+    SearchResults<RegionModel> results = await _regionService.SearchAsync(payload);
+    Assert.Equal(2, results.Total);
+
+    RegionModel region = Assert.Single(results.Items);
+    Assert.Equal(hoenn.EntityId, region.Id);
   }
 
   [Fact(DisplayName = "It should read a region by ID.")]

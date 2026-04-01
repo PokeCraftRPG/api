@@ -4,16 +4,16 @@ using PokeGame.Core.Permissions;
 
 namespace PokeGame.Core.Membership.Commands;
 
-internal record DeclineMembershipInvitationCommand(Guid Id) : ICommand<MembershipInvitationModel?>;
+internal record CancelMembershipInvitationCommand(Guid Id) : ICommand<MembershipInvitationModel?>;
 
-internal class DeclineMembershipInvitationCommandHandler : ICommandHandler<DeclineMembershipInvitationCommand, MembershipInvitationModel?>
+internal class CancelMembershipInvitationCommandHandler : ICommandHandler<CancelMembershipInvitationCommand, MembershipInvitationModel?>
 {
   private readonly IContext _context;
   private readonly IMembershipInvitationQuerier _membershipInvitationQuerier;
   private readonly IMembershipInvitationRepository _membershipInvitationRepository;
   private readonly IPermissionService _permissionService;
 
-  public DeclineMembershipInvitationCommandHandler(
+  public CancelMembershipInvitationCommandHandler(
     IContext context,
     IMembershipInvitationQuerier membershipInvitationQuerier,
     IMembershipInvitationRepository membershipInvitationRepository,
@@ -25,7 +25,7 @@ internal class DeclineMembershipInvitationCommandHandler : ICommandHandler<Decli
     _permissionService = permissionService;
   }
 
-  public async Task<MembershipInvitationModel?> HandleAsync(DeclineMembershipInvitationCommand command, CancellationToken cancellationToken)
+  public async Task<MembershipInvitationModel?> HandleAsync(CancelMembershipInvitationCommand command, CancellationToken cancellationToken)
   {
     MembershipInvitationId id = new(_context.WorldId, command.Id);
     MembershipInvitation? invitation = await _membershipInvitationRepository.LoadAsync(id, cancellationToken);
@@ -33,13 +33,9 @@ internal class DeclineMembershipInvitationCommandHandler : ICommandHandler<Decli
     {
       return null;
     }
-    await _permissionService.CheckAsync(Actions.Decline, invitation, cancellationToken);
+    await _permissionService.CheckAsync(Actions.Cancel, invitation, cancellationToken);
 
-    invitation.Decline();
-    if (!invitation.InviteeId.HasValue)
-    {
-      throw new InvalidOperationException("The invitation has no invitee.");
-    }
+    invitation.Cancel(_context.UserId);
 
     await _membershipInvitationRepository.SaveAsync(invitation, cancellationToken);
 

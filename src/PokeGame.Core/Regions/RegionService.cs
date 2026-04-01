@@ -1,4 +1,5 @@
-﻿using Logitar.CQRS;
+﻿using Krakenar.Contracts.Search;
+using Logitar.CQRS;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Regions.Commands;
 using PokeGame.Core.Regions.Models;
@@ -10,6 +11,7 @@ public interface IRegionService
 {
   Task<CreateOrReplaceRegionResult> CreateOrReplaceAsync(CreateOrReplaceRegionPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
   Task<RegionModel?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
+  Task<SearchResults<RegionModel>> SearchAsync(SearchRegionsPayload payload, CancellationToken cancellationToken = default);
   Task<RegionModel?> UpdateAsync(Guid id, UpdateRegionPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -21,6 +23,7 @@ internal class RegionService : IRegionService
     services.AddTransient<ICommandHandler<CreateOrReplaceRegionCommand, CreateOrReplaceRegionResult>, CreateOrReplaceRegionCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateRegionCommand, RegionModel?>, UpdateRegionCommandHandler>();
     services.AddTransient<IQueryHandler<ReadRegionQuery, RegionModel?>, ReadRegionQueryHandler>();
+    services.AddTransient<IQueryHandler<SearchRegionsQuery, SearchResults<RegionModel>>, SearchRegionsQueryHandler>();
   }
 
   private readonly ICommandBus _commandBus;
@@ -41,6 +44,12 @@ internal class RegionService : IRegionService
   public async Task<RegionModel?> ReadAsync(Guid? id, string? key, CancellationToken cancellationToken)
   {
     ReadRegionQuery query = new(id, key);
+    return await _queryBus.ExecuteAsync(query, cancellationToken);
+  }
+
+  public async Task<SearchResults<RegionModel>> SearchAsync(SearchRegionsPayload payload, CancellationToken cancellationToken)
+  {
+    SearchRegionsQuery query = new(payload);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 

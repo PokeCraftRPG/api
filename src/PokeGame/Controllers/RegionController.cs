@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Extensions;
+using PokeGame.Models.Region;
 
 namespace PokeGame.Controllers;
 
@@ -44,6 +46,14 @@ public class RegionController : ControllerBase
   {
     CreateOrReplaceRegionResult result = await _regionService.CreateOrReplaceAsync(payload, id, cancellationToken);
     return ToActionResult(result);
+  }
+
+  [HttpGet]
+  public async Task<ActionResult<SearchResults<RegionModel>>> SearchAsync([FromQuery] SearchRegionsParameters parameters, CancellationToken cancellationToken)
+  {
+    SearchRegionsPayload payload = parameters.ToPayload();
+    SearchResults<RegionModel> regions = await _regionService.SearchAsync(payload, cancellationToken);
+    return Ok(regions);
   }
 
   [HttpPatch("{id}")]

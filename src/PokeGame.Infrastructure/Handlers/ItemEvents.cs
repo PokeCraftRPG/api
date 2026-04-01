@@ -16,9 +16,10 @@ internal class ItemEvents : IEventHandler<BattleItemPropertiesChanged>,
   IEventHandler<KeyItemPropertiesChanged>,
   IEventHandler<MedicinePropertiesChanged>,
   IEventHandler<OtherItemPropertiesChanged>,
+  IEventHandler<PokeBallPropertiesChanged>,
   IEventHandler<TreasurePropertiesChanged>
 {
-  // TODO(fpion): 4× Properties
+  // TODO(fpion): 3× Properties
 
   public static void Register(IServiceCollection services)
   {
@@ -30,6 +31,7 @@ internal class ItemEvents : IEventHandler<BattleItemPropertiesChanged>,
     services.AddTransient<IEventHandler<KeyItemPropertiesChanged>, ItemEvents>();
     services.AddTransient<IEventHandler<MedicinePropertiesChanged>, ItemEvents>();
     services.AddTransient<IEventHandler<OtherItemPropertiesChanged>, ItemEvents>();
+    services.AddTransient<IEventHandler<PokeBallPropertiesChanged>, ItemEvents>();
     services.AddTransient<IEventHandler<TreasurePropertiesChanged>, ItemEvents>();
   }
 
@@ -124,6 +126,17 @@ internal class ItemEvents : IEventHandler<BattleItemPropertiesChanged>,
   }
 
   public async Task HandleAsync(OtherItemPropertiesChanged @event, CancellationToken cancellationToken)
+  {
+    ItemEntity? item = await _pokemon.Items.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (item is not null && item.Version == (@event.Version - 1))
+    {
+      item.SetProperties(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(PokeBallPropertiesChanged @event, CancellationToken cancellationToken)
   {
     ItemEntity? item = await _pokemon.Items.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (item is not null && item.Version == (@event.Version - 1))
