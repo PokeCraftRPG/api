@@ -1,5 +1,4 @@
 ﻿using Bogus;
-using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Users;
 using Moq;
 using PokeGame.Builders;
@@ -89,7 +88,7 @@ public class UpdateTrainerCommandHandlerTests
     _trainerRepository.Setup(x => x.LoadAsync(trainer.Id, _cancellationToken)).ReturnsAsync(trainer);
 
     User owner = new UserBuilder(_faker).Build();
-    trainer.SetOwnership(new UserId(new Actor(owner).GetActorId()), _context.UserId);
+    trainer.SetOwnership(owner.GetUserId(), _context.UserId);
 
     UpdateTrainerPayload payload = new()
     {

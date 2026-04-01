@@ -43,6 +43,9 @@ public class World : AggregateRoot, IEntityProvider
     }
   }
 
+  private readonly HashSet<UserId> _members = [];
+  public IReadOnlyCollection<UserId> Members => _members.ToList().AsReadOnly();
+
   public long Size => Key.Size + (Name?.Size ?? 0) + (Description?.Size ?? 0);
 
   public World() : base()
@@ -70,6 +73,20 @@ public class World : AggregateRoot, IEntityProvider
   }
 
   public Entity GetEntity() => new(EntityKind, Id.ToGuid(), worldId: null, Size);
+
+  public void GrantMembership(UserId memberId, UserId userId)
+  {
+    if (!_members.Contains(memberId))
+    {
+      Raise(new WorldMembershipGranted(memberId), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(WorldMembershipGranted @event)
+  {
+    _members.Add(@event.UserId);
+  }
+
+  public bool IsMember(UserId userId) => _members.Contains(userId);
 
   public void SetKey(Slug key, UserId userId)
   {

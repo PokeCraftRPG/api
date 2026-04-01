@@ -8,7 +8,8 @@ namespace PokeGame.Core.Membership;
 
 public interface IMembershipService
 {
-  Task<MembershipInvitationModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
+  Task<MembershipInvitationModel?> AcceptInvitationAsync(Guid id, CancellationToken cancellationToken = default);
+  Task<MembershipInvitationModel?> ReadInvitationAsync(Guid id, CancellationToken cancellationToken = default);
   Task<MembershipInvitationModel> SendInvitationAsync(SendMembershipInvitationPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -29,7 +30,13 @@ internal class MembershipService : IMembershipService
     _queryBus = queryBus;
   }
 
-  public async Task<MembershipInvitationModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<MembershipInvitationModel?> AcceptInvitationAsync(Guid id, CancellationToken cancellationToken)
+  {
+    AcceptMembershipInvitationCommand command = new(id);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<MembershipInvitationModel?> ReadInvitationAsync(Guid id, CancellationToken cancellationToken)
   {
     ReadMembershipInvitationQuery query = new(id);
     return await _queryBus.ExecuteAsync(query, cancellationToken);

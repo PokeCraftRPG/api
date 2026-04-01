@@ -4,6 +4,7 @@ using Moq;
 using PokeGame.Builders;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership.Models;
+using PokeGame.Core.Permissions;
 using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Membership.Commands;
@@ -18,6 +19,7 @@ public class SendMembershipInvitationCommandHandlerTests
   private readonly Mock<IMembershipInvitationQuerier> _membershipInvitationQuerier = new();
   private readonly Mock<IMembershipInvitationRepository> _membershipInvitationRepository = new();
   private readonly Mock<IMessageGateway> _messageGateway = new();
+  private readonly Mock<IPermissionService> _permissionService = new();
   private readonly Mock<IUserGateway> _userGateway = new();
 
   private readonly TestContext _context;
@@ -34,7 +36,14 @@ public class SendMembershipInvitationCommandHandlerTests
       InvitationLifetimeDays = 3
     };
 
-    _handler = new(_context, _membershipInvitationQuerier.Object, _membershipInvitationRepository.Object, _settings, _messageGateway.Object, _userGateway.Object);
+    _handler = new(
+      _context,
+      _membershipInvitationQuerier.Object,
+      _membershipInvitationRepository.Object,
+      _settings,
+      _messageGateway.Object,
+      _permissionService.Object,
+      _userGateway.Object);
   }
 
   [Fact(DisplayName = "It should send a membership invitation to a user.")]
@@ -57,6 +66,7 @@ public class SendMembershipInvitationCommandHandlerTests
     MembershipInvitationModel invitation = await _handler.HandleAsync(command, _cancellationToken);
     Assert.Same(model, invitation);
 
+    _permissionService.Verify(x => x.CheckAsync(Actions.SendMembershipInvitation, _cancellationToken), Times.Once());
     _membershipInvitationRepository.Verify(x => x.SaveAsync(
       It.Is<MembershipInvitation>(i => i.Email.Address == payload.EmailAddress && !i.Email.IsVerified
         && i.InviteeId.HasValue && i.InviteeId.Value.RealmId == user.Realm.Id && i.InviteeId.Value.EntityId == user.Id
@@ -82,6 +92,7 @@ public class SendMembershipInvitationCommandHandlerTests
     MembershipInvitationModel invitation = await _handler.HandleAsync(command, _cancellationToken);
     Assert.Same(model, invitation);
 
+    _permissionService.Verify(x => x.CheckAsync(Actions.SendMembershipInvitation, _cancellationToken), Times.Once());
     _membershipInvitationRepository.Verify(x => x.SaveAsync(
       It.Is<MembershipInvitation>(i => i.Email.Address == payload.EmailAddress && !i.Email.IsVerified && !i.InviteeId.HasValue
         && i.Status == MembershipInvitationStatus.Pending && i.ExpiresOn.HasValue && (DateTime.UtcNow - i.ExpiresOn.Value) < TimeSpan.FromSeconds(1)),

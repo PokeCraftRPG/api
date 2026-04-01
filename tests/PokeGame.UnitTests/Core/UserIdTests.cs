@@ -19,7 +19,7 @@ public class UserIdTests
     User user = new UserBuilder(_faker).Build();
     Actor actor = new(user);
     ActorId actorId = actor.GetActorId();
-    UserId userId = new(actorId);
+    UserId userId = user.GetUserId();
     Assert.Equal(actorId.Value, userId.Value);
   }
 

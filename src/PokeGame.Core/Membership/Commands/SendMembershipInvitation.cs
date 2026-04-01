@@ -1,10 +1,9 @@
-﻿using Krakenar.Contracts.Actors;
-using Krakenar.Contracts.Users;
+﻿using Krakenar.Contracts.Users;
 using Logitar.CQRS;
-using Logitar.EventSourcing;
 using PokeGame.Core.Actors;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership.Models;
+using PokeGame.Core.Permissions;
 
 namespace PokeGame.Core.Membership.Commands;
 
@@ -17,6 +16,7 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
   private readonly IMembershipInvitationRepository _membershipInvitationRepository;
   private readonly MembershipSettings _membershipSettings;
   private readonly IMessageGateway _messageGateway;
+  private readonly IPermissionService _permissionService;
   private readonly IUserGateway _userGateway;
 
   public SendMembershipInvitationCommandHandler(
@@ -25,6 +25,7 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     IMembershipInvitationRepository membershipInvitationRepository,
     MembershipSettings membershipSettings,
     IMessageGateway messageGateway,
+    IPermissionService permissionService,
     IUserGateway userGateway)
   {
     _context = context;
@@ -32,6 +33,7 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     _membershipInvitationRepository = membershipInvitationRepository;
     _membershipSettings = membershipSettings;
     _messageGateway = messageGateway;
+    _permissionService = permissionService;
     _userGateway = userGateway;
   }
 
@@ -39,6 +41,8 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
   {
     SendMembershipInvitationPayload payload = command.Payload;
     payload.Validate();
+
+    await _permissionService.CheckAsync(Actions.SendMembershipInvitation, cancellationToken);
 
     ReadOnlyEmail email = new(payload.EmailAddress);
     await _membershipInvitationQuerier.EnsureNonePendingAsync(email, cancellationToken);
@@ -49,9 +53,7 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     {
       // TODO(fpion): load world and ensure user is not already a member (or retrieve from the context)
 
-      Actor actor = new(user);
-      ActorId actorId = actor.GetActorId();
-      inviteeId = new(actorId);
+      inviteeId = user.GetUserId();
     }
 
     DateTime expiresOn = DateTime.UtcNow.AddDays(_membershipSettings.InvitationLifetimeDays);

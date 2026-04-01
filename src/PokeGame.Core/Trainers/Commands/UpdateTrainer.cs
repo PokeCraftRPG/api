@@ -1,7 +1,5 @@
-﻿using Krakenar.Contracts.Actors;
-using Krakenar.Contracts.Users;
+﻿using Krakenar.Contracts.Users;
 using Logitar.CQRS;
-using Logitar.EventSourcing;
 using PokeGame.Core.Actors;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Permissions;
@@ -97,9 +95,7 @@ internal class UpdateTrainerCommandHandler : ICommandHandler<UpdateTrainerComman
       {
         // TODO(fpion): trainer should be a world member; refactor with CreateOrReplaceTrainer.
         User user = await _userGateway.FindAsync(payload.OwnerId.Value.Value, cancellationToken) ?? throw new UserNotFoundException(payload.OwnerId.Value.Value, nameof(payload.OwnerId));
-        Actor actor = new(user);
-        ActorId actorId = actor.GetActorId();
-        ownerId = new(actorId);
+        ownerId = user.GetUserId();
       }
       trainer.SetOwnership(ownerId, userId);
     }
