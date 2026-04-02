@@ -1,0 +1,32 @@
+﻿using Logitar.Data;
+using PokeGame.Infrastructure.Entities;
+
+namespace PokeGame.Infrastructure.PokemonDb;
+
+internal static class Species
+{
+  public static readonly TableId Table = new(PokemonContext.Schema, nameof(PokemonContext.Species), alias: null);
+
+  public static readonly ColumnId CreatedBy = new(nameof(SpeciesEntity.CreatedBy), Table);
+  public static readonly ColumnId CreatedOn = new(nameof(SpeciesEntity.CreatedOn), Table);
+  public static readonly ColumnId StreamId = new(nameof(SpeciesEntity.StreamId), Table);
+  public static readonly ColumnId UpdatedBy = new(nameof(SpeciesEntity.UpdatedBy), Table);
+  public static readonly ColumnId UpdatedOn = new(nameof(SpeciesEntity.UpdatedOn), Table);
+  public static readonly ColumnId Version = new(nameof(SpeciesEntity.Version), Table);
+
+  public static readonly ColumnId BaseFriendship = new(nameof(SpeciesEntity.BaseFriendship), Table);
+  public static readonly ColumnId Category = new(nameof(SpeciesEntity.Category), Table);
+  public static readonly ColumnId CatchRate = new(nameof(SpeciesEntity.CatchRate), Table);
+  public static readonly ColumnId EggCycles = new(nameof(SpeciesEntity.EggCycles), Table);
+  public static readonly ColumnId GrowthRate = new(nameof(SpeciesEntity.GrowthRate), Table);
+  public static readonly ColumnId Id = new(nameof(SpeciesEntity.Id), Table);
+  public static readonly ColumnId Key = new(nameof(SpeciesEntity.Key), Table);
+  public static readonly ColumnId Name = new(nameof(SpeciesEntity.Name), Table);
+  public static readonly ColumnId Notes = new(nameof(SpeciesEntity.Notes), Table);
+  public static readonly ColumnId Number = new(nameof(SpeciesEntity.Number), Table);
+  public static readonly ColumnId PrimaryEggGroup = new(nameof(SpeciesEntity.PrimaryEggGroup), Table);
+  public static readonly ColumnId SecondaryEggGroup = new(nameof(SpeciesEntity.SecondaryEggGroup), Table);
+  public static readonly ColumnId SpeciesId = new(nameof(SpeciesEntity.SpeciesId), Table);
+  public static readonly ColumnId Url = new(nameof(SpeciesEntity.Url), Table);
+  public static readonly ColumnId WorldId = new(nameof(SpeciesEntity.WorldId), Table);
+}

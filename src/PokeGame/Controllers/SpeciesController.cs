@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Core.Species;
 using PokeGame.Core.Species.Models;
 using PokeGame.Extensions;
+using PokeGame.Models.Species;
 
 namespace PokeGame.Controllers;
 
@@ -44,6 +46,14 @@ public class SpeciesController : ControllerBase
   {
     SpeciesModel? species = await _speciesService.ReadAsync(id: null, number, key: null, cancellationToken);
     return species is null ? NotFound() : Ok(species);
+  }
+
+  [HttpGet]
+  public async Task<ActionResult<SearchResults<SpeciesModel>>> SearchAsync([FromQuery] SearchSpeciesParameters parameters, CancellationToken cancellationToken)
+  {
+    SearchSpeciesPayload payload = parameters.ToPayload();
+    SearchResults<SpeciesModel> species = await _speciesService.SearchAsync(payload, cancellationToken);
+    return Ok(species);
   }
 
   [HttpPut("{id}")]

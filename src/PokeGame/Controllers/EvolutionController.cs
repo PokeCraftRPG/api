@@ -32,6 +32,13 @@ public class EvolutionController : ControllerBase
     return ToActionResult(result);
   }
 
+  [HttpPatch("{id}")]
+  public async Task<ActionResult<EvolutionModel>> UpdateAsync(Guid id, [FromBody] UpdateEvolutionPayload payload, CancellationToken cancellationToken)
+  {
+    EvolutionModel? evolution = await _evolutionService.UpdateAsync(id, payload, cancellationToken);
+    return evolution is null ? NotFound() : Ok(evolution);
+  }
+
   private ActionResult<EvolutionModel> ToActionResult(CreateOrReplaceEvolutionResult result)
   {
     EvolutionModel evolution = result.Evolution;
