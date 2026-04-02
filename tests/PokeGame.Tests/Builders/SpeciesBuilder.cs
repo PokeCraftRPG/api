@@ -192,6 +192,21 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithNotes(new Notes("Eevee is a “blank slate” Pokémon designed for multiple evolutions (8 total), with unique mechanics, cultural impact, and evolution methods across games and media."))
     .Build();
 
+  public static SpeciesAggregate Pichu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+    .WithWorld(world)
+    .WithNumber(new Number(172))
+    .WithCategory(PokemonCategory.Baby)
+    .WithKey(new Slug("pichu"))
+    .WithName(new Name("Pichu"))
+    .WithBaseFriendship(new Friendship(70))
+    .WithCatchRate(new CatchRate(190))
+    .WithGrowthRate(GrowthRate.MediumFast)
+    .WithEggCycles(new EggCycles(10))
+    .WithEggGroups(new EggGroups(EggGroup.NoEggsDiscovered))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Pichu_(Pok%C3%A9mon)"))
+    .WithNotes(new Notes("Pichu: weakest Electric-type stats; Pikachu’s pre-evolution. Designed as its “next” form, inspired by rodents; notable trivia and naming origins included."))
+    .Build();
+
   public static SpeciesAggregate Pikachu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
     .WithWorld(world)
     .WithNumber(new Number(25))

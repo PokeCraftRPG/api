@@ -187,14 +187,14 @@ public class EvolutionBuilder : IEvolutionBuilder
     return evolution;
   }
 
-  public static Evolution PikachuToRaichu(Faker? faker = null, World? world = null)
+  public static Evolution PikachuToRaichu(Faker? faker = null, World? world = null, Form? source = null, Form? target = null, Item? item = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new EvolutionBuilder(faker)
       .WithWorld(world)
-      .WithSource(FormBuilder.Pikachu(faker, world))
-      .WithTarget(FormBuilder.Raichu(faker, world))
-      .OnItem(ItemBuilder.ThunderStone(faker, world))
+      .WithSource(source ?? FormBuilder.Pikachu(faker, world))
+      .WithTarget(target ?? FormBuilder.Raichu(faker, world))
+      .OnItem(item ?? ItemBuilder.ThunderStone(faker, world))
       .Build();
   }
 }

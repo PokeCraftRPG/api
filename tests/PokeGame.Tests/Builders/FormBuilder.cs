@@ -214,6 +214,28 @@ public class FormBuilder : IFormBuilder
     return form;
   }
 
+  public static Form Pichu(Faker? faker = null, World? world = null, Variety? variety = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new FormBuilder(faker)
+      .WithWorld(world)
+      .WithVariety(variety ?? VarietyBuilder.Pichu(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("pichu"))
+      .WithName(new Name("Pichu"))
+      .WithHeight(new Height(3))
+      .WithWeight(new Weight(20))
+      .WithTypes(new Types(PokemonType.Electric))
+      .WithAbilities(new Abilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
+      .WithBaseStatistics(new BaseStatistics(20, 40, 15, 35, 35, 60))
+      .WithYield(new Yield(41, 0, 0, 0, 0, 0, 1))
+      .WithSprites(new Sprites(
+        new Url("https://archives.bulbagarden.net/media/upload/5/5f/HOME0172.png"),
+        new Url("https://archives.bulbagarden.net/media/upload/d/df/HOME0172_s.png")))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Pichu_(Pok%C3%A9mon)"))
+      .Build();
+  }
+
   public static Form Pikachu(Faker? faker = null, World? world = null, Variety? variety = null)
   {
     world ??= new WorldBuilder(faker).Build();

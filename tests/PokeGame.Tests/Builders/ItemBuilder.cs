@@ -133,6 +133,18 @@ public class ItemBuilder : IItemBuilder
     return item;
   }
 
+  public static Item OranBerry(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("oran-berry"))
+    .WithName(new Name("Oran Berry"))
+    .WithDescription(new Description("If a Pokémon holds one of these Berries, it will be able to restore 10 HP to itself."))
+    .WithPrice(new Price(80))
+    .WithSprite(new Url("https://archives.bulbagarden.net/media/upload/0/0c/Dream_Oran_Berry_Sprite.png"))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Oran_Berry"))
+    .WithNotes(new Notes("Common healing Berry that restores 10 HP (auto at ≤50% HP or when used); simple, widely available recovery item in and out of battle."))
+    .WithProperties(new BerryProperties(healing: 80, false, null, false, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, null, false))
+    .Build();
+
   public static Item Potion(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
     .WithWorld(world)
     .WithKey(new Slug("potion"))
