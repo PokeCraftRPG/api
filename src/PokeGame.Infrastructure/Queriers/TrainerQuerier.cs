@@ -16,15 +16,15 @@ internal class TrainerQuerier : ITrainerQuerier
 {
   private readonly IActorService _actors;
   private readonly IContext _context;
-  private readonly DbSet<TrainerEntity> _trainers;
   private readonly ISqlHelper _sql;
+  private readonly DbSet<TrainerEntity> _trainers;
 
   public TrainerQuerier(IActorService actors, IContext context, PokemonContext pokemon, ISqlHelper sql)
   {
     _actors = actors;
     _context = context;
-    _trainers = pokemon.Trainers;
     _sql = sql;
+    _trainers = pokemon.Trainers;
   }
 
   public async Task EnsureUnicityAsync(Trainer trainer, CancellationToken cancellationToken)
