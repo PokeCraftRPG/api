@@ -177,6 +177,21 @@ public class SpeciesBuilder : ISpeciesBuilder
     return species;
   }
 
+  public static SpeciesAggregate Drifloon(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+    .WithWorld(world)
+    .WithNumber(new Number(425))
+    .WithCategory(PokemonCategory.Standard)
+    .WithKey(new Slug("drifloon"))
+    .WithName(new Name("Drifloon"))
+    .WithBaseFriendship(new Friendship(70))
+    .WithCatchRate(new CatchRate(125))
+    .WithGrowthRate(GrowthRate.Fluctuating)
+    .WithEggCycles(new EggCycles(30))
+    .WithEggGroups(new EggGroups(EggGroup.Amorphous))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Eevee_(Pok%C3%A9mon)"))
+    .WithNotes(new Notes("Drifloon’s folklore ties it to the underworld and child-snatching myths; ideal for eerie encounters or supernatural plot hooks."))
+    .Build();
+
   public static SpeciesAggregate Eevee(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
     .WithWorld(world)
     .WithNumber(new Number(133))
@@ -235,5 +250,20 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithEggGroups(new EggGroups(EggGroup.Field, EggGroup.Fairy))
     .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Raichu_(Pok%C3%A9mon)"))
     .WithNotes(new Notes("Raichu trivia: Mouse Pokémon; can discharge up to 100,000 volts; notable forms (Alolan, Mega) and unique traits across games and lore."))
+    .Build();
+
+  public static SpeciesAggregate Riolu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+    .WithWorld(world)
+    .WithNumber(new Number(447))
+    .WithCategory(PokemonCategory.Baby)
+    .WithKey(new Slug("riolu"))
+    .WithName(new Name("Riolu"))
+    .WithBaseFriendship(new Friendship(70))
+    .WithCatchRate(new CatchRate(75))
+    .WithGrowthRate(GrowthRate.MediumSlow)
+    .WithEggCycles(new EggCycles(25))
+    .WithEggGroups(new EggGroups(EggGroup.NoEggsDiscovered))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Riolu_(Pok%C3%A9mon)"))
+    .WithNotes(new Notes("Riolu’s lore and rarity in Mystery Dungeon make it ideal as a special starter or hard-to-obtain companion with thematic, myth-inspired flavor."))
     .Build();
 }

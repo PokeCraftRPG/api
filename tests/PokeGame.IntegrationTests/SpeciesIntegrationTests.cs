@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Regions;
@@ -124,6 +125,133 @@ public class SpeciesIntegrationTests : IntegrationTests
     SpeciesModel? species = await _speciesService.ReadAsync(id: null, _species.Number.Value);
     Assert.NotNull(species);
     Assert.Equal(_species.EntityId, species.Id);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results.")]
+  public async Task Given_Payload_When_SearchAsync_Then_Results()
+  {
+    SpeciesAggregate eevee = SpeciesBuilder.Eevee(Faker, World);
+    SpeciesAggregate pikachu = SpeciesBuilder.Pikachu(Faker, World);
+    SpeciesAggregate raichu = SpeciesBuilder.Raichu(Faker, World);
+    await _speciesRepository.SaveAsync([eevee, pikachu, raichu]);
+
+    SearchSpeciesPayload payload = new()
+    {
+      Ids = [eevee.EntityId, pikachu.EntityId, raichu.EntityId, Guid.Empty],
+      Skip = 1,
+      Limit = 1
+    };
+    payload.Search.Terms.Add(new SearchTerm("%chu"));
+    payload.Sort.Add(new SpeciesSortOption(SpeciesSort.Key, isDescending: true));
+
+    SearchResults<SpeciesModel> results = await _speciesService.SearchAsync(payload);
+    Assert.Equal(2, results.Total);
+
+    SpeciesModel species = Assert.Single(results.Items);
+    Assert.Equal(pikachu.EntityId, species.Id);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (Category).")]
+  public async Task Given_Category_When_SearchAsync_Then_Results()
+  {
+    SpeciesAggregate eevee = SpeciesBuilder.Eevee(Faker, World);
+    SpeciesAggregate riolu = SpeciesBuilder.Riolu(Faker, World);
+    await _speciesRepository.SaveAsync([eevee, riolu]);
+
+    SearchSpeciesPayload payload = new()
+    {
+      Ids = [eevee.EntityId, riolu.EntityId],
+      Category = Faker.PickRandom(PokemonCategory.Standard, PokemonCategory.Baby)
+    };
+
+    SearchResults<SpeciesModel> results = await _speciesService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    SpeciesModel species = Assert.Single(results.Items);
+    Assert.Equal((payload.Category == PokemonCategory.Standard ? eevee : riolu).EntityId, species.Id);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (EggGroup).")]
+  public async Task Given_EggGroup_When_SearchAsync_Then_Results()
+  {
+    SpeciesAggregate eevee = SpeciesBuilder.Eevee(Faker, World);
+    SpeciesAggregate pikachu = SpeciesBuilder.Pikachu(Faker, World);
+    SpeciesAggregate riolu = SpeciesBuilder.Riolu(Faker, World);
+    await _speciesRepository.SaveAsync([eevee, pikachu, riolu]);
+
+    SearchSpeciesPayload payload = new()
+    {
+      Ids = [eevee.EntityId, pikachu.EntityId, riolu.EntityId],
+      EggGroup = Faker.PickRandom(EggGroup.NoEggsDiscovered, EggGroup.Fairy, EggGroup.Field)
+    };
+
+    SearchResults<SpeciesModel> results = await _speciesService.SearchAsync(payload);
+
+    switch (payload.EggGroup)
+    {
+      case EggGroup.Fairy:
+        Assert.Equal(1, results.Total);
+        Assert.Equal(pikachu.EntityId, Assert.Single(results.Items).Id);
+        break;
+      case EggGroup.Field:
+        Assert.Equal(2, results.Total);
+        Assert.Contains(results.Items, species => species.Id == eevee.EntityId);
+        Assert.Contains(results.Items, species => species.Id == pikachu.EntityId);
+        break;
+      default:
+        Assert.Equal(1, results.Total);
+        Assert.Equal(riolu.EntityId, Assert.Single(results.Items).Id);
+        break;
+    }
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (GrowthRate).")]
+  public async Task Given_GrowthRate_When_SearchAsync_Then_Results()
+  {
+    SpeciesAggregate drifloon = SpeciesBuilder.Drifloon(Faker, World);
+    SpeciesAggregate eevee = SpeciesBuilder.Eevee(Faker, World);
+    SpeciesAggregate riolu = SpeciesBuilder.Riolu(Faker, World);
+    await _speciesRepository.SaveAsync([drifloon, eevee, riolu]);
+
+    SearchSpeciesPayload payload = new()
+    {
+      GrowthRate = Faker.PickRandom(GrowthRate.Fluctuating, GrowthRate.MediumFast, GrowthRate.MediumSlow)
+    };
+
+    SearchResults<SpeciesModel> results = await _speciesService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    switch (payload.GrowthRate)
+    {
+      case GrowthRate.MediumFast:
+        Assert.Equal(eevee.EntityId, Assert.Single(results.Items).Id);
+        break;
+      case GrowthRate.MediumSlow:
+        Assert.Equal(riolu.EntityId, Assert.Single(results.Items).Id);
+        break;
+      default:
+        Assert.Equal(drifloon.EntityId, Assert.Single(results.Items).Id);
+        break;
+    }
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (RegionId).")]
+  public async Task Given_RegionId_When_SearchAsync_Then_Results()
+  {
+    SpeciesAggregate pikachu = SpeciesBuilder.Pikachu(Faker, World);
+    pikachu.SetRegionalNumber(_kanto, new Number(25), World.OwnerId);
+    await _speciesRepository.SaveAsync(pikachu);
+
+    SearchSpeciesPayload payload = new()
+    {
+      RegionId = _kanto.EntityId
+    };
+
+    SearchResults<SpeciesModel> results = await _speciesService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    SpeciesModel species = Assert.Single(results.Items);
+    Assert.Equal(pikachu.EntityId, species.Id);
   }
 
   [Fact(DisplayName = "It should replace an existing species.")]
