@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Core.Evolutions;
 using PokeGame.Core.Evolutions.Models;
 using PokeGame.Extensions;
+using PokeGame.Models.Evolution;
 
 namespace PokeGame.Controllers;
 
@@ -25,11 +27,26 @@ public class EvolutionController : ControllerBase
     return ToActionResult(result);
   }
 
+  [HttpGet("{id}")]
+  public async Task<ActionResult<EvolutionModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
+  {
+    EvolutionModel? evolution = await _evolutionService.ReadAsync(id, cancellationToken);
+    return evolution is null ? NotFound() : Ok(evolution);
+  }
+
   [HttpPut("{id}")]
   public async Task<ActionResult<EvolutionModel>> ReplaceAsync(Guid id, [FromBody] CreateOrReplaceEvolutionPayload payload, CancellationToken cancellationToken)
   {
     CreateOrReplaceEvolutionResult result = await _evolutionService.CreateOrReplaceAsync(payload, id, cancellationToken);
     return ToActionResult(result);
+  }
+
+  [HttpGet]
+  public async Task<ActionResult<SearchResults<EvolutionModel>>> SearchAsync([FromQuery] SearchEvolutionsParameters parameters, CancellationToken cancellationToken)
+  {
+    SearchEvolutionsPayload payload = parameters.ToPayload();
+    SearchResults<EvolutionModel> evolutions = await _evolutionService.SearchAsync(payload, cancellationToken);
+    return Ok(evolutions);
   }
 
   [HttpPatch("{id}")]
