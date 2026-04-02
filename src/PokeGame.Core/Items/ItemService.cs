@@ -18,6 +18,7 @@ internal class ItemService : IItemService
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IItemService, ItemService>();
+    services.AddTransient<IItemManager, ItemManager>();
     services.AddTransient<ICommandHandler<CreateOrReplaceItemCommand, CreateOrReplaceItemResult>, CreateOrReplaceItemCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateItemCommand, ItemModel?>, UpdateItemCommandHandler>();
     services.AddTransient<IQueryHandler<ReadItemQuery, ItemModel?>, ReadItemQueryHandler>();

@@ -51,6 +51,14 @@ internal class ItemQuerier : IItemQuerier
     }
   }
 
+  public async Task<ItemId?> FindIdAsync(string key, CancellationToken cancellationToken)
+  {
+    string? streamId = await _items.Where(x => x.World!.Id == _context.WorldUid && x.Key == Slug.Normalize(key))
+      .Select(x => x.StreamId)
+      .SingleOrDefaultAsync(cancellationToken);
+    return streamId is null ? null : new ItemId(streamId);
+  }
+
   public async Task<ItemModel> ReadAsync(Item item, CancellationToken cancellationToken)
   {
     return await ReadAsync(item.Id, cancellationToken) ?? throw new InvalidOperationException($"The item entity '{item}' was not found.");

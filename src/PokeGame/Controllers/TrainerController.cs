@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Core.Trainers;
 using PokeGame.Core.Trainers.Models;
 using PokeGame.Extensions;
+using PokeGame.Models.Trainer;
 
 namespace PokeGame.Controllers;
 
@@ -44,6 +46,14 @@ public class TrainerController : ControllerBase
   {
     TrainerModel? trainer = await _trainerService.ReadAsync(id: null, license, key: null, cancellationToken);
     return trainer is null ? NotFound() : Ok(trainer);
+  }
+
+  [HttpGet]
+  public async Task<ActionResult<SearchResults<TrainerModel>>> SearchAsync([FromQuery] SearchTrainersParameters parameters, CancellationToken cancellationToken)
+  {
+    SearchTrainersPayload payload = parameters.ToPayload();
+    SearchResults<TrainerModel> trainers = await _trainerService.SearchAsync(payload, cancellationToken);
+    return Ok(trainers);
   }
 
   [HttpPut("{id}")]

@@ -53,8 +53,7 @@ internal class VarietyQuerier : IVarietyQuerier
 
   public async Task<VarietyId?> FindIdAsync(string key, CancellationToken cancellationToken)
   {
-    string normalized = Slug.Normalize(key);
-    string? streamId = await _varieties.Where(x => x.World!.Id == _context.WorldUid && x.Key == normalized)
+    string? streamId = await _varieties.Where(x => x.World!.Id == _context.WorldUid && x.Key == Slug.Normalize(key))
       .Select(x => x.StreamId)
       .SingleOrDefaultAsync(cancellationToken);
     return streamId is null ? null : new VarietyId(streamId);

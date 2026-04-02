@@ -188,12 +188,12 @@ public class VarietyBuilder : IVarietyBuilder
     return variety;
   }
 
-  public static Variety Eevee(Faker? faker = null, World? world = null)
+  public static Variety Eevee(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new VarietyBuilder(faker)
       .WithWorld(world)
-      .WithSpecies(SpeciesBuilder.Eevee(faker, world))
+      .WithSpecies(species ?? SpeciesBuilder.Eevee(faker, world))
       .IsDefault()
       .WithKey(new Slug("eevee"))
       .WithName(new Name("Eevee"))
@@ -205,12 +205,29 @@ public class VarietyBuilder : IVarietyBuilder
       .Build();
   }
 
-  public static Variety Pikachu(Faker? faker = null, World? world = null)
+  public static Variety Pichu(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new VarietyBuilder(faker)
       .WithWorld(world)
-      .WithSpecies(SpeciesBuilder.Pikachu(faker, world))
+      .WithSpecies(species ?? SpeciesBuilder.Pichu(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("pichu"))
+      .WithName(new Name("Pichu"))
+      .WithGenus(new Genus("Tiny Mouse"))
+      .WithDescription(new Description("It is not yet skilled at storing electricity. It may send out a jolt if amused or startled."))
+      .WithGenderRatio(new GenderRatio(4))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Pichu_(Pok%C3%A9mon)"))
+      .WithNotes(new Notes("This is the default variety."))
+      .Build();
+  }
+
+  public static Variety Pikachu(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new VarietyBuilder(faker)
+      .WithWorld(world)
+      .WithSpecies(species ?? SpeciesBuilder.Pikachu(faker, world))
       .IsDefault()
       .WithKey(new Slug("pikachu"))
       .WithName(new Name("Pikachu"))

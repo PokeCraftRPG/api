@@ -133,6 +133,18 @@ public class ItemBuilder : IItemBuilder
     return item;
   }
 
+  public static Item OranBerry(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("oran-berry"))
+    .WithName(new Name("Oran Berry"))
+    .WithDescription(new Description("If a Pokémon holds one of these Berries, it will be able to restore 10 HP to itself."))
+    .WithPrice(new Price(80))
+    .WithSprite(new Url("https://archives.bulbagarden.net/media/upload/0/0c/Dream_Oran_Berry_Sprite.png"))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Oran_Berry"))
+    .WithNotes(new Notes("Common healing Berry that restores 10 HP (auto at ≤50% HP or when used); simple, widely available recovery item in and out of battle."))
+    .WithProperties(new BerryProperties(healing: 80, false, null, false, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, null, false))
+    .Build();
+
   public static Item Potion(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
     .WithWorld(world)
     .WithKey(new Slug("potion"))
@@ -143,5 +155,17 @@ public class ItemBuilder : IItemBuilder
     .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Potion"))
     .WithNotes(new Notes("When used from the Bag on a Pokémon, it heals the Pokémon by 20 HP."))
     .WithProperties(new MedicineProperties(false, healing: 20, false, false, null, false, 0, false, false))
+    .Build();
+
+  public static Item ThunderStone(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("thunder-stone"))
+    .WithName(new Name("Thunder Stone"))
+    .WithDescription(new Description("A peculiar stone that can make certain species of Pokémon evolve. It has a distinct thunderbolt pattern."))
+    .WithPrice(new Price(3000))
+    .WithSprite(new Url("https://archives.bulbagarden.net/media/upload/a/a5/Dream_Thunder_Stone_Sprite.png"))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Thunder_Stone"))
+    .WithNotes(new Notes("Evolution stone that evolves Electric-related Pokémon (e.g., Pikachu→Raichu, Eevee→Jolteon); consumed on use, with some special-form exceptions."))
+    .WithProperties(new OtherItemProperties())
     .Build();
 }
