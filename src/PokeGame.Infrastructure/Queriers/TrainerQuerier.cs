@@ -107,7 +107,7 @@ internal class TrainerQuerier : ITrainerQuerier
       .Join(PokemonDb.Worlds.WorldId, PokemonDb.Trainers.WorldId)
       .ApplyWorldFilter(_context.WorldUid)
       .ApplyIdFilter(PokemonDb.Trainers.Id, payload.Ids);
-    _sql.ApplyTextSearch(builder, payload.Search, PokemonDb.Trainers.Key, PokemonDb.Trainers.Name);
+    _sql.ApplyTextSearch(builder, payload.Search, PokemonDb.Trainers.License, PokemonDb.Trainers.Key, PokemonDb.Trainers.Name);
 
     if (!string.IsNullOrWhiteSpace(payload.OwnerId))
     {

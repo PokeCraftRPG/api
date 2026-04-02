@@ -1,4 +1,5 @@
-﻿using Logitar.CQRS;
+﻿using Krakenar.Contracts.Search;
+using Logitar.CQRS;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Forms.Commands;
 using PokeGame.Core.Forms.Models;
@@ -10,6 +11,7 @@ public interface IFormService
 {
   Task<CreateOrReplaceFormResult> CreateOrReplaceAsync(CreateOrReplaceFormPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
   Task<FormModel?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
+  Task<SearchResults<FormModel>> SearchAsync(SearchFormsPayload payload, CancellationToken cancellationToken = default);
   Task<FormModel?> UpdateAsync(Guid id, UpdateFormPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -22,6 +24,7 @@ internal class FormService : IFormService
     services.AddTransient<ICommandHandler<CreateOrReplaceFormCommand, CreateOrReplaceFormResult>, CreateOrReplaceFormCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateFormCommand, FormModel?>, UpdateFormCommandHandler>();
     services.AddTransient<IQueryHandler<ReadFormQuery, FormModel?>, ReadFormQueryHandler>();
+    services.AddTransient<IQueryHandler<SearchFormsQuery, SearchResults<FormModel>>, SearchFormsQueryHandler>();
   }
 
   private readonly ICommandBus _commandBus;
@@ -42,6 +45,12 @@ internal class FormService : IFormService
   public async Task<FormModel?> ReadAsync(Guid? id, string? key, CancellationToken cancellationToken)
   {
     ReadFormQuery query = new(id, key);
+    return await _queryBus.ExecuteAsync(query, cancellationToken);
+  }
+
+  public async Task<SearchResults<FormModel>> SearchAsync(SearchFormsPayload payload, CancellationToken cancellationToken)
+  {
+    SearchFormsQuery query = new(payload);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 

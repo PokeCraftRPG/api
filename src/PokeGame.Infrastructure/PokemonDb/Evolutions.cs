@@ -1,4 +1,4 @@
-﻿using Logitar.Data;
+using Logitar.Data;
 using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.PokemonDb;
@@ -17,10 +17,10 @@ internal static class Evolutions
   public static readonly ColumnId EvolutionId = new(nameof(EvolutionEntity.EvolutionId), Table);
   public static readonly ColumnId Friendship = new(nameof(EvolutionEntity.Friendship), Table);
   public static readonly ColumnId Gender = new(nameof(EvolutionEntity.Gender), Table);
-  public static readonly ColumnId HeldItem = new(nameof(EvolutionEntity.HeldItem), Table);
+  public static readonly ColumnId HeldItemId = new(nameof(EvolutionEntity.HeldItemId), Table);
   public static readonly ColumnId Id = new(nameof(EvolutionEntity.Id), Table);
   public static readonly ColumnId ItemId = new(nameof(EvolutionEntity.ItemId), Table);
-  public static readonly ColumnId KnownMove = new(nameof(EvolutionEntity.KnownMove), Table);
+  public static readonly ColumnId KnownMoveId = new(nameof(EvolutionEntity.KnownMoveId), Table);
   public static readonly ColumnId Level = new(nameof(EvolutionEntity.Level), Table);
   public static readonly ColumnId Location = new(nameof(EvolutionEntity.Location), Table);
   public static readonly ColumnId SourceId = new(nameof(EvolutionEntity.SourceId), Table);

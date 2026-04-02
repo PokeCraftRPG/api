@@ -214,7 +214,7 @@ public class FormBuilder : IFormBuilder
     return form;
   }
 
-  public static Form Pichu(Faker? faker = null, World? world = null, Variety? variety = null)
+  public static Form Pichu(Faker? faker = null, World? world = null, Variety? variety = null, Abilities? abilities = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new FormBuilder(faker)
@@ -226,7 +226,7 @@ public class FormBuilder : IFormBuilder
       .WithHeight(new Height(3))
       .WithWeight(new Weight(20))
       .WithTypes(new Types(PokemonType.Electric))
-      .WithAbilities(new Abilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
+      .WithAbilities(abilities ?? new Abilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
       .WithBaseStatistics(new BaseStatistics(20, 40, 15, 35, 35, 60))
       .WithYield(new Yield(41, 0, 0, 0, 0, 0, 1))
       .WithSprites(new Sprites(
@@ -236,7 +236,7 @@ public class FormBuilder : IFormBuilder
       .Build();
   }
 
-  public static Form Pikachu(Faker? faker = null, World? world = null, Variety? variety = null)
+  public static Form Pikachu(Faker? faker = null, World? world = null, Variety? variety = null, Abilities? abilities = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new FormBuilder(faker)
@@ -248,7 +248,7 @@ public class FormBuilder : IFormBuilder
       .WithHeight(new Height(4))
       .WithWeight(new Weight(60))
       .WithTypes(new Types(PokemonType.Electric))
-      .WithAbilities(new Abilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
+      .WithAbilities(abilities ?? new Abilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
       .WithBaseStatistics(new BaseStatistics(35, 55, 40, 50, 50, 90))
       .WithYield(new Yield(112, 0, 0, 0, 0, 0, 2))
       .WithSprites(new Sprites(
@@ -260,7 +260,7 @@ public class FormBuilder : IFormBuilder
       .Build();
   }
 
-  public static Form Raichu(Faker? faker = null, World? world = null, Variety? variety = null)
+  public static Form Raichu(Faker? faker = null, World? world = null, Variety? variety = null, Abilities? abilities = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new FormBuilder(faker)
@@ -272,7 +272,7 @@ public class FormBuilder : IFormBuilder
       .WithHeight(new Height(8))
       .WithWeight(new Weight(300))
       .WithTypes(new Types(PokemonType.Electric))
-      .WithAbilities(new Abilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
+      .WithAbilities(abilities ?? new Abilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
       .WithBaseStatistics(new BaseStatistics(60, 90, 55, 90, 80, 110))
       .WithYield(new Yield(218, 0, 0, 0, 0, 0, 3))
       .WithSprites(new Sprites(
@@ -284,7 +284,7 @@ public class FormBuilder : IFormBuilder
       .Build();
   }
 
-  public static Form RaichuAlola(Faker? faker = null, World? world = null, Variety? variety = null)
+  public static Form RaichuAlola(Faker? faker = null, World? world = null, Variety? variety = null, Abilities? abilities = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new FormBuilder(faker)
@@ -296,7 +296,7 @@ public class FormBuilder : IFormBuilder
       .WithHeight(new Height(7))
       .WithWeight(new Weight(210))
       .WithTypes(new Types(PokemonType.Electric, PokemonType.Fairy))
-      .WithAbilities(new Abilities(AbilityBuilder.SurgeSurfer(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
+      .WithAbilities(abilities ?? new Abilities(AbilityBuilder.SurgeSurfer(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
       .WithBaseStatistics(new BaseStatistics(60, 85, 50, 95, 85, 110))
       .WithYield(new Yield(218, 0, 0, 0, 0, 0, 3))
       .WithSprites(new Sprites(
