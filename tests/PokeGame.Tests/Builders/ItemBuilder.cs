@@ -144,4 +144,16 @@ public class ItemBuilder : IItemBuilder
     .WithNotes(new Notes("When used from the Bag on a Pokémon, it heals the Pokémon by 20 HP."))
     .WithProperties(new MedicineProperties(false, healing: 20, false, false, null, false, 0, false, false))
     .Build();
+
+  public static Item ThunderStone(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("thunder-stone"))
+    .WithName(new Name("Thunder Stone"))
+    .WithDescription(new Description("A peculiar stone that can make certain species of Pokémon evolve. It has a distinct thunderbolt pattern."))
+    .WithPrice(new Price(3000))
+    .WithSprite(new Url("https://archives.bulbagarden.net/media/upload/a/a5/Dream_Thunder_Stone_Sprite.png"))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Thunder_Stone"))
+    .WithNotes(new Notes("Evolution stone that evolves Electric-related Pokémon (e.g., Pikachu→Raichu, Eevee→Jolteon); consumed on use, with some special-form exceptions."))
+    .WithProperties(new OtherItemProperties())
+    .Build();
 }

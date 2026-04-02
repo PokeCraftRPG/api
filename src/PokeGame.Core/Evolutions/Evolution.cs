@@ -143,17 +143,17 @@ public class Evolution : AggregateRoot, IEntityProvider
   public Evolution(Form source, Form target, EvolutionTrigger trigger, Item? item, UserId userId, EvolutionId evolutionId)
     : base(evolutionId.StreamId)
   {
-    WorldMismatchException.ThrowIfMismatch(Id, source, nameof(source));
-    WorldMismatchException.ThrowIfMismatch(Id, target, nameof(target));
+    WorldMismatchException.ThrowIfMismatch(Id, source.Id, nameof(source));
+    WorldMismatchException.ThrowIfMismatch(Id, target.Id, nameof(target));
 
     if (item is not null)
     {
-      WorldMismatchException.ThrowIfMismatch(Id, item, nameof(item));
+      WorldMismatchException.ThrowIfMismatch(Id, item.Id, nameof(item));
     }
 
-    if (source.Equals(target) || source.VarietyId == target.VarietyId)
+    if (source.VarietyId == target.VarietyId)
     {
-      throw new NotImplementedException(); // TODO(fpion): implement
+      throw new InvalidOperationException("The source and target form varieties should be different.");
     }
 
     if (!Enum.IsDefined(trigger))

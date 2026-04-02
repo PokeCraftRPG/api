@@ -62,6 +62,8 @@ internal class CreateOrReplaceEvolutionCommandHandler : ICommandHandler<CreateOr
 
     Form source = await _formManager.FindAsync(payload.Source, nameof(payload.Source), cancellationToken);
     Form target = await _formManager.FindAsync(payload.Target, nameof(payload.Target), cancellationToken);
+    await _evolutionQuerier.EnsureDifferentSpeciesAsync([source, target], cancellationToken);
+
     Item? item = string.IsNullOrWhiteSpace(payload.Item) ? null : await _itemManager.FindAsync(payload.Item, nameof(payload.Item), cancellationToken);
 
     bool created = false;

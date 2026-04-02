@@ -188,12 +188,12 @@ public class VarietyBuilder : IVarietyBuilder
     return variety;
   }
 
-  public static Variety Eevee(Faker? faker = null, World? world = null)
+  public static Variety Eevee(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new VarietyBuilder(faker)
       .WithWorld(world)
-      .WithSpecies(SpeciesBuilder.Eevee(faker, world))
+      .WithSpecies(species ?? SpeciesBuilder.Eevee(faker, world))
       .IsDefault()
       .WithKey(new Slug("eevee"))
       .WithName(new Name("Eevee"))
@@ -205,12 +205,12 @@ public class VarietyBuilder : IVarietyBuilder
       .Build();
   }
 
-  public static Variety Pikachu(Faker? faker = null, World? world = null)
+  public static Variety Pikachu(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new VarietyBuilder(faker)
       .WithWorld(world)
-      .WithSpecies(SpeciesBuilder.Pikachu(faker, world))
+      .WithSpecies(species ?? SpeciesBuilder.Pikachu(faker, world))
       .IsDefault()
       .WithKey(new Slug("pikachu"))
       .WithName(new Name("Pikachu"))
