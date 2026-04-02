@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Extensions;
+using PokeGame.Models.Form;
 
 namespace PokeGame.Controllers;
 
@@ -37,6 +39,14 @@ public class FormController : ControllerBase
   {
     FormModel? form = await _formService.ReadAsync(id: null, key, cancellationToken);
     return form is null ? NotFound() : Ok(form);
+  }
+
+  [HttpGet]
+  public async Task<ActionResult<SearchResults<FormModel>>> SearchAsync([FromQuery] SearchFormsParameters parameters, CancellationToken cancellationToken)
+  {
+    SearchFormsPayload payload = parameters.ToPayload();
+    SearchResults<FormModel> forms = await _formService.SearchAsync(payload, cancellationToken);
+    return Ok(forms);
   }
 
   [HttpPut("{id}")]

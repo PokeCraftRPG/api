@@ -29,6 +29,9 @@ internal class ItemEntity : AggregateEntity
 
   public string? Properties { get; private set; }
 
+  public List<EvolutionEntity> Evolutions { get; private set; } = [];
+  public List<EvolutionEntity> HeldEvolutions { get; private set; } = [];
+
   public ItemEntity(WorldEntity world, ItemCreated @event) : base(@event)
   {
     Id = new ItemId(@event.StreamId).EntityId;

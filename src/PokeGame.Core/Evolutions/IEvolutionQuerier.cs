@@ -1,4 +1,5 @@
-﻿using PokeGame.Core.Evolutions.Models;
+﻿using Krakenar.Contracts.Search;
+using PokeGame.Core.Evolutions.Models;
 using PokeGame.Core.Forms;
 
 namespace PokeGame.Core.Evolutions;
@@ -10,5 +11,6 @@ public interface IEvolutionQuerier
   Task<EvolutionModel> ReadAsync(Evolution evolution, CancellationToken cancellationToken = default);
   Task<EvolutionModel?> ReadAsync(EvolutionId id, CancellationToken cancellationToken = default);
   Task<EvolutionModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
-  Task<EvolutionModel?> ReadAsync(string key, CancellationToken cancellationToken = default);
+
+  Task<SearchResults<EvolutionModel>> SearchAsync(SearchEvolutionsPayload payload, CancellationToken cancellationToken = default);
 }

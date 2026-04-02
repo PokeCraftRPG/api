@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
@@ -18,8 +19,9 @@ public class FormIntegrationTests : IntegrationTests
   private readonly ISpeciesRepository _speciesRepository;
   private readonly IVarietyRepository _varietyRepository;
 
-  private Ability _surgeSurfer = null!;
   private Ability _lightningRod = null!;
+  private Ability _static = null!;
+  private Ability _surgeSurfer = null!;
   private SpeciesAggregate _species = null!;
   private Variety _variety = null!;
   private Form _form = null!;
@@ -37,9 +39,10 @@ public class FormIntegrationTests : IntegrationTests
   {
     await base.InitializeAsync();
 
-    _surgeSurfer = AbilityBuilder.SurgeSurfer(Faker, World);
     _lightningRod = AbilityBuilder.LightningRod(Faker, World);
-    await _abilityRepository.SaveAsync([_surgeSurfer, _lightningRod]);
+    _static = AbilityBuilder.Static(Faker, World);
+    _surgeSurfer = AbilityBuilder.SurgeSurfer(Faker, World);
+    await _abilityRepository.SaveAsync([_lightningRod, _static, _surgeSurfer]);
 
     _species = SpeciesBuilder.Raichu(Faker, World);
     await _speciesRepository.SaveAsync(_species);
@@ -184,6 +187,179 @@ public class FormIntegrationTests : IntegrationTests
     Assert.Null(form.Abilities.Secondary);
     Assert.NotNull(form.Abilities.Hidden);
     Assert.Equal(_lightningRod.EntityId, form.Abilities.Hidden.Id);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (AbilityId).")]
+  public async Task Given_AbilityId_When_Search_Then_Results()
+  {
+    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new Abilities(_static, secondary: null, _lightningRod));
+    Form raichuAlola = FormBuilder.RaichuAlola(Faker, World, _variety, new Abilities(_surgeSurfer, secondary: null, _lightningRod));
+    await _formRepository.SaveAsync([raichu, raichuAlola]);
+
+    SearchFormsPayload payload = new()
+    {
+      Ids = [raichu.EntityId, raichuAlola.EntityId],
+      AbilityId = Faker.PickRandom(_lightningRod.EntityId, _static.EntityId, _surgeSurfer.EntityId)
+    };
+    SearchResults<FormModel> results = await _formService.SearchAsync(payload);
+
+    if (payload.AbilityId == _static.EntityId)
+    {
+      Assert.Equal(1, results.Total);
+      Assert.Equal(raichu.EntityId, Assert.Single(results.Items).Id);
+    }
+    else if (payload.AbilityId == _surgeSurfer.EntityId)
+    {
+      Assert.Equal(1, results.Total);
+      Assert.Equal(raichuAlola.EntityId, Assert.Single(results.Items).Id);
+    }
+    else
+    {
+      Assert.Equal(2, results.Total);
+      Assert.Equal(results.Total, results.Items.Count);
+      Assert.Contains(results.Items, x => x.Id == raichu.EntityId);
+      Assert.Contains(results.Items, x => x.Id == raichuAlola.EntityId);
+    }
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (IsBattleOnly).")]
+  public async Task Given_IsBattleOnly_When_Search_Then_Results()
+  {
+    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new Abilities(_static, secondary: null, _lightningRod));
+    Form battle = new FormBuilder(Faker).WithWorld(World).WithVariety(_variety).WithKey(new Slug("raichu-battle")).IsBattleOnly().Build();
+    await _formRepository.SaveAsync([raichu, battle]);
+
+    SearchFormsPayload payload = new()
+    {
+      Ids = [raichu.EntityId, battle.EntityId],
+      IsBattleOnly = Faker.Random.Bool()
+    };
+
+    SearchResults<FormModel> results = await _formService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    FormModel form = Assert.Single(results.Items);
+    Assert.Equal((payload.IsBattleOnly.Value ? battle : raichu).EntityId, form.Id);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (IsMega).")]
+  public async Task Given_IsMega_When_Search_Then_Results()
+  {
+    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new Abilities(_static, secondary: null, _lightningRod));
+    Form mega = new FormBuilder(Faker).WithWorld(World).WithVariety(_variety).WithKey(new Slug("raichu-mega")).IsMega().Build();
+    await _formRepository.SaveAsync([raichu, mega]);
+
+    SearchFormsPayload payload = new()
+    {
+      Ids = [raichu.EntityId, mega.EntityId],
+      IsMega = Faker.Random.Bool()
+    };
+
+    SearchResults<FormModel> results = await _formService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    FormModel form = Assert.Single(results.Items);
+    Assert.Equal((payload.IsMega.Value ? mega : raichu).EntityId, form.Id);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (Type).")]
+  public async Task Given_Type_When_Search_Then_Results()
+  {
+    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new Abilities(_static, secondary: null, _lightningRod));
+    Form raichuAlola = FormBuilder.RaichuAlola(Faker, World, _variety, new Abilities(_surgeSurfer, secondary: null, _lightningRod));
+    await _formRepository.SaveAsync([raichu, raichuAlola]);
+
+    SearchFormsPayload payload = new()
+    {
+      Ids = [raichu.EntityId, raichuAlola.EntityId],
+      Type = Faker.PickRandom(PokemonType.Normal, PokemonType.Electric, PokemonType.Fairy)
+    };
+    SearchResults<FormModel> results = await _formService.SearchAsync(payload);
+
+    switch (payload.Type)
+    {
+      case PokemonType.Electric:
+        Assert.Equal(2, results.Total);
+        Assert.Equal(results.Total, results.Items.Count);
+        Assert.Contains(results.Items, x => x.Id == raichu.EntityId);
+        Assert.Contains(results.Items, x => x.Id == raichuAlola.EntityId);
+        break;
+      case PokemonType.Fairy:
+        Assert.Equal(1, results.Total);
+        Assert.Equal(raichuAlola.EntityId, Assert.Single(results.Items).Id);
+        break;
+      default:
+        Assert.Equal(0, results.Total);
+        Assert.Empty(results.Items);
+        break;
+    }
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (VarietyId).")]
+  public async Task Given_VarietyId_When_Search_Then_Results()
+  {
+    SpeciesAggregate pikachuSpecies = SpeciesBuilder.Pikachu(Faker, World);
+    await _speciesRepository.SaveAsync(pikachuSpecies);
+
+    Variety pikachuVariety = VarietyBuilder.Pikachu(Faker, World, pikachuSpecies);
+    await _varietyRepository.SaveAsync(pikachuVariety);
+
+    Form pikachu = FormBuilder.Pikachu(Faker, World, pikachuVariety, new Abilities(_static, secondary: null, _lightningRod));
+    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new Abilities(_static, secondary: null, _lightningRod));
+    Form raichuAlola = FormBuilder.RaichuAlola(Faker, World, _variety, new Abilities(_surgeSurfer, secondary: null, _lightningRod));
+    await _formRepository.SaveAsync([pikachu, raichu, raichuAlola]);
+
+    SearchFormsPayload payload = new()
+    {
+      Ids = [pikachu.EntityId, raichu.EntityId, raichuAlola.EntityId],
+      VarietyId = Faker.PickRandom(pikachuVariety.EntityId, _variety.EntityId)
+    };
+    SearchResults<FormModel> results = await _formService.SearchAsync(payload);
+
+    if (payload.VarietyId == pikachuVariety.EntityId)
+    {
+      Assert.Equal(1, results.Total);
+      Assert.Equal(pikachu.EntityId, Assert.Single(results.Items).Id);
+    }
+    else
+    {
+      Assert.Equal(2, results.Total);
+      Assert.Equal(results.Total, results.Items.Count);
+      Assert.Contains(results.Items, x => x.Id == raichu.EntityId);
+      Assert.Contains(results.Items, x => x.Id == raichuAlola.EntityId);
+    }
+  }
+
+  [Fact(DisplayName = "It should return the correct search results.")]
+  public async Task Given_Payload_When_Search_Then_Results()
+  {
+    SpeciesAggregate pichuSpecies = SpeciesBuilder.Pichu(Faker, World);
+    SpeciesAggregate pikachuSpecies = SpeciesBuilder.Pikachu(Faker, World);
+    await _speciesRepository.SaveAsync([pichuSpecies, pikachuSpecies]);
+
+    Variety pichuVariety = VarietyBuilder.Pichu(Faker, World, pichuSpecies);
+    Variety pikachuVariety = VarietyBuilder.Pikachu(Faker, World, pikachuSpecies);
+    await _varietyRepository.SaveAsync([pichuVariety, pikachuVariety]);
+
+    Form pichu = FormBuilder.Pichu(Faker, World, pichuVariety, new Abilities(_static, secondary: null, _lightningRod));
+    Form pikachu = FormBuilder.Pikachu(Faker, World, pikachuVariety, new Abilities(_static, secondary: null, _lightningRod));
+    Form raichuAlola = FormBuilder.RaichuAlola(Faker, World, _variety, new Abilities(_surgeSurfer, secondary: null, _lightningRod));
+    await _formRepository.SaveAsync([pichu, pikachu, raichuAlola]);
+
+    SearchFormsPayload payload = new()
+    {
+      Ids = [_form.EntityId, pichu.EntityId, Guid.Empty, raichuAlola.EntityId],
+      Skip = 1,
+      Limit = 1
+    };
+    payload.Search.Terms.Add(new SearchTerm("%chu"));
+    payload.Sort.Add(new FormSortOption(FormSort.Name, isDescending: true));
+
+    SearchResults<FormModel> results = await _formService.SearchAsync(payload);
+    Assert.Equal(2, results.Total);
+
+    FormModel form = Assert.Single(results.Items);
+    Assert.Equal(raichuAlola.EntityId, form.Id);
   }
 
   [Fact(DisplayName = "It should throw PropertyConflictException when there is a key conflict.")]
