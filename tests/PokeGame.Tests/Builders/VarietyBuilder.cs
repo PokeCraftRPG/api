@@ -188,6 +188,42 @@ public class VarietyBuilder : IVarietyBuilder
     return variety;
   }
 
+  public static Variety Darmanitan(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new VarietyBuilder(faker)
+      .WithWorld(world)
+      .WithSpecies(species ?? SpeciesBuilder.Darmanitan(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("darmanitan"))
+      .WithName(new Name("Darmanitan"))
+      .WithGenus(new Genus("Blazing"))
+      .WithDescription(new Description("Its thick arms deliver punches strong enough to crush a dump truck, and its power rises with its fire—reaching temperatures up to 2,500°F."))
+      .WithGenderRatio(new GenderRatio(4))
+      .CanChangeForm()
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Darmanitan_(Pok%C3%A9mon)"))
+      .WithNotes(new Notes("This is the variety from Unova."))
+      .Build();
+  }
+
+  public static Variety DarmanitanGalar(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new VarietyBuilder(faker)
+      .WithWorld(world)
+      .WithSpecies(species ?? SpeciesBuilder.Darmanitan(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("darmanitan-galar"))
+      .WithName(new Name("Galarian Darmanitan"))
+      .WithGenus(new Genus("Zen Charm"))
+      .WithDescription(new Description("During blizzards, it visits settlements, storing food in its head snowball; gentle yet strong, it freezes it instantly before delivering powerful headbutts."))
+      .WithGenderRatio(new GenderRatio(4))
+      .CanChangeForm()
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Darmanitan_(Pok%C3%A9mon)"))
+      .WithNotes(new Notes("This is the variety from Galar."))
+      .Build();
+  }
+
   public static Variety Eevee(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
   {
     world ??= new WorldBuilder(faker).Build();
