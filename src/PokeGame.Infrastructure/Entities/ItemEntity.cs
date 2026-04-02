@@ -34,10 +34,9 @@ internal class ItemEntity : AggregateEntity
 
   public ItemEntity(WorldEntity world, ItemCreated @event) : base(@event)
   {
-    Id = new ItemId(@event.StreamId).EntityId;
-
     World = world;
     WorldId = world.WorldId;
+    Id = new ItemId(@event.StreamId).EntityId;
 
     Category = @event.Category;
 

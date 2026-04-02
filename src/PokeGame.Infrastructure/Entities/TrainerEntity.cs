@@ -31,10 +31,9 @@ internal class TrainerEntity : AggregateEntity
 
   public TrainerEntity(WorldEntity world, TrainerCreated @event) : base(@event)
   {
-    Id = new TrainerId(@event.StreamId).EntityId;
-
     World = world;
     WorldId = world.WorldId;
+    Id = new TrainerId(@event.StreamId).EntityId;
 
     License = @event.License.Value;
 

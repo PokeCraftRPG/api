@@ -35,10 +35,9 @@ internal class SpeciesEntity : AggregateEntity
 
   public SpeciesEntity(WorldEntity world, SpeciesCreated @event) : base(@event)
   {
-    Id = new SpeciesId(@event.StreamId).EntityId;
-
     World = world;
     WorldId = world.WorldId;
+    Id = new SpeciesId(@event.StreamId).EntityId;
 
     Number = @event.Number.Value;
     Category = @event.Category;
