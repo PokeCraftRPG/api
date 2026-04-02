@@ -8,6 +8,7 @@ namespace PokeGame.Core.Evolutions;
 public interface IEvolutionService
 {
   Task<CreateOrReplaceEvolutionResult> CreateOrReplaceAsync(CreateOrReplaceEvolutionPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
+  Task<EvolutionModel?> UpdateAsync(Guid id, UpdateEvolutionPayload payload, CancellationToken cancellationToken = default);
 }
 
 internal class EvolutionService : IEvolutionService
@@ -16,6 +17,7 @@ internal class EvolutionService : IEvolutionService
   {
     services.AddTransient<IEvolutionService, EvolutionService>();
     services.AddTransient<ICommandHandler<CreateOrReplaceEvolutionCommand, CreateOrReplaceEvolutionResult>, CreateOrReplaceEvolutionCommandHandler>();
+    services.AddTransient<ICommandHandler<UpdateEvolutionCommand, EvolutionModel?>, UpdateEvolutionCommandHandler>();
   }
 
   private readonly ICommandBus _commandBus;
@@ -30,6 +32,12 @@ internal class EvolutionService : IEvolutionService
   public async Task<CreateOrReplaceEvolutionResult> CreateOrReplaceAsync(CreateOrReplaceEvolutionPayload payload, Guid? id, CancellationToken cancellationToken)
   {
     CreateOrReplaceEvolutionCommand command = new(payload, id);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<EvolutionModel?> UpdateAsync(Guid id, UpdateEvolutionPayload payload, CancellationToken cancellationToken)
+  {
+    UpdateEvolutionCommand command = new(id, payload);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 }

@@ -13,10 +13,10 @@ public class UpdateMoveCommandHandlerTests
   private readonly CancellationToken _cancellationToken = default;
   private readonly Faker _faker = new();
 
+  private readonly Mock<IMoveQuerier> _moveQuerier = new();
   private readonly Mock<IMoveRepository> _moveRepository = new();
   private readonly Mock<IStorageService> _storageService = new();
   private readonly Mock<IPermissionService> _permissionService = new();
-  private readonly Mock<IMoveQuerier> _moveQuerier = new();
 
   private readonly TestContext _context;
   private readonly UpdateMoveCommandHandler _handler;

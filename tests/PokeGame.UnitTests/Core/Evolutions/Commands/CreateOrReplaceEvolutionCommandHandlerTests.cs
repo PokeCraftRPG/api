@@ -134,6 +134,9 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
       It.Is<IEnumerable<Form>>(y => y.SequenceEqual(new Form[] { _pikachu, _raichu })),
       _cancellationToken), Times.Once());
     _storageService.Verify(x => x.ExecuteWithQuotaAsync(evolution, It.IsAny<Func<Task>>(), _cancellationToken), Times.Once());
+
+    Assert.Equal(_oranBerry.Id, evolution.HeldItemId);
+    Assert.Equal(_thunderPunch.Id, evolution.KnownMoveId);
   }
 
   [Fact(DisplayName = "It should throw ImmutablePropertyException when the item has changed.")]
