@@ -7,6 +7,7 @@ using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Storages;
+using PokeGame.Core.Varieties;
 using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Evolutions.Commands;
@@ -23,6 +24,7 @@ internal class CreateOrReplaceEvolutionCommandHandler : ICommandHandler<CreateOr
   private readonly IMoveManager _moveManager;
   private readonly IPermissionService _permissionService;
   private readonly IStorageService _storageService;
+  private readonly IVarietyRepository _varietyRepository;
 
   public CreateOrReplaceEvolutionCommandHandler(
     IContext context,
@@ -32,7 +34,8 @@ internal class CreateOrReplaceEvolutionCommandHandler : ICommandHandler<CreateOr
     IItemManager itemManager,
     IMoveManager moveManager,
     IPermissionService permissionService,
-    IStorageService storageService)
+    IStorageService storageService,
+    IVarietyRepository varietyRepository)
   {
     _context = context;
     _evolutionQuerier = evolutionQuerier;
@@ -42,6 +45,7 @@ internal class CreateOrReplaceEvolutionCommandHandler : ICommandHandler<CreateOr
     _moveManager = moveManager;
     _permissionService = permissionService;
     _storageService = storageService;
+    _varietyRepository = varietyRepository;
   }
 
   public async Task<CreateOrReplaceEvolutionResult> HandleAsync(CreateOrReplaceEvolutionCommand command, CancellationToken cancellationToken)
@@ -62,7 +66,7 @@ internal class CreateOrReplaceEvolutionCommandHandler : ICommandHandler<CreateOr
 
     Form source = await _formManager.FindAsync(payload.Source, nameof(payload.Source), cancellationToken);
     Form target = await _formManager.FindAsync(payload.Target, nameof(payload.Target), cancellationToken);
-    await _evolutionQuerier.EnsureDifferentSpeciesAsync([source, target], cancellationToken);
+    await EnsureDifferentSpeciesAsync(source, target, cancellationToken);
 
     Item? item = string.IsNullOrWhiteSpace(payload.Item) ? null : await _itemManager.FindAsync(payload.Item, nameof(payload.Item), cancellationToken);
 
@@ -118,5 +122,18 @@ internal class CreateOrReplaceEvolutionCommandHandler : ICommandHandler<CreateOr
 
     EvolutionModel model = await _evolutionQuerier.ReadAsync(evolution, cancellationToken);
     return new CreateOrReplaceEvolutionResult(model, created);
+  }
+
+  private async Task EnsureDifferentSpeciesAsync(Form source, Form target, CancellationToken cancellationToken)
+  {
+    IReadOnlyCollection<Variety> varieties = await _varietyRepository.LoadAsync([source.VarietyId, target.VarietyId], cancellationToken);
+    Variety sourceVariety = varieties.SingleOrDefault(x => x.Id == source.VarietyId)
+      ?? throw new InvalidOperationException($"The 'Id={source.VarietyId}' variety was not loaded.");
+    Variety targetVariety = varieties.SingleOrDefault(x => x.Id == target.VarietyId)
+      ?? throw new InvalidOperationException($"The 'Id={target.VarietyId}' variety was not loaded.");
+    if (sourceVariety.SpeciesId == targetVariety.SpeciesId)
+    {
+      throw new InvalidEvolutionLineException(sourceVariety, source, targetVariety, target);
+    }
   }
 }

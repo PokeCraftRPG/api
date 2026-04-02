@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
 using PokeGame.Core.Evolutions;
 using PokeGame.Core.Evolutions.Models;
-using PokeGame.Core.Forms;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Entities;
 
@@ -27,21 +26,6 @@ internal class EvolutionQuerier : IEvolutionQuerier
     _evolutions = pokemon.Evolutions;
     _forms = pokemon.Forms;
     _sql = sql;
-  }
-
-  public async Task EnsureDifferentSpeciesAsync(IEnumerable<Form> forms, CancellationToken cancellationToken)
-  {
-    HashSet<string> streamIds = forms.Select(form => form.Id.Value).ToHashSet();
-    if (streamIds.Count > 1)
-    {
-      HashSet<int> speciesIds = await _forms.Where(x => streamIds.Contains(x.StreamId))
-        .Select(x => x.Variety!.SpeciesId)
-        .ToHashSetAsync(cancellationToken);
-      if (speciesIds.Count != streamIds.Count)
-      {
-        throw new NotImplementedException(); // TODO(fpion): 400 Bad Request
-      }
-    }
   }
 
   public async Task<EvolutionModel> ReadAsync(Evolution evolution, CancellationToken cancellationToken)
@@ -91,11 +75,15 @@ internal class EvolutionQuerier : IEvolutionQuerier
 
     if (payload.SourceId.HasValue)
     {
-      builder.Where(PokemonDb.Evolutions.SourceId, Operators.IsEqualTo(payload.SourceId.Value));
+      TableId table = new(PokemonContext.Schema, nameof(PokemonContext.Forms), alias: "S");
+      OperatorCondition condition = new(new ColumnId(nameof(FormEntity.Id), table), Operators.IsEqualTo(payload.SourceId.Value));
+      builder.Join(new ColumnId(nameof(FormEntity.FormId), table), PokemonDb.Evolutions.SourceId, condition);
     }
     if (payload.TargetId.HasValue)
     {
-      builder.Where(PokemonDb.Evolutions.TargetId, Operators.IsEqualTo(payload.TargetId.Value));
+      TableId table = new(PokemonContext.Schema, nameof(PokemonContext.Forms), alias: "T");
+      OperatorCondition condition = new(new ColumnId(nameof(FormEntity.Id), table), Operators.IsEqualTo(payload.TargetId.Value));
+      builder.Join(new ColumnId(nameof(FormEntity.FormId), table), PokemonDb.Evolutions.TargetId, condition);
     }
     if (payload.Trigger.HasValue)
     {

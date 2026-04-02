@@ -7,7 +7,9 @@ using PokeGame.Core.Items;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon;
+using PokeGame.Core.Species;
 using PokeGame.Core.Storages;
+using PokeGame.Core.Varieties;
 using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Evolutions.Commands;
@@ -25,11 +27,14 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
   private readonly Mock<IMoveManager> _moveManager = new();
   private readonly Mock<IPermissionService> _permissionService = new();
   private readonly Mock<IStorageService> _storageService = new();
+  private readonly Mock<IVarietyRepository> _varietyRepository = new();
 
   private readonly TestContext _context;
   private readonly CreateOrReplaceEvolutionCommandHandler _handler;
 
   private readonly World _world;
+  private readonly Variety _pikachuVariety;
+  private readonly Variety _raichuVariety;
   private readonly Form _pikachu;
   private readonly Form _raichu;
   private readonly Item _thunderStone;
@@ -47,15 +52,18 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
       _itemManager.Object,
       _moveManager.Object,
       _permissionService.Object,
-      _storageService.Object);
+      _storageService.Object,
+      _varietyRepository.Object);
 
     Assert.NotNull(_context.World);
     _world = _context.World;
 
-    _pikachu = FormBuilder.Pikachu(_faker, _world);
+    _pikachuVariety = VarietyBuilder.Pikachu(_faker, _world);
+    _pikachu = FormBuilder.Pikachu(_faker, _world, _pikachuVariety);
     _formManager.Setup(x => x.FindAsync(_pikachu.Key.Value, It.IsAny<string>(), _cancellationToken)).ReturnsAsync(_pikachu);
 
-    _raichu = FormBuilder.Raichu(_faker, _world);
+    _raichuVariety = VarietyBuilder.Raichu(_faker, _world);
+    _raichu = FormBuilder.Raichu(_faker, _world, _raichuVariety);
     _formManager.Setup(x => x.FindAsync(_raichu.Key.Value, It.IsAny<string>(), _cancellationToken)).ReturnsAsync(_raichu);
 
     _thunderStone = ItemBuilder.ThunderStone(_faker, _world);
@@ -73,6 +81,8 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
   [InlineData(true)]
   public async Task Given_DoesNotExist_When_HandleAsync_Then_Created(bool withId)
   {
+    SetupVarieties();
+
     Guid? id = withId ? Guid.NewGuid() : null;
 
     CreateOrReplaceEvolutionPayload payload = new()
@@ -99,15 +109,14 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
       _evolutionRepository.Verify(x => x.LoadAsync(evolutionId, _cancellationToken), Times.Once());
     }
     _permissionService.Verify(x => x.CheckAsync(Actions.CreateEvolution, _cancellationToken), Times.Once());
-    _evolutionQuerier.Verify(x => x.EnsureDifferentSpeciesAsync(
-      It.Is<IEnumerable<Form>>(y => y.SequenceEqual(new Form[] { _pikachu, _raichu })),
-      _cancellationToken), Times.Once());
     _storageService.Verify(x => x.ExecuteWithQuotaAsync(It.IsAny<Evolution>(), It.IsAny<Func<Task>>(), _cancellationToken), Times.Once());
   }
 
   [Fact(DisplayName = "It should replace the existing evolution.")]
   public async Task Given_Exists_When_HandleAsync_Then_Replaced()
   {
+    SetupVarieties();
+
     Evolution evolution = EvolutionBuilder.PikachuToRaichu(_faker, _world, _pikachu, _raichu, _thunderStone);
     _evolutionRepository.Setup(x => x.LoadAsync(evolution.Id, _cancellationToken)).ReturnsAsync(evolution);
 
@@ -130,9 +139,6 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
     Assert.Same(model, result.Evolution);
 
     _permissionService.Verify(x => x.CheckAsync(Actions.Update, evolution, _cancellationToken), Times.Once());
-    _evolutionQuerier.Verify(x => x.EnsureDifferentSpeciesAsync(
-      It.Is<IEnumerable<Form>>(y => y.SequenceEqual(new Form[] { _pikachu, _raichu })),
-      _cancellationToken), Times.Once());
     _storageService.Verify(x => x.ExecuteWithQuotaAsync(evolution, It.IsAny<Func<Task>>(), _cancellationToken), Times.Once());
 
     Assert.Equal(_oranBerry.Id, evolution.HeldItemId);
@@ -142,6 +148,8 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
   [Fact(DisplayName = "It should throw ImmutablePropertyException when the item has changed.")]
   public async Task Given_ItemChanged_When_HandleAsync_Then_ImmutablePropertyException()
   {
+    SetupVarieties();
+
     Evolution evolution = EvolutionBuilder.PikachuToRaichu(_faker, _world, _pikachu, _raichu, _thunderStone);
     _evolutionRepository.Setup(x => x.LoadAsync(evolution.Id, _cancellationToken)).ReturnsAsync(evolution);
 
@@ -166,6 +174,11 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
   [Fact(DisplayName = "It should throw ImmutablePropertyException when the source has changed.")]
   public async Task Given_SourceChanged_When_HandleAsync_Then_ImmutablePropertyException()
   {
+    Variety pichuVariety = VarietyBuilder.Pichu(_faker, _world);
+    _varietyRepository.Setup(x => x.LoadAsync(
+      It.Is<IEnumerable<VarietyId>>(y => y.SequenceEqual(new VarietyId[] { pichuVariety.Id, _raichuVariety.Id })),
+      _cancellationToken)).ReturnsAsync([pichuVariety, _raichuVariety]);
+
     Evolution evolution = EvolutionBuilder.PikachuToRaichu(_faker, _world, _pikachu, _raichu, _thunderStone);
     _evolutionRepository.Setup(x => x.LoadAsync(evolution.Id, _cancellationToken)).ReturnsAsync(evolution);
 
@@ -178,7 +191,7 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
     };
     CreateOrReplaceEvolutionCommand command = new(payload, evolution.EntityId);
 
-    Form pichu = FormBuilder.Pichu(_faker, _world);
+    Form pichu = FormBuilder.Pichu(_faker, _world, pichuVariety);
     _formManager.Setup(x => x.FindAsync(payload.Source, nameof(payload.Source), _cancellationToken)).ReturnsAsync(pichu);
 
     var exception = await Assert.ThrowsAsync<ImmutablePropertyException<Guid>>(async () => await _handler.HandleAsync(command, _cancellationToken));
@@ -193,6 +206,11 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
   [Fact(DisplayName = "It should throw ImmutablePropertyException when the target has changed.")]
   public async Task Given_TargetChanged_When_HandleAsync_Then_ImmutablePropertyException()
   {
+    Variety pichuVariety = VarietyBuilder.Pichu(_faker, _world);
+    _varietyRepository.Setup(x => x.LoadAsync(
+      It.Is<IEnumerable<VarietyId>>(y => y.SequenceEqual(new VarietyId[] { _pikachuVariety.Id, pichuVariety.Id })),
+      _cancellationToken)).ReturnsAsync([_pikachuVariety, pichuVariety]);
+
     Evolution evolution = EvolutionBuilder.PikachuToRaichu(_faker, _world, _pikachu, _raichu, _thunderStone);
     _evolutionRepository.Setup(x => x.LoadAsync(evolution.Id, _cancellationToken)).ReturnsAsync(evolution);
 
@@ -205,7 +223,7 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
     };
     CreateOrReplaceEvolutionCommand command = new(payload, evolution.EntityId);
 
-    Form pichu = FormBuilder.Pichu(_faker, _world);
+    Form pichu = FormBuilder.Pichu(_faker, _world, pichuVariety);
     _formManager.Setup(x => x.FindAsync(payload.Target, nameof(payload.Target), _cancellationToken)).ReturnsAsync(pichu);
 
     var exception = await Assert.ThrowsAsync<ImmutablePropertyException<Guid>>(async () => await _handler.HandleAsync(command, _cancellationToken));
@@ -220,6 +238,8 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
   [Fact(DisplayName = "It should throw ImmutablePropertyException when the trigger has changed.")]
   public async Task Given_TriggerChanged_When_HandleAsync_Then_ImmutablePropertyException()
   {
+    SetupVarieties();
+
     Evolution evolution = EvolutionBuilder.PikachuToRaichu(_faker, _world, _pikachu, _raichu, _thunderStone);
     _evolutionRepository.Setup(x => x.LoadAsync(evolution.Id, _cancellationToken)).ReturnsAsync(evolution);
 
@@ -238,6 +258,86 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
     Assert.Equal(evolution.Trigger, exception.ExpectedValue);
     Assert.Equal(payload.Trigger, exception.AttemptedValue);
     Assert.Equal("Trigger", exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw InvalidEvolutionLineException when the source and target species are the same.")]
+  public async Task Given_SameSpecies_When_HandleAsync_Then_InvalidEvolutionLineException()
+  {
+    SpeciesAggregate species = new SpeciesBuilder(_faker).WithWorld(_world).Build();
+    Variety sourceVariety = new VarietyBuilder(_faker).WithWorld(_world).WithSpecies(species).WithKey(new Slug("source-variety")).Build();
+    Variety targetVariety = new VarietyBuilder(_faker).WithWorld(_world).WithSpecies(species).WithKey(new Slug("target-variety")).Build();
+    _varietyRepository.Setup(x => x.LoadAsync(
+      It.Is<IEnumerable<VarietyId>>(y => y.SequenceEqual(new VarietyId[] { sourceVariety.Id, targetVariety.Id })),
+      _cancellationToken)).ReturnsAsync([sourceVariety, targetVariety]);
+
+    Form sourceForm = new FormBuilder(_faker).WithWorld(_world).WithVariety(sourceVariety).WithKey(new Slug("source-form")).Build();
+    Form targetForm = new FormBuilder(_faker).WithWorld(_world).WithVariety(targetVariety).WithKey(new Slug("target-form")).Build();
+
+    CreateOrReplaceEvolutionPayload payload = new()
+    {
+      Source = sourceForm.Key.Value,
+      Target = targetForm.Key.Value,
+      Trigger = EvolutionTrigger.Level,
+      Level = 18
+    };
+
+    _formManager.Setup(x => x.FindAsync(payload.Source, nameof(payload.Source), _cancellationToken)).ReturnsAsync(sourceForm);
+    _formManager.Setup(x => x.FindAsync(payload.Target, nameof(payload.Target), _cancellationToken)).ReturnsAsync(targetForm);
+
+    CreateOrReplaceEvolutionCommand command = new(payload, Id: null);
+    var exception = await Assert.ThrowsAsync<InvalidEvolutionLineException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
+    Assert.Equal(species.EntityId, exception.SpeciesId);
+    Assert.Equal(sourceVariety.EntityId, exception.SourceVarietyId);
+    Assert.Equal(sourceForm.EntityId, exception.SourceFormId);
+    Assert.Equal(targetVariety.EntityId, exception.TargetVarietyId);
+    Assert.Equal(targetForm.EntityId, exception.TargetFormId);
+  }
+
+  [Fact(DisplayName = "It should throw InvalidOperationException when the source variety was not loaded.")]
+  public async Task Given_SourceVarietyNotLoaded_When_HandleAsync_Then_InvalidOperationException()
+  {
+    CreateOrReplaceEvolutionPayload payload = new()
+    {
+      Source = "pichu",
+      Target = "pikachu",
+      Trigger = EvolutionTrigger.Level,
+      Friendship = true
+    };
+
+    Variety pichuVariety = VarietyBuilder.Pichu(_faker, _world);
+    _varietyRepository.Setup(x => x.LoadAsync(
+      It.Is<IEnumerable<VarietyId>>(y => y.SequenceEqual(new VarietyId[] { pichuVariety.Id, _pikachuVariety.Id })),
+      _cancellationToken)).ReturnsAsync([_pikachuVariety]);
+
+    Form pichu = FormBuilder.Pichu(_faker, _world, pichuVariety);
+    _formManager.Setup(x => x.FindAsync(payload.Source, nameof(payload.Source), _cancellationToken)).ReturnsAsync(pichu);
+
+    CreateOrReplaceEvolutionCommand command = new(payload, Id: null);
+    var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal($"The 'Id={pichuVariety.Id}' variety was not loaded.", exception.Message);
+  }
+
+  [Fact(DisplayName = "It should throw InvalidOperationException when the target variety was not loaded.")]
+  public async Task Given_TargetVarietyNotLoaded_When_HandleAsync_Then_InvalidOperationException()
+  {
+    CreateOrReplaceEvolutionPayload payload = new()
+    {
+      Source = "pikachu",
+      Target = "raichu-alola",
+      Trigger = EvolutionTrigger.Level,
+      Friendship = true
+    };
+
+    Form raichuAlola = FormBuilder.RaichuAlola(_faker, _world);
+    _varietyRepository.Setup(x => x.LoadAsync(
+      It.Is<IEnumerable<VarietyId>>(y => y.SequenceEqual(new VarietyId[] { _pikachuVariety.Id, raichuAlola.VarietyId })),
+      _cancellationToken)).ReturnsAsync([_pikachuVariety]);
+    _formManager.Setup(x => x.FindAsync(payload.Target, nameof(payload.Target), _cancellationToken)).ReturnsAsync(raichuAlola);
+
+    CreateOrReplaceEvolutionCommand command = new(payload, Id: null);
+    var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal($"The 'Id={raichuAlola.VarietyId}' variety was not loaded.", exception.Message);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the payload is not valid.")]
@@ -264,5 +364,12 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
     Assert.Contains(exception.Errors, e => e.ErrorCode == "EnumValidator" && e.PropertyName == "Gender");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "MaximumLengthValidator" && e.PropertyName == "Location");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "EnumValidator" && e.PropertyName == "TimeOfDay");
+  }
+
+  private void SetupVarieties()
+  {
+    _varietyRepository.Setup(x => x.LoadAsync(
+      It.Is<IEnumerable<VarietyId>>(y => y.SequenceEqual(new VarietyId[] { _pikachuVariety.Id, _raichuVariety.Id })),
+      _cancellationToken)).ReturnsAsync([_pikachuVariety, _raichuVariety]);
   }
 }
