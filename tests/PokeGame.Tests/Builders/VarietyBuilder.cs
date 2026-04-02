@@ -212,7 +212,6 @@ public class VarietyBuilder : IVarietyBuilder
     return new VarietyBuilder(faker)
       .WithWorld(world)
       .WithSpecies(species ?? SpeciesBuilder.Darmanitan(faker, world))
-      .IsDefault()
       .WithKey(new Slug("darmanitan-galar"))
       .WithName(new Name("Galarian Darmanitan"))
       .WithGenus(new Genus("Zen Charm"))

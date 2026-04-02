@@ -213,7 +213,7 @@ public class VarietyIntegrationTests : IntegrationTests
 
     SearchVarietiesPayload payload = new()
     {
-      Ids = [eevee.EntityId, darmanitan.EntityId],
+      Ids = [eevee.EntityId, darmanitan.EntityId, darmanitanGalar.EntityId],
       SpeciesId = Faker.PickRandom(eeveeSpecies.EntityId, darmanitanSpecies.EntityId)
     };
     SearchResults<VarietyModel> results = await _varietyService.SearchAsync(payload);
