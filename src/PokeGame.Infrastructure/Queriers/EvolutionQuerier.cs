@@ -101,6 +101,11 @@ internal class EvolutionQuerier : IEvolutionQuerier
     {
       builder.Where(PokemonDb.Evolutions.Trigger, Operators.IsEqualTo(payload.Trigger.Value.ToString()));
     }
+    if (payload.ItemId.HasValue)
+    {
+      OperatorCondition condition = new(PokemonDb.Items.Id, Operators.IsEqualTo(payload.ItemId.Value));
+      builder.Join(PokemonDb.Items.ItemId, PokemonDb.Evolutions.ItemId, condition);
+    }
 
     IQueryable<EvolutionEntity> query = _evolutions.FromQuery(builder).AsNoTracking().AsSplitQuery()
       .Include(x => x.HeldItem).ThenInclude(x => x!.Move)

@@ -16,13 +16,17 @@ public record SearchEvolutionsParameters : SearchParameters
   [FromQuery(Name = "trigger")]
   public EvolutionTrigger? Trigger { get; set; }
 
+  [FromQuery(Name = "item")]
+  public Guid? ItemId { get; set; }
+
   public virtual SearchEvolutionsPayload ToPayload()
   {
     SearchEvolutionsPayload payload = new()
     {
       SourceId = SourceId,
       TargetId = TargetId,
-      Trigger = Trigger
+      Trigger = Trigger,
+      ItemId = ItemId
     };
     Fill(payload);
 
