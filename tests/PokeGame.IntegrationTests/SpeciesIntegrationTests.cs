@@ -215,7 +215,8 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     SearchSpeciesPayload payload = new()
     {
-      GrowthRate = Faker.PickRandom(GrowthRate.Fluctuating, GrowthRate.MediumFast, GrowthRate.MediumSlow)
+      GrowthRate = Faker.PickRandom(GrowthRate.Fluctuating, GrowthRate.MediumFast, GrowthRate.MediumSlow),
+      Ids = [drifloon.EntityId, eevee.EntityId, riolu.EntityId]
     };
 
     SearchResults<SpeciesModel> results = await _speciesService.SearchAsync(payload);
