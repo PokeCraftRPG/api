@@ -1,8 +1,10 @@
+﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Core.Varieties;
 using PokeGame.Core.Varieties.Models;
 using PokeGame.Extensions;
+using PokeGame.Models.Variety;
 
 namespace PokeGame.Controllers;
 
@@ -37,6 +39,14 @@ public class VarietyController : ControllerBase
   {
     VarietyModel? variety = await _varietyService.ReadAsync(id: null, key, cancellationToken);
     return variety is null ? NotFound() : Ok(variety);
+  }
+
+  [HttpGet]
+  public async Task<ActionResult<SearchResults<VarietyModel>>> SearchAsync([FromQuery] SearchVarietiesParameters parameters, CancellationToken cancellationToken)
+  {
+    SearchVarietiesPayload payload = parameters.ToPayload();
+    SearchResults<VarietyModel> varieties = await _varietyService.SearchAsync(payload, cancellationToken);
+    return Ok(varieties);
   }
 
   [HttpPut("{id}")]

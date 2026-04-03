@@ -161,6 +161,8 @@ public class SpeciesBuilder : ISpeciesBuilder
       : new(world, number, category, key, baseFriendship, catchRate, growthRate, eggCycles, eggGroups);
 
     species.Name = _name;
+    species.Url = _url;
+    species.Notes = _notes;
 
     species.Update(world.OwnerId);
 
@@ -176,6 +178,21 @@ public class SpeciesBuilder : ISpeciesBuilder
 
     return species;
   }
+
+  public static SpeciesAggregate Darmanitan(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+    .WithWorld(world)
+    .WithNumber(new Number(555))
+    .WithCategory(PokemonCategory.Standard)
+    .WithKey(new Slug("darmanitan"))
+    .WithName(new Name("Darmanitan"))
+    .WithBaseFriendship(new Friendship(70))
+    .WithCatchRate(new CatchRate(60))
+    .WithGrowthRate(GrowthRate.MediumSlow)
+    .WithEggCycles(new EggCycles(20))
+    .WithEggGroups(new EggGroups(EggGroup.Field))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Darmanitan_(Pok%C3%A9mon)"))
+    .WithNotes(new Notes("Galarian Darmanitan is unique with a regional Zen Mode form and top Fire-type Speed; inspired by Daruma dolls, gorillas, and snowmen, blending spiritual and folkloric themes."))
+    .Build();
 
   public static SpeciesAggregate Drifloon(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
     .WithWorld(world)

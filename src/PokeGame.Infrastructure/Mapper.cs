@@ -70,6 +70,15 @@ internal class Mapper
       TimeOfDay = source.TimeOfDay
     };
 
+    if (source.Item is not null)
+    {
+      destination.Item = ToItem(source.Item);
+    }
+    else if (source.ItemId.HasValue)
+    {
+      throw new ArgumentException("The item is required.", nameof(source));
+    }
+
     if (source.HeldItem is not null)
     {
       destination.HeldItem = ToItem(source.HeldItem);

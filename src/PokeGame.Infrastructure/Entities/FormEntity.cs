@@ -61,10 +61,9 @@ internal class FormEntity : AggregateEntity
 
   public FormEntity(VarietyEntity variety, FormCreated @event) : base(@event)
   {
-    Id = new FormId(@event.StreamId).EntityId;
-
     World = variety.World;
     WorldId = variety.WorldId;
+    Id = new FormId(@event.StreamId).EntityId;
 
     Variety = variety;
     VarietyId = variety.VarietyId;

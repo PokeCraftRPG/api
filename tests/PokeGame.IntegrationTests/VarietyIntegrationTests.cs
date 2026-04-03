@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Moves;
@@ -172,6 +173,92 @@ public class VarietyIntegrationTests : IntegrationTests
     Assert.Equal(2, variety.Moves.Count);
     Assert.Contains(variety.Moves, x => x.Move.Id == _thunderPunch.EntityId && x.Level == 0);
     Assert.Contains(variety.Moves, x => x.Move.Id == _thunderShock.EntityId && x.Level == 1);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (CanChangeForm).")]
+  public async Task Given_CanChangeForm_When_Search_Then_Results()
+  {
+    SpeciesAggregate eeveeSpecies = SpeciesBuilder.Eevee(Faker, World);
+    SpeciesAggregate darmanitanSpecies = SpeciesBuilder.Darmanitan(Faker, World);
+    await _speciesRepository.SaveAsync([eeveeSpecies, darmanitanSpecies]);
+
+    Variety eevee = VarietyBuilder.Eevee(Faker, World, eeveeSpecies);
+    Variety darmanitan = VarietyBuilder.Darmanitan(Faker, World, darmanitanSpecies);
+    await _varietyRepository.SaveAsync([eevee, darmanitan]);
+
+    SearchVarietiesPayload payload = new()
+    {
+      Ids = [eevee.EntityId, darmanitan.EntityId],
+      CanChangeForm = Faker.Random.Bool()
+    };
+
+    SearchResults<VarietyModel> results = await _varietyService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    VarietyModel variety = Assert.Single(results.Items);
+    Assert.Equal((payload.CanChangeForm.Value ? darmanitan : eevee).EntityId, variety.Id);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (SpeciesId).")]
+  public async Task Given_SpeciesId_When_Search_Then_Results()
+  {
+    SpeciesAggregate eeveeSpecies = SpeciesBuilder.Eevee(Faker, World);
+    SpeciesAggregate darmanitanSpecies = SpeciesBuilder.Darmanitan(Faker, World);
+    await _speciesRepository.SaveAsync([eeveeSpecies, darmanitanSpecies]);
+
+    Variety eevee = VarietyBuilder.Eevee(Faker, World, eeveeSpecies);
+    Variety darmanitan = VarietyBuilder.Darmanitan(Faker, World, darmanitanSpecies);
+    Variety darmanitanGalar = VarietyBuilder.DarmanitanGalar(Faker, World, darmanitanSpecies);
+    await _varietyRepository.SaveAsync([eevee, darmanitan, darmanitanGalar]);
+
+    SearchVarietiesPayload payload = new()
+    {
+      Ids = [eevee.EntityId, darmanitan.EntityId, darmanitanGalar.EntityId],
+      SpeciesId = Faker.PickRandom(eeveeSpecies.EntityId, darmanitanSpecies.EntityId)
+    };
+    SearchResults<VarietyModel> results = await _varietyService.SearchAsync(payload);
+
+    if (payload.SpeciesId == eeveeSpecies.EntityId)
+    {
+      Assert.Equal(1, results.Total);
+      Assert.Equal(eevee.EntityId, Assert.Single(results.Items).Id);
+    }
+    else
+    {
+      Assert.Equal(2, results.Total);
+      Assert.Equal(results.Total, results.Items.Count);
+      Assert.Contains(results.Items, x => x.Id == darmanitan.EntityId);
+      Assert.Contains(results.Items, x => x.Id == darmanitanGalar.EntityId);
+    }
+  }
+
+  [Fact(DisplayName = "It should return the correct search results.")]
+  public async Task Given_Payload_When_Search_Then_Results()
+  {
+    SpeciesAggregate eeveeSpecies = SpeciesBuilder.Eevee(Faker, World);
+    SpeciesAggregate pichuSpecies = SpeciesBuilder.Pichu(Faker, World);
+    SpeciesAggregate pikachuSpecies = SpeciesBuilder.Pikachu(Faker, World);
+    await _speciesRepository.SaveAsync([eeveeSpecies, pichuSpecies, pikachuSpecies]);
+
+    Variety eevee = VarietyBuilder.Eevee(Faker, World, eeveeSpecies);
+    Variety pichu = VarietyBuilder.Pichu(Faker, World, pichuSpecies);
+    Variety pikachu = VarietyBuilder.Pikachu(Faker, World, pikachuSpecies);
+    await _varietyRepository.SaveAsync([eevee, pichu, pikachu]);
+
+    SearchVarietiesPayload payload = new()
+    {
+      Ids = [eevee.EntityId, pichu.EntityId, pikachu.EntityId, Guid.Empty],
+      Skip = 1,
+      Limit = 1
+    };
+    payload.Search.Terms.Add(new SearchTerm("%chu"));
+    payload.Sort.Add(new VarietySortOption(VarietySort.Key, isDescending: true));
+
+    SearchResults<VarietyModel> results = await _varietyService.SearchAsync(payload);
+    Assert.Equal(2, results.Total);
+
+    VarietyModel model = Assert.Single(results.Items);
+    Assert.Equal(pichu.EntityId, model.Id);
   }
 
   [Fact(DisplayName = "It should throw PropertyConflictException when there is a key conflict.")]

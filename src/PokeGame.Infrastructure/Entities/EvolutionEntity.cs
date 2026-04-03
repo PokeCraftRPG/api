@@ -34,11 +34,11 @@ internal class EvolutionEntity : AggregateEntity
   public string? Location { get; private set; }
   public TimeOfDay? TimeOfDay { get; private set; }
 
-  public EvolutionEntity(WorldEntity world, FormEntity source, FormEntity target, ItemEntity? item, EvolutionCreated trigger)
+  public EvolutionEntity(WorldEntity world, FormEntity source, FormEntity target, ItemEntity? item, EvolutionCreated @event) : base(@event)
   {
     World = world;
     WorldId = world.WorldId;
-    Id = new EvolutionId(trigger.StreamId).EntityId;
+    Id = new EvolutionId(@event.StreamId).EntityId;
 
     Source = source;
     SourceId = source.FormId;
@@ -46,7 +46,7 @@ internal class EvolutionEntity : AggregateEntity
     Target = target;
     TargetId = target.FormId;
 
-    Trigger = trigger.Trigger;
+    Trigger = @event.Trigger;
     Item = item;
     ItemId = item?.ItemId;
   }

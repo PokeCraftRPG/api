@@ -22,10 +22,9 @@ internal class RegionEntity : AggregateEntity
 
   public RegionEntity(WorldEntity world, RegionCreated @event) : base(@event)
   {
-    Id = new RegionId(@event.StreamId).EntityId;
-
     World = world;
     WorldId = world.WorldId;
+    Id = new RegionId(@event.StreamId).EntityId;
 
     Key = @event.Key.Value;
   }
