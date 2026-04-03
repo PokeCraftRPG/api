@@ -4,6 +4,7 @@ using Logitar;
 using Logitar.EventSourcing;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
+using PokeGame.Core.Evolutions.Models;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Items;
 using PokeGame.Core.Items.Models;
@@ -46,6 +47,55 @@ internal class Mapper
       Url = source.Url,
       Notes = source.Notes
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public EvolutionModel ToEvolution(EvolutionEntity source)
+  {
+    FormEntity sourceForm = source.Source ?? throw new ArgumentException("The source form is required.", nameof(source));
+    FormEntity targetForm = source.Target ?? throw new ArgumentException("The target form is required.", nameof(source));
+    EvolutionModel destination = new()
+    {
+      Id = source.Id,
+      Source = ToForm(sourceForm),
+      Target = ToForm(targetForm),
+      Trigger = source.Trigger,
+      Level = source.Level,
+      Friendship = source.Friendship,
+      Gender = source.Gender,
+      Location = source.Location,
+      TimeOfDay = source.TimeOfDay
+    };
+
+    if (source.Item is not null)
+    {
+      destination.Item = ToItem(source.Item);
+    }
+    else if (source.ItemId.HasValue)
+    {
+      throw new ArgumentException("The item is required.", nameof(source));
+    }
+
+    if (source.HeldItem is not null)
+    {
+      destination.HeldItem = ToItem(source.HeldItem);
+    }
+    else if (source.HeldItemId.HasValue)
+    {
+      throw new ArgumentException("The held item is required.", nameof(source));
+    }
+
+    if (source.KnownMove is not null)
+    {
+      destination.KnownMove = ToMove(source.KnownMove);
+    }
+    else if (source.KnownMoveId.HasValue)
+    {
+      throw new ArgumentException("The known move is required.", nameof(source));
+    }
 
     MapAggregate(source, destination);
 

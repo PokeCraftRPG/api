@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Accounts;
+using PokeGame.Core.Evolutions;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Items;
 using PokeGame.Core.Membership;
@@ -24,6 +25,7 @@ public static class DependencyInjectionExtensions
   {
     AbilityService.Register(services);
     AccountService.Register(services);
+    EvolutionService.Register(services);
     FormService.Register(services);
     ItemService.Register(services);
     MembershipService.Register(services);

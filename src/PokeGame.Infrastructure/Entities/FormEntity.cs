@@ -56,13 +56,14 @@ internal class FormEntity : AggregateEntity
   public string? Notes { get; private set; }
 
   public List<FormAbilityEntity> Abilities { get; private set; } = [];
+  public List<EvolutionEntity> EvolvesFrom { get; private set; } = [];
+  public List<EvolutionEntity> EvolvingInto { get; private set; } = [];
 
   public FormEntity(VarietyEntity variety, FormCreated @event) : base(@event)
   {
-    Id = new FormId(@event.StreamId).EntityId;
-
     World = variety.World;
     WorldId = variety.WorldId;
+    Id = new FormId(@event.StreamId).EntityId;
 
     Variety = variety;
     VarietyId = variety.VarietyId;

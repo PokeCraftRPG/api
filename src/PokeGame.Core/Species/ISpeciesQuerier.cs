@@ -1,4 +1,5 @@
-﻿using PokeGame.Core.Species.Models;
+﻿using Krakenar.Contracts.Search;
+using PokeGame.Core.Species.Models;
 
 namespace PokeGame.Core.Species;
 
@@ -13,4 +14,6 @@ public interface ISpeciesQuerier
   Task<SpeciesModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
   Task<SpeciesModel?> ReadAsync(int number, CancellationToken cancellationToken = default);
   Task<SpeciesModel?> ReadAsync(string key, CancellationToken cancellationToken = default);
+
+  Task<SearchResults<SpeciesModel>> SearchAsync(SearchSpeciesPayload payload, CancellationToken cancellationToken = default);
 }

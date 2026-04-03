@@ -1,4 +1,5 @@
 ﻿using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Search;
 using Krakenar.Contracts.Users;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
@@ -110,6 +111,97 @@ public class TrainerIntegrationTests : IntegrationTests
     TrainerModel? trainer = await _trainerService.ReadAsync(id: null, $" {_trainer.License.Value.ToUpperInvariant()} ");
     Assert.NotNull(trainer);
     Assert.Equal(_trainer.EntityId, trainer.Id);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results.")]
+  public async Task Given_Payload_When_SearchAsync_Then_Results()
+  {
+    Trainer ashKetchum = TrainerBuilder.AshKetchum(Faker, World);
+    Trainer brock = TrainerBuilder.Brock(Faker, World);
+    Trainer may = TrainerBuilder.May(Faker, World);
+    Trainer misty = TrainerBuilder.Misty(Faker, World);
+    await _trainerRepository.SaveAsync([ashKetchum, brock, may, misty]);
+
+    SearchTrainersPayload payload = new()
+    {
+      Ids = [ashKetchum.EntityId, brock.EntityId, Guid.Empty, misty.EntityId],
+      Skip = 1,
+      Limit = 1
+    };
+    payload.Search.Terms.Add(new SearchTerm("%m%"));
+    payload.Sort.Add(new TrainerSortOption(TrainerSort.Key, isDescending: true));
+
+    SearchResults<TrainerModel> results = await _trainerService.SearchAsync(payload);
+    Assert.Equal(2, results.Total);
+
+    TrainerModel trainer = Assert.Single(results.Items);
+    Assert.Equal(ashKetchum.EntityId, trainer.Id);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results (Gender).")]
+  public async Task Given_Gender_When_SearchAsync_Then_Results()
+  {
+    Trainer ashKetchum = TrainerBuilder.AshKetchum(Faker, World);
+    Trainer may = TrainerBuilder.May(Faker, World);
+    await _trainerRepository.SaveAsync([ashKetchum, may]);
+
+    SearchTrainersPayload payload = new()
+    {
+      Ids = [ashKetchum.EntityId, may.EntityId],
+      Gender = Faker.PickRandom<TrainerGender>()
+    };
+
+    SearchResults<TrainerModel> results = await _trainerService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    TrainerModel trainer = Assert.Single(results.Items);
+    Assert.Equal((payload.Gender == TrainerGender.Male ? ashKetchum : may).EntityId, trainer.Id);
+  }
+
+  [Theory(DisplayName = "It should return the correct search results (OwnerId).")]
+  [InlineData(" AnY  ")]
+  [InlineData("none")]
+  [InlineData("id")]
+  public async Task Given_OwnerId_When_SearchAsync_Then_Results(string value)
+  {
+    User user = new UserBuilder().Build();
+    _cacheService.SetActor(new Actor(user));
+
+    Trainer ashKetchum = TrainerBuilder.AshKetchum(Faker, World);
+    ashKetchum.SetOwnership(World.OwnerId, World.OwnerId);
+    Trainer brock = TrainerBuilder.Brock(Faker, World);
+    Trainer may = TrainerBuilder.May(Faker, World);
+    may.SetOwnership(user.GetUserId(), World.OwnerId);
+    Trainer misty = TrainerBuilder.Misty(Faker, World);
+    await _trainerRepository.SaveAsync([ashKetchum, brock, may, misty]);
+
+    SearchTrainersPayload payload = new()
+    {
+      Ids = [ashKetchum.EntityId, brock.EntityId, may.EntityId, misty.EntityId],
+      OwnerId = value.Trim().Equals("id", StringComparison.InvariantCultureIgnoreCase) ? Actor.Id.ToString() : value
+    };
+
+    SearchResults<TrainerModel> results = await _trainerService.SearchAsync(payload);
+
+    switch (value.Trim().ToLowerInvariant())
+    {
+      case "any":
+        Assert.Equal(2, results.Total);
+        Assert.Equal(results.Total, results.Items.Count);
+        Assert.Contains(results.Items, trainer => trainer.Id == ashKetchum.EntityId);
+        Assert.Contains(results.Items, trainer => trainer.Id == may.EntityId);
+        break;
+      case "none":
+        Assert.Equal(2, results.Total);
+        Assert.Equal(results.Total, results.Items.Count);
+        Assert.Contains(results.Items, trainer => trainer.Id == brock.EntityId);
+        Assert.Contains(results.Items, trainer => trainer.Id == misty.EntityId);
+        break;
+      default:
+        Assert.Equal(1, results.Total);
+        Assert.Equal(ashKetchum.EntityId, Assert.Single(results.Items).Id);
+        break;
+    }
   }
 
   [Fact(DisplayName = "It should replace an existing trainer.")]

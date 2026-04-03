@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Caching;
+using PokeGame.Core.Evolutions;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Items;
@@ -48,6 +49,7 @@ public static class DependencyInjectionExtensions
   private static IServiceCollection AddEventHandlers(this IServiceCollection services)
   {
     AbilityEvents.Register(services);
+    EvolutionEvents.Register(services);
     FormEvents.Register(services);
     ItemEvents.Register(services);
     MembershipInvitationEvents.Register(services);
@@ -76,6 +78,7 @@ public static class DependencyInjectionExtensions
   {
     return services
       .AddTransient<IAbilityQuerier, AbilityQuerier>()
+      .AddTransient<IEvolutionQuerier, EvolutionQuerier>()
       .AddTransient<IFormQuerier, FormQuerier>()
       .AddTransient<IItemQuerier, ItemQuerier>()
       .AddTransient<IMembershipInvitationQuerier, MembershipInvitationQuerier>()
@@ -91,6 +94,7 @@ public static class DependencyInjectionExtensions
   {
     return services
       .AddTransient<IAbilityRepository, AbilityRepository>()
+      .AddTransient<IEvolutionRepository, EvolutionRepository>()
       .AddTransient<IFormRepository, FormRepository>()
       .AddTransient<IItemRepository, ItemRepository>()
       .AddTransient<IMembershipInvitationRepository, MembershipInvitationRepository>()

@@ -27,15 +27,15 @@ internal class MoveEntity : AggregateEntity
   public string? Url { get; private set; }
   public string? Notes { get; private set; }
 
+  public List<EvolutionEntity> Evolutions { get; private set; } = [];
   public List<ItemEntity> TechnicalMachines { get; private set; } = [];
   public List<VarietyMoveEntity> Varieties { get; private set; } = [];
 
   public MoveEntity(WorldEntity world, MoveCreated @event) : base(@event)
   {
-    Id = new MoveId(@event.StreamId).EntityId;
-
     World = world;
     WorldId = world.WorldId;
+    Id = new MoveId(@event.StreamId).EntityId;
 
     Type = @event.Type;
     Category = @event.Category;

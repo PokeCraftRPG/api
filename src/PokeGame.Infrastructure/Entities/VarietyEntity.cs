@@ -34,10 +34,9 @@ internal class VarietyEntity : AggregateEntity
 
   public VarietyEntity(SpeciesEntity species, VarietyCreated @event) : base(@event)
   {
-    Id = new VarietyId(@event.StreamId).EntityId;
-
     World = species.World;
     WorldId = species.WorldId;
+    Id = new VarietyId(@event.StreamId).EntityId;
 
     Species = species;
     SpeciesId = species.SpeciesId;

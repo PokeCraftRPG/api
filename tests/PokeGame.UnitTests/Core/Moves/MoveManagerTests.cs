@@ -1,4 +1,4 @@
-﻿using Bogus;
+using Bogus;
 using Moq;
 using PokeGame.Builders;
 
@@ -57,7 +57,7 @@ public class MoveManagerTests
     Assert.Equal($"The move 'Id={move.Id}' was not loaded.", exception.Message);
   }
 
-  [Fact(DisplayName = "FindAsync: it should throw MoveNotFoundException when the species was not found.")]
+  [Fact(DisplayName = "FindAsync: it should throw MoveNotFoundException when the move was not found.")]
   public async Task Given_NotFound_When_FindAsync_Then_MoveNotFoundException()
   {
     string key = $"  {Guid.NewGuid().ToString().ToUpperInvariant()}  ";

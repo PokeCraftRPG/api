@@ -161,6 +161,8 @@ public class SpeciesBuilder : ISpeciesBuilder
       : new(world, number, category, key, baseFriendship, catchRate, growthRate, eggCycles, eggGroups);
 
     species.Name = _name;
+    species.Url = _url;
+    species.Notes = _notes;
 
     species.Update(world.OwnerId);
 
@@ -177,6 +179,36 @@ public class SpeciesBuilder : ISpeciesBuilder
     return species;
   }
 
+  public static SpeciesAggregate Darmanitan(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+    .WithWorld(world)
+    .WithNumber(new Number(555))
+    .WithCategory(PokemonCategory.Standard)
+    .WithKey(new Slug("darmanitan"))
+    .WithName(new Name("Darmanitan"))
+    .WithBaseFriendship(new Friendship(70))
+    .WithCatchRate(new CatchRate(60))
+    .WithGrowthRate(GrowthRate.MediumSlow)
+    .WithEggCycles(new EggCycles(20))
+    .WithEggGroups(new EggGroups(EggGroup.Field))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Darmanitan_(Pok%C3%A9mon)"))
+    .WithNotes(new Notes("Galarian Darmanitan is unique with a regional Zen Mode form and top Fire-type Speed; inspired by Daruma dolls, gorillas, and snowmen, blending spiritual and folkloric themes."))
+    .Build();
+
+  public static SpeciesAggregate Drifloon(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+    .WithWorld(world)
+    .WithNumber(new Number(425))
+    .WithCategory(PokemonCategory.Standard)
+    .WithKey(new Slug("drifloon"))
+    .WithName(new Name("Drifloon"))
+    .WithBaseFriendship(new Friendship(70))
+    .WithCatchRate(new CatchRate(125))
+    .WithGrowthRate(GrowthRate.Fluctuating)
+    .WithEggCycles(new EggCycles(30))
+    .WithEggGroups(new EggGroups(EggGroup.Amorphous))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Eevee_(Pok%C3%A9mon)"))
+    .WithNotes(new Notes("Drifloon’s folklore ties it to the underworld and child-snatching myths; ideal for eerie encounters or supernatural plot hooks."))
+    .Build();
+
   public static SpeciesAggregate Eevee(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
     .WithWorld(world)
     .WithNumber(new Number(133))
@@ -190,6 +222,21 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithEggGroups(new EggGroups(EggGroup.Field))
     .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Eevee_(Pok%C3%A9mon)"))
     .WithNotes(new Notes("Eevee is a “blank slate” Pokémon designed for multiple evolutions (8 total), with unique mechanics, cultural impact, and evolution methods across games and media."))
+    .Build();
+
+  public static SpeciesAggregate Pichu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+    .WithWorld(world)
+    .WithNumber(new Number(172))
+    .WithCategory(PokemonCategory.Baby)
+    .WithKey(new Slug("pichu"))
+    .WithName(new Name("Pichu"))
+    .WithBaseFriendship(new Friendship(70))
+    .WithCatchRate(new CatchRate(190))
+    .WithGrowthRate(GrowthRate.MediumFast)
+    .WithEggCycles(new EggCycles(10))
+    .WithEggGroups(new EggGroups(EggGroup.NoEggsDiscovered))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Pichu_(Pok%C3%A9mon)"))
+    .WithNotes(new Notes("Pichu: weakest Electric-type stats; Pikachu’s pre-evolution. Designed as its “next” form, inspired by rodents; notable trivia and naming origins included."))
     .Build();
 
   public static SpeciesAggregate Pikachu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
@@ -220,5 +267,20 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithEggGroups(new EggGroups(EggGroup.Field, EggGroup.Fairy))
     .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Raichu_(Pok%C3%A9mon)"))
     .WithNotes(new Notes("Raichu trivia: Mouse Pokémon; can discharge up to 100,000 volts; notable forms (Alolan, Mega) and unique traits across games and lore."))
+    .Build();
+
+  public static SpeciesAggregate Riolu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+    .WithWorld(world)
+    .WithNumber(new Number(447))
+    .WithCategory(PokemonCategory.Baby)
+    .WithKey(new Slug("riolu"))
+    .WithName(new Name("Riolu"))
+    .WithBaseFriendship(new Friendship(70))
+    .WithCatchRate(new CatchRate(75))
+    .WithGrowthRate(GrowthRate.MediumSlow)
+    .WithEggCycles(new EggCycles(25))
+    .WithEggGroups(new EggGroups(EggGroup.NoEggsDiscovered))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Riolu_(Pok%C3%A9mon)"))
+    .WithNotes(new Notes("Riolu’s lore and rarity in Mystery Dungeon make it ideal as a special starter or hard-to-obtain companion with thematic, myth-inspired flavor."))
     .Build();
 }

@@ -51,6 +51,14 @@ internal class ItemQuerier : IItemQuerier
     }
   }
 
+  public async Task<ItemId?> FindIdAsync(string key, CancellationToken cancellationToken)
+  {
+    string? streamId = await _items.Where(x => x.World!.Id == _context.WorldUid && x.Key == Slug.Normalize(key))
+      .Select(x => x.StreamId)
+      .SingleOrDefaultAsync(cancellationToken);
+    return streamId is null ? null : new ItemId(streamId);
+  }
+
   public async Task<ItemModel> ReadAsync(Item item, CancellationToken cancellationToken)
   {
     return await ReadAsync(item.Id, cancellationToken) ?? throw new InvalidOperationException($"The item entity '{item}' was not found.");
@@ -59,6 +67,7 @@ internal class ItemQuerier : IItemQuerier
   {
     ItemEntity? item = await _items.AsNoTracking()
       .Where(x => x.StreamId == id.Value && x.World!.Id == _context.WorldUid)
+      .Include(x => x.Move)
       .SingleOrDefaultAsync(cancellationToken);
     return item is null ? null : await MapAsync(item, cancellationToken);
   }
@@ -66,6 +75,7 @@ internal class ItemQuerier : IItemQuerier
   {
     ItemEntity? item = await _items.AsNoTracking()
       .Where(x => x.Id == id && x.World!.Id == _context.WorldUid)
+      .Include(x => x.Move)
       .SingleOrDefaultAsync(cancellationToken);
     return item is null ? null : await MapAsync(item, cancellationToken);
   }
@@ -73,6 +83,7 @@ internal class ItemQuerier : IItemQuerier
   {
     ItemEntity? item = await _items.AsNoTracking()
       .Where(x => x.Key == Slug.Normalize(key) && x.World!.Id == _context.WorldUid)
+      .Include(x => x.Move)
       .SingleOrDefaultAsync(cancellationToken);
     return item is null ? null : await MapAsync(item, cancellationToken);
   }

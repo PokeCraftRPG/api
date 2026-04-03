@@ -22,10 +22,9 @@ internal class AbilityEntity : AggregateEntity
 
   public AbilityEntity(WorldEntity world, AbilityCreated @event) : base(@event)
   {
-    Id = new AbilityId(@event.StreamId).EntityId;
-
     World = world;
     WorldId = world.WorldId;
+    Id = new AbilityId(@event.StreamId).EntityId;
 
     Key = @event.Key.Value;
   }

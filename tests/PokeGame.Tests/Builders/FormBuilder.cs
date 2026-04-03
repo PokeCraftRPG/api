@@ -214,19 +214,65 @@ public class FormBuilder : IFormBuilder
     return form;
   }
 
-  public static Form Raichu(Faker? faker = null, World? world = null)
+  public static Form Pichu(Faker? faker = null, World? world = null, Variety? variety = null, Abilities? abilities = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new FormBuilder(faker)
       .WithWorld(world)
-      .WithVariety(VarietyBuilder.Raichu(faker, world))
+      .WithVariety(variety ?? VarietyBuilder.Pichu(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("pichu"))
+      .WithName(new Name("Pichu"))
+      .WithHeight(new Height(3))
+      .WithWeight(new Weight(20))
+      .WithTypes(new Types(PokemonType.Electric))
+      .WithAbilities(abilities ?? new Abilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
+      .WithBaseStatistics(new BaseStatistics(20, 40, 15, 35, 35, 60))
+      .WithYield(new Yield(41, 0, 0, 0, 0, 0, 1))
+      .WithSprites(new Sprites(
+        new Url("https://archives.bulbagarden.net/media/upload/5/5f/HOME0172.png"),
+        new Url("https://archives.bulbagarden.net/media/upload/d/df/HOME0172_s.png")))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Pichu_(Pok%C3%A9mon)"))
+      .Build();
+  }
+
+  public static Form Pikachu(Faker? faker = null, World? world = null, Variety? variety = null, Abilities? abilities = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new FormBuilder(faker)
+      .WithWorld(world)
+      .WithVariety(variety ?? VarietyBuilder.Pikachu(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("pikachu"))
+      .WithName(new Name("Pikachu"))
+      .WithHeight(new Height(4))
+      .WithWeight(new Weight(60))
+      .WithTypes(new Types(PokemonType.Electric))
+      .WithAbilities(abilities ?? new Abilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
+      .WithBaseStatistics(new BaseStatistics(35, 55, 40, 50, 50, 90))
+      .WithYield(new Yield(112, 0, 0, 0, 0, 0, 2))
+      .WithSprites(new Sprites(
+        new Url("https://archives.bulbagarden.net/media/upload/8/85/HOME0025.png"),
+        new Url("https://archives.bulbagarden.net/media/upload/0/0b/HOME0025_s.png"),
+        new Url("https://archives.bulbagarden.net/media/upload/1/1a/HOME0025_f.png"),
+        new Url("https://archives.bulbagarden.net/media/upload/0/05/HOME0025_f_s.png")))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Pikachu_(Pok%C3%A9mon)"))
+      .Build();
+  }
+
+  public static Form Raichu(Faker? faker = null, World? world = null, Variety? variety = null, Abilities? abilities = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new FormBuilder(faker)
+      .WithWorld(world)
+      .WithVariety(variety ?? VarietyBuilder.Raichu(faker, world))
       .IsDefault()
       .WithKey(new Slug("raichu"))
       .WithName(new Name("Raichu"))
       .WithHeight(new Height(8))
       .WithWeight(new Weight(300))
       .WithTypes(new Types(PokemonType.Electric))
-      .WithAbilities(new Abilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
+      .WithAbilities(abilities ?? new Abilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
       .WithBaseStatistics(new BaseStatistics(60, 90, 55, 90, 80, 110))
       .WithYield(new Yield(218, 0, 0, 0, 0, 0, 3))
       .WithSprites(new Sprites(
@@ -234,6 +280,28 @@ public class FormBuilder : IFormBuilder
         new Url("https://archives.bulbagarden.net/media/upload/f/f8/HOME0026_s.png"),
         new Url("https://archives.bulbagarden.net/media/upload/7/77/HOME0026_f.png"),
         new Url("https://archives.bulbagarden.net/media/upload/7/7f/HOME0026_f_s.png")))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Raichu_(Pok%C3%A9mon)"))
+      .Build();
+  }
+
+  public static Form RaichuAlola(Faker? faker = null, World? world = null, Variety? variety = null, Abilities? abilities = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new FormBuilder(faker)
+      .WithWorld(world)
+      .WithVariety(variety ?? VarietyBuilder.Raichu(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("raichu-alola"))
+      .WithName(new Name("Alolan Raichu"))
+      .WithHeight(new Height(7))
+      .WithWeight(new Weight(210))
+      .WithTypes(new Types(PokemonType.Electric, PokemonType.Fairy))
+      .WithAbilities(abilities ?? new Abilities(AbilityBuilder.SurgeSurfer(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
+      .WithBaseStatistics(new BaseStatistics(60, 85, 50, 95, 85, 110))
+      .WithYield(new Yield(218, 0, 0, 0, 0, 0, 3))
+      .WithSprites(new Sprites(
+        new Url("https://archives.bulbagarden.net/media/upload/5/56/HOME0026A.png"),
+        new Url("https://archives.bulbagarden.net/media/upload/d/dd/HOME0026A_s.png")))
       .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Raichu_(Pok%C3%A9mon)"))
       .Build();
   }

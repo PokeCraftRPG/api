@@ -15,6 +15,8 @@ public class FormManagerTests
   private readonly Faker _faker = new();
 
   private readonly Mock<IAbilityQuerier> _abilityQuerier = new();
+  private readonly Mock<IFormQuerier> _formQuerier = new();
+  private readonly Mock<IFormRepository> _formRepository = new();
 
   private readonly TestContext _context;
   private readonly FormManager _manager;
@@ -22,7 +24,7 @@ public class FormManagerTests
   public FormManagerTests()
   {
     _context = new(_faker);
-    _manager = new(_abilityQuerier.Object, _context);
+    _manager = new(_abilityQuerier.Object, _context, _formQuerier.Object, _formRepository.Object);
   }
 
   [Theory(DisplayName = "FindAbilitiesAsync: it should return the resolved abilities.")]
@@ -109,5 +111,52 @@ public class FormManagerTests
     };
     Assert.Equal(expected, exception.Ability);
     Assert.Equal($"{PropertyName}.{slot}", exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "FindAsync: it should return the form found by ID.")]
+  public async Task Given_FoundById_When_FindAsync_Then_FormReturned()
+  {
+    Form form = FormBuilder.Raichu(_faker, _context.World);
+    _formRepository.Setup(x => x.LoadAsync(form.Id, _cancellationToken)).ReturnsAsync(form);
+
+    Form found = await _manager.FindAsync($"  {form.EntityId.ToString().ToUpperInvariant()}  ", PropertyName, _cancellationToken);
+    Assert.Same(form, found);
+  }
+
+  [Fact(DisplayName = "FindAsync: it should return the form found by key.")]
+  public async Task Given_FoundByKey_When_FindAsync_Then_FormReturned()
+  {
+    Form form = FormBuilder.Raichu(_faker, _context.World);
+    _formRepository.Setup(x => x.LoadAsync(form.Id, _cancellationToken)).ReturnsAsync(form);
+
+    string key = $"  {form.Key.Value.ToUpperInvariant()}  ";
+    _formQuerier.Setup(x => x.FindIdAsync(key, _cancellationToken)).ReturnsAsync(form.Id);
+
+    Form found = await _manager.FindAsync(key, PropertyName, _cancellationToken);
+    Assert.Same(form, found);
+  }
+
+  [Fact(DisplayName = "FindAsync: it should throw InvalidOperationException when the form was not loaded.")]
+  public async Task Given_NotLoaded_When_FindAsync_Then_InvalidOperationException()
+  {
+    Form form = FormBuilder.Raichu(_faker, _context.World);
+    _formQuerier.Setup(x => x.FindIdAsync(form.Key.Value, _cancellationToken)).ReturnsAsync(form.Id);
+
+    var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await _manager.FindAsync(form.Key.Value, PropertyName, _cancellationToken));
+    Assert.Equal($"The form 'Id={form.Id}' was not loaded.", exception.Message);
+  }
+
+  [Fact(DisplayName = "FindAsync: it should throw FormNotFoundException when the form was not found.")]
+  public async Task Given_NotFound_When_FindAsync_Then_FormNotFoundException()
+  {
+    string key = $"  {Guid.NewGuid().ToString().ToUpperInvariant()}  ";
+
+    var exception = await Assert.ThrowsAsync<FormNotFoundException>(async () => await _manager.FindAsync(key, PropertyName, _cancellationToken));
+    Assert.Equal(_context.WorldUid, exception.WorldId);
+    Assert.Equal(key, exception.Form);
+    Assert.Equal(PropertyName, exception.PropertyName);
+
+    _formRepository.Verify(x => x.LoadAsync(new FormId(_context.WorldId, Guid.Parse(key)), _cancellationToken), Times.Once());
+    _formQuerier.Verify(x => x.FindIdAsync(key, _cancellationToken), Times.Once());
   }
 }
