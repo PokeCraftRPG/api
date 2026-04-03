@@ -7,14 +7,14 @@ using PokeGame.Core.Items.Models;
 namespace PokeGame.Items;
 
 [Trait(Traits.Category, Categories.Integration)]
-public class OtherItemIntegrationTests : IntegrationTests
+public class BerryIntegrationTests : IntegrationTests
 {
   private readonly IItemRepository _itemRepository;
   private readonly IItemService _itemService;
 
   private Item _item = null!;
 
-  public OtherItemIntegrationTests()
+  public BerryIntegrationTests()
   {
     _itemRepository = ServiceProvider.GetRequiredService<IItemRepository>();
     _itemService = ServiceProvider.GetRequiredService<IItemService>();
@@ -24,23 +24,23 @@ public class OtherItemIntegrationTests : IntegrationTests
   {
     await base.InitializeAsync();
 
-    _item = new ItemBuilder(Faker).WithWorld(World).Build();
+    _item = new ItemBuilder(Faker).WithWorld(World).IsBerry().Build();
     await _itemRepository.SaveAsync(_item);
   }
 
-  [Fact(DisplayName = "It should create a new other item.")]
+  [Fact(DisplayName = "It should create a new berry item.")]
   public async Task Given_DoesNotExist_When_CreateOrReplace_Then_Created()
   {
     CreateOrReplaceItemPayload payload = new()
     {
-      Key = "ability-capsule",
-      Name = " Ability Capsule ",
-      Description = "  A capsule that allows a Pokémon to switch its current Ability to the other Ability its species can have.  ",
-      Price = 100000,
-      Sprite = "https://archives.bulbagarden.net/media/upload/7/77/Dream_Ability_Capsule_Sprite.png",
-      Url = "https://bulbapedia.bulbagarden.net/wiki/Ability_Capsule",
-      Notes = "   Consumable item that swaps a Pokémon’s standard Ability to its other one (if available); cannot grant Hidden Abilities and works only outside battle.   ",
-      OtherItem = new OtherItemPropertiesModel()
+      Key = "oran-berry",
+      Name = " Oran Berry ",
+      Description = "  A berry that can be used to oran-berry a Pokémon that has fainted. It also restores half the Pokémon's max HP.  ",
+      Price = 80,
+      Sprite = "https://archives.bulbagarden.net/media/upload/0/0c/Dream_Oran_Berry_Sprite.png",
+      Url = "https://bulbapedia.bulbagarden.net/wiki/Oran_Berry",
+      Notes = "   A common Berry that restores 10 HP (or more in some games); auto-consumed in battle or used from the Bag, and widely found or grown.   ",
+      Berry = new BerryPropertiesModel(healing: 10)
     };
 
     CreateOrReplaceItemResult result = await _itemService.CreateOrReplaceAsync(payload, id: null);
@@ -54,7 +54,7 @@ public class OtherItemIntegrationTests : IntegrationTests
     Assert.Equal(Actor, item.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, item.UpdatedOn, TimeSpan.FromSeconds(10));
 
-    Assert.Equal(ItemCategory.OtherItem, item.Category);
+    Assert.Equal(ItemCategory.Berry, item.Category);
     Assert.Equal(payload.Key, item.Key);
     Assert.Equal(payload.Name.Trim(), item.Name);
     Assert.Equal(payload.Description.Trim(), item.Description);
@@ -62,22 +62,22 @@ public class OtherItemIntegrationTests : IntegrationTests
     Assert.Equal(payload.Sprite, item.Sprite);
     Assert.Equal(payload.Url, item.Url);
     Assert.Equal(payload.Notes.Trim(), item.Notes);
-    Assert.Equal(payload.OtherItem, item.OtherItem);
+    Assert.Equal(payload.Berry, item.Berry);
   }
 
-  [Fact(DisplayName = "It should replace an existing other item.")]
+  [Fact(DisplayName = "It should replace an existing berry item.")]
   public async Task Given_DoesExist_When_CreateOrReplace_Then_Replaced()
   {
     CreateOrReplaceItemPayload payload = new()
     {
-      Key = "ability-capsule",
-      Name = " Ability Capsule ",
-      Description = "  A capsule that allows a Pokémon to switch its current Ability to the other Ability its species can have.  ",
-      Price = 100000,
-      Sprite = "https://archives.bulbagarden.net/media/upload/7/77/Dream_Ability_Capsule_Sprite.png",
-      Url = "https://bulbapedia.bulbagarden.net/wiki/Ability_Capsule",
-      Notes = "   Consumable item that swaps a Pokémon’s standard Ability to its other one (if available); cannot grant Hidden Abilities and works only outside battle.   ",
-      OtherItem = new OtherItemPropertiesModel()
+      Key = "oran-berry",
+      Name = " Oran Berry ",
+      Description = "  A berry that can be used to oran-berry a Pokémon that has fainted. It also restores half the Pokémon's max HP.  ",
+      Price = 80,
+      Sprite = "https://archives.bulbagarden.net/media/upload/0/0c/Dream_Oran_Berry_Sprite.png",
+      Url = "https://bulbapedia.bulbagarden.net/wiki/Oran_Berry",
+      Notes = "   A common Berry that restores 10 HP (or more in some games); auto-consumed in battle or used from the Bag, and widely found or grown.   ",
+      Berry = new BerryPropertiesModel(healing: 10)
     };
 
     CreateOrReplaceItemResult result = await _itemService.CreateOrReplaceAsync(payload, _item.EntityId);
@@ -86,11 +86,11 @@ public class OtherItemIntegrationTests : IntegrationTests
 
     ItemModel item = result.Item;
     Assert.Equal(_item.EntityId, item.Id);
-    Assert.Equal(_item.Version + 2, item.Version);
+    Assert.Equal(_item.Version + 3, item.Version);
     Assert.Equal(Actor, item.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, item.UpdatedOn, TimeSpan.FromSeconds(10));
 
-    Assert.Equal(ItemCategory.OtherItem, item.Category);
+    Assert.Equal(ItemCategory.Berry, item.Category);
     Assert.Equal(payload.Key, item.Key);
     Assert.Equal(payload.Name.Trim(), item.Name);
     Assert.Equal(payload.Description.Trim(), item.Description);
@@ -98,32 +98,32 @@ public class OtherItemIntegrationTests : IntegrationTests
     Assert.Equal(payload.Sprite, item.Sprite);
     Assert.Equal(payload.Url, item.Url);
     Assert.Equal(payload.Notes.Trim(), item.Notes);
-    Assert.Equal(payload.OtherItem, item.OtherItem);
+    Assert.Equal(payload.Berry, item.Berry);
   }
 
-  [Fact(DisplayName = "It should update an existing other item.")]
+  [Fact(DisplayName = "It should update an existing berry item.")]
   public async Task Given_DoesExist_When_Update_Then_Updated()
   {
     UpdateItemPayload payload = new()
     {
-      Name = new Optional<string>(" Ability Capsule "),
-      Description = new Optional<string>("  A capsule that allows a Pokémon to switch its current Ability to the other Ability its species can have.  "),
-      Price = new Optional<int?>(100000),
-      Sprite = new Optional<string>("https://archives.bulbagarden.net/media/upload/7/77/Dream_Ability_Capsule_Sprite.png"),
-      Url = new Optional<string>("https://bulbapedia.bulbagarden.net/wiki/Ability_Capsule"),
-      Notes = new Optional<string>("   Consumable item that swaps a Pokémon’s standard Ability to its other one (if available); cannot grant Hidden Abilities and works only outside battle.   "),
-      OtherItem = new OtherItemPropertiesModel()
+      Name = new Optional<string>(" Oran Berry "),
+      Description = new Optional<string>("  A berry that can be used to oran-berry a Pokémon that has fainted. It also restores half the Pokémon's max HP.  "),
+      Price = new Optional<int?>(80),
+      Sprite = new Optional<string>("https://archives.bulbagarden.net/media/upload/0/0c/Dream_Oran_Berry_Sprite.png"),
+      Url = new Optional<string>("https://bulbapedia.bulbagarden.net/wiki/Oran_Berry"),
+      Notes = new Optional<string>("   A common Berry that restores 10 HP (or more in some games); auto-consumed in battle or used from the Bag, and widely found or grown.   "),
+      Berry = new BerryPropertiesModel(healing: 10)
     };
 
     ItemModel? item = await _itemService.UpdateAsync(_item.EntityId, payload);
     Assert.NotNull(item);
 
     Assert.Equal(_item.EntityId, item.Id);
-    Assert.Equal(_item.Version + 1, item.Version);
+    Assert.Equal(_item.Version + 2, item.Version);
     Assert.Equal(Actor, item.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, item.UpdatedOn, TimeSpan.FromSeconds(10));
 
-    Assert.Equal(ItemCategory.OtherItem, item.Category);
+    Assert.Equal(ItemCategory.Berry, item.Category);
     Assert.Equal(_item.Key.Value, item.Key);
     Assert.Equal(payload.Name.Value?.Trim(), item.Name);
     Assert.Equal(payload.Description.Value?.Trim(), item.Description);
@@ -131,6 +131,6 @@ public class OtherItemIntegrationTests : IntegrationTests
     Assert.Equal(payload.Sprite.Value, item.Sprite);
     Assert.Equal(payload.Url.Value, item.Url);
     Assert.Equal(payload.Notes.Value?.Trim(), item.Notes);
-    Assert.Equal(payload.OtherItem, item.OtherItem);
+    Assert.Equal(payload.Berry, item.Berry);
   }
 }

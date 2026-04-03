@@ -7,14 +7,14 @@ using PokeGame.Core.Items.Models;
 namespace PokeGame.Items;
 
 [Trait(Traits.Category, Categories.Integration)]
-public class OtherItemIntegrationTests : IntegrationTests
+public class MaterialIntegrationTests : IntegrationTests
 {
   private readonly IItemRepository _itemRepository;
   private readonly IItemService _itemService;
 
   private Item _item = null!;
 
-  public OtherItemIntegrationTests()
+  public MaterialIntegrationTests()
   {
     _itemRepository = ServiceProvider.GetRequiredService<IItemRepository>();
     _itemService = ServiceProvider.GetRequiredService<IItemService>();
@@ -24,23 +24,22 @@ public class OtherItemIntegrationTests : IntegrationTests
   {
     await base.InitializeAsync();
 
-    _item = new ItemBuilder(Faker).WithWorld(World).Build();
+    _item = new ItemBuilder(Faker).WithWorld(World).IsMaterial().Build();
     await _itemRepository.SaveAsync(_item);
   }
 
-  [Fact(DisplayName = "It should create a new other item.")]
+  [Fact(DisplayName = "It should create a new material item.")]
   public async Task Given_DoesNotExist_When_CreateOrReplace_Then_Created()
   {
     CreateOrReplaceItemPayload payload = new()
     {
-      Key = "ability-capsule",
-      Name = " Ability Capsule ",
-      Description = "  A capsule that allows a Pokémon to switch its current Ability to the other Ability its species can have.  ",
-      Price = 100000,
-      Sprite = "https://archives.bulbagarden.net/media/upload/7/77/Dream_Ability_Capsule_Sprite.png",
-      Url = "https://bulbapedia.bulbagarden.net/wiki/Ability_Capsule",
-      Notes = "   Consumable item that swaps a Pokémon’s standard Ability to its other one (if available); cannot grant Hidden Abilities and works only outside battle.   ",
-      OtherItem = new OtherItemPropertiesModel()
+      Key = "gimmighoul-coin",
+      Name = " Gimmighoul Coin ",
+      Description = "  Material accidentally dropped by a Pokémon. It seems that Gimmighoul treasure and hoard these.  ",
+      Sprite = "https://archives.bulbagarden.net/media/upload/1/1d/Bag_Gimmighoul_Coin_ZA_Sprite.png",
+      Url = "https://bulbapedia.bulbagarden.net/wiki/Gimmighoul_Coin",
+      Notes = "   Collect 999 Gimmighoul Coins to evolve Gimmighoul into Gholdengo; coins are consumed on evolution and mainly obtained from wild encounters.   ",
+      Material = new MaterialPropertiesModel()
     };
 
     CreateOrReplaceItemResult result = await _itemService.CreateOrReplaceAsync(payload, id: null);
@@ -54,7 +53,7 @@ public class OtherItemIntegrationTests : IntegrationTests
     Assert.Equal(Actor, item.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, item.UpdatedOn, TimeSpan.FromSeconds(10));
 
-    Assert.Equal(ItemCategory.OtherItem, item.Category);
+    Assert.Equal(ItemCategory.Material, item.Category);
     Assert.Equal(payload.Key, item.Key);
     Assert.Equal(payload.Name.Trim(), item.Name);
     Assert.Equal(payload.Description.Trim(), item.Description);
@@ -62,22 +61,21 @@ public class OtherItemIntegrationTests : IntegrationTests
     Assert.Equal(payload.Sprite, item.Sprite);
     Assert.Equal(payload.Url, item.Url);
     Assert.Equal(payload.Notes.Trim(), item.Notes);
-    Assert.Equal(payload.OtherItem, item.OtherItem);
+    Assert.Equal(payload.Material, item.Material);
   }
 
-  [Fact(DisplayName = "It should replace an existing other item.")]
+  [Fact(DisplayName = "It should replace an existing material item.")]
   public async Task Given_DoesExist_When_CreateOrReplace_Then_Replaced()
   {
     CreateOrReplaceItemPayload payload = new()
     {
-      Key = "ability-capsule",
-      Name = " Ability Capsule ",
-      Description = "  A capsule that allows a Pokémon to switch its current Ability to the other Ability its species can have.  ",
-      Price = 100000,
-      Sprite = "https://archives.bulbagarden.net/media/upload/7/77/Dream_Ability_Capsule_Sprite.png",
-      Url = "https://bulbapedia.bulbagarden.net/wiki/Ability_Capsule",
-      Notes = "   Consumable item that swaps a Pokémon’s standard Ability to its other one (if available); cannot grant Hidden Abilities and works only outside battle.   ",
-      OtherItem = new OtherItemPropertiesModel()
+      Key = "gimmighoul-coin",
+      Name = " Gimmighoul Coin ",
+      Description = "  Material accidentally dropped by a Pokémon. It seems that Gimmighoul treasure and hoard these.  ",
+      Sprite = "https://archives.bulbagarden.net/media/upload/1/1d/Bag_Gimmighoul_Coin_ZA_Sprite.png",
+      Url = "https://bulbapedia.bulbagarden.net/wiki/Gimmighoul_Coin",
+      Notes = "   Collect 999 Gimmighoul Coins to evolve Gimmighoul into Gholdengo; coins are consumed on evolution and mainly obtained from wild encounters.   ",
+      Material = new MaterialPropertiesModel()
     };
 
     CreateOrReplaceItemResult result = await _itemService.CreateOrReplaceAsync(payload, _item.EntityId);
@@ -90,7 +88,7 @@ public class OtherItemIntegrationTests : IntegrationTests
     Assert.Equal(Actor, item.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, item.UpdatedOn, TimeSpan.FromSeconds(10));
 
-    Assert.Equal(ItemCategory.OtherItem, item.Category);
+    Assert.Equal(ItemCategory.Material, item.Category);
     Assert.Equal(payload.Key, item.Key);
     Assert.Equal(payload.Name.Trim(), item.Name);
     Assert.Equal(payload.Description.Trim(), item.Description);
@@ -98,21 +96,20 @@ public class OtherItemIntegrationTests : IntegrationTests
     Assert.Equal(payload.Sprite, item.Sprite);
     Assert.Equal(payload.Url, item.Url);
     Assert.Equal(payload.Notes.Trim(), item.Notes);
-    Assert.Equal(payload.OtherItem, item.OtherItem);
+    Assert.Equal(payload.Material, item.Material);
   }
 
-  [Fact(DisplayName = "It should update an existing other item.")]
+  [Fact(DisplayName = "It should update an existing material item.")]
   public async Task Given_DoesExist_When_Update_Then_Updated()
   {
     UpdateItemPayload payload = new()
     {
-      Name = new Optional<string>(" Ability Capsule "),
-      Description = new Optional<string>("  A capsule that allows a Pokémon to switch its current Ability to the other Ability its species can have.  "),
-      Price = new Optional<int?>(100000),
-      Sprite = new Optional<string>("https://archives.bulbagarden.net/media/upload/7/77/Dream_Ability_Capsule_Sprite.png"),
-      Url = new Optional<string>("https://bulbapedia.bulbagarden.net/wiki/Ability_Capsule"),
-      Notes = new Optional<string>("   Consumable item that swaps a Pokémon’s standard Ability to its other one (if available); cannot grant Hidden Abilities and works only outside battle.   "),
-      OtherItem = new OtherItemPropertiesModel()
+      Name = new Optional<string>(" Gimmighoul Coin "),
+      Description = new Optional<string>("  Material accidentally dropped by a Pokémon. It seems that Gimmighoul treasure and hoard these.  "),
+      Sprite = new Optional<string>("https://archives.bulbagarden.net/media/upload/1/1d/Bag_Gimmighoul_Coin_ZA_Sprite.png"),
+      Url = new Optional<string>("https://bulbapedia.bulbagarden.net/wiki/Gimmighoul_Coin"),
+      Notes = new Optional<string>("   Collect 999 Gimmighoul Coins to evolve Gimmighoul into Gholdengo; coins are consumed on evolution and mainly obtained from wild encounters.   "),
+      Material = new MaterialPropertiesModel()
     };
 
     ItemModel? item = await _itemService.UpdateAsync(_item.EntityId, payload);
@@ -123,14 +120,14 @@ public class OtherItemIntegrationTests : IntegrationTests
     Assert.Equal(Actor, item.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, item.UpdatedOn, TimeSpan.FromSeconds(10));
 
-    Assert.Equal(ItemCategory.OtherItem, item.Category);
+    Assert.Equal(ItemCategory.Material, item.Category);
     Assert.Equal(_item.Key.Value, item.Key);
     Assert.Equal(payload.Name.Value?.Trim(), item.Name);
     Assert.Equal(payload.Description.Value?.Trim(), item.Description);
-    Assert.Equal(payload.Price.Value, item.Price);
+    Assert.Null(item.Price);
     Assert.Equal(payload.Sprite.Value, item.Sprite);
     Assert.Equal(payload.Url.Value, item.Url);
     Assert.Equal(payload.Notes.Value?.Trim(), item.Notes);
-    Assert.Equal(payload.OtherItem, item.OtherItem);
+    Assert.Equal(payload.Material, item.Material);
   }
 }

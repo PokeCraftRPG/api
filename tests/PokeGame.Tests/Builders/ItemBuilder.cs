@@ -17,6 +17,16 @@ public interface IItemBuilder
   IItemBuilder WithSprite(Url? sprite);
   IItemBuilder WithUrl(Url? url);
   IItemBuilder WithNotes(Notes? notes);
+  IItemBuilder Is(ItemCategory? category);
+  IItemBuilder IsBattleItem(BattleItemProperties? battleItem = null);
+  IItemBuilder IsBerry(BerryProperties? berry = null);
+  IItemBuilder IsKeyItem(KeyItemProperties? keyItem = null);
+  IItemBuilder IsMaterial(MaterialProperties? material = null);
+  IItemBuilder IsMedicine(MedicineProperties? medicine = null);
+  IItemBuilder IsOtherItem(OtherItemProperties? otherItem = null);
+  IItemBuilder IsPokeBall(PokeBallProperties? pokeBall = null);
+  IItemBuilder IsTechnicalMachine(TechnicalMachineProperties? technicalMachine = null);
+  IItemBuilder IsTreasure(TreasureProperties? treasure = null);
   IItemBuilder WithProperties(ItemProperties? properties);
   IItemBuilder ClearChanges(bool clearChanges = true);
 
@@ -27,6 +37,7 @@ public class ItemBuilder : IItemBuilder
 {
   private readonly Faker _faker;
 
+  private ItemCategory? _category = null;
   private bool _clearChanges = false;
   private Description? _description = null;
   private ItemId? _id = null;
@@ -98,6 +109,21 @@ public class ItemBuilder : IItemBuilder
     return this;
   }
 
+  public IItemBuilder Is(ItemCategory? category)
+  {
+    _category = category;
+    return this;
+  }
+  public IItemBuilder IsBattleItem(BattleItemProperties? battleItem = null) => Is(ItemCategory.BattleItem).WithProperties(battleItem);
+  public IItemBuilder IsBerry(BerryProperties? berry = null) => Is(ItemCategory.Berry).WithProperties(berry);
+  public IItemBuilder IsKeyItem(KeyItemProperties? keyItem = null) => Is(ItemCategory.KeyItem).WithProperties(keyItem);
+  public IItemBuilder IsMaterial(MaterialProperties? material = null) => Is(ItemCategory.Material).WithProperties(material);
+  public IItemBuilder IsMedicine(MedicineProperties? medicine = null) => Is(ItemCategory.Medicine).WithProperties(medicine);
+  public IItemBuilder IsOtherItem(OtherItemProperties? otherItem = null) => Is(ItemCategory.OtherItem).WithProperties(otherItem);
+  public IItemBuilder IsPokeBall(PokeBallProperties? pokeBall = null) => Is(ItemCategory.PokeBall).WithProperties(pokeBall);
+  public IItemBuilder IsTechnicalMachine(TechnicalMachineProperties? technicalMachine = null) => Is(ItemCategory.TechnicalMachine).WithProperties(technicalMachine);
+  public IItemBuilder IsTreasure(TreasureProperties? treasure = null) => Is(ItemCategory.Treasure).WithProperties(treasure);
+
   public IItemBuilder WithProperties(ItemProperties? properties)
   {
     _properties = properties;
@@ -114,7 +140,7 @@ public class ItemBuilder : IItemBuilder
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
     Slug key = _key ?? new("an-item");
-    ItemProperties properties = _properties ?? new OtherItemProperties();
+    ItemProperties properties = _properties ?? GetProperties();
 
     Item item = _id.HasValue ? new(key, properties, world.OwnerId, _id.Value) : new(world, key, properties);
     item.Name = _name;
@@ -132,6 +158,19 @@ public class ItemBuilder : IItemBuilder
 
     return item;
   }
+
+  private ItemProperties GetProperties() => _category switch
+  {
+    ItemCategory.BattleItem => new BattleItemProperties(),
+    ItemCategory.Berry => new BerryProperties(),
+    ItemCategory.KeyItem => new KeyItemProperties(),
+    ItemCategory.Material => new MaterialProperties(),
+    ItemCategory.Medicine => new MedicineProperties(),
+    ItemCategory.PokeBall => new PokeBallProperties(),
+    ItemCategory.TechnicalMachine => new TechnicalMachineProperties(MoveBuilder.ThunderShock(_faker, _world)),
+    ItemCategory.Treasure => new TreasureProperties(),
+    _ => new OtherItemProperties(),
+  };
 
   public static Item OranBerry(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
     .WithWorld(world)

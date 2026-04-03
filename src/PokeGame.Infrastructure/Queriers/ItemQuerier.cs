@@ -1,4 +1,6 @@
 ﻿using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Search;
+using Logitar.Data;
 using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
@@ -15,12 +17,14 @@ internal class ItemQuerier : IItemQuerier
   private readonly IActorService _actors;
   private readonly IContext _context;
   private readonly DbSet<ItemEntity> _items;
+  private readonly ISqlHelper _sql;
 
-  public ItemQuerier(IActorService actors, IContext context, PokemonContext pokemon)
+  public ItemQuerier(IActorService actors, IContext context, PokemonContext pokemon, ISqlHelper sql)
   {
     _actors = actors;
     _context = context;
     _items = pokemon.Items;
+    _sql = sql;
   }
 
   public async Task EnsureUnicityAsync(Item item, CancellationToken cancellationToken)
@@ -86,6 +90,60 @@ internal class ItemQuerier : IItemQuerier
       .Include(x => x.Move)
       .SingleOrDefaultAsync(cancellationToken);
     return item is null ? null : await MapAsync(item, cancellationToken);
+  }
+
+  public async Task<SearchResults<ItemModel>> SearchAsync(SearchItemsPayload payload, CancellationToken cancellationToken)
+  {
+    IQueryBuilder builder = _sql.Query(PokemonDb.Items.Table).SelectAll(PokemonDb.Items.Table)
+      .Join(PokemonDb.Worlds.WorldId, PokemonDb.Items.WorldId)
+      .ApplyWorldFilter(_context.WorldUid)
+      .ApplyIdFilter(PokemonDb.Items.Id, payload.Ids);
+    _sql.ApplyTextSearch(builder, payload.Search, PokemonDb.Items.Key, PokemonDb.Items.Name);
+
+    if (payload.Category.HasValue)
+    {
+      builder.Where(PokemonDb.Items.Category, Operators.IsEqualTo(payload.Category.Value.ToString()));
+    }
+
+    IQueryable<ItemEntity> query = _items.FromQuery(builder).AsNoTracking().Include(x => x.Move);
+
+    long total = await query.LongCountAsync(cancellationToken);
+
+    IOrderedQueryable<ItemEntity>? ordered = null;
+    foreach (ItemSortOption sort in payload.Sort)
+    {
+      switch (sort.Field)
+      {
+        case ItemSort.CreatedOn:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.CreatedOn) : query.OrderBy(x => x.CreatedOn))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.CreatedOn) : ordered.ThenBy(x => x.CreatedOn));
+          break;
+        case ItemSort.Key:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.Key) : query.OrderBy(x => x.Key))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.Key) : ordered.ThenBy(x => x.Key));
+          break;
+        case ItemSort.Name:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.Name) : ordered.ThenBy(x => x.Name));
+          break;
+        case ItemSort.UpdatedOn:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.UpdatedOn) : query.OrderBy(x => x.UpdatedOn))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.UpdatedOn) : ordered.ThenBy(x => x.UpdatedOn));
+          break;
+      }
+    }
+    query = ordered ?? query;
+
+    query = query.ApplyPaging(payload);
+
+    ItemEntity[] entities = await query.ToArrayAsync(cancellationToken);
+    IReadOnlyCollection<ItemModel> items = await MapAsync(entities, cancellationToken);
+
+    return new SearchResults<ItemModel>(items, total);
   }
 
   private async Task<ItemModel> MapAsync(ItemEntity item, CancellationToken cancellationToken)
