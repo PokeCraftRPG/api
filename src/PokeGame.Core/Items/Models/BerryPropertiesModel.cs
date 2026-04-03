@@ -25,28 +25,24 @@ public record BerryPropertiesModel : IBerryProperties
   public PokemonStatistic? LowerEffortValues { get; set; }
   public bool RaiseFriendship { get; set; }
 
-  public BerryPropertiesModel()
-  {
-  }
-
   [JsonConstructor]
   public BerryPropertiesModel(
-    int healing,
-    bool isHealingPercentage,
-    StatusCondition? statusCondition,
-    bool allConditions,
-    bool cureConfusion,
-    int powerPoints,
-    int attack,
-    int defense,
-    int specialAttack,
-    int specialDefense,
-    int speed,
-    int accuracy,
-    int evasion,
-    int critical,
-    PokemonStatistic? lowerEffortValues,
-    bool raiseFriendship)
+    int healing = 0,
+    bool isHealingPercentage = false,
+    StatusCondition? statusCondition = null,
+    bool allConditions = false,
+    bool cureConfusion = false,
+    int powerPoints = 0,
+    int attack = 0,
+    int defense = 0,
+    int specialAttack = 0,
+    int specialDefense = 0,
+    int speed = 0,
+    int accuracy = 0,
+    int evasion = 0,
+    int critical = 0,
+    PokemonStatistic? lowerEffortValues = null,
+    bool raiseFriendship = false)
   {
     Healing = healing;
     IsHealingPercentage = isHealingPercentage;

@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Core.Items;
 using PokeGame.Core.Items.Models;
 using PokeGame.Extensions;
+using PokeGame.Models.Item;
 
 namespace PokeGame.Controllers;
 
@@ -44,6 +46,14 @@ public class ItemController : ControllerBase
   {
     CreateOrReplaceItemResult result = await _itemService.CreateOrReplaceAsync(payload, id, cancellationToken);
     return ToActionResult(result);
+  }
+
+  [HttpGet]
+  public async Task<ActionResult<SearchResults<ItemModel>>> SearchAsync([FromQuery] SearchItemsParameters parameters, CancellationToken cancellationToken)
+  {
+    SearchItemsPayload payload = parameters.ToPayload();
+    SearchResults<ItemModel> items = await _itemService.SearchAsync(payload, cancellationToken);
+    return Ok(items);
   }
 
   [HttpPatch("{id}")]

@@ -8,7 +8,6 @@
     <File Path="README.md" />
   </Folder>
   <Folder Name="/Tests/">
-    <File Path="tests/TODO.md" />
     <Project Path="tests/PokeGame.IntegrationTests/PokeGame.IntegrationTests.csproj" Id="cc7166ec-4553-494c-9857-fe83147302e1" />
     <Project Path="tests/PokeGame.Tests/PokeGame.Tests.csproj" Id="aca65187-ad69-44fd-994e-1a3b14530ef4" />
     <Project Path="tests/PokeGame.UnitTests/PokeGame.UnitTests.csproj" Id="9b2619f4-59bc-49f8-8431-246a0dda4f93" />

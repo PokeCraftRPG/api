@@ -17,10 +17,6 @@ public record MedicinePropertiesModel : IMedicineProperties
   public bool IsPowerPointPercentage { get; set; }
   public bool RestoreAllMoves { get; set; }
 
-  public MedicinePropertiesModel()
-  {
-  }
-
   [JsonConstructor]
   public MedicinePropertiesModel(
     bool isHerbal = false,

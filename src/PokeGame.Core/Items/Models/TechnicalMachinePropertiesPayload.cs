@@ -2,5 +2,14 @@
 
 public record TechnicalMachinePropertiesPayload
 {
-  public string Move { get; set; } = string.Empty;
+  public string Move { get; set; }
+
+  public TechnicalMachinePropertiesPayload() : this(string.Empty)
+  {
+  }
+
+  public TechnicalMachinePropertiesPayload(string move)
+  {
+    Move = move;
+  }
 }

@@ -1,4 +1,5 @@
-﻿using Logitar.CQRS;
+﻿using Krakenar.Contracts.Search;
+using Logitar.CQRS;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Items.Commands;
 using PokeGame.Core.Items.Models;
@@ -10,6 +11,7 @@ public interface IItemService
 {
   Task<CreateOrReplaceItemResult> CreateOrReplaceAsync(CreateOrReplaceItemPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
   Task<ItemModel?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
+  Task<SearchResults<ItemModel>> SearchAsync(SearchItemsPayload payload, CancellationToken cancellationToken = default);
   Task<ItemModel?> UpdateAsync(Guid id, UpdateItemPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -22,6 +24,7 @@ internal class ItemService : IItemService
     services.AddTransient<ICommandHandler<CreateOrReplaceItemCommand, CreateOrReplaceItemResult>, CreateOrReplaceItemCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateItemCommand, ItemModel?>, UpdateItemCommandHandler>();
     services.AddTransient<IQueryHandler<ReadItemQuery, ItemModel?>, ReadItemQueryHandler>();
+    services.AddTransient<IQueryHandler<SearchItemsQuery, SearchResults<ItemModel>>, SearchItemsQueryHandler>();
   }
 
   private readonly ICommandBus _commandBus;
@@ -42,6 +45,12 @@ internal class ItemService : IItemService
   public async Task<ItemModel?> ReadAsync(Guid? id, string? key, CancellationToken cancellationToken)
   {
     ReadItemQuery query = new(id, key);
+    return await _queryBus.ExecuteAsync(query, cancellationToken);
+  }
+
+  public async Task<SearchResults<ItemModel>> SearchAsync(SearchItemsPayload payload, CancellationToken cancellationToken)
+  {
+    SearchItemsQuery query = new(payload);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 

@@ -14,12 +14,17 @@ public record BattleItemPropertiesModel : IBattleItemProperties
   public int Critical { get; set; }
   public int GuardTurns { get; set; }
 
-  public BattleItemPropertiesModel()
-  {
-  }
-
   [JsonConstructor]
-  public BattleItemPropertiesModel(int attack, int defense, int specialAttack, int specialDefense, int speed, int accuracy, int evasion, int critical, int guardTurns)
+  public BattleItemPropertiesModel(
+    int attack = 0,
+    int defense = 0,
+    int specialAttack = 0,
+    int specialDefense = 0,
+    int speed = 0,
+    int accuracy = 0,
+    int evasion = 0,
+    int critical = 0,
+    int guardTurns = 0)
   {
     Attack = attack;
     Defense = defense;

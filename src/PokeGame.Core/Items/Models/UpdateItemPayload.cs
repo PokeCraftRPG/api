@@ -46,6 +46,7 @@ public record UpdateItemPayload
       When(x => x.Berry is not null, () => RuleFor(x => x.Berry!).SetValidator(new BerryValidator()));
       When(x => x.Medicine is not null, () => RuleFor(x => x.Medicine!).SetValidator(new MedicineValidator()));
       When(x => x.PokeBall is not null, () => RuleFor(x => x.PokeBall!).SetValidator(new PokeBallValidator()));
+      When(x => x.TechnicalMachine is not null, () => RuleFor(x => x.TechnicalMachine!).SetValidator(new TechnicalMachineValidator()));
 
       RuleFor(x => x).Must(BeValid)
         .WithErrorCode("UpdateItemValidator")
@@ -95,7 +96,7 @@ public record UpdateItemPayload
       {
         count++;
       }
-      return count == 1;
+      return count <= 1;
     }
   }
 }
