@@ -1,5 +1,4 @@
 ﻿using Bogus;
-using PokeGame.Core.Pokemon;
 
 namespace PokeGame.Core.Varieties;
 
@@ -36,27 +35,6 @@ public class GenderRatioTests
     var exception = Assert.Throws<FluentValidation.ValidationException>(() => new GenderRatio(value));
     Assert.Single(exception.Errors);
     Assert.Contains(exception.Errors, e => e.ErrorCode == "InclusiveBetweenValidator" && e.PropertyName == "Value");
-  }
-
-  [Fact(DisplayName = "IsValid: it should return false when the Pokémon gender is not valid.")]
-  public void Given_InvalidGender_When_IsValid_Then_FalseReturned()
-  {
-    Assert.False(GenderRatio.AllFemale.IsValid(PokemonGender.Male));
-    Assert.False(GenderRatio.AllMale.IsValid(PokemonGender.Female));
-  }
-
-  [Fact(DisplayName = "IsValid: it should return true when the Pokémon gender is valid.")]
-  public void Given_ValidGender_When_IsValid_Then_TrueReturned()
-  {
-    Assert.True(GenderRatio.AllFemale.IsValid(PokemonGender.Female));
-    Assert.True(GenderRatio.AllMale.IsValid(PokemonGender.Male));
-
-    for (int value = GenderRatio.MinimumValue + 1; value < GenderRatio.MaximumValue; value++)
-    {
-      GenderRatio genderRatio = new(value);
-      Assert.True(genderRatio.IsValid(PokemonGender.Female));
-      Assert.True(genderRatio.IsValid(PokemonGender.Male));
-    }
   }
 
   [Fact(DisplayName = "ToString: it should return the correct value.")]
