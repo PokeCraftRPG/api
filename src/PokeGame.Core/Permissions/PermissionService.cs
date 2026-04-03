@@ -61,8 +61,8 @@ internal class PermissionService : IPermissionService
 
   private async Task<bool> IsAllowedAsync(string action, CancellationToken cancellationToken) => action switch
   {
-    Actions.CreateAbility or Actions.CreateEvolution or Actions.CreateForm or Actions.CreateItem or Actions.CreateMove or Actions.CreateRegion
-      or Actions.CreateSpecies or Actions.CreateTrainer or Actions.CreateVariety => _context.IsWorldOwner,
+    Actions.CreateAbility or Actions.CreateEvolution or Actions.CreateForm or Actions.CreateItem or Actions.CreateMove or Actions.CreatePokemon
+      or Actions.CreateRegion or Actions.CreateSpecies or Actions.CreateTrainer or Actions.CreateVariety => _context.IsWorldOwner,
     Actions.CreateWorld => await CanCreateWorldAsync(cancellationToken),
     _ => false,
   };
