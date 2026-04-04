@@ -11,6 +11,8 @@ namespace PokeGame.Core.Pokemon;
 public class Specimen : AggregateRoot, IEntityProvider
 {
   public const string EntityKind = "Specimen";
+  public const int MaximumVitality = 999;
+  public const int MaximumStamina = 999;
 
   private PokemonUpdated _updated = new();
   private bool HasUpdates => _updated.Sprite is not null || _updated.Url is not null || _updated.Notes is not null;

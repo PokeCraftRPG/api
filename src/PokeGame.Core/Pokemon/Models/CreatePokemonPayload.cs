@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using PokeGame.Core.Abilities;
+using PokeGame.Core.Pokemon.Validators;
 using PokeGame.Core.Validation;
 
 namespace PokeGame.Core.Pokemon.Models;
@@ -23,11 +24,11 @@ public record CreatePokemonPayload
   //public byte EggCycles { get; set; }
   //public int Experience { get; set; }
 
-  //public IndividualValuesModel? IndividualValues { get; set; }
-  //public EffortValuesModel? EffortValues { get; set; }
-  //public int? Vitality { get; set; }
-  //public int? Stamina { get; set; }
-  //public byte? Friendship { get; set; }
+  public IndividualValuesModel? IndividualValues { get; set; }
+  public EffortValuesModel? EffortValues { get; set; }
+  public int? Vitality { get; set; }
+  public int? Stamina { get; set; }
+  public byte? Friendship { get; set; }
 
   //public string? HeldItem { get; set; }
 
@@ -59,6 +60,11 @@ public record CreatePokemonPayload
       RuleFor(x => x.TeraType).IsInEnum();
       RuleFor(x => x.AbilitySlot).IsInEnum();
       When(x => !string.IsNullOrWhiteSpace(x.Nature), () => RuleFor(x => x.Nature!).Nature());
+
+      When(x => x.IndividualValues is not null, () => RuleFor(x => x.IndividualValues!).SetValidator(new IndividualValuesValidator()));
+      When(x => x.EffortValues is not null, () => RuleFor(x => x.EffortValues!).SetValidator(new EffortValuesValidator()));
+      When(x => x.Vitality.HasValue, () => RuleFor(x => x.Vitality!.Value).Vitality());
+      When(x => x.Stamina.HasValue, () => RuleFor(x => x.Stamina!.Value).Stamina());
 
       When(x => !string.IsNullOrWhiteSpace(x.Sprite), () => RuleFor(x => x.Sprite!).Url());
       When(x => !string.IsNullOrWhiteSpace(x.Url), () => RuleFor(x => x.Url!).Url());

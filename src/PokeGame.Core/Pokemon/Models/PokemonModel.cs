@@ -26,11 +26,11 @@ public class PokemonModel : Aggregate
   //public int MaximumExperience { get; set; }
   //public int ToNextLevel { get; set; }
 
-  //public PokemonStatisticsModel Statistics { get; set; } = new();
-  //public int Vitality { get; set; }
-  //public int Stamina { get; set; }
-  //public StatusCondition? StatusCondition { get; set; }
-  //public byte Friendship { get; set; }
+  public PokemonStatisticsModel Statistics { get; set; } = new();
+  public int Vitality { get; set; }
+  public int Stamina { get; set; }
+  public StatusCondition? StatusCondition { get; set; }
+  public byte Friendship { get; set; }
 
   //public string Characteristic { get; set; } = string.Empty;
 
