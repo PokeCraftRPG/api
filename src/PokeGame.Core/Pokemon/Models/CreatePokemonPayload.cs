@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Validation;
 
 namespace PokeGame.Core.Pokemon.Models;
@@ -12,12 +13,12 @@ public record CreatePokemonPayload
   public string? Key { get; set; }
   public string? Name { get; set; }
   public PokemonGender? Gender { get; set; }
-  //public bool IsShiny { get; set; }
+  public bool IsShiny { get; set; }
 
-  //public PokemonType? TeraType { get; set; }
-  //public PokemonSizePayload? Size { get; set; }
-  //public AbilitySlot? AbilitySlot { get; set; }
-  //public string? Nature { get; set; }
+  public PokemonType? TeraType { get; set; }
+  public PokemonSizePayload? Size { get; set; }
+  public AbilitySlot? AbilitySlot { get; set; }
+  public string? Nature { get; set; }
 
   //public byte EggCycles { get; set; }
   //public int Experience { get; set; }
@@ -53,7 +54,11 @@ public record CreatePokemonPayload
 
       When(x => !string.IsNullOrWhiteSpace(x.Key), () => RuleFor(x => x.Key!).Slug());
       When(x => !string.IsNullOrWhiteSpace(x.Name), () => RuleFor(x => x.Name!).Name());
-      When(x => x.Gender.HasValue, () => RuleFor(x => x.Gender!.Value).IsInEnum());
+      RuleFor(x => x.Gender).IsInEnum();
+
+      RuleFor(x => x.TeraType).IsInEnum();
+      RuleFor(x => x.AbilitySlot).IsInEnum();
+      When(x => !string.IsNullOrWhiteSpace(x.Nature), () => RuleFor(x => x.Nature!).Nature());
 
       When(x => !string.IsNullOrWhiteSpace(x.Sprite), () => RuleFor(x => x.Sprite!).Url());
       When(x => !string.IsNullOrWhiteSpace(x.Url), () => RuleFor(x => x.Url!).Url());

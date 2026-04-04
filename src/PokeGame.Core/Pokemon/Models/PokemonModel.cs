@@ -1,4 +1,5 @@
 ﻿using Krakenar.Contracts;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms.Models;
 
 namespace PokeGame.Core.Pokemon.Models;
@@ -10,12 +11,12 @@ public class PokemonModel : Aggregate
   public string Key { get; set; } = string.Empty;
   public string? Name { get; set; }
   public PokemonGender? Gender { get; set; }
-  //public bool IsShiny { get; set; }
+  public bool IsShiny { get; set; }
 
-  //public PokemonType TeraType { get; set; }
-  //public PokemonSizeModel Size { get; set; } = new();
-  //public AbilitySlot AbilitySlot { get; set; }
-  //public PokemonNatureModel Nature { get; set; } = new();
+  public PokemonType TeraType { get; set; }
+  public PokemonSizeModel Size { get; set; } = new();
+  public AbilitySlot AbilitySlot { get; set; }
+  public PokemonNatureModel Nature { get; set; } = new();
 
   //public byte EggCycles { get; set; }
   //public bool IsEgg { get; set; }

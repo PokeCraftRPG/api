@@ -1,4 +1,5 @@
 ﻿using Logitar.EventSourcing;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Species;
@@ -26,6 +27,14 @@ public class Specimen : AggregateRoot, IEntityProvider
   public Slug Key => _key ?? throw new InvalidOperationException("The specimen was not initialized.");
   public Name? Name { get; private set; }
   public PokemonGender? Gender { get; private set; }
+  public bool IsShiny { get; private set; }
+
+  public PokemonType TeraType { get; private set; }
+  private PokemonSize? _size = null;
+  public PokemonSize Size => _size ?? throw new InvalidOperationException("The specimen was not initialized.");
+  public AbilitySlot AbilitySlot { get; private set; }
+  private PokemonNature? _nature = null;
+  public PokemonNature Nature => _nature ?? throw new InvalidOperationException("The specimen was not initialized.");
 
   private Url? _sprite = null;
   public Url? Sprite
@@ -67,19 +76,40 @@ public class Specimen : AggregateRoot, IEntityProvider
     }
   }
 
-  public long Size => Key.Size + (Name?.Size ?? 0);
+  public long Size2 => Key.Size + (Name?.Size ?? 0) + (Sprite?.Size ?? 0) + (Url?.Size ?? 0) + (Notes?.Size ?? 0);
 
   public Specimen() : base()
   {
   }
 
-  public Specimen(World world, SpeciesAggregate species, Variety variety, Form form, Slug? key, PokemonGender? gender)
-    : this(species, variety, form, key, gender, world.OwnerId, SpecimenId.NewId(world.Id))
+  public Specimen(
+    World world,
+    SpeciesAggregate species,
+    Variety variety,
+    Form form,
+    Slug? key,
+    PokemonGender? gender,
+    bool isShiny,
+    PokemonType? teraType,
+    PokemonSize size,
+    AbilitySlot abilitySlot,
+    PokemonNature nature) : this(species, variety, form, key, gender, isShiny, teraType, size, abilitySlot, nature, world.OwnerId, SpecimenId.NewId(world.Id))
   {
   }
 
-  public Specimen(SpeciesAggregate species, Variety variety, Form form, Slug? key, PokemonGender? gender, UserId userId, SpecimenId specimenId)
-    : base(specimenId.StreamId)
+  public Specimen(
+    SpeciesAggregate species,
+    Variety variety,
+    Form form,
+    Slug? key,
+    PokemonGender? gender,
+    bool isShiny,
+    PokemonType? teraType,
+    PokemonSize size,
+    AbilitySlot abilitySlot,
+    PokemonNature nature,
+    UserId userId,
+    SpecimenId specimenId) : base(specimenId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(Id, species.Id, nameof(species));
     WorldMismatchException.ThrowIfMismatch(Id, variety.Id, nameof(variety));
@@ -96,8 +126,20 @@ public class Specimen : AggregateRoot, IEntityProvider
 
     InvalidGenderException.ThrowIfNotValid(variety.GenderRatio, gender, nameof(Gender));
 
+    if (teraType.HasValue && !Enum.IsDefined(teraType.Value))
+    {
+      throw new ArgumentOutOfRangeException(nameof(teraType));
+    }
+    teraType ??= form.Types.Primary;
+
+    if (!Enum.IsDefined(abilitySlot))
+    {
+      throw new ArgumentOutOfRangeException(nameof(abilitySlot));
+    }
+    // TODO(fpion): validate ability slot with form abilities
+
     key ??= species.Key;
-    Raise(new PokemonCreated(species.Id, variety.Id, form.Id, key, gender), userId.ActorId);
+    Raise(new PokemonCreated(species.Id, variety.Id, form.Id, key, gender, isShiny, teraType.Value, size, abilitySlot, nature), userId.ActorId);
   }
   protected virtual void Handle(PokemonCreated @event)
   {
@@ -107,6 +149,12 @@ public class Specimen : AggregateRoot, IEntityProvider
 
     _key = @event.Key;
     Gender = @event.Gender;
+    IsShiny = @event.IsShiny;
+
+    TeraType = @event.TeraType;
+    _size = @event.Size;
+    AbilitySlot = @event.AbilitySlot;
+    _nature = @event.Nature;
   }
 
   public void Delete(UserId userId)
@@ -117,7 +165,7 @@ public class Specimen : AggregateRoot, IEntityProvider
     }
   }
 
-  public Entity GetEntity() => new(EntityKind, EntityId, WorldId, Size);
+  public Entity GetEntity() => new(EntityKind, EntityId, WorldId, Size2);
 
   public void Nickname(Name? name, UserId userId)
   {

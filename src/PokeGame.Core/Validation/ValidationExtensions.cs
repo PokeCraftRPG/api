@@ -91,6 +91,11 @@ public static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(Core.Name.MaximumLength);
   }
 
+  public static IRuleBuilderOptions<T, string> Nature<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.SetValidator(new PokemonNatureValidator<T>());
+  }
+
   public static IRuleBuilderOptions<T, string> Notes<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty();

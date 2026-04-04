@@ -1,4 +1,5 @@
 ﻿using Logitar.CQRS;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon.Models;
@@ -71,8 +72,12 @@ internal class CreatePokemonCommandHandler : ICommandHandler<CreatePokemonComman
     SpeciesAggregate species = await _speciesRepository.LoadAsync(variety.SpeciesId, cancellationToken)
       ?? throw new InvalidOperationException($"The species 'Id={variety.SpeciesId}' was not loaded.");
 
+    Slug? key = Slug.TryCreate(payload.Key);
     PokemonGender? gender = payload.Gender ?? _randomizer.Gender(variety.GenderRatio);
-    specimen = new(species, variety, form, Slug.TryCreate(payload.Key), gender, userId, specimenId);
+    PokemonSize size = payload.Size is null ? _randomizer.PokemonSize() : new(payload.Size);
+    AbilitySlot abilitySlot = payload.AbilitySlot ?? _randomizer.AbilitySlot(form.Abilities);
+    PokemonNature nature = string.IsNullOrWhiteSpace(payload.Nature) ? _randomizer.PokemonNature() : PokemonNatures.Instance.Find(payload.Nature);
+    specimen = new(species, variety, form, key, gender, payload.IsShiny, payload.TeraType, size, abilitySlot, nature, userId, specimenId);
 
     specimen.Nickname(Name.TryCreate(payload.Name), userId);
 

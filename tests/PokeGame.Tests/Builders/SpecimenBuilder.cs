@@ -1,5 +1,6 @@
 ﻿using Bogus;
 using PokeGame.Core;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Species;
@@ -16,6 +17,11 @@ public interface ISpecimenBuilder
   ISpecimenBuilder WithKey(Slug? key);
   ISpecimenBuilder WithName(Name? name);
   ISpecimenBuilder WithGender(PokemonGender? gender);
+  ISpecimenBuilder IsShiny(bool isShiny = true);
+  ISpecimenBuilder WithTeraType(PokemonType? teraType);
+  ISpecimenBuilder WithSize(PokemonSize? size);
+  ISpecimenBuilder WithAbilitySlot(AbilitySlot? abilitySlot);
+  ISpecimenBuilder WithNature(PokemonNature? nature);
   ISpecimenBuilder WithSprite(Url? sprite);
   ISpecimenBuilder WithUrl(Url? url);
   ISpecimenBuilder WithNotes(Notes? notes);
@@ -29,15 +35,20 @@ public class SpecimenBuilder : ISpecimenBuilder
   private readonly Faker _faker;
   private readonly IPokemonRandomizer _randomizer;
 
+  private AbilitySlot? _abilitySlot = null;
   private bool _clearChanges = false;
   private Form? _form = null;
   private PokemonGender? _gender = null;
   private SpecimenId? _id = null;
+  private bool _isShiny = false;
   private Slug? _key = null;
   private Name? _name = null;
+  private PokemonNature? _nature = null;
   private Notes? _notes = null;
+  private PokemonSize? _size = null;
   private SpeciesAggregate? _species = null;
   private Url? _sprite = null;
+  private PokemonType? _teraType = null;
   private Url? _url = null;
   private Variety? _variety = null;
   private World? _world = null;
@@ -92,6 +103,36 @@ public class SpecimenBuilder : ISpecimenBuilder
     return this;
   }
 
+  public ISpecimenBuilder IsShiny(bool isShiny = true)
+  {
+    _isShiny = isShiny;
+    return this;
+  }
+
+  public ISpecimenBuilder WithTeraType(PokemonType? teraType)
+  {
+    _teraType = teraType;
+    return this;
+  }
+
+  public ISpecimenBuilder WithSize(PokemonSize? size)
+  {
+    _size = size;
+    return this;
+  }
+
+  public ISpecimenBuilder WithAbilitySlot(AbilitySlot? abilitySlot)
+  {
+    _abilitySlot = abilitySlot;
+    return this;
+  }
+
+  public ISpecimenBuilder WithNature(PokemonNature? nature)
+  {
+    _nature = nature;
+    return this;
+  }
+
   public ISpecimenBuilder WithUrl(Url? url)
   {
     _url = url;
@@ -117,10 +158,13 @@ public class SpecimenBuilder : ISpecimenBuilder
     Variety variety = _variety ?? VarietyBuilder.Pikachu(_faker, _world, species);
     Form form = _form ?? FormBuilder.Pikachu(_faker, _world, variety, new Abilities(AbilityBuilder.Static(_faker, _world), secondary: null, AbilityBuilder.LightningRod(_faker, _world)));
     PokemonGender? gender = _gender ?? _randomizer.Gender(variety.GenderRatio);
+    PokemonSize size = _size ?? _randomizer.PokemonSize();
+    AbilitySlot abilitySlot = _abilitySlot ?? _randomizer.AbilitySlot(form.Abilities);
+    PokemonNature nature = _nature ?? _randomizer.PokemonNature();
 
     Specimen specimen = _id.HasValue
-      ? new(species, variety, form, _key, gender, world.OwnerId, _id.Value)
-      : new(world, species, variety, form, _key, gender);
+      ? new(species, variety, form, _key, gender, _isShiny, _teraType, size, abilitySlot, nature, world.OwnerId, _id.Value)
+      : new(world, species, variety, form, _key, gender, _isShiny, _teraType, size, abilitySlot, nature);
 
     specimen.Nickname(_name, world.OwnerId);
 

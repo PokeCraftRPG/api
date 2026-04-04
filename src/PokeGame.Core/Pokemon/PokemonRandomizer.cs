@@ -1,10 +1,14 @@
-﻿using PokeGame.Core.Varieties;
+﻿using PokeGame.Core.Abilities;
+using PokeGame.Core.Varieties;
 
 namespace PokeGame.Core.Pokemon;
 
 public interface IPokemonRandomizer
 {
+  AbilitySlot AbilitySlot(Forms.Abilities abilities);
   PokemonGender? Gender(GenderRatio? genderRatio);
+  PokemonNature PokemonNature();
+  PokemonSize PokemonSize();
 }
 
 public class PokemonRandomizer : IPokemonRandomizer
@@ -25,6 +29,23 @@ public class PokemonRandomizer : IPokemonRandomizer
   {
   }
 
+  public AbilitySlot AbilitySlot(Forms.Abilities abilities)
+  {
+    List<AbilitySlot> slots = new(capacity: 3)
+    {
+      Abilities.AbilitySlot.Primary
+    };
+    if (abilities.Secondary is not null)
+    {
+      slots.Add(Abilities.AbilitySlot.Secondary);
+    }
+    if (abilities.Hidden is not null)
+    {
+      slots.Add(Abilities.AbilitySlot.Hidden);
+    }
+    return _random.Pick(slots);
+  }
+
   public PokemonGender? Gender(GenderRatio? genderRatio)
   {
     if (genderRatio is null)
@@ -34,5 +55,14 @@ public class PokemonRandomizer : IPokemonRandomizer
 
     int value = _random.Next(0, GenderRatio.MaximumValue);
     return value < genderRatio.Value ? PokemonGender.Male : PokemonGender.Female;
+  }
+
+  public PokemonNature PokemonNature() => _random.Pick(PokemonNatures.Instance.ToList());
+
+  public PokemonSize PokemonSize()
+  {
+    int height = _random.Next(0, 128 + 1) + _random.Next(0, 127 + 1);
+    int weight = _random.Next(0, 128 + 1) + _random.Next(0, 127 + 1);
+    return new PokemonSize((byte)height, (byte)weight);
   }
 }

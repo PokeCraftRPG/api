@@ -1,6 +1,7 @@
 ﻿using Bogus;
 using Moq;
 using PokeGame.Builders;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon.Models;
@@ -142,17 +143,23 @@ public class CreatePokemonCommandHandlerTests
       Key = "in--val!d",
       Name = _faker.Random.String(Name.MaximumLength + 1, 'a', 'z'),
       Gender = (PokemonGender)999,
+      TeraType = (PokemonType)999,
+      AbilitySlot = (AbilitySlot)999,
+      Nature = "invalid",
       Sprite = "invalid",
       Url = "invalid"
     };
     CreatePokemonCommand command = new(payload);
 
     var exception = await Assert.ThrowsAsync<FluentValidation.ValidationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
-    Assert.Equal(6, exception.Errors.Count());
+    Assert.Equal(9, exception.Errors.Count());
     Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "Form");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "SlugValidator" && e.PropertyName == "Key");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "MaximumLengthValidator" && e.PropertyName == "Name");
-    Assert.Contains(exception.Errors, e => e.ErrorCode == "EnumValidator" && e.PropertyName == "Gender.Value");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "EnumValidator" && e.PropertyName == "Gender");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "EnumValidator" && e.PropertyName == "TeraType");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "EnumValidator" && e.PropertyName == "AbilitySlot");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "PokemonNatureValidator" && e.PropertyName == "Nature");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "UrlValidator" && e.PropertyName == "Sprite");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "UrlValidator" && e.PropertyName == "Url");
   }
