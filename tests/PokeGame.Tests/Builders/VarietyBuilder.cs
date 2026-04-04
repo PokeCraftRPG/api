@@ -291,4 +291,20 @@ public class VarietyBuilder : IVarietyBuilder
       .WithNotes(new Notes("This is the default variety."))
       .Build();
   }
+  public static Variety Tepig(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new VarietyBuilder(faker)
+      .WithWorld(world)
+      .WithSpecies(species ?? SpeciesBuilder.Tepig(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("tepig"))
+      .WithName(new Name("Tepig"))
+      .WithGenus(new Genus("Fire Pig"))
+      .WithDescription(new Description("WhenIt can deftly dodge its foe's attacks while shooting fireballs from its nose. It roasts berries before it eats them."))
+      .WithGenderRatio(new GenderRatio(7))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Tepig_(Pok%C3%A9mon)"))
+      .WithNotes(new Notes("This is the default variety."))
+      .Build();
+  }
 }

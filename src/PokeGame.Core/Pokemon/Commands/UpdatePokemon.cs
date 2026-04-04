@@ -75,6 +75,6 @@ internal class UpdatePokemonCommandHandler : ICommandHandler<UpdatePokemonComman
       async () => await _pokemonRepository.SaveAsync(specimen, cancellationToken),
       cancellationToken);
 
-    return await _pokemonQuerier.ReadAsync(specimenId, cancellationToken);
+    return await _pokemonQuerier.ReadAsync(specimen, cancellationToken);
   }
 }

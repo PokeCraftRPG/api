@@ -18,6 +18,7 @@ internal class CreatePokemonCommandHandler : ICommandHandler<CreatePokemonComman
   private readonly IPermissionService _permissionService;
   private readonly IPokemonQuerier _pokemonQuerier;
   private readonly IPokemonRepository _pokemonRepository;
+  private readonly IPokemonRandomizer _randomizer = PokemonRandomizer.Instance;
   private readonly ISpeciesRepository _speciesRepository;
   private readonly IStorageService _storageService;
   private readonly IVarietyRepository _varietyRepository;
@@ -70,7 +71,8 @@ internal class CreatePokemonCommandHandler : ICommandHandler<CreatePokemonComman
     SpeciesAggregate species = await _speciesRepository.LoadAsync(variety.SpeciesId, cancellationToken)
       ?? throw new InvalidOperationException($"The species 'Id={variety.SpeciesId}' was not loaded.");
 
-    specimen = new(species, variety, form, Slug.TryCreate(payload.Key), payload.Gender, userId, specimenId);
+    PokemonGender? gender = payload.Gender ?? _randomizer.Gender(variety.GenderRatio);
+    specimen = new(species, variety, form, Slug.TryCreate(payload.Key), gender, userId, specimenId);
 
     specimen.Nickname(Name.TryCreate(payload.Name), userId);
 

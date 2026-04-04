@@ -105,6 +105,15 @@ public class AbilityBuilder : IAbilityBuilder
     return ability;
   }
 
+  public static Ability Blaze(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("blaze"))
+    .WithName(new Name("Blaze"))
+    .WithDescription(new Description("Powers up Fire-type moves when the Pokémon's HP is low."))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Blaze_(Ability)"))
+    .WithNotes(new Notes("Boosts Fire-type moves when HP is low (≈1/3 or less), increasing damage by ~50%. Common Ability of Fire starters; no effect outside battle."))
+    .Build();
+
   public static Ability LightningRod(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
     .WithWorld(world)
     .WithKey(new Slug("lightning-rod"))
@@ -139,5 +148,14 @@ public class AbilityBuilder : IAbilityBuilder
     .WithDescription(new Description("Doubles the Pokémon's Speed stat on Electric Terrain."))
     .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Surge_Surfer_(Ability)"))
     .WithNotes(new Notes("On Electric Terrain, this Pokémon’s Speed is doubled; no effect outside battle."))
+    .Build();
+
+  public static Ability ThickFat(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("thick-fat"))
+    .WithName(new Name("Thick Fat"))
+    .WithDescription(new Description("The Pokémon is protected by a layer of thick fat, which halves the damage taken from Fire- and Ice-type moves."))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Thick_Fat_(Ability)"))
+    .WithNotes(new Notes("Halves damage taken from Fire- and Ice-type moves by reducing incoming power during calculation. No effect outside battle."))
     .Build();
 }

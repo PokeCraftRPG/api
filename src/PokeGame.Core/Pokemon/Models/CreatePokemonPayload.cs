@@ -12,6 +12,23 @@ public record CreatePokemonPayload
   public string? Key { get; set; }
   public string? Name { get; set; }
   public PokemonGender? Gender { get; set; }
+  //public bool IsShiny { get; set; }
+
+  //public PokemonType? TeraType { get; set; }
+  //public PokemonSizePayload? Size { get; set; }
+  //public AbilitySlot? AbilitySlot { get; set; }
+  //public string? Nature { get; set; }
+
+  //public byte EggCycles { get; set; }
+  //public int Experience { get; set; }
+
+  //public IndividualValuesModel? IndividualValues { get; set; }
+  //public EffortValuesModel? EffortValues { get; set; }
+  //public int? Vitality { get; set; }
+  //public int? Stamina { get; set; }
+  //public byte? Friendship { get; set; }
+
+  //public string? HeldItem { get; set; }
 
   public string? Sprite { get; set; }
   public string? Url { get; set; }
