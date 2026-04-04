@@ -1,4 +1,6 @@
-﻿namespace PokeGame.Core.Pokemon;
+﻿using FluentValidation;
+
+namespace PokeGame.Core.Pokemon;
 
 public interface IPokemonNatures
 {
@@ -119,8 +121,8 @@ public interface IPokemonNature
 public record PokemonNature : IPokemonNature
 {
   public const int MaximumLength = 8;
-  private const double DecreaseMultiplier = 0.9;
-  private const double IncreaseMultiplier = 1.1;
+  public const double DecreaseMultiplier = 0.9;
+  public const double IncreaseMultiplier = 1.1;
 
   public string Name { get; }
   public PokemonStatistic? IncreasedStatistic { get; }
@@ -135,12 +137,12 @@ public record PokemonNature : IPokemonNature
     Flavor? favoriteFlavor = null,
     Flavor? dislikedFlavor = null)
   {
-    ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
     Name = name.Trim();
     IncreasedStatistic = increasedStatistic;
     DecreasedStatistic = decreasedStatistic;
     FavoriteFlavor = favoriteFlavor;
     DislikedFlavor = dislikedFlavor;
+    new Validator().ValidateAndThrow(this);
   }
 
   public PokemonNature(IPokemonNature nature) : this(nature.Name, nature.IncreasedStatistic, nature.DecreasedStatistic, nature.FavoriteFlavor, nature.DislikedFlavor)
@@ -149,6 +151,10 @@ public record PokemonNature : IPokemonNature
 
   public double GetMultiplier(PokemonStatistic statistic)
   {
+    if (statistic == PokemonStatistic.HP)
+    {
+      throw new ArgumentOutOfRangeException(nameof(statistic));
+    }
     if (statistic == IncreasedStatistic)
     {
       return IncreaseMultiplier;
@@ -161,4 +167,32 @@ public record PokemonNature : IPokemonNature
   }
 
   public override string ToString() => Name;
+
+  private class Validator : AbstractValidator<PokemonNature>
+  {
+    public Validator()
+    {
+      RuleFor(x => x.Name).NotEmpty().MaximumLength(MaximumLength);
+      When(x => x.IncreasedStatistic.HasValue, () =>
+      {
+        RuleFor(x => x.IncreasedStatistic).IsInEnum();
+        RuleFor(x => x.DecreasedStatistic).NotNull().NotEqual(x => x.IncreasedStatistic);
+      }).Otherwise(() => RuleFor(x => x.DecreasedStatistic).Null());
+      When(x => x.DecreasedStatistic.HasValue, () =>
+      {
+        RuleFor(x => x.DecreasedStatistic).IsInEnum();
+        RuleFor(x => x.IncreasedStatistic).NotNull().NotEqual(x => x.DecreasedStatistic);
+      }).Otherwise(() => RuleFor(x => x.IncreasedStatistic).Null());
+      When(x => x.FavoriteFlavor.HasValue, () =>
+      {
+        RuleFor(x => x.FavoriteFlavor).IsInEnum();
+        RuleFor(x => x.DislikedFlavor).NotNull().NotEqual(x => x.FavoriteFlavor);
+      }).Otherwise(() => RuleFor(x => x.DislikedFlavor).Null());
+      When(x => x.DislikedFlavor.HasValue, () =>
+      {
+        RuleFor(x => x.DislikedFlavor).IsInEnum();
+        RuleFor(x => x.FavoriteFlavor).NotNull().NotEqual(x => x.DislikedFlavor);
+      }).Otherwise(() => RuleFor(x => x.FavoriteFlavor).Null());
+    }
+  }
 }
