@@ -21,7 +21,7 @@ public class ReadMoveQueryHandlerTests
   [Fact(DisplayName = "It should return null when no move was found.")]
   public async Task Given_NoneFound_When_ExecuteAsync_Then_NullReturned()
   {
-    ReadMoveQuery query = new(Guid.Empty, "kanto");
+    ReadMoveQuery query = new(Guid.Empty, "thunder-shock");
     Assert.Null(await _handler.HandleAsync(query, _cancellationToken));
   }
 
@@ -31,7 +31,7 @@ public class ReadMoveQueryHandlerTests
     MoveModel move = new()
     {
       Id = Guid.NewGuid(),
-      Key = "kanto"
+      Key = "thunder-shock"
     };
     _moveQuerier.Setup(x => x.ReadAsync(move.Id, _cancellationToken)).ReturnsAsync(move);
     _moveQuerier.Setup(x => x.ReadAsync(move.Key, _cancellationToken)).ReturnsAsync(move);
@@ -48,14 +48,14 @@ public class ReadMoveQueryHandlerTests
     MoveModel move1 = new()
     {
       Id = Guid.NewGuid(),
-      Key = "kanto"
+      Key = "thunder-shock"
     };
     _moveQuerier.Setup(x => x.ReadAsync(move1.Id, _cancellationToken)).ReturnsAsync(move1);
 
     MoveModel move2 = new()
     {
       Id = Guid.NewGuid(),
-      Key = "johto"
+      Key = "thunder-punch"
     };
     _moveQuerier.Setup(x => x.ReadAsync(move2.Key, _cancellationToken)).ReturnsAsync(move2);
 

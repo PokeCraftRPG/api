@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Krakenar.Contracts.Settings;
+using PokeGame.Core.Pokemon;
 
 namespace PokeGame.Core.Validation;
 
@@ -91,6 +92,11 @@ public static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(Core.Name.MaximumLength);
   }
 
+  public static IRuleBuilderOptions<T, string> Nature<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.SetValidator(new PokemonNatureValidator<T>());
+  }
+
   public static IRuleBuilderOptions<T, string> Notes<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty();
@@ -168,6 +174,11 @@ public static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(Core.Slug.MaximumLength).SetValidator(new SlugValidator<T>());
   }
 
+  public static IRuleBuilderOptions<T, int> Stamina<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.InclusiveBetween(0, Specimen.MaximumStamina);
+  }
+
   public static IRuleBuilderOptions<T, string> TimeZone<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(32).SetValidator(new TimeZoneValidator<T>());
@@ -176,6 +187,11 @@ public static class ValidationExtensions
   public static IRuleBuilderOptions<T, string> Url<T>(this IRuleBuilderInitial<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Core.Url.MaximumLength).SetValidator(new UrlValidator<T>());
+  }
+
+  public static IRuleBuilderOptions<T, int> Vitality<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.InclusiveBetween(0, Specimen.MaximumVitality);
   }
 
   public static IRuleBuilderOptions<T, int> Weight<T>(this IRuleBuilder<T, int> ruleBuilder)

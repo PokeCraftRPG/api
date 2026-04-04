@@ -283,4 +283,19 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Riolu_(Pok%C3%A9mon)"))
     .WithNotes(new Notes("Riolu’s lore and rarity in Mystery Dungeon make it ideal as a special starter or hard-to-obtain companion with thematic, myth-inspired flavor."))
     .Build();
+
+  public static SpeciesAggregate Tepig(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+    .WithWorld(world)
+    .WithNumber(new Number(498))
+    .WithCategory(PokemonCategory.Standard)
+    .WithKey(new Slug("tepig"))
+    .WithName(new Name("Tepig"))
+    .WithBaseFriendship(new Friendship(70))
+    .WithCatchRate(new CatchRate(45))
+    .WithGrowthRate(GrowthRate.MediumSlow)
+    .WithEggCycles(new EggCycles(20))
+    .WithEggGroups(new EggGroups(EggGroup.Field))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Tepig_(Pok%C3%A9mon)"))
+    .WithNotes(new Notes("Fire pig Pokémon inspired by Chinese myth and war pigs. Early Gen V starter with low XP for balance, later increased. Named from “tepid” and “pig”."))
+    .Build();
 }

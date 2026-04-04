@@ -305,4 +305,26 @@ public class FormBuilder : IFormBuilder
       .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Raichu_(Pok%C3%A9mon)"))
       .Build();
   }
+
+  public static Form Tepig(Faker? faker = null, World? world = null, Variety? variety = null, Abilities? abilities = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new FormBuilder(faker)
+      .WithWorld(world)
+      .WithVariety(variety ?? VarietyBuilder.Tepig(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("tepig"))
+      .WithName(new Name("Tepig"))
+      .WithHeight(new Height(5))
+      .WithWeight(new Weight(99))
+      .WithTypes(new Types(PokemonType.Fire))
+      .WithAbilities(abilities ?? new Abilities(AbilityBuilder.Blaze(faker, world), secondary: null, AbilityBuilder.ThickFat(faker, world)))
+      .WithBaseStatistics(new BaseStatistics(65, 63, 45, 45, 45, 45))
+      .WithYield(new Yield(62, 1, 0, 0, 0, 0, 0))
+      .WithSprites(new Sprites(
+        new Url("https://archives.bulbagarden.net/media/upload/5/56/HOME0026A.png"),
+        new Url("https://archives.bulbagarden.net/media/upload/d/dd/HOME0026A_s.png")))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Tepig_(Pok%C3%A9mon)"))
+      .Build();
+  }
 }

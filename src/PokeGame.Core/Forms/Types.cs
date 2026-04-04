@@ -9,7 +9,7 @@ public interface ITypes
   PokemonType? Secondary { get; }
 }
 
-public record Types : ITypes
+public record Types : ITypes // TODO(fpion): rename to FormTypes
 {
   public PokemonType Primary { get; }
   public PokemonType? Secondary { get; }
