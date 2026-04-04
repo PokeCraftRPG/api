@@ -61,12 +61,38 @@ public class SpecimenTests
     Assert.StartsWith("The variety should belong to the species.", exception.Message);
   }
 
+  [Fact(DisplayName = "ctor: it should throw ArgumentOutOfRangeException when the ability slot is not defined.")]
+  public void Given_AbilitySlotNotDefined_When_ctor_Then_ArgumentOutOfRangeException()
+  {
+    var exception = Assert.Throws<ArgumentOutOfRangeException>(
+      () => new Specimen(_world, _species, _variety, _form, key: null, _gender, _isShiny, _teraType, _size, (AbilitySlot)(-1), _nature));
+    Assert.Equal("slot", exception.ParamName);
+  }
+
   [Fact(DisplayName = "ctor: it should throw ArgumentOutOfRangeException when the gender is not defined.")]
   public void Given_GenderNotDefined_When_ctor_Then_ArgumentOutOfRangeException()
   {
     var exception = Assert.Throws<ArgumentOutOfRangeException>(
       () => new Specimen(_world, _species, _variety, _form, key: null, (PokemonGender)(-1), _isShiny, _teraType, _size, _abilitySlot, _nature));
     Assert.Equal("gender", exception.ParamName);
+  }
+
+  [Fact(DisplayName = "ctor: it should throw ArgumentOutOfRangeException when the Tera type is not defined.")]
+  public void Given_TeraTypeNotDefined_When_ctor_Then_ArgumentOutOfRangeException()
+  {
+    var exception = Assert.Throws<ArgumentOutOfRangeException>(
+      () => new Specimen(_world, _species, _variety, _form, key: null, _gender, _isShiny, (PokemonType)999, _size, _abilitySlot, _nature));
+    Assert.Equal("teraType", exception.ParamName);
+  }
+
+  [Fact(DisplayName = "ctor: it should throw InvalidAbilitySlotException when the ability slot is not valid.")]
+  public void Given_AbilitySlotNotValid_When_ctor_Then_InvalidAbilitySlotException()
+  {
+    AbilitySlot abilitySlot = AbilitySlot.Secondary;
+    var exception = Assert.Throws<InvalidAbilitySlotException>(
+      () => new Specimen(_world, _species, _variety, _form, key: null, _gender, _isShiny, _teraType, _size, abilitySlot, _nature));
+    Assert.Equal(abilitySlot, exception.AbilitySlot);
+    Assert.Equal("AbilitySlot", exception.PropertyName);
   }
 
   [Fact(DisplayName = "ctor: it should throw InvalidGenderException when the gender is not valid.")]

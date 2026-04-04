@@ -132,11 +132,7 @@ public class Specimen : AggregateRoot, IEntityProvider
     }
     teraType ??= form.Types.Primary;
 
-    if (!Enum.IsDefined(abilitySlot))
-    {
-      throw new ArgumentOutOfRangeException(nameof(abilitySlot));
-    }
-    // TODO(fpion): validate ability slot with form abilities
+    InvalidAbilitySlotException.ThrowIfNotValid(form.Abilities, abilitySlot, nameof(AbilitySlot));
 
     key ??= species.Key;
     Raise(new PokemonCreated(species.Id, variety.Id, form.Id, key, gender, isShiny, teraType.Value, size, abilitySlot, nature), userId.ActorId);

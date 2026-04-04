@@ -1,11 +1,12 @@
 ﻿using PokeGame.Core.Abilities;
 using PokeGame.Core.Varieties;
+using FormAbilities = PokeGame.Core.Forms.Abilities;
 
 namespace PokeGame.Core.Pokemon;
 
 public interface IPokemonRandomizer
 {
-  AbilitySlot AbilitySlot(Forms.Abilities abilities);
+  AbilitySlot AbilitySlot(FormAbilities abilities);
   PokemonGender? Gender(GenderRatio? genderRatio);
   PokemonNature PokemonNature();
   PokemonSize PokemonSize();
@@ -29,7 +30,7 @@ public class PokemonRandomizer : IPokemonRandomizer
   {
   }
 
-  public AbilitySlot AbilitySlot(Forms.Abilities abilities)
+  public AbilitySlot AbilitySlot(FormAbilities abilities)
   {
     List<AbilitySlot> slots = new(capacity: 3)
     {
