@@ -8,6 +8,7 @@ public interface IPokemonRandomizer
 {
   AbilitySlot AbilitySlot(FormAbilities abilities);
   PokemonGender? Gender(GenderRatio? genderRatio);
+  IndividualValues IndividualValues();
   PokemonNature PokemonNature();
   PokemonSize PokemonSize();
 }
@@ -56,6 +57,16 @@ public class PokemonRandomizer : IPokemonRandomizer
 
     int value = _random.Next(0, GenderRatio.MaximumValue);
     return value < genderRatio.Value ? PokemonGender.Male : PokemonGender.Female;
+  }
+
+  public IndividualValues IndividualValues()
+  {
+    byte[] bytes = new byte[6];
+    for (int i = 0; i < bytes.Length; i++)
+    {
+      bytes[i] = (byte)_random.Next(0, Pokemon.IndividualValues.MaximumValue + 1);
+    }
+    return new IndividualValues(bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5]);
   }
 
   public PokemonNature PokemonNature() => _random.Pick(PokemonNatures.Instance.ToList());

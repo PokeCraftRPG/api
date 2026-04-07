@@ -11,7 +11,9 @@ namespace PokeGame.Core.Pokemon;
 public class Specimen : AggregateRoot, IEntityProvider
 {
   public const string EntityKind = "Specimen";
+  public const int MinimumVitality = 999;
   public const int MaximumVitality = 999;
+  public const int MinimumStamina = 999;
   public const int MaximumStamina = 999;
 
   private PokemonUpdated _updated = new();
@@ -95,7 +97,12 @@ public class Specimen : AggregateRoot, IEntityProvider
     PokemonType? teraType,
     PokemonSize size,
     AbilitySlot abilitySlot,
-    PokemonNature nature) : this(species, variety, form, key, gender, isShiny, teraType, size, abilitySlot, nature, world.OwnerId, SpecimenId.NewId(world.Id))
+    PokemonNature nature,
+    IndividualValues individualValues,
+    EffortValues? effortValues,
+    int? vitality,
+    int? stamina,
+    Friendship? friendship) : this(species, variety, form, key, gender, isShiny, teraType, size, abilitySlot, nature, individualValues, effortValues, vitality, stamina, friendship, world.OwnerId, SpecimenId.NewId(world.Id))
   {
   }
 
@@ -110,6 +117,11 @@ public class Specimen : AggregateRoot, IEntityProvider
     PokemonSize size,
     AbilitySlot abilitySlot,
     PokemonNature nature,
+    IndividualValues individualValues,
+    EffortValues? effortValues,
+    int? vitality,
+    int? stamina,
+    Friendship? friendship,
     UserId userId,
     SpecimenId specimenId) : base(specimenId.StreamId)
   {
@@ -136,8 +148,30 @@ public class Specimen : AggregateRoot, IEntityProvider
 
     InvalidAbilitySlotException.ThrowIfNotValid(form.Abilities, abilitySlot, nameof(AbilitySlot));
 
-    key ??= species.Key;
-    Raise(new PokemonCreated(species.Id, variety.Id, form.Id, key, gender, isShiny, teraType.Value, size, abilitySlot, nature), userId.ActorId);
+    effortValues ??= new();
+    PokemonStatistics statistics = new(form.BaseStatistics, individualValues, effortValues, level: 0, nature); // TODO(fpion): level
+
+    if (vitality < MinimumVitality || vitality > MaximumVitality)
+    {
+      throw new ArgumentOutOfRangeException(nameof(vitality));
+    }
+    if (vitality is null || vitality > statistics.HP)
+    {
+      vitality = statistics.HP;
+    }
+
+    if (stamina < MinimumStamina || stamina > MaximumStamina)
+    {
+      throw new ArgumentOutOfRangeException(nameof(stamina));
+    }
+    if (stamina is null || stamina > statistics.HP)
+    {
+      stamina = statistics.HP;
+    }
+
+    PokemonCreated created = new(species.Id, variety.Id, form.Id, key ?? species.Key, gender, isShiny, teraType.Value, size,
+      abilitySlot, nature, individualValues, effortValues, vitality.Value, stamina.Value, friendship ?? species.BaseFriendship);
+    Raise(created, userId.ActorId);
   }
   protected virtual void Handle(PokemonCreated @event)
   {

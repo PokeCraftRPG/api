@@ -176,7 +176,7 @@ public static class ValidationExtensions
 
   public static IRuleBuilderOptions<T, int> Stamina<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween(0, Specimen.MaximumStamina);
+    return ruleBuilder.InclusiveBetween(Specimen.MinimumStamina, Specimen.MaximumStamina);
   }
 
   public static IRuleBuilderOptions<T, string> TimeZone<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -191,7 +191,7 @@ public static class ValidationExtensions
 
   public static IRuleBuilderOptions<T, int> Vitality<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween(0, Specimen.MaximumVitality);
+    return ruleBuilder.InclusiveBetween(Specimen.MinimumVitality, Specimen.MaximumVitality);
   }
 
   public static IRuleBuilderOptions<T, int> Weight<T>(this IRuleBuilder<T, int> ruleBuilder)

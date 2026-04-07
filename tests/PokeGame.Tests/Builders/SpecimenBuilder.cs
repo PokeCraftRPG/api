@@ -22,6 +22,11 @@ public interface ISpecimenBuilder
   ISpecimenBuilder WithSize(PokemonSize? size);
   ISpecimenBuilder WithAbilitySlot(AbilitySlot? abilitySlot);
   ISpecimenBuilder WithNature(PokemonNature? nature);
+  ISpecimenBuilder WithIndividualValues(IndividualValues? individualValues);
+  ISpecimenBuilder WithEffortValues(EffortValues? effortValues);
+  ISpecimenBuilder WithVitality(int? vitality);
+  ISpecimenBuilder WithStamina(int? stamina);
+  ISpecimenBuilder WithFriendship(Friendship? friendship);
   ISpecimenBuilder WithSprite(Url? sprite);
   ISpecimenBuilder WithUrl(Url? url);
   ISpecimenBuilder WithNotes(Notes? notes);
@@ -37,9 +42,12 @@ public class SpecimenBuilder : ISpecimenBuilder
 
   private AbilitySlot? _abilitySlot = null;
   private bool _clearChanges = false;
+  private EffortValues? _effortValues = null;
   private Form? _form = null;
+  private Friendship? _friendship = null;
   private PokemonGender? _gender = null;
   private SpecimenId? _id = null;
+  private IndividualValues? _individualValues = null;
   private bool _isShiny = false;
   private Slug? _key = null;
   private Name? _name = null;
@@ -48,9 +56,11 @@ public class SpecimenBuilder : ISpecimenBuilder
   private PokemonSize? _size = null;
   private SpeciesAggregate? _species = null;
   private Url? _sprite = null;
+  private int? _stamina = null;
   private PokemonType? _teraType = null;
   private Url? _url = null;
   private Variety? _variety = null;
+  private int? _vitality = null;
   private World? _world = null;
 
   public SpecimenBuilder(Faker? faker = null, IPokemonRandomizer? randomizer = null)
@@ -133,6 +143,36 @@ public class SpecimenBuilder : ISpecimenBuilder
     return this;
   }
 
+  public ISpecimenBuilder WithIndividualValues(IndividualValues? individualValues)
+  {
+    _individualValues = individualValues;
+    return this;
+  }
+
+  public ISpecimenBuilder WithEffortValues(EffortValues? effortValues)
+  {
+    _effortValues = effortValues;
+    return this;
+  }
+
+  public ISpecimenBuilder WithVitality(int? vitality)
+  {
+    _vitality = vitality;
+    return this;
+  }
+
+  public ISpecimenBuilder WithStamina(int? stamina)
+  {
+    _stamina = stamina;
+    return this;
+  }
+
+  public ISpecimenBuilder WithFriendship(Friendship? friendship)
+  {
+    _friendship = friendship;
+    return this;
+  }
+
   public ISpecimenBuilder WithUrl(Url? url)
   {
     _url = url;
@@ -161,10 +201,11 @@ public class SpecimenBuilder : ISpecimenBuilder
     PokemonSize size = _size ?? _randomizer.PokemonSize();
     AbilitySlot abilitySlot = _abilitySlot ?? _randomizer.AbilitySlot(form.Abilities);
     PokemonNature nature = _nature ?? _randomizer.PokemonNature();
+    IndividualValues individualValues = _individualValues ?? _randomizer.IndividualValues();
 
     Specimen specimen = _id.HasValue
-      ? new(species, variety, form, _key, gender, _isShiny, _teraType, size, abilitySlot, nature, world.OwnerId, _id.Value)
-      : new(world, species, variety, form, _key, gender, _isShiny, _teraType, size, abilitySlot, nature);
+      ? new(species, variety, form, _key, gender, _isShiny, _teraType, size, abilitySlot, nature, individualValues, _effortValues, _vitality, _stamina, _friendship, world.OwnerId, _id.Value)
+      : new(world, species, variety, form, _key, gender, _isShiny, _teraType, size, abilitySlot, nature, individualValues, _effortValues, _vitality, _stamina, _friendship);
 
     specimen.Nickname(_name, world.OwnerId);
 

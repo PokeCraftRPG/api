@@ -16,4 +16,13 @@ public record PokemonCreated(
   PokemonType TeraType,
   PokemonSize Size,
   AbilitySlot AbilitySlot,
-  PokemonNature Nature) : DomainEvent;
+  PokemonNature Nature,
+  // TODO(fpion): GrowthRate
+  // TODO(fpion): EggCycles
+  // TODO(fpion): Experience
+  // TODO(fpion): BaseStatistics
+  IndividualValues IndividualValues,
+  EffortValues EffortValues,
+  int Vitality,
+  int Stamina,
+  Friendship Friendship) : DomainEvent;

@@ -146,13 +146,17 @@ public class CreatePokemonCommandHandlerTests
       TeraType = (PokemonType)999,
       AbilitySlot = (AbilitySlot)999,
       Nature = "invalid",
+      IndividualValues = new IndividualValuesModel(32, 0, 0, 0, 0, 0),
+      EffortValues = new EffortValuesModel(255, 255, 255, 255, 255, 255),
+      Vitality = 9999,
+      Stamina = -1,
       Sprite = "invalid",
       Url = "invalid"
     };
     CreatePokemonCommand command = new(payload);
 
     var exception = await Assert.ThrowsAsync<FluentValidation.ValidationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
-    Assert.Equal(9, exception.Errors.Count());
+    Assert.Equal(13, exception.Errors.Count());
     Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "Form");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "SlugValidator" && e.PropertyName == "Key");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "MaximumLengthValidator" && e.PropertyName == "Name");
@@ -160,6 +164,10 @@ public class CreatePokemonCommandHandlerTests
     Assert.Contains(exception.Errors, e => e.ErrorCode == "EnumValidator" && e.PropertyName == "TeraType");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "EnumValidator" && e.PropertyName == "AbilitySlot");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "PokemonNatureValidator" && e.PropertyName == "Nature");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "LessThanOrEqualValidator" && e.PropertyName == "IndividualValues.HP");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "EffortValuesValidator" && e.PropertyName == "EffortValues");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "InclusiveBetweenValidator" && e.PropertyName == "Vitality.Value");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "InclusiveBetweenValidator" && e.PropertyName == "Stamina.Value");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "UrlValidator" && e.PropertyName == "Sprite");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "UrlValidator" && e.PropertyName == "Url");
   }
