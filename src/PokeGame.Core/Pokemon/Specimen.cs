@@ -1,6 +1,7 @@
 ﻿using Logitar.EventSourcing;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
+using PokeGame.Core.Items;
 using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Species;
 using PokeGame.Core.Varieties;
@@ -39,6 +40,31 @@ public class Specimen : AggregateRoot, IEntityProvider
   public AbilitySlot AbilitySlot { get; private set; }
   private PokemonNature? _nature = null;
   public PokemonNature Nature => _nature ?? throw new InvalidOperationException("The specimen was not initialized.");
+
+  public EggCycles? EggCycles { get; private set; }
+  public bool IsEgg => EggCycles is not null;
+  public GrowthRate GrowthRate { get; private set; }
+  public int Experience { get; private set; }
+  public int Level => 0; // TODO(fpion): ExperienceTable.Instance.GetLevel(GrowthRate, Experience);
+
+  private BaseStatistics? _baseStatistics = null;
+  public BaseStatistics BaseStatistics => _baseStatistics ?? throw new InvalidOperationException("The Pokémon has not been initialized.");
+  private IndividualValues? _individualValues = null;
+  public IndividualValues IndividualValues => _individualValues ?? throw new InvalidOperationException("The Pokémon has not been initialized.");
+  private EffortValues? _effortValues = null;
+  public EffortValues EffortValues => _effortValues ?? throw new InvalidOperationException("The Pokémon has not been initialized.");
+  public PokemonStatistics Statistics => new(this);
+  public int Vitality { get; private set; }
+  public bool HasFainted => Vitality < 1;
+  public int Stamina { get; private set; }
+  public bool IsUnconscious => Stamina < 1;
+  public StatusCondition? StatusCondition { get; private set; }
+  private Friendship? _friendship = null;
+  public Friendship Friendship => _friendship ?? throw new InvalidOperationException("The Pokémon has not been initialized.");
+
+  // TODO(fpion): public PokemonCharacteristic Characteristic => PokemonCharacteristics.Instance.Find(IndividualValues, Size);
+
+  public ItemId? HeldItemId { get; private set; }
 
   private Url? _sprite = null;
   public Url? Sprite
@@ -169,8 +195,8 @@ public class Specimen : AggregateRoot, IEntityProvider
       stamina = statistics.HP;
     }
 
-    PokemonCreated created = new(species.Id, variety.Id, form.Id, key ?? species.Key, gender, isShiny, teraType.Value, size,
-      abilitySlot, nature, individualValues, effortValues, vitality.Value, stamina.Value, friendship ?? species.BaseFriendship);
+    PokemonCreated created = new(species.Id, variety.Id, form.Id, key ?? species.Key, gender, isShiny, teraType.Value, size, abilitySlot, nature,
+      species.GrowthRate, form.BaseStatistics, individualValues, effortValues, vitality.Value, stamina.Value, friendship ?? species.BaseFriendship);
     Raise(created, userId.ActorId);
   }
   protected virtual void Handle(PokemonCreated @event)
@@ -187,6 +213,15 @@ public class Specimen : AggregateRoot, IEntityProvider
     _size = @event.Size;
     AbilitySlot = @event.AbilitySlot;
     _nature = @event.Nature;
+
+    GrowthRate = @event.GrowthRate;
+
+    _baseStatistics = @event.BaseStatistics;
+    _individualValues = @event.IndividualValues;
+    _effortValues = @event.EffortValues;
+    Vitality = @event.Vitality;
+    Stamina = @event.Stamina;
+    _friendship = @event.Friendship;
   }
 
   public void Delete(UserId userId)

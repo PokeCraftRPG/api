@@ -21,9 +21,9 @@ public record PokemonStatistics
     Speed = CalculateOther(baseStatistics.Speed, individualValues.Speed, effortValues.Speed, level, nature.GetMultiplier(PokemonStatistic.Speed));
   }
 
-  //public PokemonStatistics(Specimen pokemon) : this(pokemon.BaseStatistics, pokemon.IndividualValues, pokemon.EffortValues, pokemon.Level, pokemon.Nature)
-  //{
-  //} // TODO(fpion): implement
+  public PokemonStatistics(Specimen pokemon) : this(pokemon.BaseStatistics, pokemon.IndividualValues, pokemon.EffortValues, pokemon.Level, pokemon.Nature)
+  {
+  }
 
   private static int CalculateHP(int @base, byte individualValue, byte effortValue, int level)
   {

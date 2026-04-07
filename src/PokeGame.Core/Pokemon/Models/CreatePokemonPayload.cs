@@ -21,8 +21,8 @@ public record CreatePokemonPayload
   public AbilitySlot? AbilitySlot { get; set; }
   public string? Nature { get; set; }
 
-  //public byte EggCycles { get; set; }
-  //public int Experience { get; set; }
+  // TODO(fpion): public byte EggCycles { get; set; }
+  // TODO(fpion): public int Experience { get; set; }
 
   public IndividualValuesModel? IndividualValues { get; set; }
   public EffortValuesModel? EffortValues { get; set; }
@@ -30,7 +30,7 @@ public record CreatePokemonPayload
   public int? Stamina { get; set; }
   public byte? Friendship { get; set; }
 
-  //public string? HeldItem { get; set; }
+  // TODO(fpion): public string? HeldItem { get; set; }
 
   public string? Sprite { get; set; }
   public string? Url { get; set; }
