@@ -31,7 +31,7 @@ internal class MembershipInvitationQuerier : IMembershipInvitationQuerier
       && (x.ExpiresOn == null || x.ExpiresOn > DateTime.UtcNow), cancellationToken);
     if (hasPending)
     {
-      throw new NotImplementedException(); // TODO(fpion): 409 Conflict
+      throw new MembershipInvitationPendingException(email);
     }
   }
 

@@ -21,6 +21,7 @@ internal class MembershipService : IMembershipService
 {
   public static void Register(IServiceCollection services)
   {
+    services.AddTransient<IMembershipService, MembershipService>();
     services.AddTransient<ICommandHandler<AcceptMembershipInvitationCommand, MembershipInvitationModel?>, AcceptMembershipInvitationCommandHandler>();
     services.AddTransient<ICommandHandler<CancelMembershipInvitationCommand, MembershipInvitationModel?>, CancelMembershipInvitationCommandHandler>();
     services.AddTransient<ICommandHandler<DeclineMembershipInvitationCommand, MembershipInvitationModel?>, DeclineMembershipInvitationCommandHandler>();
@@ -74,3 +75,6 @@ internal class MembershipService : IMembershipService
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 }
+
+// TODO(fpion): should we be able to invite the world owner? ⚠️Because we can!
+// TODO(fpion): should the grantor be the invitee or the invitor? ⚠️Because it’s the invitee!

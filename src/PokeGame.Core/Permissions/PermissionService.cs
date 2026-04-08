@@ -62,7 +62,8 @@ internal class PermissionService : IPermissionService
   private async Task<bool> IsAllowedAsync(string action, CancellationToken cancellationToken) => action switch
   {
     Actions.CreateAbility or Actions.CreateEvolution or Actions.CreateForm or Actions.CreateItem or Actions.CreateMove or Actions.CreatePokemon
-      or Actions.CreateRegion or Actions.CreateSpecies or Actions.CreateTrainer or Actions.CreateVariety => _context.IsWorldOwner,
+      or Actions.CreateRegion or Actions.CreateSpecies or Actions.CreateTrainer or Actions.CreateVariety or Actions.SendMembershipInvitation
+      => _context.IsWorldOwner,
     Actions.CreateWorld => await CanCreateWorldAsync(cancellationToken),
     _ => false,
   };
@@ -87,7 +88,7 @@ internal class PermissionService : IPermissionService
 
   private bool IsAllowed(string action, World world) => action switch
   {
-    Actions.RevokeMembership or Actions.SendMembershipInvitation or Actions.Update => world.OwnerId == _context.UserId,
+    Actions.RevokeMembership or Actions.Update => world.OwnerId == _context.UserId,
     _ => false,
   };
 }
