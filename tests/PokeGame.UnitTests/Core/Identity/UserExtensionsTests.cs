@@ -52,6 +52,13 @@ public class UserExtensionsTests
     Assert.StartsWith("The user has many (2) user attributes 'MultiFactorAuthenticationMode'.", exception.Message);
   }
 
+  [Fact(DisplayName = "GetSubject: it should return the correct value.")]
+  public void Given_User_When_GetSubject_Then_CorrectSubject()
+  {
+    User user = new UserBuilder(_faker).Build();
+    Assert.Equal(user.Id.ToString(), user.GetSubject());
+  }
+
   [Fact(DisplayName = "IsProfileCompleted: it should return false when the user does not have the custom attribute.")]
   public void Given_NoCustomAtttribute_When_IsProfileCompleted_Then_False()
   {
