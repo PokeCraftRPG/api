@@ -1,5 +1,6 @@
 ﻿using Krakenar.Contracts.Sessions;
 using PokeGame.Constants;
+using PokeGame.Core.Identity;
 using PokeGame.Extensions;
 
 namespace PokeGame.Middlewares;
@@ -13,7 +14,7 @@ internal class RenewSession
     _next = next;
   }
 
-  public virtual async Task InvokeAsync(HttpContext context, ISessionService sessionService)
+  public virtual async Task InvokeAsync(HttpContext context, ISessionGateway sessionGateway)
   {
     if (!context.IsSignedIn())
     {
@@ -21,8 +22,7 @@ internal class RenewSession
       {
         try
         {
-          RenewSessionPayload payload = new(refreshToken, context.GetSessionCustomAttributes());
-          Session session = await sessionService.RenewAsync(payload);
+          Session session = await sessionGateway.RenewAsync(refreshToken);
           context.SignIn(session);
         }
         catch (Exception)

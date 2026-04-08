@@ -45,9 +45,9 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     {
       return await HandleCredentialsAsync(payload.Credentials, cancellationToken);
     }
-    if (payload.Token is not null)
+    if (payload.AuthenticationToken is not null)
     {
-      return await HandleTokenAsync(payload.Token, cancellationToken);
+      return await HandleAuthenticationTokenAsync(payload.AuthenticationToken, cancellationToken);
     }
     if (payload.OneTimePassword is not null)
     {
@@ -56,6 +56,10 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     if (payload.Profile is not null)
     {
       return await HandleProfileAsync(payload.Profile, cancellationToken);
+    }
+    if (payload.RefreshToken is not null)
+    {
+      return await HandleRefreshTokenAsync(payload.RefreshToken, cancellationToken);
     }
 
     throw new InvalidOperationException("The sign-in payload is not valid.");
@@ -107,7 +111,7 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     return await EnsureProfileIsCompletedAsync(user, cancellationToken);
   }
 
-  private async Task<SignInAccountResult> HandleTokenAsync(string token, CancellationToken cancellationToken)
+  private async Task<SignInAccountResult> HandleAuthenticationTokenAsync(string token, CancellationToken cancellationToken)
   {
     ValidatedToken validatedToken = await _tokenGateway.ValidateEmailVerificationAsync(token, cancellationToken);
     Email email = validatedToken.Email ?? throw new ArgumentException("No email address was retrieved from the token.", token);
@@ -153,6 +157,12 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     PhonePayload? phone = validatedToken.GetPhone();
     User user = await _userGateway.CompleteProfileAsync(userId, profile, phone, cancellationToken);
     return await EnsureProfileIsCompletedAsync(user, cancellationToken);
+  }
+
+  private async Task<SignInAccountResult> HandleRefreshTokenAsync(string token, CancellationToken cancellationToken)
+  {
+    Session session = await _sessionGateway.RenewAsync(token, cancellationToken);
+    return SignInAccountResult.Success(session);
   }
 
   private async Task<SignInAccountResult> EnsureProfileIsCompletedAsync(User user, CancellationToken cancellationToken)

@@ -27,6 +27,14 @@ internal class SessionGateway : ISessionGateway
     return await _sessionClient.CreateAsync(payload, context);
   }
 
+  public async Task<Session> RenewAsync(string refreshToken, CancellationToken cancellationToken)
+  {
+    IReadOnlyCollection<CustomAttribute> customAttributes = _context.GetSessionCustomAttributes();
+    RenewSessionPayload payload = new(refreshToken, customAttributes);
+    RequestContext context = new RequestContextBuilder(cancellationToken).Build();
+    return await _sessionClient.RenewAsync(payload, context);
+  }
+
   public async Task<Session> SignInAsync(User user, string password, CancellationToken cancellationToken)
   {
     IReadOnlyCollection<CustomAttribute> customAttributes = _context.GetSessionCustomAttributes();
