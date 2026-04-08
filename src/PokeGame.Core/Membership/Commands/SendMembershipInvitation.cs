@@ -49,7 +49,10 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
     await _permissionService.CheckAsync(Actions.SendMembershipInvitation, cancellationToken);
 
     ReadOnlyEmail email = new(payload.EmailAddress);
-    await _membershipInvitationQuerier.EnsureNonePendingAsync(email, cancellationToken);
+    if (await _membershipInvitationQuerier.HasPendingAsync(email, cancellationToken))
+    {
+      throw new MembershipInvitationPendingException(email, nameof(payload.EmailAddress));
+    }
 
     User? invitee = await _userGateway.FindAsync(payload.EmailAddress, cancellationToken);
     UserId? inviteeId = null;

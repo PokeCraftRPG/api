@@ -79,7 +79,7 @@ public class SendMembershipInvitationCommandHandlerTests
         && i.InviteeId.HasValue && i.InviteeId.Value.RealmId == user.Realm.Id && i.InviteeId.Value.EntityId == user.Id
         && i.Status == MembershipInvitationStatus.Pending && i.ExpiresOn.HasValue && (DateTime.UtcNow - i.ExpiresOn.Value) < TimeSpan.FromSeconds(1)),
       _cancellationToken), Times.Once());
-    _membershipInvitationQuerier.Verify(x => x.EnsureNonePendingAsync(It.Is<ReadOnlyEmail>(e => e.Address == payload.EmailAddress && !e.IsVerified), _cancellationToken), Times.Once());
+    _membershipInvitationQuerier.Verify(x => x.HasPendingAsync(It.Is<ReadOnlyEmail>(e => e.Address == payload.EmailAddress && !e.IsVerified), _cancellationToken), Times.Once());
     _messageGateway.Verify(x => x.SendMembershipInvitationAsync(user, payload.Locale, _cancellationToken), Times.Once());
   }
 
@@ -104,7 +104,7 @@ public class SendMembershipInvitationCommandHandlerTests
       It.Is<MembershipInvitation>(i => i.Email.Address == payload.EmailAddress && !i.Email.IsVerified && !i.InviteeId.HasValue
         && i.Status == MembershipInvitationStatus.Pending && i.ExpiresOn.HasValue && (DateTime.UtcNow - i.ExpiresOn.Value) < TimeSpan.FromSeconds(1)),
       _cancellationToken), Times.Once());
-    _membershipInvitationQuerier.Verify(x => x.EnsureNonePendingAsync(It.Is<ReadOnlyEmail>(e => e.Address == payload.EmailAddress && !e.IsVerified), _cancellationToken), Times.Once());
+    _membershipInvitationQuerier.Verify(x => x.HasPendingAsync(It.Is<ReadOnlyEmail>(e => e.Address == payload.EmailAddress && !e.IsVerified), _cancellationToken), Times.Once());
     _messageGateway.Verify(x => x.SendMembershipInvitationAsync(It.Is<ReadOnlyEmail>(e => e.Address == payload.EmailAddress && !e.IsVerified), payload.Locale, _cancellationToken), Times.Once());
   }
 
@@ -148,6 +148,23 @@ public class SendMembershipInvitationCommandHandlerTests
     Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
     Assert.Equal(member.Realm?.Id, exception.RealmId);
     Assert.Equal(member.Id, exception.UserId);
+    Assert.Equal(payload.EmailAddress, exception.EmailAddress);
+    Assert.Equal("EmailAddress", exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw MembershipInvitationPendingException when there are pending invitations.")]
+  public async Task Given_PendingInvitation_When_HandleAsync_Then_MembershipInvitationPendingException()
+  {
+    SendMembershipInvitationPayload payload = new()
+    {
+      Locale = _faker.Locale,
+      EmailAddress = _faker.Internet.Email()
+    };
+    SendMembershipInvitationCommand command = new(payload);
+
+    _membershipInvitationQuerier.Setup(x => x.HasPendingAsync(It.Is<IEmail>(e => e.Address == payload.EmailAddress), _cancellationToken)).ReturnsAsync(true);
+
+    var exception = await Assert.ThrowsAsync<MembershipInvitationPendingException>(async () => await _handler.HandleAsync(command, _cancellationToken));
     Assert.Equal(payload.EmailAddress, exception.EmailAddress);
     Assert.Equal("EmailAddress", exception.PropertyName);
   }

@@ -23,16 +23,12 @@ internal class MembershipInvitationQuerier : IMembershipInvitationQuerier
     _membershipInvitations = pokemon.MembershipInvitations;
   }
 
-  public async Task EnsureNonePendingAsync(IEmail email, CancellationToken cancellationToken)
+  public async Task<bool> HasPendingAsync(IEmail email, CancellationToken cancellationToken)
   {
-    bool hasPending = await _membershipInvitations.AnyAsync(x => x.World!.Id == _context.WorldUid
-      && x.Status == MembershipInvitationStatus.Pending
+    return await _membershipInvitations.AnyAsync(x => x.World!.Id == _context.WorldUid
       && x.EmailAddressNormalized == email.Address.Trim().ToLowerInvariant()
+      && x.Status == MembershipInvitationStatus.Pending
       && (x.ExpiresOn == null || x.ExpiresOn > DateTime.UtcNow), cancellationToken);
-    if (hasPending)
-    {
-      throw new MembershipInvitationPendingException(email);
-    }
   }
 
   public async Task<MembershipInvitationModel> ReadAsync(MembershipInvitation membershipInvitation, CancellationToken cancellationToken)
