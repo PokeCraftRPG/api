@@ -83,6 +83,15 @@ internal class WorldEntity : AggregateEntity
     Key = @event.Key.Value;
   }
 
+  public void TransferOwnership(WorldOwnershipTransferred @event)
+  {
+    base.Update(@event);
+
+    OwnerId = @event.OwnerId.Value;
+
+    // TODO(fpion): grant membership to previous owner
+  }
+
   public void Update(WorldUpdated @event)
   {
     base.Update(@event);

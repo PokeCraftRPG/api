@@ -67,7 +67,7 @@ internal class WorldQuerier : IWorldQuerier
   public async Task<WorldModel?> ReadAsync(WorldId id, CancellationToken cancellationToken)
   {
     WorldEntity? world = await _worlds.AsNoTracking()
-      .Where(x => x.StreamId == id.Value && x.OwnerId == _context.UserId.Value)
+      .Where(x => x.StreamId == id.Value /*&& x.OwnerId == _context.UserId.Value*/)
       .Include(x => x.Members)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
@@ -75,7 +75,7 @@ internal class WorldQuerier : IWorldQuerier
   public async Task<WorldModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     WorldEntity? world = await _worlds.AsNoTracking()
-      .Where(x => x.Id == id && x.OwnerId == _context.UserId.Value)
+      .Where(x => x.Id == id /*&& x.OwnerId == _context.UserId.Value*/)
       .Include(x => x.Members)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
@@ -83,7 +83,7 @@ internal class WorldQuerier : IWorldQuerier
   public async Task<WorldModel?> ReadAsync(string key, CancellationToken cancellationToken)
   {
     WorldEntity? world = await _worlds.AsNoTracking()
-      .Where(x => x.Key == Slug.Normalize(key) && x.OwnerId == _context.UserId.Value)
+      .Where(x => x.Key == Slug.Normalize(key) /*&& x.OwnerId == _context.UserId.Value*/)
       .Include(x => x.Members)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
