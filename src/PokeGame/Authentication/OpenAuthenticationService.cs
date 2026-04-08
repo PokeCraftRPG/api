@@ -15,8 +15,6 @@ namespace PokeGame.Authentication;
 public interface IOpenAuthenticationService
 {
   Task<TokenResponse> GetTokenResponseAsync(Session session, CancellationToken cancellationToken = default);
-  Task<TokenResponse> GetTokenResponseAsync(User user, CancellationToken cancellationToken = default);
-
   Task<User> GetUserAsync(string accessToken, CancellationToken cancellationToken = default);
 }
 
@@ -33,14 +31,7 @@ internal class OpenAuthenticationService : IOpenAuthenticationService
 
   public async Task<TokenResponse> GetTokenResponseAsync(Session session, CancellationToken cancellationToken)
   {
-    return await GetTokenResponseAsync(session.User, session, cancellationToken);
-  }
-  public async Task<TokenResponse> GetTokenResponseAsync(User user, CancellationToken cancellationToken)
-  {
-    return await GetTokenResponseAsync(user, session: null, cancellationToken);
-  }
-  private async Task<TokenResponse> GetTokenResponseAsync(User user, Session? session, CancellationToken cancellationToken)
-  {
+    User user = session.User;
     int lifetimeSeconds = _settings.AccessToken.LifetimeSeconds;
 
     CreateTokenPayload payload = new()
@@ -67,10 +58,11 @@ internal class OpenAuthenticationService : IOpenAuthenticationService
       payload.Claims.Add(new ClaimDto(Rfc7519ClaimNames.Roles, role.UniqueName));
     }
 
-    if (session is not null)
-    {
-      payload.Claims.Add(new ClaimDto(Rfc7519ClaimNames.SessionId, session.Id.ToString()));
-    }
+    payload.Claims.Add(new ClaimDto(Rfc7519ClaimNames.SessionId, session.Id.ToString()));
+
+    DateTime authenticationTime = user.AuthenticatedOn ?? session.CreatedOn;
+    Claim claim = ClaimHelper.Create(Rfc7519ClaimNames.AuthenticationTime, authenticationTime);
+    payload.Claims.Add(new ClaimDto(claim.Type, claim.Value, claim.ValueType));
 
     CreatedToken created = await _tokenService.CreateAsync(payload, cancellationToken);
     return new TokenResponse(Schemes.Bearer, created.Token)
