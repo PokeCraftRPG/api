@@ -10,6 +10,7 @@ using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Membership.Commands;
 
+[Trait(Traits.Category, Categories.Unit)]
 public class SendMembershipInvitationCommandHandlerTests
 {
   private readonly CancellationToken _cancellationToken = default;

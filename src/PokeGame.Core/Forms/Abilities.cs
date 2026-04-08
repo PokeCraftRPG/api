@@ -3,7 +3,7 @@ using PokeGame.Core.Abilities;
 
 namespace PokeGame.Core.Forms;
 
-public record Abilities
+public record Abilities // TODO(fpion): rename to FormAbilities because of conflict
 {
   public AbilityId Primary { get; }
   public AbilityId? Secondary { get; }

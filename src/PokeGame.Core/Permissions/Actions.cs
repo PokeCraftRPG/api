@@ -9,6 +9,7 @@ public static class Actions
   public const string CreateForm = "CreateForm";
   public const string CreateItem = "CreateItem";
   public const string CreateMove = "CreateMove";
+  public const string CreatePokemon = "CreatePokemon";
   public const string CreateRegion = "CreateRegion";
   public const string CreateSpecies = "CreateSpecies";
   public const string CreateTrainer = "CreateTrainer";

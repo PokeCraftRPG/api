@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using PokeGame.Core.Pokemon;
 using PokeGame.Core.Validation;
 
 namespace PokeGame.Core.Varieties;
@@ -19,13 +18,6 @@ public record GenderRatio
     Value = value;
     new Validator().ValidateAndThrow(this);
   }
-
-  public bool IsValid(PokemonGender gender) => Value switch
-  {
-    MinimumValue => gender == PokemonGender.Female,
-    MaximumValue => gender == PokemonGender.Male,
-    _ => true,
-  };
 
   public override string ToString() => Value.ToString();
 
