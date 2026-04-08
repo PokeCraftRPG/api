@@ -234,8 +234,15 @@ public class SpecimenBuilder : ISpecimenBuilder
     AbilitySlot abilitySlot = _abilitySlot ?? _randomizer.AbilitySlot(form.Abilities);
     PokemonNature nature = _nature ?? _randomizer.PokemonNature();
     EggCycles? eggCycles = _eggCycles ?? (_isEgg ? species.EggCycles : null);
-    int experience = _experience; // TODO(fpion): use level table
     IndividualValues individualValues = _individualValues ?? _randomizer.IndividualValues();
+
+    int experience = _experience;
+    if (experience <= 0 && _level > 0)
+    {
+      int minimumExperience = _level > 1 ? 1 + ExperienceTable.Instance.GetMaximumExperience(species.GrowthRate, _level - 1) : 0;
+      int maximumExperience = ExperienceTable.Instance.GetMaximumExperience(species.GrowthRate, _level);
+      experience = _faker.Random.Int(minimumExperience, maximumExperience);
+    }
 
     Specimen specimen = _id.HasValue
       ? new(species, variety, form, _key, gender, _isShiny, _teraType, size, abilitySlot, nature, eggCycles, experience, individualValues, _effortValues, _vitality, _stamina, _friendship, world.OwnerId, _id.Value)

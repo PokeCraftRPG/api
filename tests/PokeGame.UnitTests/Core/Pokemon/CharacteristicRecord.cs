@@ -2,7 +2,7 @@
 
 namespace PokeGame.Core.Pokemon;
 
-internal record CharacteristicInfo
+internal record CharacteristicRecord
 {
   public int Modulo { get; set; }
 
@@ -13,7 +13,7 @@ internal record CharacteristicInfo
   public string SpecialDefense { get; set; } = string.Empty;
   public string Speed { get; set; } = string.Empty;
 
-  public class Map : ClassMap<CharacteristicInfo>
+  public class Map : ClassMap<CharacteristicRecord>
   {
     public Map()
     {

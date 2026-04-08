@@ -45,7 +45,7 @@ public class Specimen : AggregateRoot, IEntityProvider
   public bool IsEgg => EggCycles is not null;
   public GrowthRate GrowthRate { get; private set; }
   public int Experience { get; private set; }
-  public int Level => 0; // TODO(fpion): ExperienceTable.Instance.GetLevel(GrowthRate, Experience);
+  public int Level => ExperienceTable.Instance.GetLevel(GrowthRate, Experience);
 
   private BaseStatistics? _baseStatistics = null;
   public BaseStatistics BaseStatistics => _baseStatistics ?? throw new InvalidOperationException("The Pokémon has not been initialized.");
@@ -191,8 +191,11 @@ public class Specimen : AggregateRoot, IEntityProvider
       throw new ArgumentException("An egg Pokémon cannot have experience.", nameof(experience));
     }
 
+    GrowthRate growthRate = species.GrowthRate;
+    int level = ExperienceTable.Instance.GetLevel(growthRate, experience);
+
     effortValues ??= new();
-    PokemonStatistics statistics = new(form.BaseStatistics, individualValues, effortValues, level: 0, nature); // TODO(fpion): level
+    PokemonStatistics statistics = new(form.BaseStatistics, individualValues, effortValues, level, nature);
 
     if (vitality < MinimumVitality || vitality > MaximumVitality)
     {
@@ -212,7 +215,7 @@ public class Specimen : AggregateRoot, IEntityProvider
       stamina = statistics.HP;
     }
 
-    PokemonCreated created = new(species.Id, variety.Id, form.Id, key ?? species.Key, gender, isShiny, teraType.Value, size, abilitySlot, nature, species.GrowthRate,
+    PokemonCreated created = new(species.Id, variety.Id, form.Id, key ?? species.Key, gender, isShiny, teraType.Value, size, abilitySlot, nature, growthRate,
       eggCycles, experience, form.BaseStatistics, individualValues, effortValues, vitality.Value, stamina.Value, friendship ?? species.BaseFriendship);
     Raise(created, userId.ActorId);
   }

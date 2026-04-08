@@ -5,7 +5,7 @@ namespace PokeGame.Core.Pokemon;
 [Trait(Traits.Category, Categories.Unit)]
 public class PokemonCharacteristicsTests : IAsyncLifetime
 {
-  private readonly CharacteristicInfo[] _characteristics = new CharacteristicInfo[5];
+  private readonly CharacteristicRecord[] _characteristics = new CharacteristicRecord[5];
   private readonly IPokemonCharacteristics _instance = PokemonCharacteristics.Instance;
 
   public async Task InitializeAsync()
@@ -13,10 +13,10 @@ public class PokemonCharacteristicsTests : IAsyncLifetime
     using StreamReader reader = new("characteristics.csv", Encoding.UTF8);
     using CsvReader csv = new(reader, CultureInfo.InvariantCulture);
 
-    csv.Context.RegisterClassMap<CharacteristicInfo.Map>();
+    csv.Context.RegisterClassMap<CharacteristicRecord.Map>();
 
-    IAsyncEnumerable<CharacteristicInfo> records = csv.GetRecordsAsync<CharacteristicInfo>();
-    await foreach (CharacteristicInfo record in records)
+    IAsyncEnumerable<CharacteristicRecord> records = csv.GetRecordsAsync<CharacteristicRecord>();
+    await foreach (CharacteristicRecord record in records)
     {
       _characteristics[record.Modulo] = record;
     }
