@@ -62,7 +62,7 @@ public class Specimen : AggregateRoot, IEntityProvider
   private Friendship? _friendship = null;
   public Friendship Friendship => _friendship ?? throw new InvalidOperationException("The Pokémon has not been initialized.");
 
-  // TODO(fpion): public PokemonCharacteristic Characteristic => PokemonCharacteristics.Instance.Find(IndividualValues, Size);
+  public PokemonCharacteristic Characteristic => PokemonCharacteristics.Instance.Find(IndividualValues, Size);
 
   public ItemId? HeldItemId { get; private set; }
 

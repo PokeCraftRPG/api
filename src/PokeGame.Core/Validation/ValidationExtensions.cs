@@ -11,6 +11,11 @@ public static class ValidationExtensions
     return ruleBuilder.InclusiveBetween(Moves.Accuracy.MinimumValue, Moves.Accuracy.MaximumValue);
   }
 
+  public static IRuleBuilderOptions<T, string> Characteristic<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty().MaximumLength(PokemonCharacteristic.MaximumLength);
+  }
+
   public static IRuleBuilderOptions<T, byte> CatchRate<T>(this IRuleBuilder<T, byte> ruleBuilder)
   {
     return ruleBuilder.GreaterThan((byte)0);
