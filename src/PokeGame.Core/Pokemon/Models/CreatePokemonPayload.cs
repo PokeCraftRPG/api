@@ -21,8 +21,8 @@ public record CreatePokemonPayload
   public AbilitySlot? AbilitySlot { get; set; }
   public string? Nature { get; set; }
 
-  // TODO(fpion): public byte EggCycles { get; set; }
-  // TODO(fpion): public int Experience { get; set; }
+  public byte? EggCycles { get; set; }
+  public int Experience { get; set; }
 
   public IndividualValuesModel? IndividualValues { get; set; }
   public EffortValuesModel? EffortValues { get; set; }
@@ -30,7 +30,7 @@ public record CreatePokemonPayload
   public int? Stamina { get; set; }
   public byte? Friendship { get; set; }
 
-  // TODO(fpion): public string? HeldItem { get; set; }
+  public string? HeldItem { get; set; }
 
   public string? Sprite { get; set; }
   public string? Url { get; set; }
@@ -60,6 +60,14 @@ public record CreatePokemonPayload
       RuleFor(x => x.TeraType).IsInEnum();
       RuleFor(x => x.AbilitySlot).IsInEnum();
       When(x => !string.IsNullOrWhiteSpace(x.Nature), () => RuleFor(x => x.Nature!).Nature());
+
+      When(x => x.EggCycles.HasValue, () =>
+      {
+        RuleFor(x => x.EggCycles!.Value).EggCycles();
+        RuleFor(x => x.Experience).Equal(0);
+      });
+      RuleFor(x => x.Experience).GreaterThanOrEqualTo(0);
+      When(x => x.Experience > 0, () => RuleFor(x => x.EggCycles).Null());
 
       When(x => x.IndividualValues is not null, () => RuleFor(x => x.IndividualValues!).SetValidator(new IndividualValuesValidator()));
       When(x => x.EffortValues is not null, () => RuleFor(x => x.EffortValues!).SetValidator(new EffortValuesValidator()));

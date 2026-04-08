@@ -146,6 +146,8 @@ public class CreatePokemonCommandHandlerTests
       TeraType = (PokemonType)999,
       AbilitySlot = (AbilitySlot)999,
       Nature = "invalid",
+      EggCycles = 0,
+      Experience = 1000,
       IndividualValues = new IndividualValuesModel(32, 0, 0, 0, 0, 0),
       EffortValues = new EffortValuesModel(255, 255, 255, 255, 255, 255),
       Vitality = 9999,
@@ -156,7 +158,7 @@ public class CreatePokemonCommandHandlerTests
     CreatePokemonCommand command = new(payload);
 
     var exception = await Assert.ThrowsAsync<FluentValidation.ValidationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
-    Assert.Equal(13, exception.Errors.Count());
+    Assert.Equal(16, exception.Errors.Count());
     Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "Form");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "SlugValidator" && e.PropertyName == "Key");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "MaximumLengthValidator" && e.PropertyName == "Name");
@@ -164,6 +166,9 @@ public class CreatePokemonCommandHandlerTests
     Assert.Contains(exception.Errors, e => e.ErrorCode == "EnumValidator" && e.PropertyName == "TeraType");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "EnumValidator" && e.PropertyName == "AbilitySlot");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "PokemonNatureValidator" && e.PropertyName == "Nature");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "GreaterThanValidator" && e.PropertyName == "EggCycles.Value");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "NullValidator" && e.PropertyName == "EggCycles");
+    Assert.Contains(exception.Errors, e => e.ErrorCode == "EqualValidator" && e.PropertyName == "Experience");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "LessThanOrEqualValidator" && e.PropertyName == "IndividualValues.HP");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "EffortValuesValidator" && e.PropertyName == "EffortValues");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "InclusiveBetweenValidator" && e.PropertyName == "Vitality.Value");

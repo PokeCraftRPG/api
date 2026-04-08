@@ -22,6 +22,10 @@ public interface ISpecimenBuilder
   ISpecimenBuilder WithSize(PokemonSize? size);
   ISpecimenBuilder WithAbilitySlot(AbilitySlot? abilitySlot);
   ISpecimenBuilder WithNature(PokemonNature? nature);
+  ISpecimenBuilder IsEgg(bool isEgg = true);
+  ISpecimenBuilder WithEggCycles(EggCycles? eggCycles);
+  ISpecimenBuilder IsLevel(int level);
+  ISpecimenBuilder HasExperience(int experience);
   ISpecimenBuilder WithIndividualValues(IndividualValues? individualValues);
   ISpecimenBuilder WithEffortValues(EffortValues? effortValues);
   ISpecimenBuilder WithVitality(int? vitality);
@@ -43,13 +47,17 @@ public class SpecimenBuilder : ISpecimenBuilder
   private AbilitySlot? _abilitySlot = null;
   private bool _clearChanges = false;
   private EffortValues? _effortValues = null;
+  private EggCycles? _eggCycles = null;
+  private int _experience = 0;
   private Form? _form = null;
   private Friendship? _friendship = null;
   private PokemonGender? _gender = null;
   private SpecimenId? _id = null;
   private IndividualValues? _individualValues = null;
+  private bool _isEgg = false;
   private bool _isShiny = false;
   private Slug? _key = null;
+  private int _level = 0;
   private Name? _name = null;
   private PokemonNature? _nature = null;
   private Notes? _notes = null;
@@ -143,6 +151,30 @@ public class SpecimenBuilder : ISpecimenBuilder
     return this;
   }
 
+  public ISpecimenBuilder IsEgg(bool isEgg = true)
+  {
+    _isEgg = isEgg;
+    return this;
+  }
+
+  public ISpecimenBuilder WithEggCycles(EggCycles? eggCycles)
+  {
+    _eggCycles = eggCycles;
+    return this;
+  }
+
+  public ISpecimenBuilder IsLevel(int level)
+  {
+    _level = level;
+    return this;
+  }
+
+  public ISpecimenBuilder HasExperience(int experience)
+  {
+    _experience = experience;
+    return this;
+  }
+
   public ISpecimenBuilder WithIndividualValues(IndividualValues? individualValues)
   {
     _individualValues = individualValues;
@@ -201,11 +233,13 @@ public class SpecimenBuilder : ISpecimenBuilder
     PokemonSize size = _size ?? _randomizer.PokemonSize();
     AbilitySlot abilitySlot = _abilitySlot ?? _randomizer.AbilitySlot(form.Abilities);
     PokemonNature nature = _nature ?? _randomizer.PokemonNature();
+    EggCycles? eggCycles = _eggCycles ?? (_isEgg ? species.EggCycles : null);
+    int experience = _experience; // TODO(fpion): use level table
     IndividualValues individualValues = _individualValues ?? _randomizer.IndividualValues();
 
     Specimen specimen = _id.HasValue
-      ? new(species, variety, form, _key, gender, _isShiny, _teraType, size, abilitySlot, nature, individualValues, _effortValues, _vitality, _stamina, _friendship, world.OwnerId, _id.Value)
-      : new(world, species, variety, form, _key, gender, _isShiny, _teraType, size, abilitySlot, nature, individualValues, _effortValues, _vitality, _stamina, _friendship);
+      ? new(species, variety, form, _key, gender, _isShiny, _teraType, size, abilitySlot, nature, eggCycles, experience, individualValues, _effortValues, _vitality, _stamina, _friendship, world.OwnerId, _id.Value)
+      : new(world, species, variety, form, _key, gender, _isShiny, _teraType, size, abilitySlot, nature, eggCycles, experience, individualValues, _effortValues, _vitality, _stamina, _friendship);
 
     specimen.Nickname(_name, world.OwnerId);
 

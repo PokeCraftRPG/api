@@ -124,11 +124,13 @@ public class Specimen : AggregateRoot, IEntityProvider
     PokemonSize size,
     AbilitySlot abilitySlot,
     PokemonNature nature,
+    EggCycles? eggCycles,
+    int experience,
     IndividualValues individualValues,
     EffortValues? effortValues,
     int? vitality,
     int? stamina,
-    Friendship? friendship) : this(species, variety, form, key, gender, isShiny, teraType, size, abilitySlot, nature, individualValues, effortValues, vitality, stamina, friendship, world.OwnerId, SpecimenId.NewId(world.Id))
+    Friendship? friendship) : this(species, variety, form, key, gender, isShiny, teraType, size, abilitySlot, nature, eggCycles, experience, individualValues, effortValues, vitality, stamina, friendship, world.OwnerId, SpecimenId.NewId(world.Id))
   {
   }
 
@@ -143,6 +145,8 @@ public class Specimen : AggregateRoot, IEntityProvider
     PokemonSize size,
     AbilitySlot abilitySlot,
     PokemonNature nature,
+    EggCycles? eggCycles,
+    int experience,
     IndividualValues individualValues,
     EffortValues? effortValues,
     int? vitality,
@@ -152,13 +156,14 @@ public class Specimen : AggregateRoot, IEntityProvider
     SpecimenId specimenId) : base(specimenId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(Id, species.Id, nameof(species));
-    WorldMismatchException.ThrowIfMismatch(Id, variety.Id, nameof(variety));
-    WorldMismatchException.ThrowIfMismatch(Id, form.Id, nameof(form));
 
+    WorldMismatchException.ThrowIfMismatch(Id, variety.Id, nameof(variety));
     if (variety.SpeciesId != species.Id)
     {
       throw new ArgumentException("The variety should belong to the species.", nameof(variety));
     }
+
+    WorldMismatchException.ThrowIfMismatch(Id, form.Id, nameof(form));
     if (form.VarietyId != variety.Id)
     {
       throw new ArgumentException("The form should belong to the variety.", nameof(form));
@@ -173,6 +178,18 @@ public class Specimen : AggregateRoot, IEntityProvider
     teraType ??= form.Types.Primary;
 
     InvalidAbilitySlotException.ThrowIfNotValid(form.Abilities, abilitySlot, nameof(AbilitySlot));
+
+    if (eggCycles is not null && eggCycles.Value > species.EggCycles.Value)
+    {
+      eggCycles = species.EggCycles;
+    }
+
+    ArgumentOutOfRangeException.ThrowIfNegative(experience, nameof(experience));
+
+    if (eggCycles is not null && experience > 0)
+    {
+      throw new ArgumentException("An egg Pokémon cannot have experience.", nameof(experience));
+    }
 
     effortValues ??= new();
     PokemonStatistics statistics = new(form.BaseStatistics, individualValues, effortValues, level: 0, nature); // TODO(fpion): level
@@ -195,8 +212,8 @@ public class Specimen : AggregateRoot, IEntityProvider
       stamina = statistics.HP;
     }
 
-    PokemonCreated created = new(species.Id, variety.Id, form.Id, key ?? species.Key, gender, isShiny, teraType.Value, size, abilitySlot, nature,
-      species.GrowthRate, form.BaseStatistics, individualValues, effortValues, vitality.Value, stamina.Value, friendship ?? species.BaseFriendship);
+    PokemonCreated created = new(species.Id, variety.Id, form.Id, key ?? species.Key, gender, isShiny, teraType.Value, size, abilitySlot, nature, species.GrowthRate,
+      eggCycles, experience, form.BaseStatistics, individualValues, effortValues, vitality.Value, stamina.Value, friendship ?? species.BaseFriendship);
     Raise(created, userId.ActorId);
   }
   protected virtual void Handle(PokemonCreated @event)
@@ -215,6 +232,8 @@ public class Specimen : AggregateRoot, IEntityProvider
     _nature = @event.Nature;
 
     GrowthRate = @event.GrowthRate;
+    EggCycles = @event.EggCycles;
+    Experience = @event.Experience;
 
     _baseStatistics = @event.BaseStatistics;
     _individualValues = @event.IndividualValues;

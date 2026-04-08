@@ -18,8 +18,8 @@ public record PokemonCreated(
   AbilitySlot AbilitySlot,
   PokemonNature Nature,
   GrowthRate GrowthRate,
-  // TODO(fpion): EggCycles
-  // TODO(fpion): Experience
+  EggCycles? EggCycles,
+  int Experience,
   BaseStatistics BaseStatistics,
   IndividualValues IndividualValues,
   EffortValues EffortValues,

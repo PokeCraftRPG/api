@@ -77,11 +77,12 @@ internal class CreatePokemonCommandHandler : ICommandHandler<CreatePokemonComman
     PokemonSize size = payload.Size is null ? _randomizer.PokemonSize() : new(payload.Size);
     AbilitySlot abilitySlot = payload.AbilitySlot ?? _randomizer.AbilitySlot(form.Abilities);
     PokemonNature nature = string.IsNullOrWhiteSpace(payload.Nature) ? _randomizer.PokemonNature() : PokemonNatures.Instance.Find(payload.Nature);
+    EggCycles? eggCycles = payload.EggCycles.HasValue ? new(payload.EggCycles.Value) : null;
     IndividualValues individualValues = payload.IndividualValues is null ? _randomizer.IndividualValues() : new(payload.IndividualValues);
     EffortValues? effortValues = payload.EffortValues is null ? null : new(payload.EffortValues);
     Friendship? friendship = payload.Friendship.HasValue ? new(payload.Friendship.Value) : null;
-    specimen = new(species, variety, form, key, gender, payload.IsShiny, payload.TeraType, size, abilitySlot, nature,
-      individualValues, effortValues, payload.Vitality, payload.Stamina, friendship, userId, specimenId);
+    specimen = new(species, variety, form, key, gender, payload.IsShiny, payload.TeraType, size, abilitySlot, nature, eggCycles,
+      payload.Experience, individualValues, effortValues, payload.Vitality, payload.Stamina, friendship, userId, specimenId);
 
     specimen.Nickname(Name.TryCreate(payload.Name), userId);
 
