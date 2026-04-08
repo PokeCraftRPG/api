@@ -62,7 +62,7 @@ internal class SendMembershipInvitationCommandHandler : ICommandHandler<SendMemb
 
       WorldId worldId = _context.WorldId;
       World world = await _worldRepository.LoadAsync(worldId, cancellationToken) ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not loaded.");
-      if (world.IsMember(inviteeId.Value))
+      if (world.OwnerId == inviteeId.Value || world.IsMember(inviteeId.Value))
       {
         throw new MembershipConflictException(world, invitee, payload.EmailAddress, nameof(payload.EmailAddress));
       }

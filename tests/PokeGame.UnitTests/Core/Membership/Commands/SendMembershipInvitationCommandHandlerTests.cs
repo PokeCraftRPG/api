@@ -152,6 +152,31 @@ public class SendMembershipInvitationCommandHandlerTests
     Assert.Equal("EmailAddress", exception.PropertyName);
   }
 
+  [Fact(DisplayName = "It should throw MembershipConflictException when the user is the world owner.")]
+  public async Task Given_WorldOwner_When_HandleAsync_Then_MembershipConflictException()
+  {
+    _worldRepository.Setup(x => x.LoadAsync(_world.Id, _cancellationToken)).ReturnsAsync(_world);
+
+    User? user = _context.User;
+    Assert.NotNull(user);
+    Assert.NotNull(user.Email);
+    _userGateway.Setup(x => x.FindAsync(user.Email.Address, _cancellationToken)).ReturnsAsync(user);
+
+    SendMembershipInvitationPayload payload = new()
+    {
+      Locale = _faker.Locale,
+      EmailAddress = user.Email.Address
+    };
+    SendMembershipInvitationCommand command = new(payload);
+
+    var exception = await Assert.ThrowsAsync<MembershipConflictException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
+    Assert.Equal(user.Realm?.Id, exception.RealmId);
+    Assert.Equal(user.Id, exception.UserId);
+    Assert.Equal(payload.EmailAddress, exception.EmailAddress);
+    Assert.Equal("EmailAddress", exception.PropertyName);
+  }
+
   [Fact(DisplayName = "It should throw MembershipInvitationPendingException when there are pending invitations.")]
   public async Task Given_PendingInvitation_When_HandleAsync_Then_MembershipInvitationPendingException()
   {
