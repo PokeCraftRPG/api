@@ -1,6 +1,6 @@
 ﻿namespace PokeGame.Core.Forms.Models;
 
-public record TypesModel : ITypes
+public record TypesModel : IFormTypes
 {
   public PokemonType Primary { get; set; }
   public PokemonType? Secondary { get; set; }
@@ -15,7 +15,7 @@ public record TypesModel : ITypes
     Secondary = secondary;
   }
 
-  public TypesModel(ITypes types) : this(types.Primary, types.Secondary)
+  public TypesModel(IFormTypes types) : this(types.Primary, types.Secondary)
   {
   }
 }

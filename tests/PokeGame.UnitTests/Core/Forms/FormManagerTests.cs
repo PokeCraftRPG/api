@@ -47,7 +47,7 @@ public class FormManagerTests
       Hidden = withHidden ? $"  {lightningRod.EntityId.ToString().ToUpperInvariant()}  " : null
     };
 
-    Abilities abilities = await _manager.FindAbilitiesAsync(payload, PropertyName, _cancellationToken);
+    FormAbilities abilities = await _manager.FindAbilitiesAsync(payload, PropertyName, _cancellationToken);
 
     Assert.Equal(@static.Id, abilities.Primary);
     if (withSecondary)

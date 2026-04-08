@@ -12,6 +12,8 @@ public record UpdatePokemonPayload
   public Optional<string>? Url { get; set; }
   public Optional<string>? Notes { get; set; }
 
+  // TODO(fpion): Form, Gender, IsShiny, TeraType, Size, AbilitySlot, Nature, EggCycles, Experience, IVs, EVs, Vitality, Stamina, StatusCondition, Friendship, HeldItem
+
   public void Validate() => new Validator().ValidateAndThrow(this);
 
   private class Validator : AbstractValidator<UpdatePokemonPayload>

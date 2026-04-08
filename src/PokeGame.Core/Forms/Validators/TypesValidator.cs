@@ -2,7 +2,7 @@
 
 namespace PokeGame.Core.Forms.Validators;
 
-internal class TypesValidator : AbstractValidator<ITypes>
+internal class TypesValidator : AbstractValidator<IFormTypes>
 {
   public TypesValidator()
   {

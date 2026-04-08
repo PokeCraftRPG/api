@@ -6,7 +6,7 @@ namespace PokeGame.Core.Forms;
 
 public interface IFormManager
 {
-  Task<Abilities> FindAbilitiesAsync(AbilitiesPayload payload, string propertyName, CancellationToken cancellationToken = default);
+  Task<FormAbilities> FindAbilitiesAsync(AbilitiesPayload payload, string propertyName, CancellationToken cancellationToken = default);
   Task<Form> FindAsync(string form, string propertyName, CancellationToken cancellationToken = default);
 }
 
@@ -29,7 +29,7 @@ internal class FormManager : IFormManager
     _formRepository = formRepository;
   }
 
-  public async Task<Abilities> FindAbilitiesAsync(AbilitiesPayload payload, string propertyName, CancellationToken cancellationToken)
+  public async Task<FormAbilities> FindAbilitiesAsync(AbilitiesPayload payload, string propertyName, CancellationToken cancellationToken)
   {
     IReadOnlyCollection<AbilityKey> allKeys = await _abilityQuerier.ListKeysAsync(cancellationToken);
     Dictionary<Guid, AbilityId> ids = new(capacity: allKeys.Count);
@@ -40,7 +40,7 @@ internal class FormManager : IFormManager
       keys[key.Key] = key.AbilityId;
     }
 
-    return new Abilities(
+    return new FormAbilities(
       FindAbilityId(payload.Primary, ids, keys, $"{propertyName}.{nameof(payload.Primary)}"),
       payload.Secondary is null ? null : FindAbilityId(payload.Secondary, ids, keys, $"{propertyName}.{nameof(payload.Secondary)}"),
       payload.Hidden is null ? null : FindAbilityId(payload.Hidden, ids, keys, $"{propertyName}.{nameof(payload.Hidden)}"));

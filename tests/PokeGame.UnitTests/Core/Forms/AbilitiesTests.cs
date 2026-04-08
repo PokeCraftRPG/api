@@ -22,7 +22,7 @@ public class AbilitiesTests
     Ability @static = AbilityBuilder.Static(_faker, _world);
     Ability lightningRod = AbilityBuilder.LightningRod(_faker, _world);
     Ability surgeSurfer = AbilityBuilder.SurgeSurfer(_faker, _world);
-    Abilities abilities = new(@static, surgeSurfer, lightningRod);
+    FormAbilities abilities = new(@static, surgeSurfer, lightningRod);
     Assert.Equal(@static.Id, abilities.Primary);
     Assert.Equal(surgeSurfer.Id, abilities.Secondary);
     Assert.Equal(lightningRod.Id, abilities.Hidden);
@@ -32,7 +32,7 @@ public class AbilitiesTests
   public void Given_InvalidArguments_When_ctor_Then_ValidationException()
   {
     AbilityId abilityId = new();
-    var exception = Assert.Throws<FluentValidation.ValidationException>(() => new Abilities(abilityId, abilityId, abilityId));
+    var exception = Assert.Throws<FluentValidation.ValidationException>(() => new FormAbilities(abilityId, abilityId, abilityId));
     Assert.Equal(7, exception.Errors.Count());
     Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "Primary.Value");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "Secondary.Value.Value");

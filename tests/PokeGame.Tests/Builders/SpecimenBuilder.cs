@@ -228,7 +228,7 @@ public class SpecimenBuilder : ISpecimenBuilder
     World world = _world ?? new WorldBuilder(_faker).Build();
     SpeciesAggregate species = _species ?? SpeciesBuilder.Pikachu(_faker, world);
     Variety variety = _variety ?? VarietyBuilder.Pikachu(_faker, world, species);
-    Form form = _form ?? FormBuilder.Pikachu(_faker, world, variety, new Abilities(AbilityBuilder.Static(_faker, world), secondary: null, AbilityBuilder.LightningRod(_faker, world)));
+    Form form = _form ?? FormBuilder.Pikachu(_faker, world, variety, new FormAbilities(AbilityBuilder.Static(_faker, world), secondary: null, AbilityBuilder.LightningRod(_faker, world)));
     PokemonGender? gender = _gender ?? _randomizer.Gender(variety.GenderRatio);
     PokemonSize size = _size ?? _randomizer.PokemonSize();
     AbilitySlot abilitySlot = _abilitySlot ?? _randomizer.AbilitySlot(form.Abilities);

@@ -19,8 +19,8 @@ public interface IFormBuilder
   IFormBuilder IsMega(bool isMega = true);
   IFormBuilder WithHeight(Height? height);
   IFormBuilder WithWeight(Weight? weight);
-  IFormBuilder WithTypes(Types? types);
-  IFormBuilder WithAbilities(Abilities? abilities);
+  IFormBuilder WithTypes(FormTypes? types);
+  IFormBuilder WithAbilities(FormAbilities? abilities);
   IFormBuilder WithBaseStatistics(BaseStatistics? baseStatistics);
   IFormBuilder WithYield(Yield? yield);
   IFormBuilder WithSprites(Sprites? sprites);
@@ -35,7 +35,7 @@ public class FormBuilder : IFormBuilder
 {
   private readonly Faker _faker;
 
-  private Abilities? _abilities = null;
+  private FormAbilities? _abilities = null;
   private BaseStatistics? _baseStatistics = null;
   private bool _clearChanges = false;
   private Description? _description = null;
@@ -48,7 +48,7 @@ public class FormBuilder : IFormBuilder
   private Name? _name = null;
   private Notes? _notes = null;
   private Sprites? _sprites = null;
-  private Types? _types = null;
+  private FormTypes? _types = null;
   private Url? _url = null;
   private Variety? _variety = null;
   private Weight? _weight;
@@ -121,13 +121,13 @@ public class FormBuilder : IFormBuilder
     return this;
   }
 
-  public IFormBuilder WithTypes(Types? types)
+  public IFormBuilder WithTypes(FormTypes? types)
   {
     _types = types;
     return this;
   }
 
-  public IFormBuilder WithAbilities(Abilities? abilities)
+  public IFormBuilder WithAbilities(FormAbilities? abilities)
   {
     _abilities = abilities;
     return this;
@@ -181,8 +181,8 @@ public class FormBuilder : IFormBuilder
     Slug key = _key ?? new("a-form");
     Height height = _height ?? new(1);
     Weight weight = _weight ?? new(1);
-    Types types = _types ?? new();
-    Abilities abilities = _abilities ?? new(new AbilityBuilder(_faker).WithWorld(world).Build());
+    FormTypes types = _types ?? new();
+    FormAbilities abilities = _abilities ?? new(new AbilityBuilder(_faker).WithWorld(world).Build());
     BaseStatistics baseStatistics = _baseStatistics ?? new(35, 55, 40, 50, 50, 90);
     Yield yield = _yield ?? new(112, 0, 0, 0, 0, 0, 2);
     Sprites sprites = _sprites ?? new(
@@ -214,7 +214,7 @@ public class FormBuilder : IFormBuilder
     return form;
   }
 
-  public static Form Pichu(Faker? faker = null, World? world = null, Variety? variety = null, Abilities? abilities = null)
+  public static Form Pichu(Faker? faker = null, World? world = null, Variety? variety = null, FormAbilities? abilities = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new FormBuilder(faker)
@@ -225,8 +225,8 @@ public class FormBuilder : IFormBuilder
       .WithName(new Name("Pichu"))
       .WithHeight(new Height(3))
       .WithWeight(new Weight(20))
-      .WithTypes(new Types(PokemonType.Electric))
-      .WithAbilities(abilities ?? new Abilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
+      .WithTypes(new FormTypes(PokemonType.Electric))
+      .WithAbilities(abilities ?? new FormAbilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
       .WithBaseStatistics(new BaseStatistics(20, 40, 15, 35, 35, 60))
       .WithYield(new Yield(41, 0, 0, 0, 0, 0, 1))
       .WithSprites(new Sprites(
@@ -236,7 +236,7 @@ public class FormBuilder : IFormBuilder
       .Build();
   }
 
-  public static Form Pikachu(Faker? faker = null, World? world = null, Variety? variety = null, Abilities? abilities = null)
+  public static Form Pikachu(Faker? faker = null, World? world = null, Variety? variety = null, FormAbilities? abilities = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new FormBuilder(faker)
@@ -247,8 +247,8 @@ public class FormBuilder : IFormBuilder
       .WithName(new Name("Pikachu"))
       .WithHeight(new Height(4))
       .WithWeight(new Weight(60))
-      .WithTypes(new Types(PokemonType.Electric))
-      .WithAbilities(abilities ?? new Abilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
+      .WithTypes(new FormTypes(PokemonType.Electric))
+      .WithAbilities(abilities ?? new FormAbilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
       .WithBaseStatistics(new BaseStatistics(35, 55, 40, 50, 50, 90))
       .WithYield(new Yield(112, 0, 0, 0, 0, 0, 2))
       .WithSprites(new Sprites(
@@ -260,7 +260,7 @@ public class FormBuilder : IFormBuilder
       .Build();
   }
 
-  public static Form Raichu(Faker? faker = null, World? world = null, Variety? variety = null, Abilities? abilities = null)
+  public static Form Raichu(Faker? faker = null, World? world = null, Variety? variety = null, FormAbilities? abilities = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new FormBuilder(faker)
@@ -271,8 +271,8 @@ public class FormBuilder : IFormBuilder
       .WithName(new Name("Raichu"))
       .WithHeight(new Height(8))
       .WithWeight(new Weight(300))
-      .WithTypes(new Types(PokemonType.Electric))
-      .WithAbilities(abilities ?? new Abilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
+      .WithTypes(new FormTypes(PokemonType.Electric))
+      .WithAbilities(abilities ?? new FormAbilities(AbilityBuilder.Static(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
       .WithBaseStatistics(new BaseStatistics(60, 90, 55, 90, 80, 110))
       .WithYield(new Yield(218, 0, 0, 0, 0, 0, 3))
       .WithSprites(new Sprites(
@@ -284,7 +284,7 @@ public class FormBuilder : IFormBuilder
       .Build();
   }
 
-  public static Form RaichuAlola(Faker? faker = null, World? world = null, Variety? variety = null, Abilities? abilities = null)
+  public static Form RaichuAlola(Faker? faker = null, World? world = null, Variety? variety = null, FormAbilities? abilities = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new FormBuilder(faker)
@@ -295,8 +295,8 @@ public class FormBuilder : IFormBuilder
       .WithName(new Name("Alolan Raichu"))
       .WithHeight(new Height(7))
       .WithWeight(new Weight(210))
-      .WithTypes(new Types(PokemonType.Electric, PokemonType.Fairy))
-      .WithAbilities(abilities ?? new Abilities(AbilityBuilder.SurgeSurfer(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
+      .WithTypes(new FormTypes(PokemonType.Electric, PokemonType.Fairy))
+      .WithAbilities(abilities ?? new FormAbilities(AbilityBuilder.SurgeSurfer(faker, world), secondary: null, AbilityBuilder.LightningRod(faker, world)))
       .WithBaseStatistics(new BaseStatistics(60, 85, 50, 95, 85, 110))
       .WithYield(new Yield(218, 0, 0, 0, 0, 0, 3))
       .WithSprites(new Sprites(
@@ -306,7 +306,7 @@ public class FormBuilder : IFormBuilder
       .Build();
   }
 
-  public static Form Tepig(Faker? faker = null, World? world = null, Variety? variety = null, Abilities? abilities = null)
+  public static Form Tepig(Faker? faker = null, World? world = null, Variety? variety = null, FormAbilities? abilities = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new FormBuilder(faker)
@@ -317,8 +317,8 @@ public class FormBuilder : IFormBuilder
       .WithName(new Name("Tepig"))
       .WithHeight(new Height(5))
       .WithWeight(new Weight(99))
-      .WithTypes(new Types(PokemonType.Fire))
-      .WithAbilities(abilities ?? new Abilities(AbilityBuilder.Blaze(faker, world), secondary: null, AbilityBuilder.ThickFat(faker, world)))
+      .WithTypes(new FormTypes(PokemonType.Fire))
+      .WithAbilities(abilities ?? new FormAbilities(AbilityBuilder.Blaze(faker, world), secondary: null, AbilityBuilder.ThickFat(faker, world)))
       .WithBaseStatistics(new BaseStatistics(65, 63, 45, 45, 45, 45))
       .WithYield(new Yield(62, 1, 0, 0, 0, 0, 0))
       .WithSprites(new Sprites(

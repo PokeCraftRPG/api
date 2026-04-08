@@ -86,7 +86,7 @@ internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, For
 
     if (payload.Types is not null)
     {
-      form.Types = new Types(payload.Types);
+      form.Types = new FormTypes(payload.Types);
     }
     if (payload.Abilities is not null)
     {

@@ -57,8 +57,8 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
     Slug key = new(payload.Key);
     Height height = new(payload.Height);
     Weight weight = new(payload.Weight);
-    Types types = new(payload.Types);
-    Abilities abilities = await _formManager.FindAbilitiesAsync(payload.Abilities, nameof(payload.Abilities), cancellationToken);
+    FormTypes types = new(payload.Types);
+    FormAbilities abilities = await _formManager.FindAbilitiesAsync(payload.Abilities, nameof(payload.Abilities), cancellationToken);
     BaseStatistics baseStatistics = new(payload.BaseStatistics);
     Yield yield = new(payload.Yield);
     Sprites sprites = new(

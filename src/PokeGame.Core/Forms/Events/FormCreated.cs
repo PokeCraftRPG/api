@@ -9,8 +9,8 @@ public record FormCreated(
   Slug Key,
   Height Height,
   Weight Weight,
-  Types Types,
-  Abilities Abilities,
+  FormTypes Types,
+  FormAbilities Abilities,
   BaseStatistics BaseStatistics,
   Yield Yield,
   Sprites Sprites) : DomainEvent;

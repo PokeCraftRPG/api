@@ -108,8 +108,8 @@ public class Form : AggregateRoot, IEntityProvider
     }
   }
 
-  private Types? _types = null;
-  public Types Types
+  private FormTypes? _types = null;
+  public FormTypes Types
   {
     get => _types ?? throw new InvalidOperationException("The form was not initialized.");
     set
@@ -121,8 +121,8 @@ public class Form : AggregateRoot, IEntityProvider
       }
     }
   }
-  private Abilities? _abilities = null;
-  public Abilities Abilities
+  private FormAbilities? _abilities = null;
+  public FormAbilities Abilities
   {
     get => _abilities ?? throw new InvalidOperationException("The form was not initialized.");
     set
@@ -215,8 +215,8 @@ public class Form : AggregateRoot, IEntityProvider
     Slug key,
     Height height,
     Weight weight,
-    Types types,
-    Abilities abilities,
+    FormTypes types,
+    FormAbilities abilities,
     BaseStatistics baseStatistics,
     Yield yield,
     Sprites sprites,
@@ -230,8 +230,8 @@ public class Form : AggregateRoot, IEntityProvider
     Slug key,
     Height height,
     Weight weight,
-    Types types,
-    Abilities abilities,
+    FormTypes types,
+    FormAbilities abilities,
     BaseStatistics baseStatistics,
     Yield yield,
     Sprites sprites,
@@ -365,7 +365,7 @@ public class Form : AggregateRoot, IEntityProvider
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";
 
-  private void ThrowIfMismatch(Abilities abilities, string paramName)
+  private void ThrowIfMismatch(FormAbilities abilities, string paramName)
   {
     List<IEntityProvider> mismatched = new(capacity: 3);
     if (abilities.Primary.WorldId != WorldId)

@@ -192,8 +192,8 @@ public class FormIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results (AbilityId).")]
   public async Task Given_AbilityId_When_Search_Then_Results()
   {
-    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new Abilities(_static, secondary: null, _lightningRod));
-    Form raichuAlola = FormBuilder.RaichuAlola(Faker, World, _variety, new Abilities(_surgeSurfer, secondary: null, _lightningRod));
+    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new FormAbilities(_static, secondary: null, _lightningRod));
+    Form raichuAlola = FormBuilder.RaichuAlola(Faker, World, _variety, new FormAbilities(_surgeSurfer, secondary: null, _lightningRod));
     await _formRepository.SaveAsync([raichu, raichuAlola]);
 
     SearchFormsPayload payload = new()
@@ -225,7 +225,7 @@ public class FormIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results (IsBattleOnly).")]
   public async Task Given_IsBattleOnly_When_Search_Then_Results()
   {
-    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new Abilities(_static, secondary: null, _lightningRod));
+    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new FormAbilities(_static, secondary: null, _lightningRod));
     Form battle = new FormBuilder(Faker).WithWorld(World).WithVariety(_variety).WithKey(new Slug("raichu-battle")).IsBattleOnly().Build();
     await _formRepository.SaveAsync([raichu, battle]);
 
@@ -245,7 +245,7 @@ public class FormIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results (IsMega).")]
   public async Task Given_IsMega_When_Search_Then_Results()
   {
-    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new Abilities(_static, secondary: null, _lightningRod));
+    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new FormAbilities(_static, secondary: null, _lightningRod));
     Form mega = new FormBuilder(Faker).WithWorld(World).WithVariety(_variety).WithKey(new Slug("raichu-mega")).IsMega().Build();
     await _formRepository.SaveAsync([raichu, mega]);
 
@@ -265,8 +265,8 @@ public class FormIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results (Type).")]
   public async Task Given_Type_When_Search_Then_Results()
   {
-    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new Abilities(_static, secondary: null, _lightningRod));
-    Form raichuAlola = FormBuilder.RaichuAlola(Faker, World, _variety, new Abilities(_surgeSurfer, secondary: null, _lightningRod));
+    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new FormAbilities(_static, secondary: null, _lightningRod));
+    Form raichuAlola = FormBuilder.RaichuAlola(Faker, World, _variety, new FormAbilities(_surgeSurfer, secondary: null, _lightningRod));
     await _formRepository.SaveAsync([raichu, raichuAlola]);
 
     SearchFormsPayload payload = new()
@@ -304,9 +304,9 @@ public class FormIntegrationTests : IntegrationTests
     Variety pikachuVariety = VarietyBuilder.Pikachu(Faker, World, pikachuSpecies);
     await _varietyRepository.SaveAsync(pikachuVariety);
 
-    Form pikachu = FormBuilder.Pikachu(Faker, World, pikachuVariety, new Abilities(_static, secondary: null, _lightningRod));
-    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new Abilities(_static, secondary: null, _lightningRod));
-    Form raichuAlola = FormBuilder.RaichuAlola(Faker, World, _variety, new Abilities(_surgeSurfer, secondary: null, _lightningRod));
+    Form pikachu = FormBuilder.Pikachu(Faker, World, pikachuVariety, new FormAbilities(_static, secondary: null, _lightningRod));
+    Form raichu = FormBuilder.Raichu(Faker, World, _variety, new FormAbilities(_static, secondary: null, _lightningRod));
+    Form raichuAlola = FormBuilder.RaichuAlola(Faker, World, _variety, new FormAbilities(_surgeSurfer, secondary: null, _lightningRod));
     await _formRepository.SaveAsync([pikachu, raichu, raichuAlola]);
 
     SearchFormsPayload payload = new()
@@ -341,9 +341,9 @@ public class FormIntegrationTests : IntegrationTests
     Variety pikachuVariety = VarietyBuilder.Pikachu(Faker, World, pikachuSpecies);
     await _varietyRepository.SaveAsync([pichuVariety, pikachuVariety]);
 
-    Form pichu = FormBuilder.Pichu(Faker, World, pichuVariety, new Abilities(_static, secondary: null, _lightningRod));
-    Form pikachu = FormBuilder.Pikachu(Faker, World, pikachuVariety, new Abilities(_static, secondary: null, _lightningRod));
-    Form raichuAlola = FormBuilder.RaichuAlola(Faker, World, _variety, new Abilities(_surgeSurfer, secondary: null, _lightningRod));
+    Form pichu = FormBuilder.Pichu(Faker, World, pichuVariety, new FormAbilities(_static, secondary: null, _lightningRod));
+    Form pikachu = FormBuilder.Pikachu(Faker, World, pikachuVariety, new FormAbilities(_static, secondary: null, _lightningRod));
+    Form raichuAlola = FormBuilder.RaichuAlola(Faker, World, _variety, new FormAbilities(_surgeSurfer, secondary: null, _lightningRod));
     await _formRepository.SaveAsync([pichu, pikachu, raichuAlola]);
 
     SearchFormsPayload payload = new()
