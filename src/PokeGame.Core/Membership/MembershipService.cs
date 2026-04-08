@@ -76,5 +76,4 @@ internal class MembershipService : IMembershipService
   }
 }
 
-// TODO(fpion): should the grantor be the invitee or the invitor? ⚠️Because it’s the invitee!
 // TODO(fpion): transfer ownership

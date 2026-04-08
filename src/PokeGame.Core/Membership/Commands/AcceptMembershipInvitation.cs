@@ -48,7 +48,8 @@ internal class AcceptMembershipInvitationCommandHandler : ICommandHandler<Accept
     }
 
     World world = await _worldRepository.LoadAsync(worldId, cancellationToken) ?? throw new InvalidOperationException($"The world 'Id={worldId}' was not loaded.");
-    world.GrantMembership(invitation.InviteeId.Value, _context.UserId);
+    UserId userId = invitation.CreatedBy.HasValue ? new(invitation.CreatedBy.Value) : world.OwnerId;
+    world.GrantMembership(invitation.InviteeId.Value, userId);
 
     await _membershipInvitationRepository.SaveAsync(invitation, cancellationToken);
     await _worldRepository.SaveAsync(world, cancellationToken);

@@ -48,6 +48,7 @@ public class MembershipIntegrationTests : IntegrationTests
     User? owner = Context.User;
     Assert.NotNull(owner);
     Context.User = _user;
+    Actor ownerActor = new(owner);
 
     MembershipInvitationModel? model = await _membershipService.AcceptInvitationAsync(invitation.EntityId);
     Assert.NotNull(model);
@@ -59,10 +60,10 @@ public class MembershipIntegrationTests : IntegrationTests
     Context.User = owner;
 
     WorldModel world = await _worldQuerier.ReadAsync(World);
-    Assert.Equal(new Actor(owner), world.Owner);
+    Assert.Equal(ownerActor, world.Owner);
     Assert.Single(world.Membership);
     Assert.Contains(world.Membership, m => m.Member.Equals(new Actor(_user))
-      && m.GrantedBy.Equals(new Actor(_user)) && (DateTime.UtcNow - m.GrantedOn) < TimeSpan.FromSeconds(10)
+      && m.GrantedBy.Equals(ownerActor) && (DateTime.UtcNow - m.GrantedOn) < TimeSpan.FromSeconds(10)
       && m.RevokedBy is null && !m.RevokedOn.HasValue);
   }
 
