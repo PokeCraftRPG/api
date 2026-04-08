@@ -78,3 +78,4 @@ internal class MembershipService : IMembershipService
 
 // TODO(fpion): should we be able to invite the world owner? ⚠️Because we can!
 // TODO(fpion): should the grantor be the invitee or the invitor? ⚠️Because it’s the invitee!
+// TODO(fpion): transfer ownership
