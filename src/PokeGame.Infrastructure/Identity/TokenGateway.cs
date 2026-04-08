@@ -61,7 +61,7 @@ internal class TokenGateway : ITokenGateway
       IsConsumable = isConsumable,
       LifetimeSeconds = lifetime?.Seconds,
       Type = type,
-      Subject = user?.Id.ToString(),
+      Subject = user?.GetSubject(),
       Email = email ?? (user is null ? null : GetEmailPayload(user))
     };
     CreatedToken created = await _tokenService.CreateAsync(payload, cancellationToken);

@@ -31,13 +31,14 @@ public class SignInAccountCommandHandlerTests
     SignInAccountPayload payload = new()
     {
       Credentials = new Credentials(_faker.Locale, _faker.Person.Email, "Test123!"),
-      Token = "email_verification_token",
+      AuthenticationToken = "email_verification_token",
       OneTimePassword = new OneTimePasswordValidation(Guid.NewGuid(), "123456"),
       Profile = new CompleteProfilePayload("profile_completion_token", _faker.Person.FirstName, _faker.Person.LastName, _faker.Locale, "America/Montreal")
       {
         DateOfBirth = _faker.Person.DateOfBirth,
         Gender = _faker.Person.Gender.ToString()
-      }
+      },
+      RefreshToken = "refresh_token"
     };
     SignInAccountCommand command = new(payload);
 

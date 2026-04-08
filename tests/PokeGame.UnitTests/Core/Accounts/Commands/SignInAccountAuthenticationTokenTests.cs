@@ -12,7 +12,7 @@ using PokeGame.Core.Identity;
 namespace PokeGame.Core.Accounts.Commands;
 
 [Trait(Traits.Category, Categories.Unit)]
-public class SignInAccountTokenTests
+public class SignInAccountAuthenticationTokenTests
 {
   private readonly CancellationToken _cancellationToken = default;
   private readonly Faker _faker = new();
@@ -26,7 +26,7 @@ public class SignInAccountTokenTests
 
   private readonly SignInAccountCommandHandler _handler;
 
-  public SignInAccountTokenTests()
+  public SignInAccountAuthenticationTokenTests()
   {
     _handler = new(_messageGateway.Object, _oneTimePasswordGateway.Object, _realmGateway.Object, _sessionGateway.Object, _tokenGateway.Object, _userGateway.Object);
   }
@@ -36,7 +36,7 @@ public class SignInAccountTokenTests
   {
     SignInAccountPayload payload = new()
     {
-      Token = "token"
+      AuthenticationToken = "token"
     };
     SignInAccountCommand command = new(payload);
 
@@ -44,7 +44,7 @@ public class SignInAccountTokenTests
     {
       Email = new Email(_faker.Internet.Email())
     };
-    _tokenGateway.Setup(x => x.ValidateEmailVerificationAsync(payload.Token, _cancellationToken)).ReturnsAsync(validatedToken);
+    _tokenGateway.Setup(x => x.ValidateEmailVerificationAsync(payload.AuthenticationToken, _cancellationToken)).ReturnsAsync(validatedToken);
 
     User user = new();
     _userGateway.Setup(x => x.CreateAsync(validatedToken.Email, _cancellationToken)).ReturnsAsync(user);
@@ -61,7 +61,7 @@ public class SignInAccountTokenTests
   {
     SignInAccountPayload payload = new()
     {
-      Token = "token"
+      AuthenticationToken = "token"
     };
     SignInAccountCommand command = new(payload);
 
@@ -74,7 +74,7 @@ public class SignInAccountTokenTests
       Subject = user.Id.ToString(),
       Email = new Email(user.Email.Address)
     };
-    _tokenGateway.Setup(x => x.ValidateEmailVerificationAsync(payload.Token, _cancellationToken)).ReturnsAsync(validatedToken);
+    _tokenGateway.Setup(x => x.ValidateEmailVerificationAsync(payload.AuthenticationToken, _cancellationToken)).ReturnsAsync(validatedToken);
 
     string token = "token";
     _tokenGateway.Setup(x => x.CreateProfileCompletionAsync(user, _cancellationToken)).ReturnsAsync(token);
@@ -90,7 +90,7 @@ public class SignInAccountTokenTests
   {
     SignInAccountPayload payload = new()
     {
-      Token = "token"
+      AuthenticationToken = "token"
     };
     SignInAccountCommand command = new(payload);
 
@@ -104,14 +104,14 @@ public class SignInAccountTokenTests
       Subject = user.Id.ToString(),
       Email = new Email(user.Email.Address)
     };
-    _tokenGateway.Setup(x => x.ValidateEmailVerificationAsync(payload.Token, _cancellationToken)).ReturnsAsync(validatedToken);
+    _tokenGateway.Setup(x => x.ValidateEmailVerificationAsync(payload.AuthenticationToken, _cancellationToken)).ReturnsAsync(validatedToken);
 
     Session session = new(user);
     _sessionGateway.Setup(x => x.CreateAsync(user, _cancellationToken)).ReturnsAsync(session);
 
     SignInAccountResult result = await _handler.HandleAsync(command, _cancellationToken);
     Assert.NotNull(result.Session);
-    Assert.Equal(session, result.Session);
+    Assert.Same(session, result.Session);
 
     _userGateway.Verify(x => x.UpdateEmailAsync(It.IsAny<User>(), It.IsAny<IEmail>(), _cancellationToken), Times.Never());
   }
@@ -121,12 +121,12 @@ public class SignInAccountTokenTests
   {
     SignInAccountPayload payload = new()
     {
-      Token = "token"
+      AuthenticationToken = "token"
     };
     SignInAccountCommand command = new(payload);
 
     ValidatedToken validatedToken = new();
-    _tokenGateway.Setup(x => x.ValidateEmailVerificationAsync(payload.Token, _cancellationToken)).ReturnsAsync(validatedToken);
+    _tokenGateway.Setup(x => x.ValidateEmailVerificationAsync(payload.AuthenticationToken, _cancellationToken)).ReturnsAsync(validatedToken);
 
     var exception = await Assert.ThrowsAsync<ArgumentException>(async () => await _handler.HandleAsync(command, _cancellationToken));
     Assert.Equal("token", exception.ParamName);
@@ -143,7 +143,7 @@ public class SignInAccountTokenTests
 
     SignInAccountPayload payload = new()
     {
-      Token = "token"
+      AuthenticationToken = "token"
     };
     SignInAccountCommand command = new(payload);
 
@@ -152,7 +152,7 @@ public class SignInAccountTokenTests
       Subject = user.Id.ToString(),
       Email = new Email(_faker.Internet.Email())
     };
-    _tokenGateway.Setup(x => x.ValidateEmailVerificationAsync(payload.Token, _cancellationToken)).ReturnsAsync(validatedToken);
+    _tokenGateway.Setup(x => x.ValidateEmailVerificationAsync(payload.AuthenticationToken, _cancellationToken)).ReturnsAsync(validatedToken);
 
     Session session = new(user);
     _sessionGateway.Setup(x => x.CreateAsync(user, _cancellationToken)).ReturnsAsync(session);
@@ -161,7 +161,7 @@ public class SignInAccountTokenTests
 
     SignInAccountResult result = await _handler.HandleAsync(command, _cancellationToken);
     Assert.NotNull(result.Session);
-    Assert.Equal(session, result.Session);
+    Assert.Same(session, result.Session);
 
     Assert.True(validatedToken.Email.IsVerified);
   }
@@ -175,7 +175,7 @@ public class SignInAccountTokenTests
 
     SignInAccountPayload payload = new()
     {
-      Token = "token"
+      AuthenticationToken = "token"
     };
     SignInAccountCommand command = new(payload);
 
@@ -184,7 +184,7 @@ public class SignInAccountTokenTests
       Subject = user.Id.ToString(),
       Email = new Email(_faker.Internet.Email())
     };
-    _tokenGateway.Setup(x => x.ValidateEmailVerificationAsync(payload.Token, _cancellationToken)).ReturnsAsync(validatedToken);
+    _tokenGateway.Setup(x => x.ValidateEmailVerificationAsync(payload.AuthenticationToken, _cancellationToken)).ReturnsAsync(validatedToken);
 
     Session session = new(user);
     _sessionGateway.Setup(x => x.CreateAsync(user, _cancellationToken)).ReturnsAsync(session);
@@ -193,7 +193,7 @@ public class SignInAccountTokenTests
 
     SignInAccountResult result = await _handler.HandleAsync(command, _cancellationToken);
     Assert.NotNull(result.Session);
-    Assert.Equal(session, result.Session);
+    Assert.Same(session, result.Session);
 
     Assert.True(validatedToken.Email.IsVerified);
   }
@@ -209,7 +209,7 @@ public class SignInAccountTokenTests
 
     SignInAccountPayload payload = new()
     {
-      Token = "token"
+      AuthenticationToken = "token"
     };
     SignInAccountCommand command = new(payload);
 
@@ -218,7 +218,7 @@ public class SignInAccountTokenTests
       Subject = user.Id.ToString(),
       Email = user.Email
     };
-    _tokenGateway.Setup(x => x.ValidateEmailVerificationAsync(payload.Token, _cancellationToken)).ReturnsAsync(validatedToken);
+    _tokenGateway.Setup(x => x.ValidateEmailVerificationAsync(payload.AuthenticationToken, _cancellationToken)).ReturnsAsync(validatedToken);
 
     Session session = new(user);
     _sessionGateway.Setup(x => x.CreateAsync(user, _cancellationToken)).ReturnsAsync(session);
@@ -227,7 +227,7 @@ public class SignInAccountTokenTests
 
     SignInAccountResult result = await _handler.HandleAsync(command, _cancellationToken);
     Assert.NotNull(result.Session);
-    Assert.Equal(session, result.Session);
+    Assert.Same(session, result.Session);
 
     Assert.True(validatedToken.Email.IsVerified);
   }
