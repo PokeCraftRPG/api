@@ -13,8 +13,8 @@ public record FormUpdated : DomainEvent
   public Height? Height { get; set; }
   public Weight? Weight { get; set; }
 
-  public Types? Types { get; set; }
-  public Abilities? Abilities { get; set; }
+  public FormTypes? Types { get; set; }
+  public FormAbilities? Abilities { get; set; }
   public BaseStatistics? BaseStatistics { get; set; }
   public Yield? Yield { get; set; }
   public Sprites? Sprites { get; set; }

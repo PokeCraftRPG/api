@@ -205,7 +205,7 @@ internal class FormEntity : AggregateEntity
     SpriteAlternativeShiny = sprites.AlternativeShiny?.Value;
   }
 
-  private void SetTypes(Types types)
+  private void SetTypes(FormTypes types)
   {
     PrimaryType = types.Primary;
     SecondaryType = types.Secondary;

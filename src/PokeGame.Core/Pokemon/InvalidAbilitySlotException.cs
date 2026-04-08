@@ -1,7 +1,7 @@
 ﻿using Krakenar.Contracts;
 using Logitar;
 using PokeGame.Core.Abilities;
-using FormAbilities = PokeGame.Core.Forms.Abilities;
+using PokeGame.Core.Forms;
 
 namespace PokeGame.Core.Pokemon;
 

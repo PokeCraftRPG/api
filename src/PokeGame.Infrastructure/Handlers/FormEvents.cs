@@ -96,7 +96,7 @@ internal class FormEvents : IEventHandler<FormCreated>,
     }
   }
 
-  private async Task SetAbilitiesAsync(FormEntity form, Abilities abilities, CancellationToken cancellationToken)
+  private async Task SetAbilitiesAsync(FormEntity form, FormAbilities abilities, CancellationToken cancellationToken)
   {
     List<string> streamIds = new(capacity: 3)
     {

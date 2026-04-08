@@ -23,7 +23,7 @@ public class FormTests
     Form form = FormBuilder.Raichu(_faker, _world);
 
     World world = new WorldBuilder(_faker).Build();
-    Abilities abilities = new(AbilityBuilder.Static(_faker, world), AbilityBuilder.SurgeSurfer(_faker, world), AbilityBuilder.LightningRod(_faker, world));
+    FormAbilities abilities = new(AbilityBuilder.Static(_faker, world), AbilityBuilder.SurgeSurfer(_faker, world), AbilityBuilder.LightningRod(_faker, world));
 
     var exception = Assert.Throws<WorldMismatchException>(() => form.Abilities = abilities);
     Assert.Equal(form.Id.GetEntity(), exception.Expected);
@@ -41,8 +41,8 @@ public class FormTests
     Variety variety = VarietyBuilder.Pikachu(_faker, _world);
     Height height = new(4);
     Weight weight = new(60);
-    Types types = new(PokemonType.Electric);
-    Abilities abilities = new(AbilityBuilder.Static(_faker, world), AbilityBuilder.SurgeSurfer(_faker, world), AbilityBuilder.LightningRod(_faker, world));
+    FormTypes types = new(PokemonType.Electric);
+    FormAbilities abilities = new(AbilityBuilder.Static(_faker, world), AbilityBuilder.SurgeSurfer(_faker, world), AbilityBuilder.LightningRod(_faker, world));
     BaseStatistics baseStatistics = new(35, 55, 40, 50, 50, 90);
     Yield yield = new(112, 0, 0, 0, 0, 0, 2);
     Sprites sprites = new(
@@ -69,8 +69,8 @@ public class FormTests
 
     Height height = new(4);
     Weight weight = new(60);
-    Types types = new(PokemonType.Electric);
-    Abilities abilities = new(AbilityBuilder.Static(), secondary: null, AbilityBuilder.LightningRod());
+    FormTypes types = new(PokemonType.Electric);
+    FormAbilities abilities = new(AbilityBuilder.Static(), secondary: null, AbilityBuilder.LightningRod());
     BaseStatistics baseStatistics = new(35, 55, 40, 50, 50, 90);
     Yield yield = new(112, 0, 0, 0, 0, 0, 2);
     Sprites sprites = new(

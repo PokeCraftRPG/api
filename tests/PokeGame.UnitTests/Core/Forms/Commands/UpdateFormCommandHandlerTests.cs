@@ -101,7 +101,7 @@ public class UpdateFormCommandHandlerTests
 
     Ability surgeSurfer = AbilityBuilder.SurgeSurfer(_faker, _context.World);
     Ability lightningRod = AbilityBuilder.LightningRod(_faker, _context.World);
-    Abilities abilities = new(surgeSurfer, secondary: null, lightningRod);
+    FormAbilities abilities = new(surgeSurfer, secondary: null, lightningRod);
     _formManager.Setup(x => x.FindAbilitiesAsync(payload.Abilities, nameof(payload.Abilities), _cancellationToken)).ReturnsAsync(abilities);
 
     FormModel model = new();

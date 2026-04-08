@@ -1,6 +1,6 @@
 ﻿using PokeGame.Core.Abilities;
+using PokeGame.Core.Forms;
 using PokeGame.Core.Varieties;
-using FormAbilities = PokeGame.Core.Forms.Abilities;
 
 namespace PokeGame.Core.Pokemon;
 

@@ -3,30 +3,30 @@ using PokeGame.Core.Forms.Validators;
 
 namespace PokeGame.Core.Forms;
 
-public interface ITypes
+public interface IFormTypes
 {
   PokemonType Primary { get; }
   PokemonType? Secondary { get; }
 }
 
-public record Types : ITypes // TODO(fpion): rename to FormTypes
+public record FormTypes : IFormTypes
 {
   public PokemonType Primary { get; }
   public PokemonType? Secondary { get; }
 
-  public Types()
+  public FormTypes()
   {
   }
 
   [JsonConstructor]
-  public Types(PokemonType primary, PokemonType? secondary = null)
+  public FormTypes(PokemonType primary, PokemonType? secondary = null)
   {
     Primary = primary;
     Secondary = secondary;
     new TypesValidator().ValidateAndThrow(this);
   }
 
-  public Types(ITypes types) : this(types.Primary, types.Secondary)
+  public FormTypes(IFormTypes types) : this(types.Primary, types.Secondary)
   {
   }
 }
