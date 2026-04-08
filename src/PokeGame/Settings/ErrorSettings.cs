@@ -2,7 +2,7 @@
 
 namespace PokeGame.Settings;
 
-internal record ErrorSettings
+public record ErrorSettings
 {
   public const string SectionKey = "Error";
 

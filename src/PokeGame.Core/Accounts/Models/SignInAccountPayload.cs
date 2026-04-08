@@ -8,6 +8,7 @@ public record SignInAccountPayload
   public string? Token { get; set; }
   public OneTimePasswordValidation? OneTimePassword { get; set; }
   public CompleteProfilePayload? Profile { get; set; }
+  // TODO(fpion): RefreshToken
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 

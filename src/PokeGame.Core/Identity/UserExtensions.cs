@@ -19,6 +19,8 @@ public static class UserExtensions
     throw new ArgumentException($"The user does not have a valid '{UserHelper.MultiFactorAuthenticationModeKey}' custom attribute.", nameof(user));
   }
 
+  public static string GetSubject(this User user) => user.Id.ToString();
+
   public static bool IsProfileCompleted(this User user)
   {
     CustomAttribute? customAttribute = user.GetCustomAttribute(UserHelper.ProfileCompletedOnKey);

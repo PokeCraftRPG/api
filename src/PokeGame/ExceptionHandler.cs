@@ -72,7 +72,7 @@ internal class ExceptionHandler : IExceptionHandler
   }
 
   private static bool IsBadRequest(Exception exception) => exception is DomainException
-    || exception is InvalidCredentialsException
+    || exception is InvalidCredentialsException // TODO(fpion): we should not expose the error
     || exception is TooManyResultsException
     || exception is ValidationException;
 

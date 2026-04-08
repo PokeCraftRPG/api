@@ -3,6 +3,7 @@ using Krakenar.Contracts.Roles;
 using Krakenar.Contracts.Sessions;
 using Krakenar.Contracts.Users;
 using Logitar.Security.Claims;
+using PokeGame.Core.Identity;
 
 namespace PokeGame.Extensions;
 
@@ -36,7 +37,7 @@ internal static class ClaimsExtensions
   {
     ClaimsIdentity identity = new(authenticationType);
 
-    identity.AddClaim(new(Rfc7519ClaimNames.Subject, user.Id.ToString()));
+    identity.AddClaim(new(Rfc7519ClaimNames.Subject, user.GetSubject()));
     identity.AddClaim(new(Rfc7519ClaimNames.Username, user.UniqueName));
     identity.AddClaim(ClaimHelper.Create(Rfc7519ClaimNames.UpdatedAt, user.UpdatedOn));
 
