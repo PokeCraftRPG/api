@@ -2,6 +2,7 @@
 using PokeGame.Builders;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
+using PokeGame.Core.Items;
 using PokeGame.Core.Species;
 using PokeGame.Core.Varieties;
 using PokeGame.Core.Worlds;
@@ -180,5 +181,16 @@ public class SpecimenTests
     Assert.Equal(specimenId.GetEntity(), exception.Expected);
     Assert.Equal(variety.Id.GetEntity(), Assert.Single(exception.Mismatched));
     Assert.Equal("variety", exception.ParamName);
+  }
+
+  [Fact(DisplayName = "SetHeldItem: it should throw WorldMismatchException when the item is not in the same world.")]
+  public void Given_WorldMismatch_When_SetHeldItem_Then_WorldMismatchException()
+  {
+    Specimen specimen = new SpecimenBuilder(_faker, PokemonRandomizer.Instance).Build();
+    Item item = ItemBuilder.OranBerry();
+    var exception = Assert.Throws<WorldMismatchException>(() => specimen.SetHeldItem(item, _world.OwnerId));
+    Assert.Equal(specimen.Id.GetEntity(), exception.Expected);
+    Assert.Equal(item.Id.GetEntity(), Assert.Single(exception.Mismatched));
+    Assert.Equal("item", exception.ParamName);
   }
 }

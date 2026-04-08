@@ -1,6 +1,7 @@
 ﻿using Logitar.CQRS;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
+using PokeGame.Core.Items;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Species;
@@ -16,6 +17,7 @@ internal class CreatePokemonCommandHandler : ICommandHandler<CreatePokemonComman
 {
   private readonly IContext _context;
   private readonly IFormManager _formManager;
+  private readonly IItemManager _itemManager;
   private readonly IPermissionService _permissionService;
   private readonly IPokemonQuerier _pokemonQuerier;
   private readonly IPokemonRepository _pokemonRepository;
@@ -27,6 +29,7 @@ internal class CreatePokemonCommandHandler : ICommandHandler<CreatePokemonComman
   public CreatePokemonCommandHandler(
     IContext context,
     IFormManager formManager,
+    IItemManager itemManager,
     IPermissionService permissionService,
     IPokemonQuerier pokemonQuerier,
     IPokemonRepository pokemonRepository,
@@ -36,6 +39,7 @@ internal class CreatePokemonCommandHandler : ICommandHandler<CreatePokemonComman
   {
     _context = context;
     _formManager = formManager;
+    _itemManager = itemManager;
     _permissionService = permissionService;
     _pokemonQuerier = pokemonQuerier;
     _pokemonRepository = pokemonRepository;
@@ -91,6 +95,12 @@ internal class CreatePokemonCommandHandler : ICommandHandler<CreatePokemonComman
     specimen.Notes = Notes.TryCreate(payload.Notes);
 
     specimen.Update(userId);
+
+    if (!string.IsNullOrWhiteSpace(payload.HeldItem))
+    {
+      Item item = await _itemManager.FindAsync(payload.HeldItem, nameof(payload.HeldItem), cancellationToken);
+      specimen.SetHeldItem(item, userId);
+    }
 
     await _pokemonQuerier.EnsureUnicityAsync(specimen, cancellationToken);
 

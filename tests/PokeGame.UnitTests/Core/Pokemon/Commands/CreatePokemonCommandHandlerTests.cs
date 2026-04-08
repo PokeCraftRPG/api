@@ -3,6 +3,7 @@ using Moq;
 using PokeGame.Builders;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
+using PokeGame.Core.Items;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Species;
@@ -19,6 +20,7 @@ public class CreatePokemonCommandHandlerTests
   private readonly Faker _faker = new();
 
   private readonly Mock<IFormManager> _formManager = new();
+  private readonly Mock<IItemManager> _itemManager = new();
   private readonly Mock<IPermissionService> _permissionService = new();
   private readonly Mock<IPokemonQuerier> _pokemonQuerier = new();
   private readonly Mock<IPokemonRepository> _pokemonRepository = new();
@@ -40,6 +42,7 @@ public class CreatePokemonCommandHandlerTests
     _handler = new(
       _context,
       _formManager.Object,
+      _itemManager.Object,
       _permissionService.Object,
       _pokemonQuerier.Object,
       _pokemonRepository.Object,

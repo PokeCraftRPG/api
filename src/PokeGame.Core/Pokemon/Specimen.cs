@@ -106,7 +106,7 @@ public class Specimen : AggregateRoot, IEntityProvider
     }
   }
 
-  public long Size2 => Key.Size + (Name?.Size ?? 0) + (Sprite?.Size ?? 0) + (Url?.Size ?? 0) + (Notes?.Size ?? 0);
+  public long SizeBytes => Key.Size + (Name?.Size ?? 0) + (Sprite?.Size ?? 0) + (Url?.Size ?? 0) + (Notes?.Size ?? 0);
 
   public Specimen() : base()
   {
@@ -251,7 +251,7 @@ public class Specimen : AggregateRoot, IEntityProvider
     }
   }
 
-  public Entity GetEntity() => new(EntityKind, EntityId, WorldId, Size2);
+  public Entity GetEntity() => new(EntityKind, EntityId, WorldId, SizeBytes);
 
   public void Nickname(Name? name, UserId userId)
   {
@@ -263,6 +263,28 @@ public class Specimen : AggregateRoot, IEntityProvider
   protected virtual void Handle(PokemonNicknamed @event)
   {
     Name = @event.Name;
+  }
+
+  public void RemoveHeldItem(UserId userId)
+  {
+    if (HeldItemId.HasValue)
+    {
+      Raise(new PokemonHeldItemChanged(ItemId: null), userId.ActorId);
+    }
+  }
+
+  public void SetHeldItem(Item item, UserId userId)
+  {
+    WorldMismatchException.ThrowIfMismatch(Id, item.Id, nameof(item));
+
+    if (HeldItemId != item.Id)
+    {
+      Raise(new PokemonHeldItemChanged(item.Id), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(PokemonHeldItemChanged @event)
+  {
+    HeldItemId = @event.ItemId;
   }
 
   public void SetKey(Slug key, UserId userId)
