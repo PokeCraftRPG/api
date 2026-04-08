@@ -12,9 +12,9 @@ namespace PokeGame.Core.Pokemon;
 public class Specimen : AggregateRoot, IEntityProvider
 {
   public const string EntityKind = "Specimen";
-  public const int MinimumVitality = 999;
+  public const int MinimumVitality = 0;
   public const int MaximumVitality = 999;
-  public const int MinimumStamina = 999;
+  public const int MinimumStamina = 0;
   public const int MaximumStamina = 999;
 
   private PokemonUpdated _updated = new();
