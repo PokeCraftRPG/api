@@ -228,6 +228,23 @@ public class MembershipIntegrationTests : IntegrationTests
     && recipient.DisplayName is null
     && !recipient.UserId.HasValue;
 
+  [Fact(DisplayName = "It should transfer the world owership.")]
+  public async Task Given_Membership_When_TransferOwnership_Then_OwnershipTransferred()
+  {
+    World.GrantMembership(_user.GetUserId(), World.OwnerId);
+    await _worldRepository.SaveAsync(World);
+
+    WorldModel world = await _membershipService.TransferOwnershipAsync(_user.Id);
+
+    Assert.Equal(World.Id.ToGuid(), world.Id);
+    Assert.Equal(new Actor(_user), world.Owner);
+
+    Assert.Single(world.Membership);
+    Assert.Contains(world.Membership, m => m.Member.Equals(Actor)
+      && m.GrantedBy.Equals(Actor) && (DateTime.UtcNow - m.GrantedOn) < TimeSpan.FromSeconds(10)
+      && m.RevokedBy is null && !m.RevokedOn.HasValue);
+  }
+
   [Theory(DisplayName = "It should throw MembershipInvitationPendingException when there are pending invitations for the email.")]
   [InlineData(false)]
   [InlineData(true)]

@@ -11,7 +11,7 @@ using PokeGame.Core.Worlds.Models;
 namespace PokeGame.Core.Membership.Commands;
 
 [Trait(Traits.Category, Categories.Unit)]
-public class RevokeMembershipCommandHandlerTests
+public class TransferOwnershipCommandHandlerTests
 {
   private readonly Faker _faker = new();
   private readonly CancellationToken _cancellationToken = default;
@@ -21,11 +21,11 @@ public class RevokeMembershipCommandHandlerTests
   private readonly Mock<IWorldRepository> _worldRepository = new();
 
   private readonly TestContext _context;
-  private readonly RevokeMembershipCommandHandler _handler;
+  private readonly TransferOwnershipCommandHandler _handler;
 
   private readonly World _world;
 
-  public RevokeMembershipCommandHandlerTests()
+  public TransferOwnershipCommandHandlerTests()
   {
     _context = new(_faker);
     _handler = new(_context, _permissionService.Object, _worldQuerier.Object, _worldRepository.Object);
@@ -34,8 +34,29 @@ public class RevokeMembershipCommandHandlerTests
     _world = _context.World;
   }
 
-  [Fact(DisplayName = "It should revoke the user membership.")]
-  public async Task Given_Member_When_HandleAsync_Then_Revoked()
+  [Fact(DisplayName = "It should throw InvalidOperationException when the world was not loaded.")]
+  public async Task Given_WorldNotLoaded_When_HandleAsync_Then_InvalidOperationException()
+  {
+    TransferOwnershipCommand command = new(Guid.NewGuid());
+    var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal($"The world 'Id={_world.Id}' was not loaded.", exception.Message);
+  }
+
+  [Fact(DisplayName = "It should throw MemberNotFoundException when the user is not a member.")]
+  public async Task Given_NotMember_When_HandleAsync_Then_MemberNotFoundException()
+  {
+    _worldRepository.Setup(x => x.LoadAsync(_world.Id, _cancellationToken)).ReturnsAsync(_world);
+    Assert.Empty(_world.Members);
+
+    TransferOwnershipCommand command = new(Guid.NewGuid());
+    var exception = await Assert.ThrowsAsync<MemberNotFoundException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
+    Assert.Equal(command.UserId, exception.UserId);
+    Assert.Equal("UserId", exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should transfer the world ownership.")]
+  public async Task Given_Member_When_HandleAsync_Then_OwnershipTransferred()
   {
     _worldRepository.Setup(x => x.LoadAsync(_world.Id, _cancellationToken)).ReturnsAsync(_world);
 
@@ -48,32 +69,15 @@ public class RevokeMembershipCommandHandlerTests
     WorldModel model = new();
     _worldQuerier.Setup(x => x.ReadAsync(_world, _cancellationToken)).ReturnsAsync(model);
 
-    RevokeMembershipCommand command = new(member.Id);
+    UserId ownerId = _world.OwnerId;
+
+    TransferOwnershipCommand command = new(member.Id);
     WorldModel result = await _handler.HandleAsync(command, _cancellationToken);
     Assert.Same(model, result);
 
-    Assert.Empty(_world.Members);
-    Assert.Contains(_world.Changes, change => change is WorldMembershipRevoked revoked && revoked.UserId == memberId && revoked.ActorId == _world.OwnerId.ActorId);
-  }
-
-  [Fact(DisplayName = "It should throw InvalidOperationException when the world was not loaded.")]
-  public async Task Given_WorldNotLoaded_When_HandleAsync_Then_InvalidOperationException()
-  {
-    RevokeMembershipCommand command = new(Guid.NewGuid());
-    var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
-    Assert.Equal($"The world 'Id={_world.Id}' was not loaded.", exception.Message);
-  }
-
-  [Fact(DisplayName = "It should throw MemberNotFoundException when the user is not a member.")]
-  public async Task Given_NotMember_When_HandleAsync_Then_MemberNotFoundException()
-  {
-    _worldRepository.Setup(x => x.LoadAsync(_world.Id, _cancellationToken)).ReturnsAsync(_world);
-    Assert.Empty(_world.Members);
-
-    RevokeMembershipCommand command = new(Guid.NewGuid());
-    var exception = await Assert.ThrowsAsync<MemberNotFoundException>(async () => await _handler.HandleAsync(command, _cancellationToken));
-    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
-    Assert.Equal(command.UserId, exception.UserId);
-    Assert.Equal("UserId", exception.PropertyName);
+    Assert.Equal(memberId, _world.OwnerId);
+    Assert.True(_world.IsMember(ownerId));
+    Assert.False(_world.IsMember(memberId));
+    Assert.Contains(_world.Changes, change => change is WorldOwnershipTransferred transferred && transferred.OwnerId == memberId && transferred.ActorId == ownerId.ActorId);
   }
 }

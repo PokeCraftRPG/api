@@ -96,10 +96,11 @@ public class World : AggregateRoot, IEntityProvider
 
   public void RevokeMembership(UserId memberId, UserId userId)
   {
-    if (IsMember(memberId))
+    if (!IsMember(memberId))
     {
-      Raise(new WorldMembershipRevoked(memberId), userId.ActorId);
+      throw new ArgumentException($"The user 'Id={memberId}' is not a member.", nameof(memberId));
     }
+    Raise(new WorldMembershipRevoked(memberId), userId.ActorId);
   }
   protected virtual void Handle(WorldMembershipRevoked @event)
   {
@@ -116,6 +117,24 @@ public class World : AggregateRoot, IEntityProvider
   protected virtual void Handle(WorldKeyChanged @event)
   {
     _key = @event.Key;
+  }
+
+  public void TransferOwnership(UserId memberId, UserId userId)
+  {
+    if (!IsMember(memberId))
+    {
+      throw new ArgumentException($"The user 'Id={memberId}' is not a member.", nameof(memberId));
+    }
+    else if (OwnerId != memberId)
+    {
+      Raise(new WorldOwnershipTransferred(memberId), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(WorldOwnershipTransferred @event)
+  {
+    _members.Add(OwnerId);
+    _members.Remove(@event.OwnerId);
+    OwnerId = @event.OwnerId;
   }
 
   public void Update(UserId userId)
