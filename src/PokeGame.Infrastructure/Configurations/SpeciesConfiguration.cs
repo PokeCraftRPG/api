@@ -10,8 +10,7 @@ namespace PokeGame.Infrastructure.Configurations;
 internal class SpeciesConfiguration : AggregateConfiguration<SpeciesEntity>, IEntityTypeConfiguration<SpeciesEntity>
 {
   private const int CategoryMaximumLength = 10;
-  private const int EggGroupMaximumLength = 16;
-  private const int GrowthRateMaximumLength = 12;
+  private const int EggGroupMaximumLength = 16
 
   public override void Configure(EntityTypeBuilder<SpeciesEntity> builder)
   {
@@ -35,7 +34,7 @@ internal class SpeciesConfiguration : AggregateConfiguration<SpeciesEntity>, IEn
     builder.Property(x => x.Category).HasMaxLength(CategoryMaximumLength).HasConversion(new EnumToStringConverter<PokemonCategory>());
     builder.Property(x => x.Key).HasMaxLength(Constants.SlugMaximumLength);
     builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
-    builder.Property(x => x.GrowthRate).HasMaxLength(GrowthRateMaximumLength).HasConversion(new EnumToStringConverter<GrowthRate>());
+    builder.Property(x => x.GrowthRate).HasMaxLength(Constants.GrowthRateMaximumLength).HasConversion(new EnumToStringConverter<GrowthRate>());
     builder.Property(x => x.PrimaryEggGroup).HasMaxLength(EggGroupMaximumLength).HasConversion(new EnumToStringConverter<EggGroup>());
     builder.Property(x => x.SecondaryEggGroup).HasMaxLength(EggGroupMaximumLength).HasConversion(new EnumToStringConverter<EggGroup>());
     builder.Property(x => x.Url).HasMaxLength(Url.MaximumLength);

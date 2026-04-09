@@ -31,6 +31,7 @@ internal class VarietyEntity : AggregateEntity
 
   public List<FormEntity> Forms { get; private set; } = [];
   public List<VarietyMoveEntity> Moves { get; private set; } = [];
+  public List<PokemonEntity> Pokemon { get; private set; } = [];
 
   public VarietyEntity(SpeciesEntity species, VarietyCreated @event) : base(@event)
   {
