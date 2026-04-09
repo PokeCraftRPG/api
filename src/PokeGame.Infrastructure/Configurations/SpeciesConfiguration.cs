@@ -10,7 +10,7 @@ namespace PokeGame.Infrastructure.Configurations;
 internal class SpeciesConfiguration : AggregateConfiguration<SpeciesEntity>, IEntityTypeConfiguration<SpeciesEntity>
 {
   private const int CategoryMaximumLength = 10;
-  private const int EggGroupMaximumLength = 16
+  private const int EggGroupMaximumLength = 16;
 
   public override void Configure(EntityTypeBuilder<SpeciesEntity> builder)
   {

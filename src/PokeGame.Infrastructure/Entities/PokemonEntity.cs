@@ -1,4 +1,6 @@
-﻿using PokeGame.Core;
+﻿using Logitar;
+using Logitar.EventSourcing;
+using PokeGame.Core;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Pokemon;
@@ -107,6 +109,28 @@ internal class PokemonEntity : AggregateEntity
 
   private PokemonEntity()
   {
+  }
+
+  public override IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    if (Species is not null)
+    {
+      actorIds.AddRange(Species.GetActorIds());
+    }
+    if (Variety is not null)
+    {
+      actorIds.AddRange(Variety.GetActorIds());
+    }
+    if (Form is not null)
+    {
+      actorIds.AddRange(Form.GetActorIds());
+    }
+    if (HeldItem is not null)
+    {
+      actorIds.AddRange(HeldItem.GetActorIds());
+    }
+    return actorIds;
   }
 
   public void Nickname(PokemonNicknamed @event)

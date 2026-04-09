@@ -16,7 +16,6 @@ internal class EvolutionQuerier : IEvolutionQuerier
   private readonly IActorService _actors;
   private readonly IContext _context;
   private readonly DbSet<EvolutionEntity> _evolutions;
-  private readonly DbSet<FormEntity> _forms;
   private readonly ISqlHelper _sql;
 
   public EvolutionQuerier(IActorService actors, IContext context, PokemonContext pokemon, ISqlHelper sql)
@@ -24,7 +23,6 @@ internal class EvolutionQuerier : IEvolutionQuerier
     _actors = actors;
     _context = context;
     _evolutions = pokemon.Evolutions;
-    _forms = pokemon.Forms;
     _sql = sql;
   }
 

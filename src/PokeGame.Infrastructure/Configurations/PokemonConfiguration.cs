@@ -54,6 +54,8 @@ internal class PokemonConfiguration : AggregateConfiguration<PokemonEntity>, IEn
     builder.HasOne(x => x.Species).WithMany(x => x.Pokemon).OnDelete(DeleteBehavior.Restrict);
     builder.HasOne(x => x.Variety).WithMany(x => x.Pokemon).OnDelete(DeleteBehavior.Restrict);
     builder.HasOne(x => x.Form).WithMany(x => x.Pokemon).OnDelete(DeleteBehavior.Restrict);
-    builder.HasOne(x => x.HeldItem).WithMany(x => x.Pokemon).OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.HeldItem).WithMany(x => x.HoldingPokemon)
+      .HasForeignKey(x => x.HeldItemId).HasPrincipalKey(x => x.ItemId)
+      .OnDelete(DeleteBehavior.Restrict);
   }
 }
