@@ -94,12 +94,17 @@ internal class WorldQuerier : IWorldQuerier
 
   public async Task<SearchResults<WorldModel>> SearchAsync(SearchWorldsPayload payload, CancellationToken cancellationToken)
   {
+    string userId = _context.UserId.Value;
     IQueryBuilder builder = _sql.Query(PokemonDb.Worlds.Table).SelectAll(PokemonDb.Worlds.Table)
-      .ApplyOwnerFilter(_context.UserId) // TODO(fpion): active members can also view the world
+      .LeftJoin(PokemonDb.Membership.WorldId, PokemonDb.Worlds.WorldId, new OperatorCondition(PokemonDb.Membership.IsActive, Operators.IsEqualTo(true)))
+      .WhereOr(
+        new OperatorCondition(PokemonDb.Worlds.OwnerId, Operators.IsEqualTo(userId)),
+        new OperatorCondition(PokemonDb.Membership.MemberId, Operators.IsEqualTo(userId)))
       .ApplyIdFilter(PokemonDb.Worlds.Id, payload.Ids);
     _sql.ApplyTextSearch(builder, payload.Search, PokemonDb.Worlds.Key, PokemonDb.Worlds.Name);
 
-    IQueryable<WorldEntity> query = _worlds.FromQuery(builder).AsNoTracking();
+    IQueryable<WorldEntity> query = _worlds.FromQuery(builder).AsNoTracking()
+      .Include(x => x.Membership);
 
     long total = await query.LongCountAsync(cancellationToken);
 
