@@ -172,6 +172,18 @@ public class ItemBuilder : IItemBuilder
     _ => new OtherItemProperties(),
   };
 
+  public static Item Leftovers(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("leftovers"))
+    .WithName(new Name("Leftovers"))
+    .WithDescription(new Description("An item to be held by a Pokémon. The holder's HP is slowly but steadily restored throughout a battle."))
+    .WithPrice(new Price(20000))
+    .WithSprite(new Url("https://archives.bulbagarden.net/media/upload/8/88/Dream_Leftovers_Sprite.png"))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Leftovers"))
+    .WithNotes(new Notes("Introduced in Gen II, Leftovers is a held item that restores 1/16 of a Pokémon's max HP each turn. It’s a competitive staple found via Pickup or wild Snorlax."))
+    .IsOtherItem()
+    .Build();
+
   public static Item OranBerry(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
     .WithWorld(world)
     .WithKey(new Slug("oran-berry"))

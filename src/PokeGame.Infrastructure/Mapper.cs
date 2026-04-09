@@ -298,7 +298,7 @@ internal class Mapper
     {
       destination.HeldItem = ToItem(source.HeldItem);
     }
-    else if (!source.HeldItemId.HasValue)
+    else if (source.HeldItemId.HasValue)
     {
       throw new ArgumentException("The held item is required.", nameof(source));
     }
