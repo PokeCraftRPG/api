@@ -130,6 +130,7 @@ public record PokemonNature : IPokemonNature
   public Flavor? FavoriteFlavor { get; }
   public Flavor? DislikedFlavor { get; }
 
+  [JsonConstructor]
   public PokemonNature(
     string name,
     PokemonStatistic? increasedStatistic = null,

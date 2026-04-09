@@ -1,4 +1,6 @@
-﻿using PokeGame.Core.Items;
+﻿using Logitar;
+using Logitar.EventSourcing;
+using PokeGame.Core.Items;
 using PokeGame.Core.Items.Events;
 using PokeGame.Core.Items.Models;
 
@@ -31,6 +33,7 @@ internal class ItemEntity : AggregateEntity
 
   public List<EvolutionEntity> Evolutions { get; private set; } = [];
   public List<EvolutionEntity> HeldEvolutions { get; private set; } = [];
+  public List<PokemonEntity> HoldingPokemon { get; private set; } = [];
 
   public ItemEntity(WorldEntity world, ItemCreated @event) : base(@event)
   {
@@ -45,6 +48,16 @@ internal class ItemEntity : AggregateEntity
 
   private ItemEntity() : base()
   {
+  }
+
+  public override IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    if (Move is not null)
+    {
+      actorIds.AddRange(Move.GetActorIds());
+    }
+    return actorIds;
   }
 
   public void SetKey(ItemKeyChanged @event)

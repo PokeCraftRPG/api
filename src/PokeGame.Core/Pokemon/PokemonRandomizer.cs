@@ -33,17 +33,13 @@ public class PokemonRandomizer : IPokemonRandomizer
 
   public AbilitySlot AbilitySlot(FormAbilities abilities)
   {
-    List<AbilitySlot> slots = new(capacity: 3)
+    List<AbilitySlot> slots = new(capacity: 2)
     {
       Abilities.AbilitySlot.Primary
     };
     if (abilities.Secondary is not null)
     {
       slots.Add(Abilities.AbilitySlot.Secondary);
-    }
-    if (abilities.Hidden is not null)
-    {
-      slots.Add(Abilities.AbilitySlot.Hidden);
     }
     return _random.Pick(slots);
   }

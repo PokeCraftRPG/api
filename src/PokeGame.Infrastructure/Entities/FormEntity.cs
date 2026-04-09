@@ -58,6 +58,7 @@ internal class FormEntity : AggregateEntity
   public List<FormAbilityEntity> Abilities { get; private set; } = [];
   public List<EvolutionEntity> EvolvesFrom { get; private set; } = [];
   public List<EvolutionEntity> EvolvingInto { get; private set; } = [];
+  public List<PokemonEntity> Pokemon { get; private set; } = [];
 
   public FormEntity(VarietyEntity variety, FormCreated @event) : base(@event)
   {

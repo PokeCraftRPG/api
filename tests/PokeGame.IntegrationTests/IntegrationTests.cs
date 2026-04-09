@@ -6,6 +6,8 @@ using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Messages;
 using Logitar;
 using Logitar.CQRS;
+using Logitar.Data;
+using Logitar.Data.PostgreSQL;
 using Logitar.EventSourcing.EntityFrameworkCore.Relational;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -63,18 +65,28 @@ public abstract class IntegrationTests : IAsyncLifetime
     await commandBus.ExecuteAsync(new MigrateDatabaseCommand());
 
     PokemonContext pokemon = ServiceProvider.GetRequiredService<PokemonContext>();
-    await pokemon.Evolutions.ExecuteDeleteAsync();
-    await pokemon.Forms.ExecuteDeleteAsync();
-    await pokemon.Varieties.ExecuteDeleteAsync();
-    await pokemon.Species.ExecuteDeleteAsync();
-    await pokemon.Items.ExecuteDeleteAsync();
-    await pokemon.Trainers.ExecuteDeleteAsync();
-    await pokemon.Regions.ExecuteDeleteAsync();
-    await pokemon.Moves.ExecuteDeleteAsync();
-    await pokemon.Abilities.ExecuteDeleteAsync();
-    await pokemon.StorageSummary.ExecuteDeleteAsync();
-    await pokemon.MembershipInvitations.ExecuteDeleteAsync();
-    await pokemon.Worlds.ExecuteDeleteAsync();
+    StringBuilder query = new();
+    TableId[] tables =
+    [
+      Infrastructure.PokemonDb.Pokemon.Table,
+      Infrastructure.PokemonDb.Evolutions.Table,
+      Infrastructure.PokemonDb.Forms.Table,
+      Infrastructure.PokemonDb.Varieties.Table,
+      Infrastructure.PokemonDb.Species.Table,
+      Infrastructure.PokemonDb.Items.Table,
+      Infrastructure.PokemonDb.Trainers.Table,
+      Infrastructure.PokemonDb.Regions.Table,
+      Infrastructure.PokemonDb.Moves.Table,
+      Infrastructure.PokemonDb.Abilities.Table,
+      Infrastructure.PokemonDb.StorageSummary.Table,
+      Infrastructure.PokemonDb.MembershipInvitations.Table,
+      Infrastructure.PokemonDb.Worlds.Table
+    ];
+    foreach (TableId table in tables)
+    {
+      query.Append(new PostgresDeleteBuilder(table).Build().Text).Append(';').AppendLine();
+    }
+    await pokemon.Database.ExecuteSqlRawAsync(query.ToString());
 
     EventContext events = ServiceProvider.GetRequiredService<EventContext>();
     await events.Events.ExecuteDeleteAsync();

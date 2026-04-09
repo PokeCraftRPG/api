@@ -24,6 +24,7 @@ internal class WorldEntity : AggregateEntity
   public List<MembershipEntity> Membership { get; private set; } = [];
   public List<MembershipInvitationEntity> MembershipInvitations { get; private set; } = [];
   public List<MoveEntity> Moves { get; private set; } = [];
+  public List<PokemonEntity> Pokemon { get; private set; } = [];
   public List<RegionEntity> Regions { get; private set; } = [];
   public List<SpeciesEntity> Species { get; private set; } = [];
   public List<TrainerEntity> Trainers { get; private set; } = [];

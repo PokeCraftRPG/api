@@ -10,6 +10,8 @@ using PokeGame.Core.Items;
 using PokeGame.Core.Items.Models;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Moves.Models;
+using PokeGame.Core.Pokemon;
+using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
 using PokeGame.Core.Trainers.Models;
@@ -253,6 +255,53 @@ internal class Mapper
       Url = source.Url,
       Notes = source.Notes
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public PokemonModel ToPokemon(PokemonEntity source)
+  {
+    FormEntity form = source.Form ?? throw new ArgumentException("The form is required.", nameof(source));
+    PokemonModel destination = new()
+    {
+      Id = source.Id,
+      Form = ToForm(form),
+      Key = source.Key,
+      Name = source.Name,
+      Gender = source.Gender,
+      IsShiny = source.IsShiny,
+      TeraType = source.TeraType,
+      Size = new PokemonSizeModel(source.Height, source.Weight),
+      AbilitySlot = source.AbilitySlot,
+      Nature = new PokemonNatureModel(PokemonNatures.Instance.Find(source.Nature)),
+      EggCycles = source.EggCycles,
+      IsEgg = source.IsEgg,
+      GrowthRate = source.GrowthRate,
+      Level = source.Level,
+      Experience = source.Experience,
+      MaximumExperience = source.MaximumExperience,
+      ToNextLevel = source.ToNextLevel,
+      Statistics = source.GetStatistics(),
+      Vitality = source.Vitality,
+      Stamina = source.Stamina,
+      StatusCondition = source.StatusCondition,
+      Friendship = source.Friendship,
+      Characteristic = source.Characteristic,
+      Sprite = source.Sprite,
+      Url = source.Url,
+      Notes = source.Notes
+    };
+
+    if (source.HeldItem is not null)
+    {
+      destination.HeldItem = ToItem(source.HeldItem);
+    }
+    else if (source.HeldItemId.HasValue)
+    {
+      throw new ArgumentException("The held item is required.", nameof(source));
+    }
 
     MapAggregate(source, destination);
 
