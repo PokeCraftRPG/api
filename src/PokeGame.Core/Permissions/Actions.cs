@@ -18,5 +18,6 @@ public static class Actions
   public const string Decline = "Decline";
   public const string RevokeMembership = "RevokeMembership";
   public const string SendMembershipInvitation = "SendMembershipInvitation";
+  public const string TransferOwnership = "TransferOwnership";
   public const string Update = "Update";
 }

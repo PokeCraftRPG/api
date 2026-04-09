@@ -16,6 +16,7 @@ internal class WorldConfiguration : AggregateConfiguration<WorldEntity>, IEntity
 
     builder.HasIndex(x => x.Id).IsUnique();
     builder.HasIndex(x => x.OwnerId);
+    builder.HasIndex(x => x.UserId);
     builder.HasIndex(x => x.Key).IsUnique();
     builder.HasIndex(x => x.Name);
 

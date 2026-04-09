@@ -6,6 +6,8 @@ public class MembershipModel
 {
   public Actor Member { get; set; } = new();
 
+  public bool IsActive { get; set; }
+
   public Actor GrantedBy { get; set; } = new();
   public DateTime GrantedOn { get; set; }
 

@@ -1,5 +1,6 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
+using PokeGame.Core;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Events;
 
@@ -11,6 +12,7 @@ internal class WorldEntity : AggregateEntity
   public Guid Id { get; private set; }
 
   public string OwnerId { get; private set; } = string.Empty;
+  public Guid UserId { get; private set; }
 
   public string Key { get; private set; } = string.Empty;
   public string? Name { get; private set; }
@@ -19,7 +21,7 @@ internal class WorldEntity : AggregateEntity
   public List<AbilityEntity> Abilities { get; private set; } = [];
   public List<FormEntity> Forms { get; private set; } = [];
   public List<ItemEntity> Items { get; private set; } = [];
-  public List<MemberEntity> Members { get; private set; } = [];
+  public List<MembershipEntity> Membership { get; private set; } = [];
   public List<MembershipInvitationEntity> MembershipInvitations { get; private set; } = [];
   public List<MoveEntity> Moves { get; private set; } = [];
   public List<RegionEntity> Regions { get; private set; } = [];
@@ -32,7 +34,7 @@ internal class WorldEntity : AggregateEntity
   {
     Id = new WorldId(@event.StreamId).ToGuid();
 
-    OwnerId = @event.OwnerId.Value;
+    SetOwnership(@event.OwnerId);
 
     Key = @event.Key.Value;
   }
@@ -41,13 +43,15 @@ internal class WorldEntity : AggregateEntity
   {
   }
 
+  public MembershipEntity? FindMembership(UserId userId) => Membership.SingleOrDefault(x => x.MemberId == userId.Value);
+
   public override IReadOnlyCollection<ActorId> GetActorIds()
   {
     HashSet<ActorId> actorIds = new(base.GetActorIds());
     actorIds.Add(new ActorId(OwnerId));
-    foreach (MemberEntity member in Members)
+    foreach (MembershipEntity membership in Membership)
     {
-      actorIds.AddRange(member.GetActorIds());
+      actorIds.AddRange(membership.GetActorIds());
     }
     return actorIds;
   }
@@ -56,15 +60,19 @@ internal class WorldEntity : AggregateEntity
   {
     base.Update(@event);
 
-    MemberEntity? member = Members.SingleOrDefault(x => x.MemberKey == @event.UserId.Value);
-    if (member is null)
+    GrantMembership(@event.UserId, @event);
+  }
+  private void GrantMembership(UserId userId, DomainEvent @event)
+  {
+    MembershipEntity? membership = FindMembership(userId);
+    if (membership is null)
     {
-      member = new MemberEntity(this, @event);
-      Members.Add(member);
+      membership = new MembershipEntity(this, userId, @event);
+      Membership.Add(membership);
     }
     else
     {
-      member.Grant(@event);
+      membership.Grant(@event);
     }
   }
 
@@ -72,8 +80,8 @@ internal class WorldEntity : AggregateEntity
   {
     base.Update(@event);
 
-    MemberEntity? member = Members.SingleOrDefault(x => x.MemberKey == @event.UserId.Value);
-    member?.Revoke(@event);
+    MembershipEntity? membership = FindMembership(@event.UserId);
+    membership?.Revoke(@event);
   }
 
   public void SetKey(WorldKeyChanged @event)
@@ -81,6 +89,21 @@ internal class WorldEntity : AggregateEntity
     base.Update(@event);
 
     Key = @event.Key.Value;
+  }
+
+  private void SetOwnership(UserId ownerId)
+  {
+    OwnerId = ownerId.Value;
+    UserId = ownerId.EntityId;
+  }
+
+  public void TransferOwnership(WorldOwnershipTransferred @event)
+  {
+    base.Update(@event);
+
+    GrantMembership(new UserId(OwnerId), @event);
+
+    SetOwnership(@event.OwnerId);
   }
 
   public void Update(WorldUpdated @event)

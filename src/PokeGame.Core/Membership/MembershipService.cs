@@ -15,17 +15,20 @@ public interface IMembershipService
   Task<MembershipInvitationModel?> ReadInvitationAsync(Guid id, CancellationToken cancellationToken = default);
   Task<WorldModel> RevokeAsync(Guid userId, CancellationToken cancellationToken = default);
   Task<MembershipInvitationModel> SendInvitationAsync(SendMembershipInvitationPayload payload, CancellationToken cancellationToken = default);
+  Task<WorldModel> TransferOwnershipAsync(Guid userId, CancellationToken cancellationToken = default);
 }
 
 internal class MembershipService : IMembershipService
 {
   public static void Register(IServiceCollection services)
   {
+    services.AddTransient<IMembershipService, MembershipService>();
     services.AddTransient<ICommandHandler<AcceptMembershipInvitationCommand, MembershipInvitationModel?>, AcceptMembershipInvitationCommandHandler>();
     services.AddTransient<ICommandHandler<CancelMembershipInvitationCommand, MembershipInvitationModel?>, CancelMembershipInvitationCommandHandler>();
     services.AddTransient<ICommandHandler<DeclineMembershipInvitationCommand, MembershipInvitationModel?>, DeclineMembershipInvitationCommandHandler>();
     services.AddTransient<ICommandHandler<RevokeMembershipCommand, WorldModel>, RevokeMembershipCommandHandler>();
     services.AddTransient<ICommandHandler<SendMembershipInvitationCommand, MembershipInvitationModel>, SendMembershipInvitationCommandHandler>();
+    services.AddTransient<ICommandHandler<TransferOwnershipCommand, WorldModel>, TransferOwnershipCommandHandler>();
     services.AddTransient<IQueryHandler<ReadMembershipInvitationQuery, MembershipInvitationModel?>, ReadMembershipInvitationQueryHandler>();
   }
 
@@ -71,6 +74,12 @@ internal class MembershipService : IMembershipService
   public async Task<MembershipInvitationModel> SendInvitationAsync(SendMembershipInvitationPayload payload, CancellationToken cancellationToken)
   {
     SendMembershipInvitationCommand command = new(payload);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<WorldModel> TransferOwnershipAsync(Guid userId, CancellationToken cancellationToken)
+  {
+    TransferOwnershipCommand command = new(userId);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 }

@@ -3,6 +3,7 @@ using Krakenar.Client;
 using Krakenar.Client.Sessions;
 using Krakenar.Client.Users;
 using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Messages;
 using Logitar;
 using Logitar.CQRS;
 using Logitar.EventSourcing.EntityFrameworkCore.Relational;
@@ -21,15 +22,15 @@ namespace PokeGame;
 
 public abstract class IntegrationTests : IAsyncLifetime
 {
-  private readonly TestContext _context = new();
-
+  protected TestContext Context { get; } = new();
   protected Faker Faker { get; } = new();
   protected IServiceProvider ServiceProvider { get; }
+  protected Mock<IMessageService> MessageService { get; } = new();
   protected Mock<ISessionClient> SessionClient { get; } = new();
   protected Mock<IUserClient> UserClient { get; } = new();
 
-  protected Actor Actor => _context.Actor;
-  protected World World => _context.World ?? throw new InvalidOperationException("The world has not been initialized.");
+  protected Actor Actor => Context.Actor;
+  protected World World => Context.World ?? throw new InvalidOperationException("The world has not been initialized.");
 
   protected IntegrationTests()
   {
@@ -43,12 +44,13 @@ public abstract class IntegrationTests : IAsyncLifetime
     ServiceCollection services = new();
     services.AddSingleton(configuration);
     services.AddSingleton(KrakenarSettings.Initialize(configuration));
-    services.AddSingleton<IContext>(_context);
+    services.AddSingleton<IContext>(Context);
 
     services.AddPokeGameCore();
     services.AddPokeGameInfrastructure();
     services.AddPokeGamePostgreSQL(connectionString);
 
+    services.AddSingleton(MessageService.Object);
     services.AddSingleton(SessionClient.Object);
     services.AddSingleton(UserClient.Object);
 
@@ -71,7 +73,6 @@ public abstract class IntegrationTests : IAsyncLifetime
     await pokemon.Moves.ExecuteDeleteAsync();
     await pokemon.Abilities.ExecuteDeleteAsync();
     await pokemon.StorageSummary.ExecuteDeleteAsync();
-    await pokemon.Members.ExecuteDeleteAsync();
     await pokemon.MembershipInvitations.ExecuteDeleteAsync();
     await pokemon.Worlds.ExecuteDeleteAsync();
 
@@ -79,14 +80,14 @@ public abstract class IntegrationTests : IAsyncLifetime
     await events.Events.ExecuteDeleteAsync();
     await events.Streams.ExecuteDeleteAsync();
 
-    _context.User = new UserBuilder(Faker).Build();
-    UserClient.Setup(x => x.ReadAsync(_context.User.Id, uniqueName: null, customIdentifier: null, It.IsAny<RequestContext>())).ReturnsAsync(_context.User);
+    Context.User = new UserBuilder(Faker).Build();
+    UserClient.Setup(x => x.ReadAsync(Context.User.Id, uniqueName: null, customIdentifier: null, It.IsAny<RequestContext>())).ReturnsAsync(Context.User);
     ICacheService cacheService = ServiceProvider.GetRequiredService<ICacheService>();
-    cacheService.SetActor(new Actor(_context.User));
+    cacheService.SetActor(new Actor(Context.User));
 
-    _context.World = new WorldBuilder(Faker).WithUser(_context.User).Build();
+    Context.World = new WorldBuilder(Faker).WithUser(Context.User).Build();
     IWorldRepository worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
-    await worldRepository.SaveAsync(_context.World);
+    await worldRepository.SaveAsync(Context.World);
   }
 
   public virtual Task DisposeAsync() => Task.CompletedTask;
