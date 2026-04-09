@@ -8,6 +8,7 @@ namespace PokeGame.Core.Pokemon;
 
 public interface IPokemonService
 {
+  Task<PokemonModel?> ChangeFormAsync(Guid id, ChangePokemonFormPayload payload, CancellationToken cancellationToken = default);
   Task<PokemonModel> CreateAsync(CreatePokemonPayload payload, CancellationToken cancellationToken = default);
   Task<PokemonModel?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
   Task<PokemonModel?> UpdateAsync(Guid id, UpdatePokemonPayload payload, CancellationToken cancellationToken = default);
@@ -18,6 +19,7 @@ internal class PokemonService : IPokemonService
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IPokemonService, PokemonService>();
+    services.AddTransient<ICommandHandler<ChangePokemonFormCommand, PokemonModel?>, ChangePokemonFormCommandHandler>();
     services.AddTransient<ICommandHandler<CreatePokemonCommand, PokemonModel>, CreatePokemonCommandHandler>();
     services.AddTransient<ICommandHandler<UpdatePokemonCommand, PokemonModel?>, UpdatePokemonCommandHandler>();
     services.AddTransient<IQueryHandler<ReadPokemonQuery, PokemonModel?>, ReadPokemonQueryHandler>();
@@ -30,6 +32,12 @@ internal class PokemonService : IPokemonService
   {
     _commandBus = commandBus;
     _queryBus = queryBus;
+  }
+
+  public async Task<PokemonModel?> ChangeFormAsync(Guid id, ChangePokemonFormPayload payload, CancellationToken cancellationToken)
+  {
+    ChangePokemonFormCommand command = new(id, payload);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
   public async Task<PokemonModel> CreateAsync(CreatePokemonPayload payload, CancellationToken cancellationToken)

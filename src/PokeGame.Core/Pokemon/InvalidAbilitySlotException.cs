@@ -5,7 +5,7 @@ using PokeGame.Core.Forms;
 
 namespace PokeGame.Core.Pokemon;
 
-public class InvalidAbilitySlotException : DomainException
+public class InvalidAbilitySlotException : DomainException // TODO(fpion): replace this Invariant with a Fallback Logic.
 {
   public AbilitySlot AbilitySlot
   {

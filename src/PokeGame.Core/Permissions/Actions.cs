@@ -4,6 +4,7 @@ public static class Actions
 {
   public const string Accept = "Accept";
   public const string Cancel = "Cancel";
+  public const string ChangeForm = "ChangeForm";
   public const string CreateAbility = "CreateAbility";
   public const string CreateEvolution = "CreateEvolution";
   public const string CreateForm = "CreateForm";
