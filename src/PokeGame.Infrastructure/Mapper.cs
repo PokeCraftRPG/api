@@ -211,13 +211,14 @@ internal class Mapper
     return destination;
   }
 
-  public MembershipModel ToMembership(MemberEntity member) => new()
+  public MembershipModel ToMembership(MembershipEntity membership) => new()
   {
-    Member = FindActor(member.MemberKey),
-    GrantedBy = FindActor(member.GrantedBy),
-    GrantedOn = member.GrantedOn.AsUniversalTime(),
-    RevokedBy = TryFindActor(member.RevokedBy),
-    RevokedOn = member.RevokedOn?.AsUniversalTime()
+    Member = FindActor(membership.MemberId),
+    IsActive = membership.IsActive,
+    GrantedBy = FindActor(membership.GrantedBy),
+    GrantedOn = membership.GrantedOn.AsUniversalTime(),
+    RevokedBy = TryFindActor(membership.RevokedBy),
+    RevokedOn = membership.RevokedOn?.AsUniversalTime()
   };
 
   public MembershipInvitationModel ToMembershipInvitation(MembershipInvitationEntity source)
@@ -369,9 +370,9 @@ internal class Mapper
 
     MapAggregate(source, destination);
 
-    foreach (MemberEntity member in source.Members)
+    foreach (MembershipEntity membership in source.Membership)
     {
-      destination.Membership.Add(ToMembership(member));
+      destination.Membership.Add(ToMembership(membership));
     }
 
     return destination;

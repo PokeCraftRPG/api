@@ -11,6 +11,7 @@ using PokeGame.Core.Identity;
 using PokeGame.Core.Items;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Moves;
+using PokeGame.Core.Pokemon;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
 using PokeGame.Core.Storages;
@@ -83,6 +84,7 @@ public static class DependencyInjectionExtensions
       .AddTransient<IItemQuerier, ItemQuerier>()
       .AddTransient<IMembershipInvitationQuerier, MembershipInvitationQuerier>()
       .AddTransient<IMoveQuerier, MoveQuerier>()
+      .AddTransient<IPokemonQuerier, PokemonQuerier>()
       .AddTransient<IRegionQuerier, RegionQuerier>()
       .AddTransient<ISpeciesQuerier, SpeciesQuerier>()
       .AddTransient<ITrainerQuerier, TrainerQuerier>()
@@ -99,6 +101,7 @@ public static class DependencyInjectionExtensions
       .AddTransient<IItemRepository, ItemRepository>()
       .AddTransient<IMembershipInvitationRepository, MembershipInvitationRepository>()
       .AddTransient<IMoveRepository, MoveRepository>()
+      .AddTransient<IPokemonRepository, PokemonRepository>()
       .AddTransient<IRegionRepository, RegionRepository>()
       .AddTransient<ISpeciesRepository, SpeciesRepository>()
       .AddTransient<IStorageRepository, StorageRepository>()

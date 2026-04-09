@@ -69,7 +69,7 @@ internal class WorldEvents : IEventHandler<WorldCreated>,
 
   public async Task HandleAsync(WorldMembershipGranted @event, CancellationToken cancellationToken)
   {
-    WorldEntity? world = await _pokemon.Worlds.Include(x => x.Members).SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    WorldEntity? world = await _pokemon.Worlds.Include(x => x.Membership).SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (world is not null && world.Version == (@event.Version - 1))
     {
       world.GrantMembership(@event);
@@ -80,7 +80,7 @@ internal class WorldEvents : IEventHandler<WorldCreated>,
 
   public async Task HandleAsync(WorldMembershipRevoked @event, CancellationToken cancellationToken)
   {
-    WorldEntity? world = await _pokemon.Worlds.Include(x => x.Members).SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    WorldEntity? world = await _pokemon.Worlds.Include(x => x.Membership).SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (world is not null && world.Version == (@event.Version - 1))
     {
       world.RevokeMembership(@event);
@@ -91,10 +91,16 @@ internal class WorldEvents : IEventHandler<WorldCreated>,
 
   public async Task HandleAsync(WorldOwnershipTransferred @event, CancellationToken cancellationToken)
   {
-    WorldEntity? world = await _pokemon.Worlds.Include(x => x.Members).SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    WorldEntity? world = await _pokemon.Worlds.Include(x => x.Membership).SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (world is not null && world.Version == (@event.Version - 1))
     {
       world.TransferOwnership(@event);
+
+      MembershipEntity? membership = world.FindMembership(@event.OwnerId);
+      if (membership is not null)
+      {
+        _pokemon.Membership.Remove(membership);
+      }
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

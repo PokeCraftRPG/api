@@ -57,12 +57,10 @@ public class MembershipIntegrationTests : IntegrationTests
     Assert.Equal(DateTime.UtcNow, model.UpdatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(MembershipInvitationStatus.Accepted, model.Status);
 
-    Context.User = owner;
-
     WorldModel world = await _worldQuerier.ReadAsync(World);
     Assert.Equal(ownerActor, world.Owner);
     Assert.Single(world.Membership);
-    Assert.Contains(world.Membership, m => m.Member.Equals(new Actor(_user))
+    Assert.Contains(world.Membership, m => m.Member.Equals(new Actor(_user)) && m.IsActive
       && m.GrantedBy.Equals(ownerActor) && (DateTime.UtcNow - m.GrantedOn) < TimeSpan.FromSeconds(10)
       && m.RevokedBy is null && !m.RevokedOn.HasValue);
   }
@@ -154,7 +152,7 @@ public class MembershipIntegrationTests : IntegrationTests
     Assert.Equal(Actor, world.Owner);
 
     Assert.Single(world.Membership);
-    Assert.Contains(world.Membership, m => m.Member.Equals(new Actor(_user))
+    Assert.Contains(world.Membership, m => m.Member.Equals(new Actor(_user)) && !m.IsActive
       && m.GrantedBy.Equals(Actor) && (DateTime.UtcNow - m.GrantedOn) < TimeSpan.FromSeconds(10)
       && m.RevokedBy is not null && m.RevokedBy.Equals(Actor) && m.RevokedOn.HasValue && (DateTime.UtcNow - m.RevokedOn) < TimeSpan.FromSeconds(10));
   }
@@ -240,9 +238,9 @@ public class MembershipIntegrationTests : IntegrationTests
     Assert.Equal(new Actor(_user), world.Owner);
 
     Assert.Single(world.Membership);
-    //Assert.Contains(world.Membership, m => m.Member.Equals(Actor)
-    //  && m.GrantedBy.Equals(Actor) && (DateTime.UtcNow - m.GrantedOn) < TimeSpan.FromSeconds(10)
-    //  && m.RevokedBy is null && !m.RevokedOn.HasValue);
+    Assert.Contains(world.Membership, m => m.Member.Equals(Actor) && m.IsActive
+      && m.GrantedBy.Equals(Actor) && (DateTime.UtcNow - m.GrantedOn) < TimeSpan.FromSeconds(10)
+      && m.RevokedBy is null && !m.RevokedOn.HasValue);
   }
 
   [Theory(DisplayName = "It should throw MembershipInvitationPendingException when there are pending invitations for the email.")]

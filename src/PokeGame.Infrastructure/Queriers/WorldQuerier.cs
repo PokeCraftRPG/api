@@ -66,25 +66,28 @@ internal class WorldQuerier : IWorldQuerier
   }
   public async Task<WorldModel?> ReadAsync(WorldId id, CancellationToken cancellationToken)
   {
+    string userId = _context.UserId.Value;
     WorldEntity? world = await _worlds.AsNoTracking()
-      .Where(x => x.StreamId == id.Value /*&& x.OwnerId == _context.UserId.Value*/)
-      .Include(x => x.Members)
+      .Where(x => x.StreamId == id.Value && (x.OwnerId == userId || x.Membership.Any(m => m.MemberId == userId && m.IsActive)))
+      .Include(x => x.Membership)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
   public async Task<WorldModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
+    string userId = _context.UserId.Value;
     WorldEntity? world = await _worlds.AsNoTracking()
-      .Where(x => x.Id == id /*&& x.OwnerId == _context.UserId.Value*/)
-      .Include(x => x.Members)
+      .Where(x => x.Id == id && (x.OwnerId == userId || x.Membership.Any(m => m.MemberId == userId && m.IsActive)))
+      .Include(x => x.Membership)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
   public async Task<WorldModel?> ReadAsync(string key, CancellationToken cancellationToken)
   {
+    string userId = _context.UserId.Value;
     WorldEntity? world = await _worlds.AsNoTracking()
-      .Where(x => x.Key == Slug.Normalize(key) /*&& x.OwnerId == _context.UserId.Value*/)
-      .Include(x => x.Members)
+      .Where(x => x.Key == Slug.Normalize(key) && (x.OwnerId == userId || x.Membership.Any(m => m.MemberId == userId && m.IsActive)))
+      .Include(x => x.Membership)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
@@ -92,7 +95,7 @@ internal class WorldQuerier : IWorldQuerier
   public async Task<SearchResults<WorldModel>> SearchAsync(SearchWorldsPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sql.Query(PokemonDb.Worlds.Table).SelectAll(PokemonDb.Worlds.Table)
-      .ApplyOwnerFilter(_context.UserId)
+      .ApplyOwnerFilter(_context.UserId) // TODO(fpion): active members can also view the world
       .ApplyIdFilter(PokemonDb.Worlds.Id, payload.Ids);
     _sql.ApplyTextSearch(builder, payload.Search, PokemonDb.Worlds.Key, PokemonDb.Worlds.Name);
 
@@ -131,7 +134,7 @@ internal class WorldQuerier : IWorldQuerier
 
     query = query.ApplyPaging(payload);
 
-    WorldEntity[] entities = await query.Include(x => x.Members).ToArrayAsync(cancellationToken);
+    WorldEntity[] entities = await query.Include(x => x.Membership).ToArrayAsync(cancellationToken);
     IReadOnlyCollection<WorldModel> worlds = await MapAsync(entities, cancellationToken);
 
     return new SearchResults<WorldModel>(worlds, total);
