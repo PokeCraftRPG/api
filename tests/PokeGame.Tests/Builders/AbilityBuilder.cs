@@ -114,6 +114,24 @@ public class AbilityBuilder : IAbilityBuilder
     .WithNotes(new Notes("Boosts Fire-type moves when HP is low (≈1/3 or less), increasing damage by ~50%. Common Ability of Fire starters; no effect outside battle."))
     .Build();
 
+  public static Ability Drought(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("drought"))
+    .WithName(new Name("Drought"))
+    .WithDescription(new Description("Summons harsh sunlight for 5 turns when the Pokémon enters a battle."))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Drought_(Ability)"))
+    .WithNotes(new Notes("Summons harsh sunlight on entry (5 turns, 8 with Heat Rock), boosting Fire moves and weakening others; no effect outside battle."))
+    .Build();
+
+  public static Ability DesolateLand(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("desolate-land"))
+    .WithName(new Name("Desolate Land"))
+    .WithDescription(new Description("The Pokémon changes the weather to nullify Water-type attacks."))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Desolate_Land_(Ability)"))
+    .WithNotes(new Notes("Creates extremely harsh sunlight on entry, nullifying Water-type attacks and blocking other weather effects while active; no effect outside battle."))
+    .Build();
+
   public static Ability LightningRod(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
     .WithWorld(world)
     .WithKey(new Slug("lightning-rod"))
@@ -130,6 +148,15 @@ public class AbilityBuilder : IAbilityBuilder
     .WithDescription(new Description("Boosts the Pokémon's evasiveness in a sandstorm."))
     .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Sand_Veil_(Ability)"))
     .WithNotes(new Notes("Boosts evasion in sandstorms and prevents sandstorm damage; reduces wild encounters in earlier gens, but has no effect outside battle in newer games."))
+    .Build();
+
+  public static Ability SheerForce(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("sheer-force"))
+    .WithName(new Name("Sheer Force"))
+    .WithDescription(new Description("Removes any additional effects from the Pokémon's moves, but increases the moves' power."))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Sheer_Force_(Ability)"))
+    .WithNotes(new Notes("Boosts power of moves with secondary effects by ~30% but removes those effects (e.g., no status or stat drops); no effect outside battle."))
     .Build();
 
   public static Ability Static(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
@@ -157,5 +184,14 @@ public class AbilityBuilder : IAbilityBuilder
     .WithDescription(new Description("The Pokémon is protected by a layer of thick fat, which halves the damage taken from Fire- and Ice-type moves."))
     .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Thick_Fat_(Ability)"))
     .WithNotes(new Notes("Halves damage taken from Fire- and Ice-type moves by reducing incoming power during calculation. No effect outside battle."))
+    .Build();
+
+  public static Ability ZenMode(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("zen-mode"))
+    .WithName(new Name("Zen Mode"))
+    .WithDescription(new Description("Changes the Pokémon's shape when its HP drops to half or less."))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Zen_Mode_(Ability)"))
+    .WithNotes(new Notes("Changes Darmanitan’s form at ≤50% HP (and reverts above), altering its type and stats; resets when switched out; no effect outside battle."))
     .Build();
 }

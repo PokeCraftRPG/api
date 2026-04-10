@@ -8,6 +8,7 @@ namespace PokeGame.Infrastructure.Handlers;
 
 internal class PokemonEvents : IEventHandler<PokemonCreated>,
   IEventHandler<PokemonDeleted>,
+  IEventHandler<PokemonFormChanged>,
   IEventHandler<PokemonHeldItemChanged>,
   IEventHandler<PokemonKeyChanged>,
   IEventHandler<PokemonNicknamed>,
@@ -17,6 +18,7 @@ internal class PokemonEvents : IEventHandler<PokemonCreated>,
   {
     services.AddTransient<IEventHandler<PokemonCreated>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonDeleted>, PokemonEvents>();
+    services.AddTransient<IEventHandler<PokemonFormChanged>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonHeldItemChanged>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonKeyChanged>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonNicknamed>, PokemonEvents>();
@@ -54,6 +56,20 @@ internal class PokemonEvents : IEventHandler<PokemonCreated>,
     if (pokemon is not null)
     {
       _pokemon.Remove(pokemon);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(PokemonFormChanged @event, CancellationToken cancellationToken)
+  {
+    PokemonEntity? pokemon = await _pokemon.Pokemon.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (pokemon is not null && pokemon.Version == (@event.Version - 1))
+    {
+      FormEntity form = await _pokemon.Forms.SingleOrDefaultAsync(x => x.StreamId == @event.FormId.Value, cancellationToken)
+        ?? throw new InvalidOperationException($"The form entity 'StreamId={@event.FormId}' was not found.");
+
+      pokemon.ChangeForm(form, @event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

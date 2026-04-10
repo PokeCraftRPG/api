@@ -61,6 +61,45 @@ public class PokemonIntegrationTests : IntegrationTests
     await _itemRepository.SaveAsync(_heldItem);
   }
 
+  [Fact(DisplayName = "It should change the Pokémon form.")]
+  public async Task Given_Payload_When_ChangeForm_Then_FormChanged()
+  {
+    Ability sheerForce = AbilityBuilder.SheerForce(Faker, World);
+    Ability zenMode = AbilityBuilder.ZenMode(Faker, World);
+    FormAbilities abilities = new(sheerForce, secondary: null, zenMode);
+    await _abilityRepository.SaveAsync([sheerForce, zenMode]);
+
+    SpeciesAggregate species = SpeciesBuilder.Darmanitan(Faker, World);
+    await _speciesRepository.SaveAsync(species);
+
+    Variety variety = VarietyBuilder.Darmanitan(Faker, World, species);
+    await _varietyRepository.SaveAsync(variety);
+
+    Form source = FormBuilder.Darmanitan(Faker, World, variety, abilities);
+    Form target = FormBuilder.DarmanitanZen(Faker, World, variety, abilities);
+    await _formRepository.SaveAsync([source, target]);
+
+    Specimen pokemon = new SpecimenBuilder(Faker).WithWorld(World).Is(species, variety, source).Build();
+    await _pokemonRepository.SaveAsync(pokemon);
+
+    ChangePokemonFormPayload payload = new($"  {target.Key.Value.ToUpperInvariant()}  ");
+    PokemonModel? model = await _pokemonService.ChangeFormAsync(pokemon.EntityId, payload);
+    Assert.NotNull(model);
+
+    Assert.Equal(pokemon.EntityId, model.Id);
+    Assert.Equal(pokemon.Version + 1, model.Version);
+    Assert.Equal(Actor, model.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, model.UpdatedOn, TimeSpan.FromSeconds(10));
+
+    Assert.Equal(target.EntityId, model.Form.Id);
+    Assert.Equal(target.BaseStatistics.HP, model.Statistics.HP.Base);
+    Assert.Equal(target.BaseStatistics.Attack, model.Statistics.Attack.Base);
+    Assert.Equal(target.BaseStatistics.Defense, model.Statistics.Defense.Base);
+    Assert.Equal(target.BaseStatistics.SpecialAttack, model.Statistics.SpecialAttack.Base);
+    Assert.Equal(target.BaseStatistics.SpecialDefense, model.Statistics.SpecialDefense.Base);
+    Assert.Equal(target.BaseStatistics.Speed, model.Statistics.Speed.Base);
+  }
+
   [Fact(DisplayName = "It should create a new Pokémon.")]
   public async Task Given_Payload_When_Create_Then_Created()
   {

@@ -19,6 +19,13 @@ public class PokemonController : ControllerBase
     _pokemonService = pokemonService;
   }
 
+  [HttpPatch("{id}/form")]
+  public async Task<ActionResult<PokemonModel>> ChangeFormAsync(Guid id, [FromBody] ChangePokemonFormPayload payload, CancellationToken cancellationToken)
+  {
+    PokemonModel? pokemon = await _pokemonService.ChangeFormAsync(id, payload, cancellationToken);
+    return pokemon is null ? NotFound() : Ok(pokemon);
+  }
+
   [HttpPost]
   public async Task<ActionResult<PokemonModel>> CreateAsync([FromBody] CreatePokemonPayload payload, CancellationToken cancellationToken)
   {

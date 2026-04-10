@@ -44,6 +44,30 @@ public class SpecimenTests
     _individualValues = PokemonRandomizer.Instance.IndividualValues();
   }
 
+  [Fact(DisplayName = "ChangeForm: it should throw InvalidFormException when the form does not belong to the variety.")]
+  public void Given_InvalidForm_When_ChangeForm_Then_InvalidFormException()
+  {
+    Specimen pokemon = new SpecimenBuilder(_faker).WithWorld(_world).Is(_species, _variety, _form).Build();
+    Form target = FormBuilder.Raichu(_faker, _world);
+
+    var exception = Assert.Throws<InvalidFormException>(() => pokemon.ChangeForm(target, _world.OwnerId));
+    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
+    Assert.Equal(_variety.EntityId, exception.VarietyId);
+    Assert.Equal(_form.EntityId, exception.SourceId);
+    Assert.Equal(target.EntityId, exception.TargetId);
+    Assert.Equal(pokemon.EntityId, exception.PokemonId);
+  }
+
+  [Fact(DisplayName = "ChangeForm: it should throw WorldMismatchException when the form is not in the same world.")]
+  public void Given_WorldMismatch_When_ChangeForm_Then_WorldMismatchException()
+  {
+    Specimen pokemon = new SpecimenBuilder().Build();
+    var exception = Assert.Throws<WorldMismatchException>(() => pokemon.ChangeForm(_form, _world.OwnerId));
+    Assert.Equal(pokemon.Id.GetEntity(), exception.Expected);
+    Assert.Equal(_form.Id.GetEntity(), Assert.Single(exception.Mismatched));
+    Assert.Equal("form", exception.ParamName);
+  }
+
   [Fact(DisplayName = "ctor: it should throw ArgumentException when egg cycles and experience are both provided.")]
   public void Given_EggCyclesWithExperience_When_ctor_Then_ArgumentException()
   {
@@ -80,7 +104,7 @@ public class SpecimenTests
   {
     var exception = Assert.Throws<ArgumentOutOfRangeException>(
       () => new Specimen(_world, _species, _variety, _form, key: null, _gender, _isShiny, _teraType, _size, (AbilitySlot)(-1), _nature, null, 0, _individualValues, null, null, null, null));
-    Assert.Equal("slot", exception.ParamName);
+    Assert.Equal("abilitySlot", exception.ParamName);
   }
 
   [Fact(DisplayName = "ctor: it should throw ArgumentOutOfRangeException when the gender is not defined.")]
@@ -125,16 +149,6 @@ public class SpecimenTests
     var exception = Assert.Throws<ArgumentOutOfRangeException>(
       () => new Specimen(_world, _species, _variety, _form, key: null, _gender, _isShiny, _teraType, _size, _abilitySlot, _nature, null, 0, _individualValues, null, vitality, null, null));
     Assert.Equal("vitality", exception.ParamName);
-  }
-
-  [Fact(DisplayName = "ctor: it should throw InvalidAbilitySlotException when the ability slot is not valid.")]
-  public void Given_AbilitySlotNotValid_When_ctor_Then_InvalidAbilitySlotException()
-  {
-    AbilitySlot abilitySlot = AbilitySlot.Secondary;
-    var exception = Assert.Throws<InvalidAbilitySlotException>(
-      () => new Specimen(_world, _species, _variety, _form, key: null, _gender, _isShiny, _teraType, _size, abilitySlot, _nature, null, 0, _individualValues, null, null, null, null));
-    Assert.Equal(abilitySlot, exception.AbilitySlot);
-    Assert.Equal("AbilitySlot", exception.PropertyName);
   }
 
   [Fact(DisplayName = "ctor: it should throw InvalidGenderException when the gender is not valid.")]

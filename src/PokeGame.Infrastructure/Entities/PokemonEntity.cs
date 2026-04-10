@@ -140,6 +140,16 @@ internal class PokemonEntity : AggregateEntity
     Name = @event.Name?.Value;
   }
 
+  public void ChangeForm(FormEntity form, PokemonFormChanged @event)
+  {
+    base.Update(@event);
+
+    Form = form;
+    FormId = form.FormId;
+
+    SetStatistics(@event.BaseStatistics);
+  }
+
   public void SetHeldItem(ItemEntity? item, PokemonHeldItemChanged @event)
   {
     base.Update(@event);
@@ -207,6 +217,9 @@ internal class PokemonEntity : AggregateEntity
       string.Join(',', individualValues.HP, individualValues.Attack, individualValues.Defense, individualValues.SpecialAttack, individualValues.SpecialDefense, individualValues.Speed),
       string.Join(',', effortValues.HP, effortValues.Attack, effortValues.Defense, effortValues.SpecialAttack, effortValues.SpecialDefense, effortValues.Speed),
       string.Join(',', values.HP, values.Attack, values.Defense, values.SpecialAttack, values.SpecialDefense, values.Speed));
+
+    Vitality = Math.Min(Vitality, values.HP);
+    Stamina = Math.Min(Stamina, values.HP);
   }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";

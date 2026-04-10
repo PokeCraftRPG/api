@@ -75,7 +75,7 @@ internal class PermissionService : IPermissionService
 
   private bool IsAllowed(string action, Entity entity) => action switch
   {
-    Actions.Update => entity.WorldId == _context.WorldId && _context.IsWorldOwner,
+    Actions.ChangeForm or Actions.Update => entity.WorldId == _context.WorldId && _context.IsWorldOwner,
     _ => false,
   };
 

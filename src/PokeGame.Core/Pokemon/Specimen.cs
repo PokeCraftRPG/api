@@ -55,9 +55,9 @@ public class Specimen : AggregateRoot, IEntityProvider
   public EffortValues EffortValues => _effortValues ?? throw new InvalidOperationException("The Pokémon has not been initialized.");
   public PokemonStatistics Statistics => new(this);
   public int Vitality { get; private set; }
-  public bool HasFainted => Vitality < 1;
+  public bool IsFainted => Vitality < 1;
   public int Stamina { get; private set; }
-  public bool IsUnconscious => Stamina < 1;
+  public bool IsUnconscious => IsFainted || Stamina < 1;
   public StatusCondition? StatusCondition { get; private set; }
   private Friendship? _friendship = null;
   public Friendship Friendship => _friendship ?? throw new InvalidOperationException("The Pokémon has not been initialized.");
@@ -177,7 +177,10 @@ public class Specimen : AggregateRoot, IEntityProvider
     }
     teraType ??= form.Types.Primary;
 
-    InvalidAbilitySlotException.ThrowIfNotValid(form.Abilities, abilitySlot, nameof(AbilitySlot));
+    if (!Enum.IsDefined(abilitySlot))
+    {
+      throw new ArgumentOutOfRangeException(nameof(abilitySlot));
+    }
 
     if (eggCycles is not null && eggCycles.Value > species.EggCycles.Value)
     {
@@ -288,6 +291,30 @@ public class Specimen : AggregateRoot, IEntityProvider
   protected virtual void Handle(PokemonHeldItemChanged @event)
   {
     HeldItemId = @event.ItemId;
+  }
+
+  public void ChangeForm(Form form, UserId userId)
+  {
+    WorldMismatchException.ThrowIfMismatch(Id, form.Id, nameof(form));
+
+    if (form.VarietyId != VarietyId)
+    {
+      throw new InvalidFormException(this, form);
+    }
+
+    if (FormId != form.Id)
+    {
+      Raise(new PokemonFormChanged(form.Id, form.BaseStatistics), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(PokemonFormChanged @event)
+  {
+    FormId = @event.FormId;
+    _baseStatistics = @event.BaseStatistics;
+
+    PokemonStatistics statistics = new(BaseStatistics, IndividualValues, EffortValues, Level, Nature);
+    Vitality = Math.Min(Vitality, statistics.HP);
+    Stamina = Math.Min(Stamina, statistics.HP);
   }
 
   public void SetKey(Slug key, UserId userId)
