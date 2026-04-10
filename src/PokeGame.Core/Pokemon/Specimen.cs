@@ -177,7 +177,10 @@ public class Specimen : AggregateRoot, IEntityProvider
     }
     teraType ??= form.Types.Primary;
 
-    InvalidAbilitySlotException.ThrowIfNotValid(form.Abilities, abilitySlot, nameof(AbilitySlot));
+    if (!Enum.IsDefined(abilitySlot))
+    {
+      throw new ArgumentOutOfRangeException(nameof(abilitySlot));
+    }
 
     if (eggCycles is not null && eggCycles.Value > species.EggCycles.Value)
     {
@@ -298,8 +301,6 @@ public class Specimen : AggregateRoot, IEntityProvider
     {
       throw new InvalidFormException(this, form);
     }
-
-    InvalidAbilitySlotException.ThrowIfNotValid(form.Abilities, AbilitySlot, nameof(AbilitySlot));
 
     if (FormId != form.Id)
     {

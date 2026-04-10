@@ -6,7 +6,7 @@ namespace PokeGame.Core.Pokemon;
 
 public class InvalidFormException : DomainException
 {
-  private const string ErrorMessage = "The source and target form must belong to the same variety.";
+  private const string ErrorMessage = "The source and target forms must belong to the same variety.";
 
   public Guid WorldId
   {

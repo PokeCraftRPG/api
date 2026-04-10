@@ -104,7 +104,7 @@ public class SpecimenTests
   {
     var exception = Assert.Throws<ArgumentOutOfRangeException>(
       () => new Specimen(_world, _species, _variety, _form, key: null, _gender, _isShiny, _teraType, _size, (AbilitySlot)(-1), _nature, null, 0, _individualValues, null, null, null, null));
-    Assert.Equal("slot", exception.ParamName);
+    Assert.Equal("abilitySlot", exception.ParamName);
   }
 
   [Fact(DisplayName = "ctor: it should throw ArgumentOutOfRangeException when the gender is not defined.")]
@@ -149,16 +149,6 @@ public class SpecimenTests
     var exception = Assert.Throws<ArgumentOutOfRangeException>(
       () => new Specimen(_world, _species, _variety, _form, key: null, _gender, _isShiny, _teraType, _size, _abilitySlot, _nature, null, 0, _individualValues, null, vitality, null, null));
     Assert.Equal("vitality", exception.ParamName);
-  }
-
-  [Fact(DisplayName = "ctor: it should throw InvalidAbilitySlotException when the ability slot is not valid.")]
-  public void Given_AbilitySlotNotValid_When_ctor_Then_InvalidAbilitySlotException()
-  {
-    AbilitySlot abilitySlot = AbilitySlot.Secondary;
-    var exception = Assert.Throws<InvalidAbilitySlotException>(
-      () => new Specimen(_world, _species, _variety, _form, key: null, _gender, _isShiny, _teraType, _size, abilitySlot, _nature, null, 0, _individualValues, null, null, null, null));
-    Assert.Equal(abilitySlot, exception.AbilitySlot);
-    Assert.Equal("AbilitySlot", exception.PropertyName);
   }
 
   [Fact(DisplayName = "ctor: it should throw InvalidGenderException when the gender is not valid.")]
