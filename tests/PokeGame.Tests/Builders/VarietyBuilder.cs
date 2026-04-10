@@ -235,7 +235,23 @@ public class VarietyBuilder : IVarietyBuilder
       .WithGenus(new Genus("Evolution"))
       .WithDescription(new Description("Thanks to its unstable genetic makeup, this special Pokémon conceals many different possible evolutions."))
       .WithGenderRatio(new GenderRatio(7))
-      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Eevee_(Pok%C3%A9mon)#Trivia"))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Eevee_(Pok%C3%A9mon)"))
+      .WithNotes(new Notes("This is the default variety."))
+      .Build();
+  }
+
+  public static Variety Groudon(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new VarietyBuilder(faker)
+      .WithWorld(world)
+      .WithSpecies(species ?? SpeciesBuilder.Eevee(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("groudon"))
+      .WithName(new Name("Groudon"))
+      .WithGenus(new Genus("Continent"))
+      .WithDescription(new Description("It had been asleep in underground magma ever since it fiercely fought Kyogre long ago."))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Groudon_(Pok%C3%A9mon)"))
       .WithNotes(new Notes("This is the default variety."))
       .Build();
   }

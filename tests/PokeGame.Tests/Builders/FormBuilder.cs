@@ -214,6 +214,95 @@ public class FormBuilder : IFormBuilder
     return form;
   }
 
+  public static Form Darmanitan(Faker? faker = null, World? world = null, Variety? variety = null, FormAbilities? abilities = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new FormBuilder(faker)
+      .WithWorld(world)
+      .WithVariety(variety ?? VarietyBuilder.Darmanitan(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("darmanitan"))
+      .WithName(new Name("Darmanitan"))
+      .WithHeight(new Height(13))
+      .WithWeight(new Weight(929))
+      .WithTypes(new FormTypes(PokemonType.Fire))
+      .WithAbilities(abilities ?? new FormAbilities(AbilityBuilder.SheerForce(faker, world), secondary: null, AbilityBuilder.ZenMode(faker, world)))
+      .WithBaseStatistics(new BaseStatistics(105, 140, 55, 30, 55, 95))
+      .WithYield(new Yield(168, 0, 2, 0, 0, 0, 0))
+      .WithSprites(new Sprites(
+        new Url("https://archives.bulbagarden.net/media/upload/a/a8/HOME0555.png"),
+        new Url("https://archives.bulbagarden.net/media/upload/c/c0/HOME0555_s.png")))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Darmanitan_(Pok%C3%A9mon)"))
+      .Build();
+  }
+
+  public static Form DarmanitanZen(Faker? faker = null, World? world = null, Variety? variety = null, FormAbilities? abilities = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new FormBuilder(faker)
+      .WithWorld(world)
+      .WithVariety(variety ?? VarietyBuilder.Darmanitan(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("darmanitan-zen"))
+      .WithName(new Name("Zen Darmanitan"))
+      .IsBattleOnly()
+      .WithHeight(new Height(13))
+      .WithWeight(new Weight(929))
+      .WithTypes(new FormTypes(PokemonType.Fire, PokemonType.Psychic))
+      .WithAbilities(abilities ?? new FormAbilities(AbilityBuilder.SheerForce(faker, world), secondary: null, AbilityBuilder.ZenMode(faker, world)))
+      .WithBaseStatistics(new BaseStatistics(105, 140, 55, 30, 55, 95))
+      .WithYield(new Yield(168, 0, 0, 0, 2, 0, 0))
+      .WithSprites(new Sprites(
+        new Url("https://archives.bulbagarden.net/media/upload/8/89/HOME0555Z.png"),
+        new Url("https://archives.bulbagarden.net/media/upload/8/8a/HOME0555Z_s.png")))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Darmanitan_(Pok%C3%A9mon)"))
+      .Build();
+  }
+
+  public static Form Groudon(Faker? faker = null, World? world = null, Variety? variety = null, FormAbilities? abilities = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new FormBuilder(faker)
+      .WithWorld(world)
+      .WithVariety(variety ?? VarietyBuilder.Groudon(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("groudon"))
+      .WithName(new Name("Groudon"))
+      .WithHeight(new Height(35))
+      .WithWeight(new Weight(9500))
+      .WithTypes(new FormTypes(PokemonType.Ground))
+      .WithAbilities(abilities ?? new FormAbilities(AbilityBuilder.Drought(faker, world)))
+      .WithBaseStatistics(new BaseStatistics(100, 150, 140, 100, 90, 90))
+      .WithYield(new Yield(302, 0, 3, 0, 0, 0, 0))
+      .WithSprites(new Sprites(
+        new Url("https://archives.bulbagarden.net/media/upload/0/0e/HOME0383.png"),
+        new Url("https://archives.bulbagarden.net/media/upload/4/42/HOME0383_s.png")))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Groudon_(Pok%C3%A9mon)"))
+      .Build();
+  }
+
+  public static Form GroudonPrimal(Faker? faker = null, World? world = null, Variety? variety = null, FormAbilities? abilities = null)
+  {
+    world ??= new WorldBuilder(faker).Build();
+    return new FormBuilder(faker)
+      .WithWorld(world)
+      .WithVariety(variety ?? VarietyBuilder.Groudon(faker, world))
+      .IsDefault()
+      .WithKey(new Slug("groudon-primal"))
+      .WithName(new Name("Primal Groudon"))
+      .WithHeight(new Height(50))
+      .WithWeight(new Weight(9997))
+      .WithTypes(new FormTypes(PokemonType.Ground, PokemonType.Fire))
+      .WithAbilities(abilities ?? new FormAbilities(AbilityBuilder.DesolateLand(faker, world)))
+      .WithBaseStatistics(new BaseStatistics(100, 180, 160, 150, 90, 90))
+      .WithYield(new Yield(302, 0, 3, 0, 0, 0, 0))
+      .WithSprites(new Sprites(
+        new Url("https://archives.bulbagarden.net/media/upload/8/8c/HOME0383P.png"),
+        new Url("https://archives.bulbagarden.net/media/upload/7/79/HOME0383P_s.png")))
+      .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Groudon_(Pok%C3%A9mon)"))
+      .Build();
+  }
+
   public static Form Pichu(Faker? faker = null, World? world = null, Variety? variety = null, FormAbilities? abilities = null)
   {
     world ??= new WorldBuilder(faker).Build();

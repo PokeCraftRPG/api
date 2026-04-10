@@ -224,6 +224,21 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithNotes(new Notes("Eevee is a “blank slate” Pokémon designed for multiple evolutions (8 total), with unique mechanics, cultural impact, and evolution methods across games and media."))
     .Build();
 
+  public static SpeciesAggregate Groudon(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+    .WithWorld(world)
+    .WithNumber(new Number(383))
+    .WithCategory(PokemonCategory.Legendary)
+    .WithKey(new Slug("groudon"))
+    .WithName(new Name("Groudon"))
+    .WithBaseFriendship(new Friendship(0))
+    .WithCatchRate(new CatchRate(3))
+    .WithGrowthRate(GrowthRate.Slow)
+    .WithEggCycles(new EggCycles(120))
+    .WithEggGroups(new EggGroups(EggGroup.NoEggsDiscovered))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Groudon_(Pok%C3%A9mon)"))
+    .WithNotes(new Notes("Legendary Ground-type tied to land/volcanoes; no evolutions. Primal form is largest Fire-type with top stats; its stats mirror Kyogre’s in reverse."))
+    .Build();
+
   public static SpeciesAggregate Pichu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
     .WithWorld(world)
     .WithNumber(new Number(172))

@@ -296,7 +296,7 @@ public class Specimen : AggregateRoot, IEntityProvider
 
     if (form.VarietyId != VarietyId)
     {
-      throw new ArgumentException("The form should belong to the variety.", nameof(form));
+      throw new InvalidFormException(this, form);
     }
 
     InvalidAbilitySlotException.ThrowIfNotValid(form.Abilities, AbilitySlot, nameof(AbilitySlot));

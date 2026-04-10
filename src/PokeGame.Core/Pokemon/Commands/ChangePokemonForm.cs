@@ -48,7 +48,6 @@ internal class ChangePokemonFormCommandHandler : ICommandHandler<ChangePokemonFo
     {
       return null;
     }
-
     await _permissionService.CheckAsync(Actions.ChangeForm, specimen, cancellationToken);
 
     Variety variety = await _varietyRepository.LoadAsync(specimen.VarietyId, cancellationToken)
@@ -59,7 +58,6 @@ internal class ChangePokemonFormCommandHandler : ICommandHandler<ChangePokemonFo
     }
 
     Form form = await _formManager.FindAsync(payload.Form, nameof(payload.Form), cancellationToken);
-
     specimen.ChangeForm(form, _context.UserId);
 
     await _storageService.ExecuteWithQuotaAsync(

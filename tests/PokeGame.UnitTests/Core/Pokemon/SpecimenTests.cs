@@ -44,6 +44,30 @@ public class SpecimenTests
     _individualValues = PokemonRandomizer.Instance.IndividualValues();
   }
 
+  [Fact(DisplayName = "ChangeForm: it should throw InvalidFormException when the form does not belong to the variety.")]
+  public void Given_InvalidForm_When_ChangeForm_Then_InvalidFormException()
+  {
+    Specimen pokemon = new SpecimenBuilder(_faker).WithWorld(_world).Is(_species, _variety, _form).Build();
+    Form target = FormBuilder.Raichu(_faker, _world);
+
+    var exception = Assert.Throws<InvalidFormException>(() => pokemon.ChangeForm(target, _world.OwnerId));
+    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
+    Assert.Equal(_variety.EntityId, exception.VarietyId);
+    Assert.Equal(_form.EntityId, exception.SourceId);
+    Assert.Equal(target.EntityId, exception.TargetId);
+    Assert.Equal(pokemon.EntityId, exception.PokemonId);
+  }
+
+  [Fact(DisplayName = "ChangeForm: it should throw WorldMismatchException when the form is not in the same world.")]
+  public void Given_WorldMismatch_When_ChangeForm_Then_WorldMismatchException()
+  {
+    Specimen pokemon = new SpecimenBuilder().Build();
+    var exception = Assert.Throws<WorldMismatchException>(() => pokemon.ChangeForm(_form, _world.OwnerId));
+    Assert.Equal(pokemon.Id.GetEntity(), exception.Expected);
+    Assert.Equal(_form.Id.GetEntity(), Assert.Single(exception.Mismatched));
+    Assert.Equal("form", exception.ParamName);
+  }
+
   [Fact(DisplayName = "ctor: it should throw ArgumentException when egg cycles and experience are both provided.")]
   public void Given_EggCyclesWithExperience_When_ctor_Then_ArgumentException()
   {
