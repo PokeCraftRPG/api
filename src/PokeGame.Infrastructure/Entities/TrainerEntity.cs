@@ -29,6 +29,8 @@ internal class TrainerEntity : AggregateEntity
   public string? Url { get; private set; }
   public string? Notes { get; private set; }
 
+  public List<InventoryEntity> Inventory { get; private set; } = [];
+
   public TrainerEntity(WorldEntity world, TrainerCreated @event) : base(@event)
   {
     World = world;

@@ -1,5 +1,6 @@
 ﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
+using PokeGame.Core.Inventory.Models;
 
 namespace PokeGame.Core.Trainers.Models;
 
@@ -20,6 +21,8 @@ public class TrainerModel : Aggregate
   public string? Notes { get; set; }
 
   public Actor? Owner { get; set; }
+
+  public List<InventoryItemModel> Inventory { get; set; } = [];
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
 }

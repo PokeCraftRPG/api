@@ -6,6 +6,7 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Evolutions.Models;
 using PokeGame.Core.Forms.Models;
+using PokeGame.Core.Inventory.Models;
 using PokeGame.Core.Items;
 using PokeGame.Core.Items.Models;
 using PokeGame.Core.Membership.Models;
@@ -153,6 +154,12 @@ internal class Mapper
     MapAggregate(source, destination);
 
     return destination;
+  }
+
+  public InventoryItemModel ToInventoryItem(InventoryEntity source)
+  {
+    ItemEntity item = source.Item ?? throw new ArgumentException("The item is required.", nameof(source));
+    return new InventoryItemModel(ToItem(item), source.Quantity);
   }
 
   public ItemModel ToItem(ItemEntity source)

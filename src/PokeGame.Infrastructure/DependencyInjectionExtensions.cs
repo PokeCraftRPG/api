@@ -8,6 +8,7 @@ using PokeGame.Core.Caching;
 using PokeGame.Core.Evolutions;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Inventory;
 using PokeGame.Core.Items;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Moves;
@@ -52,6 +53,7 @@ public static class DependencyInjectionExtensions
     AbilityEvents.Register(services);
     EvolutionEvents.Register(services);
     FormEvents.Register(services);
+    InventoryEvents.Register(services);
     ItemEvents.Register(services);
     MembershipInvitationEvents.Register(services);
     MoveEvents.Register(services);
@@ -82,6 +84,7 @@ public static class DependencyInjectionExtensions
       .AddTransient<IAbilityQuerier, AbilityQuerier>()
       .AddTransient<IEvolutionQuerier, EvolutionQuerier>()
       .AddTransient<IFormQuerier, FormQuerier>()
+      .AddTransient<IInventoryQuerier, InventoryQuerier>()
       .AddTransient<IItemQuerier, ItemQuerier>()
       .AddTransient<IMembershipInvitationQuerier, MembershipInvitationQuerier>()
       .AddTransient<IMoveQuerier, MoveQuerier>()
@@ -99,6 +102,7 @@ public static class DependencyInjectionExtensions
       .AddTransient<IAbilityRepository, AbilityRepository>()
       .AddTransient<IEvolutionRepository, EvolutionRepository>()
       .AddTransient<IFormRepository, FormRepository>()
+      .AddTransient<IInventoryRepository, InventoryRepository>()
       .AddTransient<IItemRepository, ItemRepository>()
       .AddTransient<IMembershipInvitationRepository, MembershipInvitationRepository>()
       .AddTransient<IMoveRepository, MoveRepository>()
