@@ -38,6 +38,7 @@ public class SpecimenOwnershipTests
     Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);
 
     Assert.NotNull(_specimen.Ownership);
+    Assert.Equal(OwnershipKind.Caught, _specimen.Ownership.Kind);
     Assert.Equal(_trainer.Id, _specimen.Ownership.TrainerId);
     Assert.Equal(_pokeBall.Id, _specimen.Ownership.PokeBallId);
     Assert.Equal(_specimen.Level, _specimen.Ownership.Level.Value);
@@ -95,7 +96,7 @@ public class SpecimenOwnershipTests
     Assert.Equal("trainer", exception.ParamName);
   }
 
-  [Fact(DisplayName = "Receive: it should receive a Pokémon.")]
+  [Fact(DisplayName = "Receive: it should change the Pokémon ownership.")]
   public void Given_Wild_When_Receive_Then_Caught()
   {
     Assert.False(_specimen.OriginalTrainerId.HasValue);
@@ -105,6 +106,7 @@ public class SpecimenOwnershipTests
     Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);
 
     Assert.NotNull(_specimen.Ownership);
+    Assert.Equal(OwnershipKind.Received, _specimen.Ownership.Kind);
     Assert.Equal(_trainer.Id, _specimen.Ownership.TrainerId);
     Assert.Equal(_pokeBall.Id, _specimen.Ownership.PokeBallId);
     Assert.Equal(_specimen.Level, _specimen.Ownership.Level.Value);
@@ -124,6 +126,7 @@ public class SpecimenOwnershipTests
     Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);
 
     Assert.NotNull(_specimen.Ownership);
+    Assert.Equal(OwnershipKind.Received, _specimen.Ownership.Kind);
     Assert.Equal(trainer.Id, _specimen.Ownership.TrainerId);
     Assert.Equal(greatBall.Id, _specimen.Ownership.PokeBallId);
     Assert.Equal(_specimen.Level, _specimen.Ownership.Level.Value);

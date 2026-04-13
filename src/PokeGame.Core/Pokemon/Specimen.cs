@@ -274,7 +274,7 @@ public class Specimen : AggregateRoot, IEntityProvider
   protected virtual void Handle(PokemonCaught @event)
   {
     OriginalTrainerId = @event.TrainerId;
-    Ownership = new PokemonOwnership(@event.TrainerId, @event.PokeBallId, @event.Level, @event.Location, @event.MetOn);
+    Ownership = new PokemonOwnership(OwnershipKind.Caught, @event.TrainerId, @event.PokeBallId, @event.Level, @event.Location, @event.MetOn);
   }
 
   public void ChangeForm(Form form, UserId userId)
@@ -338,7 +338,7 @@ public class Specimen : AggregateRoot, IEntityProvider
   protected virtual void Handle(PokemonReceived @event)
   {
     OriginalTrainerId ??= @event.TrainerId;
-    Ownership = new PokemonOwnership(@event.TrainerId, @event.PokeBallId, @event.Level, @event.Location, @event.MetOn);
+    Ownership = new PokemonOwnership(OwnershipKind.Received, @event.TrainerId, @event.PokeBallId, @event.Level, @event.Location, @event.MetOn);
   }
 
   public void RemoveHeldItem(UserId userId)

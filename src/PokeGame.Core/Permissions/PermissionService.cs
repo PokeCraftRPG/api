@@ -1,4 +1,14 @@
-﻿using PokeGame.Core.Membership;
+﻿using PokeGame.Core.Abilities;
+using PokeGame.Core.Evolutions;
+using PokeGame.Core.Forms;
+using PokeGame.Core.Items;
+using PokeGame.Core.Membership;
+using PokeGame.Core.Moves;
+using PokeGame.Core.Pokemon;
+using PokeGame.Core.Regions;
+using PokeGame.Core.Species;
+using PokeGame.Core.Trainers;
+using PokeGame.Core.Varieties;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Models;
 
@@ -48,6 +58,10 @@ internal class PermissionService : IPermissionService
     {
       isAllowed = IsAllowed(action, invitation);
     }
+    else if (resource is Specimen specimen)
+    {
+      isAllowed = IsAllowed(action, specimen);
+    }
     else
     {
       isAllowed = IsAllowed(action, entity);
@@ -73,9 +87,17 @@ internal class PermissionService : IPermissionService
     return count < _settings.WorldLimit;
   }
 
-  private bool IsAllowed(string action, Entity entity) => action switch
+  private bool IsAllowed(string action, Entity entity) => entity.Kind switch
   {
-    Actions.ChangeForm or Actions.Update => entity.WorldId == _context.WorldId && _context.IsWorldOwner,
+    Ability.EntityKind or Evolution.EntityKind or Form.EntityKind or Item.EntityKind or Move.EntityKind
+      or Region.EntityKind or SpeciesAggregate.EntityKind or Trainer.EntityKind or Variety.EntityKind
+      => action == Actions.Update && entity.WorldId == _context.WorldId && _context.IsWorldOwner,
+    _ => false,
+  };
+
+  private bool IsAllowed(string action, Specimen specimen) => action switch
+  {
+    Actions.Catch or Actions.ChangeForm or Actions.Receive or Actions.Release or Actions.Update => specimen.WorldId == _context.WorldId && _context.IsWorldOwner,
     _ => false,
   };
 

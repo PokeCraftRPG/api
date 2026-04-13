@@ -11,7 +11,6 @@ namespace PokeGame.Infrastructure.Configurations;
 internal class EvolutionConfiguration : AggregateConfiguration<EvolutionEntity>, IEntityTypeConfiguration<EvolutionEntity>
 {
   private const int GenderMaximumLength = 8;
-  private const int LocationMaximumLength = byte.MaxValue;
   private const int TimeOfDayMaximumLength = 8;
   private const int TriggerMaximumLength = 5;
 
@@ -37,7 +36,7 @@ internal class EvolutionConfiguration : AggregateConfiguration<EvolutionEntity>,
 
     builder.Property(x => x.Trigger).HasMaxLength(TriggerMaximumLength).HasConversion(new EnumToStringConverter<EvolutionTrigger>());
     builder.Property(x => x.Gender).HasMaxLength(GenderMaximumLength).HasConversion(new EnumToStringConverter<PokemonGender>());
-    builder.Property(x => x.Location).HasMaxLength(LocationMaximumLength);
+    builder.Property(x => x.Location).HasMaxLength(Constants.LocationMaximumLength);
     builder.Property(x => x.TimeOfDay).HasMaxLength(TimeOfDayMaximumLength).HasConversion(new EnumToStringConverter<TimeOfDay>());
 
     builder.HasOne(x => x.Source).WithMany(x => x.EvolvesFrom)
