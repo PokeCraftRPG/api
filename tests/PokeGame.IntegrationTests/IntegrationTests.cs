@@ -73,6 +73,7 @@ public abstract class IntegrationTests : IAsyncLifetime
       Infrastructure.PokemonDb.Forms.Table,
       Infrastructure.PokemonDb.Varieties.Table,
       Infrastructure.PokemonDb.Species.Table,
+      Infrastructure.PokemonDb.Inventory.Table,
       Infrastructure.PokemonDb.Items.Table,
       Infrastructure.PokemonDb.Trainers.Table,
       Infrastructure.PokemonDb.Regions.Table,
