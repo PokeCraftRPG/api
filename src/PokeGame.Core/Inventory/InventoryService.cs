@@ -67,3 +67,5 @@ internal class InventoryService : IInventoryService
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 }
+
+// TODO(fpion): missing permission checks in commands!

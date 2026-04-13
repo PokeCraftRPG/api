@@ -7,6 +7,8 @@ public interface ITrainerQuerier
 {
   Task EnsureUnicityAsync(Trainer trainer, CancellationToken cancellationToken = default);
 
+  Task<TrainerId?> FindIdAsync(string key, CancellationToken cancellationToken = default);
+
   Task<TrainerModel> ReadAsync(Trainer trainer, CancellationToken cancellationToken = default);
   Task<TrainerModel?> ReadAsync(TrainerId id, CancellationToken cancellationToken = default);
   Task<TrainerModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);

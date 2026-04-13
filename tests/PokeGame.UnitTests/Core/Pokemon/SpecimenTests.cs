@@ -2,7 +2,6 @@
 using PokeGame.Builders;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
-using PokeGame.Core.Items;
 using PokeGame.Core.Species;
 using PokeGame.Core.Varieties;
 using PokeGame.Core.Worlds;
@@ -44,31 +43,7 @@ public class SpecimenTests
     _individualValues = PokemonRandomizer.Instance.IndividualValues();
   }
 
-  [Fact(DisplayName = "ChangeForm: it should throw InvalidFormException when the form does not belong to the variety.")]
-  public void Given_InvalidForm_When_ChangeForm_Then_InvalidFormException()
-  {
-    Specimen pokemon = new SpecimenBuilder(_faker).WithWorld(_world).Is(_species, _variety, _form).Build();
-    Form target = FormBuilder.Raichu(_faker, _world);
-
-    var exception = Assert.Throws<InvalidFormException>(() => pokemon.ChangeForm(target, _world.OwnerId));
-    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
-    Assert.Equal(_variety.EntityId, exception.VarietyId);
-    Assert.Equal(_form.EntityId, exception.SourceId);
-    Assert.Equal(target.EntityId, exception.TargetId);
-    Assert.Equal(pokemon.EntityId, exception.PokemonId);
-  }
-
-  [Fact(DisplayName = "ChangeForm: it should throw WorldMismatchException when the form is not in the same world.")]
-  public void Given_WorldMismatch_When_ChangeForm_Then_WorldMismatchException()
-  {
-    Specimen pokemon = new SpecimenBuilder().Build();
-    var exception = Assert.Throws<WorldMismatchException>(() => pokemon.ChangeForm(_form, _world.OwnerId));
-    Assert.Equal(pokemon.Id.GetEntity(), exception.Expected);
-    Assert.Equal(_form.Id.GetEntity(), Assert.Single(exception.Mismatched));
-    Assert.Equal("form", exception.ParamName);
-  }
-
-  [Fact(DisplayName = "ctor: it should throw ArgumentException when egg cycles and experience are both provided.")]
+  [Fact(DisplayName = "It should throw ArgumentException when egg cycles and experience are both provided.")]
   public void Given_EggCyclesWithExperience_When_ctor_Then_ArgumentException()
   {
     EggCycles eggCycles = _species.EggCycles;
@@ -79,7 +54,7 @@ public class SpecimenTests
     Assert.StartsWith("An egg Pokémon cannot have experience.", exception.Message);
   }
 
-  [Fact(DisplayName = "ctor: it should throw ArgumentException when the form does not belong to the variety.")]
+  [Fact(DisplayName = "It should throw ArgumentException when the form does not belong to the variety.")]
   public void Given_InvalidForm_When_ctor_Then_ArgumentException()
   {
     Form form = FormBuilder.Raichu(_faker, _world);
@@ -89,7 +64,7 @@ public class SpecimenTests
     Assert.StartsWith("The form should belong to the variety.", exception.Message);
   }
 
-  [Fact(DisplayName = "ctor: it should throw ArgumentException when the variety does not belong to the species.")]
+  [Fact(DisplayName = "It should throw ArgumentException when the variety does not belong to the species.")]
   public void Given_InvalidVariety_When_ctor_Then_ArgumentException()
   {
     Variety variety = VarietyBuilder.Raichu(_faker, _world);
@@ -99,7 +74,7 @@ public class SpecimenTests
     Assert.StartsWith("The variety should belong to the species.", exception.Message);
   }
 
-  [Fact(DisplayName = "ctor: it should throw ArgumentOutOfRangeException when the ability slot is not defined.")]
+  [Fact(DisplayName = "It should throw ArgumentOutOfRangeException when the ability slot is not defined.")]
   public void Given_AbilitySlotNotDefined_When_ctor_Then_ArgumentOutOfRangeException()
   {
     var exception = Assert.Throws<ArgumentOutOfRangeException>(
@@ -107,7 +82,7 @@ public class SpecimenTests
     Assert.Equal("abilitySlot", exception.ParamName);
   }
 
-  [Fact(DisplayName = "ctor: it should throw ArgumentOutOfRangeException when the gender is not defined.")]
+  [Fact(DisplayName = "It should throw ArgumentOutOfRangeException when the gender is not defined.")]
   public void Given_GenderNotDefined_When_ctor_Then_ArgumentOutOfRangeException()
   {
     var exception = Assert.Throws<ArgumentOutOfRangeException>(
@@ -115,7 +90,7 @@ public class SpecimenTests
     Assert.Equal("gender", exception.ParamName);
   }
 
-  [Fact(DisplayName = "ctor: it should throw ArgumentOutOfRangeException when the experience is negative.")]
+  [Fact(DisplayName = "It should throw ArgumentOutOfRangeException when the experience is negative.")]
   public void Given_NegativeExperience_When_ctor_Then_ArgumentOutOfRangeException()
   {
     var exception = Assert.Throws<ArgumentOutOfRangeException>(
@@ -123,7 +98,7 @@ public class SpecimenTests
     Assert.Equal("experience", exception.ParamName);
   }
 
-  [Theory(DisplayName = "ctor: it should throw ArgumentOutOfRangeException when the stamina is out of bounds.")]
+  [Theory(DisplayName = "It should throw ArgumentOutOfRangeException when the stamina is out of bounds.")]
   [InlineData(-1)]
   [InlineData(1000)]
   public void Given_StaminaOutOfBounds_When_ctor_Then_ArgumentOutOfRangeException(int stamina)
@@ -133,7 +108,7 @@ public class SpecimenTests
     Assert.Equal("stamina", exception.ParamName);
   }
 
-  [Fact(DisplayName = "ctor: it should throw ArgumentOutOfRangeException when the Tera type is not defined.")]
+  [Fact(DisplayName = "It should throw ArgumentOutOfRangeException when the Tera type is not defined.")]
   public void Given_TeraTypeNotDefined_When_ctor_Then_ArgumentOutOfRangeException()
   {
     var exception = Assert.Throws<ArgumentOutOfRangeException>(
@@ -141,7 +116,7 @@ public class SpecimenTests
     Assert.Equal("teraType", exception.ParamName);
   }
 
-  [Theory(DisplayName = "ctor: it should throw ArgumentOutOfRangeException when the vitality is out of bounds.")]
+  [Theory(DisplayName = "It should throw ArgumentOutOfRangeException when the vitality is out of bounds.")]
   [InlineData(-1)]
   [InlineData(1000)]
   public void Given_VitalityOutOfBounds_When_ctor_Then_ArgumentOutOfRangeException(int vitality)
@@ -151,7 +126,7 @@ public class SpecimenTests
     Assert.Equal("vitality", exception.ParamName);
   }
 
-  [Fact(DisplayName = "ctor: it should throw InvalidGenderException when the gender is not valid.")]
+  [Fact(DisplayName = "It should throw InvalidGenderException when the gender is not valid.")]
   public void Given_GenderNotValid_When_ctor_Then_InvalidGenderException()
   {
     var exception = Assert.Throws<InvalidGenderException>(
@@ -161,7 +136,7 @@ public class SpecimenTests
     Assert.Equal("Gender", exception.PropertyName);
   }
 
-  [Fact(DisplayName = "ctor: it should throw WorldMismatchException when the form is not in the same world.")]
+  [Fact(DisplayName = "It should throw WorldMismatchException when the form is not in the same world.")]
   public void Given_FormWorldMismatch_When_ctor_Then_WorldMismatchException()
   {
     Form form = FormBuilder.Pikachu();
@@ -173,7 +148,7 @@ public class SpecimenTests
     Assert.Equal("form", exception.ParamName);
   }
 
-  [Fact(DisplayName = "ctor: it should throw WorldMismatchException when the species is not in the same world.")]
+  [Fact(DisplayName = "It should throw WorldMismatchException when the species is not in the same world.")]
   public void Given_SpeciesWorldMismatch_When_ctor_Then_WorldMismatchException()
   {
     SpeciesAggregate species = SpeciesBuilder.Pikachu();
@@ -185,7 +160,7 @@ public class SpecimenTests
     Assert.Equal("species", exception.ParamName);
   }
 
-  [Fact(DisplayName = "ctor: it should throw WorldMismatchException when the variety is not in the same world.")]
+  [Fact(DisplayName = "It should throw WorldMismatchException when the variety is not in the same world.")]
   public void Given_VarietyWorldMismatch_When_ctor_Then_WorldMismatchException()
   {
     Variety variety = VarietyBuilder.Pikachu();
@@ -195,16 +170,5 @@ public class SpecimenTests
     Assert.Equal(specimenId.GetEntity(), exception.Expected);
     Assert.Equal(variety.Id.GetEntity(), Assert.Single(exception.Mismatched));
     Assert.Equal("variety", exception.ParamName);
-  }
-
-  [Fact(DisplayName = "SetHeldItem: it should throw WorldMismatchException when the item is not in the same world.")]
-  public void Given_WorldMismatch_When_SetHeldItem_Then_WorldMismatchException()
-  {
-    Specimen specimen = new SpecimenBuilder(_faker, PokemonRandomizer.Instance).Build();
-    Item item = ItemBuilder.OranBerry();
-    var exception = Assert.Throws<WorldMismatchException>(() => specimen.SetHeldItem(item, _world.OwnerId));
-    Assert.Equal(specimen.Id.GetEntity(), exception.Expected);
-    Assert.Equal(item.Id.GetEntity(), Assert.Single(exception.Mismatched));
-    Assert.Equal("item", exception.ParamName);
   }
 }

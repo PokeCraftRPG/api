@@ -68,6 +68,14 @@ internal class TrainerQuerier : ITrainerQuerier
     }
   }
 
+  public async Task<TrainerId?> FindIdAsync(string key, CancellationToken cancellationToken)
+  {
+    string? streamId = await _trainers.Where(x => x.World!.Id == _context.WorldUid && x.Key == Slug.Normalize(key))
+      .Select(x => x.StreamId)
+      .SingleOrDefaultAsync(cancellationToken);
+    return streamId is null ? null : new TrainerId(streamId);
+  }
+
   public async Task<TrainerModel> ReadAsync(Trainer trainer, CancellationToken cancellationToken)
   {
     return await ReadAsync(trainer.Id, cancellationToken) ?? throw new InvalidOperationException($"The trainer entity '{trainer}' was not found.");

@@ -38,15 +38,15 @@ public class UpdateInventoryItemCommandHandlerTests
     Trainer trainer = new TrainerBuilder(_faker).WithWorld(_context.World).Build();
     _trainerRepository.Setup(x => x.LoadAsync(trainer.Id, _cancellationToken)).ReturnsAsync(trainer);
 
+    InventoryAggregate inventory = new(trainer);
+    _inventoryRepository.Setup(x => x.LoadAsync(trainer, _cancellationToken)).ReturnsAsync(inventory);
+
     Item item = new ItemBuilder(_faker).WithWorld(_context.World).Build();
     _itemRepository.Setup(x => x.LoadAsync(item.Id, _cancellationToken)).ReturnsAsync(item);
 
-    InventoryAggregate? inventory = null;
     if (existingQuantity.HasValue)
     {
-      inventory = new(trainer);
       inventory.Add(item, existingQuantity.Value, _context.UserId);
-      _inventoryRepository.Setup(x => x.LoadAsync(inventory.Id, _cancellationToken)).ReturnsAsync(inventory);
     }
 
     ItemModel model = new();
@@ -59,24 +59,15 @@ public class UpdateInventoryItemCommandHandlerTests
     Assert.Same(model, result.Item);
     Assert.Equal(quantity, result.Quantity);
 
-    if (inventory is null)
+    if (quantity < 1)
     {
-      _inventoryRepository.Verify(x => x.SaveAsync(
-        It.Is<InventoryAggregate>(i => i.TrainerId == trainer.Id && i.GetQuantity(item) == quantity),
-        _cancellationToken), Times.Once());
+      Assert.Empty(inventory.Quantities);
     }
     else
     {
-      if (quantity < 1)
-      {
-        Assert.Empty(inventory.Quantities);
-      }
-      else
-      {
-        Assert.Equal(quantity, inventory.GetQuantity(item));
-      }
-      _inventoryRepository.Verify(x => x.SaveAsync(inventory, _cancellationToken), Times.Once());
+      Assert.Equal(quantity, inventory.GetQuantity(item));
     }
+    _inventoryRepository.Verify(x => x.SaveAsync(inventory, _cancellationToken), Times.Once());
   }
 
   [Fact(DisplayName = "It should throw ItemNotFoundException when the item was not found.")]

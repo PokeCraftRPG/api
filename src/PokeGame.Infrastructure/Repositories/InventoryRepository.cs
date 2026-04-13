@@ -1,5 +1,6 @@
 ﻿using Logitar.EventSourcing;
 using PokeGame.Core.Inventory;
+using PokeGame.Core.Trainers;
 
 namespace PokeGame.Infrastructure.Repositories;
 
@@ -9,6 +10,10 @@ internal class InventoryRepository : Repository, IInventoryRepository
   {
   }
 
+  public async Task<InventoryAggregate> LoadAsync(Trainer trainer, CancellationToken cancellationToken)
+  {
+    return await LoadAsync(new InventoryId(trainer.Id), cancellationToken) ?? new(trainer);
+  }
   public async Task<InventoryAggregate?> LoadAsync(InventoryId id, CancellationToken cancellationToken)
   {
     return await LoadAsync<InventoryAggregate>(id.StreamId, cancellationToken);

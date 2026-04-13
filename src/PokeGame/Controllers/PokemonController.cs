@@ -19,6 +19,13 @@ public class PokemonController : ControllerBase
     _pokemonService = pokemonService;
   }
 
+  [HttpPatch("{id}/catch")]
+  public async Task<ActionResult<PokemonModel>> CatchAsync(Guid id, [FromBody] CatchPokemonPayload payload, CancellationToken cancellationToken)
+  {
+    PokemonModel? pokemon = await _pokemonService.CatchAsync(id, payload, cancellationToken);
+    return pokemon is null ? NotFound() : Ok(pokemon);
+  }
+
   [HttpPatch("{id}/form")]
   public async Task<ActionResult<PokemonModel>> ChangeFormAsync(Guid id, [FromBody] ChangePokemonFormPayload payload, CancellationToken cancellationToken)
   {
@@ -45,6 +52,20 @@ public class PokemonController : ControllerBase
   public async Task<ActionResult<MoveModel>> ReadAsync(string key, CancellationToken cancellationToken)
   {
     PokemonModel? pokemon = await _pokemonService.ReadAsync(id: null, key, cancellationToken);
+    return pokemon is null ? NotFound() : Ok(pokemon);
+  }
+
+  [HttpPatch("{id}/receive")]
+  public async Task<ActionResult<PokemonModel>> ReceiveAsync(Guid id, [FromBody] ReceivePokemonPayload payload, CancellationToken cancellationToken)
+  {
+    PokemonModel? pokemon = await _pokemonService.ReceiveAsync(id, payload, cancellationToken);
+    return pokemon is null ? NotFound() : Ok(pokemon);
+  }
+
+  [HttpPatch("{id}/release")]
+  public async Task<ActionResult<PokemonModel>> ReleaseAsync(Guid id, CancellationToken cancellationToken)
+  {
+    PokemonModel? pokemon = await _pokemonService.ReleaseAsync(id, cancellationToken);
     return pokemon is null ? NotFound() : Ok(pokemon);
   }
 
