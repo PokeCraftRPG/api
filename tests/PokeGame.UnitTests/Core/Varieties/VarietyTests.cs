@@ -38,7 +38,7 @@ public class VarietyTests
     Move move = MoveBuilder.ThunderShock(_faker);
 
     var exception = Assert.Throws<WorldMismatchException>(() => variety.RemoveMove(move, _world.OwnerId));
-    Assert.Equal(variety.GetEntity(), exception.Expected);
+    Assert.Equal(variety.Id.GetEntity(), exception.Expected);
     Assert.Equal(move.Id.GetEntity(), Assert.Single(exception.Mismatched));
     Assert.Equal("moveId", exception.ParamName);
   }
@@ -50,7 +50,7 @@ public class VarietyTests
     Move move = MoveBuilder.ThunderShock(_faker);
 
     var exception = Assert.Throws<WorldMismatchException>(() => variety.SetEvolutionMove(move, _world.OwnerId));
-    Assert.Equal(variety.GetEntity(), exception.Expected);
+    Assert.Equal(variety.Id.GetEntity(), exception.Expected);
     Assert.Equal(move.Id.GetEntity(), Assert.Single(exception.Mismatched));
     Assert.Equal("moveId", exception.ParamName);
   }
@@ -62,7 +62,7 @@ public class VarietyTests
     Move move = MoveBuilder.ThunderShock(_faker);
 
     var exception = Assert.Throws<WorldMismatchException>(() => variety.SetLevelMove(move, new Level(1), _world.OwnerId));
-    Assert.Equal(variety.GetEntity(), exception.Expected);
+    Assert.Equal(variety.Id.GetEntity(), exception.Expected);
     Assert.Equal(move.Id.GetEntity(), Assert.Single(exception.Mismatched));
     Assert.Equal("moveId", exception.ParamName);
   }

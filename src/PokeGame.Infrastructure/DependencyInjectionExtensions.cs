@@ -8,6 +8,7 @@ using PokeGame.Core.Caching;
 using PokeGame.Core.Evolutions;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Inventory;
 using PokeGame.Core.Items;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Moves;
@@ -99,6 +100,7 @@ public static class DependencyInjectionExtensions
       .AddTransient<IAbilityRepository, AbilityRepository>()
       .AddTransient<IEvolutionRepository, EvolutionRepository>()
       .AddTransient<IFormRepository, FormRepository>()
+      .AddTransient<IInventoryRepository, InventoryRepository>()
       .AddTransient<IItemRepository, ItemRepository>()
       .AddTransient<IMembershipInvitationRepository, MembershipInvitationRepository>()
       .AddTransient<IMoveRepository, MoveRepository>()

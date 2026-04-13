@@ -164,7 +164,7 @@ public class Variety : AggregateRoot, IEntityProvider
   public bool RemoveMove(Move move, UserId userId) => RemoveMove(move.Id, userId);
   public bool RemoveMove(MoveId moveId, UserId userId)
   {
-    WorldMismatchException.ThrowIfMismatch(this, moveId, nameof(moveId));
+    WorldMismatchException.ThrowIfMismatch(Id, moveId, nameof(moveId));
 
     if (!_moves.ContainsKey(moveId))
     {
@@ -195,7 +195,7 @@ public class Variety : AggregateRoot, IEntityProvider
   public void SetEvolutionMove(Move move, UserId userId) => SetEvolutionMove(move.Id, userId);
   public void SetEvolutionMove(MoveId moveId, UserId userId)
   {
-    WorldMismatchException.ThrowIfMismatch(this, moveId, nameof(moveId));
+    WorldMismatchException.ThrowIfMismatch(Id, moveId, nameof(moveId));
 
     if (!_moves.TryGetValue(moveId, out Level? level) || level is not null)
     {
@@ -222,7 +222,7 @@ public class Variety : AggregateRoot, IEntityProvider
   public void SetLevelMove(Move move, Level level, UserId userId) => SetLevelMove(move.Id, level, userId);
   public void SetLevelMove(MoveId moveId, Level level, UserId userId)
   {
-    WorldMismatchException.ThrowIfMismatch(this, moveId, nameof(moveId));
+    WorldMismatchException.ThrowIfMismatch(Id, moveId, nameof(moveId));
 
     if (!_moves.TryGetValue(moveId, out Level? existingLevel) || existingLevel != level)
     {

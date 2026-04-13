@@ -41,7 +41,7 @@ public class SpeciesAggregateTests
 
     Assert.True(species.CreatedBy.HasValue);
     var exception = Assert.Throws<WorldMismatchException>(() => species.SetRegionalNumber(region, new Number(25), _world.OwnerId));
-    Assert.Equal(species.GetEntity(), exception.Expected);
+    Assert.Equal(species.Id.GetEntity(), exception.Expected);
     Assert.Equal(region.Id.GetEntity(), Assert.Single(exception.Mismatched));
     Assert.Equal("regionId", exception.ParamName);
   }
