@@ -83,6 +83,7 @@ public static class DependencyInjectionExtensions
       .AddTransient<IAbilityQuerier, AbilityQuerier>()
       .AddTransient<IEvolutionQuerier, EvolutionQuerier>()
       .AddTransient<IFormQuerier, FormQuerier>()
+      .AddTransient<IInventoryQuerier, InventoryQuerier>()
       .AddTransient<IItemQuerier, ItemQuerier>()
       .AddTransient<IMembershipInvitationQuerier, MembershipInvitationQuerier>()
       .AddTransient<IMoveQuerier, MoveQuerier>()
