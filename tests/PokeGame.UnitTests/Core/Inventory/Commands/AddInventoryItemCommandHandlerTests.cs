@@ -64,12 +64,12 @@ public class AddInventoryItemCommandHandlerTests
     if (inventory is null)
     {
       _inventoryRepository.Verify(x => x.SaveAsync(
-        It.Is<InventoryAggregate>(i => i.TrainerId == trainer.Id && i.Quantities[item.Id] == expectedQuantity),
+        It.Is<InventoryAggregate>(i => i.TrainerId == trainer.Id && i.GetQuantity(item) == expectedQuantity),
         _cancellationToken), Times.Once());
     }
     else
     {
-      Assert.Equal(expectedQuantity, inventory.Quantities[item.Id]);
+      Assert.Equal(expectedQuantity, inventory.GetQuantity(item));
       _inventoryRepository.Verify(x => x.SaveAsync(inventory, _cancellationToken), Times.Once());
     }
   }

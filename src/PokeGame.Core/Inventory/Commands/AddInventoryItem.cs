@@ -53,6 +53,6 @@ internal class AddInventoryItemCommandHandler : ICommandHandler<AddInventoryItem
     await _inventoryRepository.SaveAsync(inventory, cancellationToken);
 
     ItemModel model = await _itemQuerier.ReadAsync(item, cancellationToken);
-    return new InventoryItemModel(model, inventory.Quantities[item.Id]);
+    return new InventoryItemModel(model, inventory.GetQuantity(item));
   }
 }

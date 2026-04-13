@@ -62,7 +62,7 @@ public class UpdateInventoryItemCommandHandlerTests
     if (inventory is null)
     {
       _inventoryRepository.Verify(x => x.SaveAsync(
-        It.Is<InventoryAggregate>(i => i.TrainerId == trainer.Id && (quantity < 1 ? !i.Quantities.Any() : i.Quantities[item.Id] == quantity)),
+        It.Is<InventoryAggregate>(i => i.TrainerId == trainer.Id && i.GetQuantity(item) == quantity),
         _cancellationToken), Times.Once());
     }
     else
@@ -73,7 +73,7 @@ public class UpdateInventoryItemCommandHandlerTests
       }
       else
       {
-        Assert.Equal(quantity, inventory.Quantities[item.Id]);
+        Assert.Equal(quantity, inventory.GetQuantity(item));
       }
       _inventoryRepository.Verify(x => x.SaveAsync(inventory, _cancellationToken), Times.Once());
     }
