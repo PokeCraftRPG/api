@@ -310,6 +310,50 @@ internal class Mapper
       throw new ArgumentException("The held item is required.", nameof(source));
     }
 
+    if (source.OwnershipKind.HasValue || source.OriginalTrainerId.HasValue || source.CurrentTrainerId.HasValue
+      || source.PokeBallId.HasValue || source.MetAtLevel.HasValue || source.MetAtLocation is not null || source.MetOn.HasValue)
+    {
+      if (!source.OwnershipKind.HasValue)
+      {
+        throw new ArgumentException("The ownership kind is required.", nameof(source));
+      }
+      if (source.OriginalTrainer is null)
+      {
+        throw new ArgumentException("The original trainer is required.", nameof(source));
+      }
+      if (source.CurrentTrainer is null)
+      {
+        throw new ArgumentException("The current trainer is required.", nameof(source));
+      }
+      if (source.PokeBall is null)
+      {
+        throw new ArgumentException("The Poké Ball is required.", nameof(source));
+      }
+      if (!source.MetAtLevel.HasValue)
+      {
+        throw new ArgumentException("The met level is required.", nameof(source));
+      }
+      if (source.MetAtLocation is null)
+      {
+        throw new ArgumentException("The met location is required.", nameof(source));
+      }
+      if (!source.MetOn.HasValue)
+      {
+        throw new ArgumentException("The met date is required.", nameof(source));
+      }
+
+      destination.Ownership = new PokemonOwnershipModel
+      {
+        Kind = source.OwnershipKind.Value,
+        OriginalTrainer = ToTrainer(source.OriginalTrainer),
+        CurrentTrainer = ToTrainer(source.CurrentTrainer),
+        PokeBall = ToItem(source.PokeBall),
+        Level = source.MetAtLevel.Value,
+        Location = source.MetAtLocation,
+        MetOn = source.MetOn.Value.AsUniversalTime()
+      };
+    }
+
     MapAggregate(source, destination);
 
     return destination;
