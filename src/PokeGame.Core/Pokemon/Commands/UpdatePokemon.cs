@@ -34,8 +34,8 @@ internal class UpdatePokemonCommandHandler : ICommandHandler<UpdatePokemonComman
     UpdatePokemonPayload payload = command.Payload;
     payload.Validate();
 
-    SpecimenId specimenId = new(_context.WorldId, command.Id);
-    Specimen? specimen = await _pokemonRepository.LoadAsync(specimenId, cancellationToken);
+    PokemonId pokemonId = new(_context.WorldId, command.Id);
+    Specimen? specimen = await _pokemonRepository.LoadAsync(pokemonId, cancellationToken);
     if (specimen is null)
     {
       return null;

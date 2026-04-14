@@ -46,7 +46,7 @@ internal class PokemonQuerier : IPokemonQuerier
         .SingleOrDefaultAsync(cancellationToken);
       if (streamId is not null && streamId != specimen.Id.Value)
       {
-        throw new PropertyConflictException<string>(specimen, new SpecimenId(streamId).EntityId, key.Value, nameof(Specimen.Key));
+        throw new PropertyConflictException<string>(specimen, new PokemonId(streamId).EntityId, key.Value, nameof(Specimen.Key));
       }
     }
   }
@@ -55,7 +55,7 @@ internal class PokemonQuerier : IPokemonQuerier
   {
     return await ReadAsync(specimen.Id, cancellationToken) ?? throw new InvalidOperationException($"The Pokémon entity '{specimen}' was not found.");
   }
-  public async Task<PokemonModel?> ReadAsync(SpecimenId id, CancellationToken cancellationToken)
+  public async Task<PokemonModel?> ReadAsync(PokemonId id, CancellationToken cancellationToken)
   {
     PokemonEntity? pokemon = await _pokemon.AsNoTracking().AsSplitQuery()
       .Where(x => x.StreamId == id.Value && x.World!.Id == _context.WorldUid)

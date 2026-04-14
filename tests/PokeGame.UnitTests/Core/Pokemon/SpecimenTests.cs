@@ -140,10 +140,10 @@ public class SpecimenTests
   public void Given_FormWorldMismatch_When_ctor_Then_WorldMismatchException()
   {
     Form form = FormBuilder.Pikachu();
-    SpecimenId specimenId = SpecimenId.NewId(_world.Id);
+    PokemonId pokemonId = PokemonId.NewId(_world.Id);
     var exception = Assert.Throws<WorldMismatchException>(
-      () => new Specimen(_species, _variety, form, _key, _gender, _isShiny, _teraType, _size, _abilitySlot, _nature, null, 0, _individualValues, null, null, null, null, _world.OwnerId, specimenId));
-    Assert.Equal(specimenId.GetEntity(), exception.Expected);
+      () => new Specimen(_species, _variety, form, _key, _gender, _isShiny, _teraType, _size, _abilitySlot, _nature, null, 0, _individualValues, null, null, null, null, _world.OwnerId, pokemonId));
+    Assert.Equal(pokemonId.GetEntity(), exception.Expected);
     Assert.Equal(form.Id.GetEntity(), Assert.Single(exception.Mismatched));
     Assert.Equal("form", exception.ParamName);
   }
@@ -152,10 +152,10 @@ public class SpecimenTests
   public void Given_SpeciesWorldMismatch_When_ctor_Then_WorldMismatchException()
   {
     SpeciesAggregate species = SpeciesBuilder.Pikachu();
-    SpecimenId specimenId = SpecimenId.NewId(_world.Id);
+    PokemonId pokemonId = PokemonId.NewId(_world.Id);
     var exception = Assert.Throws<WorldMismatchException>(
-      () => new Specimen(species, _variety, _form, _key, _gender, _isShiny, _teraType, _size, _abilitySlot, _nature, null, 0, _individualValues, null, null, null, null, _world.OwnerId, specimenId));
-    Assert.Equal(specimenId.GetEntity(), exception.Expected);
+      () => new Specimen(species, _variety, _form, _key, _gender, _isShiny, _teraType, _size, _abilitySlot, _nature, null, 0, _individualValues, null, null, null, null, _world.OwnerId, pokemonId));
+    Assert.Equal(pokemonId.GetEntity(), exception.Expected);
     Assert.Equal(species.Id.GetEntity(), Assert.Single(exception.Mismatched));
     Assert.Equal("species", exception.ParamName);
   }
@@ -164,10 +164,10 @@ public class SpecimenTests
   public void Given_VarietyWorldMismatch_When_ctor_Then_WorldMismatchException()
   {
     Variety variety = VarietyBuilder.Pikachu();
-    SpecimenId specimenId = SpecimenId.NewId(_world.Id);
+    PokemonId pokemonId = PokemonId.NewId(_world.Id);
     var exception = Assert.Throws<WorldMismatchException>(
-      () => new Specimen(_species, variety, _form, _key, _gender, _isShiny, _teraType, _size, _abilitySlot, _nature, null, 0, _individualValues, null, null, null, null, _world.OwnerId, specimenId));
-    Assert.Equal(specimenId.GetEntity(), exception.Expected);
+      () => new Specimen(_species, variety, _form, _key, _gender, _isShiny, _teraType, _size, _abilitySlot, _nature, null, 0, _individualValues, null, null, null, null, _world.OwnerId, pokemonId));
+    Assert.Equal(pokemonId.GetEntity(), exception.Expected);
     Assert.Equal(variety.Id.GetEntity(), Assert.Single(exception.Mismatched));
     Assert.Equal("variety", exception.ParamName);
   }
