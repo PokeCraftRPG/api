@@ -320,7 +320,7 @@ internal class Mapper
     }
 
     if (source.OwnershipKind.HasValue || source.CurrentTrainerId.HasValue || source.PokeBallId.HasValue
-      || source.MetAtLevel.HasValue || source.MetAtLocation is not null || source.MetOn.HasValue)
+      || source.MetAtLevel.HasValue || source.MetAtLocation is not null || source.MetOn.HasValue || source.Position.HasValue)
     {
       if (!source.OwnershipKind.HasValue)
       {
@@ -346,6 +346,10 @@ internal class Mapper
       {
         throw new ArgumentException("The met date is required.", nameof(source));
       }
+      if (!source.Position.HasValue)
+      {
+        throw new ArgumentException("The position is required.", nameof(source));
+      }
 
       destination.Ownership = new PokemonOwnershipModel
       {
@@ -354,7 +358,9 @@ internal class Mapper
         PokeBall = ToItem(source.PokeBall),
         Level = source.MetAtLevel.Value,
         Location = source.MetAtLocation,
-        MetOn = source.MetOn.Value.AsUniversalTime()
+        MetOn = source.MetOn.Value.AsUniversalTime(),
+        Position = source.Position.Value,
+        Box = source.Box
       };
     }
 

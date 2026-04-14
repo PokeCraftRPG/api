@@ -12,4 +12,7 @@ public record PokemonOwnershipModel
   public int Level { get; set; }
   public string Location { get; set; } = string.Empty;
   public DateTime MetOn { get; set; }
+
+  public int Position { get; set; }
+  public int? Box { get; set; }
 }
