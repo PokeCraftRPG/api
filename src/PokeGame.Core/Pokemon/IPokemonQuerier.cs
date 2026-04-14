@@ -7,7 +7,7 @@ public interface IPokemonQuerier
   Task EnsureUnicityAsync(Specimen specimen, CancellationToken cancellationToken = default);
 
   Task<PokemonModel> ReadAsync(Specimen specimen, CancellationToken cancellationToken = default);
-  Task<PokemonModel?> ReadAsync(SpecimenId id, CancellationToken cancellationToken = default);
+  Task<PokemonModel?> ReadAsync(PokemonId id, CancellationToken cancellationToken = default);
   Task<PokemonModel?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
   Task<PokemonModel?> ReadAsync(string key, CancellationToken cancellationToken = default);
 }

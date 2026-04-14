@@ -84,7 +84,7 @@ internal class PokemonEntity : AggregateEntity
 
     World = world;
     WorldId = world.WorldId;
-    Id = new SpecimenId(@event.StreamId).EntityId;
+    Id = new PokemonId(@event.StreamId).EntityId;
 
     Species = species;
     SpeciesId = species.SpeciesId;

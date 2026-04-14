@@ -9,11 +9,11 @@ internal class PokemonRepository : Repository, IPokemonRepository
   {
   }
 
-  public async Task<Specimen?> LoadAsync(SpecimenId id, CancellationToken cancellationToken)
+  public async Task<Specimen?> LoadAsync(PokemonId id, CancellationToken cancellationToken)
   {
     return await LoadAsync<Specimen>(id.StreamId, cancellationToken);
   }
-  public async Task<IReadOnlyCollection<Specimen>> LoadAsync(IEnumerable<SpecimenId> ids, CancellationToken cancellationToken)
+  public async Task<IReadOnlyCollection<Specimen>> LoadAsync(IEnumerable<PokemonId> ids, CancellationToken cancellationToken)
   {
     return await LoadAsync<Specimen>(ids.Select(id => id.StreamId), cancellationToken);
   }

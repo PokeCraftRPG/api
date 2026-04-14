@@ -29,13 +29,13 @@ internal class EventSerializer : Logitar.EventSourcing.Infrastructure.EventSeria
     SerializerOptions.Converters.Add(new NameConverter());
     SerializerOptions.Converters.Add(new NotesConverter());
     SerializerOptions.Converters.Add(new NumberConverter());
+    SerializerOptions.Converters.Add(new PokemonIdConverter());
     SerializerOptions.Converters.Add(new PowerConverter());
     SerializerOptions.Converters.Add(new PowerPointsConverter());
     SerializerOptions.Converters.Add(new PriceConverter());
     SerializerOptions.Converters.Add(new RegionIdConverter());
     SerializerOptions.Converters.Add(new SlugConverter());
     SerializerOptions.Converters.Add(new SpeciesIdConverter());
-    SerializerOptions.Converters.Add(new SpecimenIdConverter());
     SerializerOptions.Converters.Add(new StorageIdConverter());
     SerializerOptions.Converters.Add(new TrainerIdConverter());
     SerializerOptions.Converters.Add(new UrlConverter());

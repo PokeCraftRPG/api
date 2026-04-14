@@ -11,7 +11,7 @@ namespace PokeGame.Builders;
 
 public interface ISpecimenBuilder
 {
-  ISpecimenBuilder WithId(SpecimenId? id);
+  ISpecimenBuilder WithId(PokemonId? id);
   ISpecimenBuilder WithWorld(World? world);
   ISpecimenBuilder Is(SpeciesAggregate species, Variety variety, Form form);
   ISpecimenBuilder WithKey(Slug? key);
@@ -52,7 +52,7 @@ public class SpecimenBuilder : ISpecimenBuilder
   private Form? _form = null;
   private Friendship? _friendship = null;
   private PokemonGender? _gender = null;
-  private SpecimenId? _id = null;
+  private PokemonId? _id = null;
   private IndividualValues? _individualValues = null;
   private bool _isEgg = false;
   private bool _isShiny = false;
@@ -77,7 +77,7 @@ public class SpecimenBuilder : ISpecimenBuilder
     _randomizer = randomizer ?? PokemonRandomizer.Instance;
   }
 
-  public ISpecimenBuilder WithId(SpecimenId? id)
+  public ISpecimenBuilder WithId(PokemonId? id)
   {
     _id = id;
     return this;

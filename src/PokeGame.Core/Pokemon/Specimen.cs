@@ -22,7 +22,7 @@ public class Specimen : AggregateRoot, IEntityProvider
   private PokemonUpdated _updated = new();
   private bool HasUpdates => _updated.Sprite is not null || _updated.Url is not null || _updated.Notes is not null;
 
-  public new SpecimenId Id => new(base.Id);
+  public new PokemonId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
   public Guid EntityId => Id.EntityId;
 
@@ -135,7 +135,7 @@ public class Specimen : AggregateRoot, IEntityProvider
     EffortValues? effortValues,
     int? vitality,
     int? stamina,
-    Friendship? friendship) : this(species, variety, form, key, gender, isShiny, teraType, size, abilitySlot, nature, eggCycles, experience, individualValues, effortValues, vitality, stamina, friendship, world.OwnerId, SpecimenId.NewId(world.Id))
+    Friendship? friendship) : this(species, variety, form, key, gender, isShiny, teraType, size, abilitySlot, nature, eggCycles, experience, individualValues, effortValues, vitality, stamina, friendship, world.OwnerId, PokemonId.NewId(world.Id))
   {
   }
 
@@ -158,7 +158,7 @@ public class Specimen : AggregateRoot, IEntityProvider
     int? stamina,
     Friendship? friendship,
     UserId userId,
-    SpecimenId specimenId) : base(specimenId.StreamId)
+    PokemonId pokemonId) : base(pokemonId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(Id, species.Id, nameof(species));
 

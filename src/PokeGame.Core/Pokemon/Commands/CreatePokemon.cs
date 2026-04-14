@@ -58,12 +58,12 @@ internal class CreatePokemonCommandHandler : ICommandHandler<CreatePokemonComman
     UserId userId = _context.UserId;
     WorldId worldId = _context.WorldId;
 
-    SpecimenId specimenId = SpecimenId.NewId(worldId);
+    PokemonId pokemonId = PokemonId.NewId(worldId);
     Specimen? specimen;
     if (payload.Id.HasValue)
     {
-      specimenId = new SpecimenId(worldId, payload.Id.Value);
-      specimen = await _pokemonRepository.LoadAsync(specimenId, cancellationToken);
+      pokemonId = new PokemonId(worldId, payload.Id.Value);
+      specimen = await _pokemonRepository.LoadAsync(pokemonId, cancellationToken);
       if (specimen is not null)
       {
         throw new PropertyConflictException<Guid>(specimen, payload.Id.Value, payload.Id.Value, nameof(payload.Id));
@@ -86,7 +86,7 @@ internal class CreatePokemonCommandHandler : ICommandHandler<CreatePokemonComman
     EffortValues? effortValues = payload.EffortValues is null ? null : new(payload.EffortValues);
     Friendship? friendship = payload.Friendship.HasValue ? new(payload.Friendship.Value) : null;
     specimen = new(species, variety, form, key, gender, payload.IsShiny, payload.TeraType, size, abilitySlot, nature, eggCycles,
-      payload.Experience, individualValues, effortValues, payload.Vitality, payload.Stamina, friendship, userId, specimenId);
+      payload.Experience, individualValues, effortValues, payload.Vitality, payload.Stamina, friendship, userId, pokemonId);
 
     specimen.Nickname(Name.TryCreate(payload.Name), userId);
 
