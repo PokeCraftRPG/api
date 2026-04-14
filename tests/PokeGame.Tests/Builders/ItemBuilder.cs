@@ -172,6 +172,18 @@ public class ItemBuilder : IItemBuilder
     _ => new OtherItemProperties(),
   };
 
+  public static Item GreatBall(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("great-ball"))
+    .WithName(new Name("Great Ball"))
+    .WithDescription(new Description("A good, high-performance Poké Ball that provides a higher success rate for catching Pokémon than a standard Poké Ball."))
+    .WithPrice(new Price(600))
+    .WithSprite(new Url("https://archives.bulbagarden.net/media/upload/5/54/Bag_Great_Ball_SV_Sprite.png"))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Great_Ball"))
+    .WithNotes(new Notes("Improved Poké Ball with a 1.5× catch rate vs standard. Fails in restricted battles. Commonly sold early-game; more effective but still basic-tier."))
+    .IsPokeBall(new PokeBallProperties(1.5, false, 0, 1.0))
+    .Build();
+
   public static Item Leftovers(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
     .WithWorld(world)
     .WithKey(new Slug("leftovers"))
