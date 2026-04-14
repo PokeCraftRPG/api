@@ -14,6 +14,7 @@ using PokeGame.Core.Membership;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Rosters;
 using PokeGame.Core.Species;
 using PokeGame.Core.Storages;
 using PokeGame.Core.Trainers;
@@ -108,6 +109,7 @@ public static class DependencyInjectionExtensions
       .AddTransient<IMoveRepository, MoveRepository>()
       .AddTransient<IPokemonRepository, PokemonRepository>()
       .AddTransient<IRegionRepository, RegionRepository>()
+      .AddTransient<IRosterRepository, RosterRepository>()
       .AddTransient<ISpeciesRepository, SpeciesRepository>()
       .AddTransient<IStorageRepository, StorageRepository>()
       .AddTransient<ITrainerRepository, TrainerRepository>()
