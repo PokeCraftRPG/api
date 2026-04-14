@@ -25,8 +25,8 @@ public class EvolutionIntegrationTests : IntegrationTests
   private readonly ISpeciesRepository _speciesRepository;
   private readonly IVarietyRepository _varietyRepository;
 
-  private SpeciesAggregate _pikachuSpecies = null!;
-  private SpeciesAggregate _raichuSpecies = null!;
+  private PokemonSpecies _pikachuSpecies = null!;
+  private PokemonSpecies _raichuSpecies = null!;
   private Variety _pikachuVariety = null!;
   private Variety _raichuVariety = null!;
   private Form _pikachuForm = null!;
@@ -221,7 +221,7 @@ public class EvolutionIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results (SourceId).")]
   public async Task Given_SourceId_When_SearchAsync_Then_Results()
   {
-    SpeciesAggregate pichuSpecies = SpeciesBuilder.Pichu(Faker, World);
+    PokemonSpecies pichuSpecies = SpeciesBuilder.Pichu(Faker, World);
     await _speciesRepository.SaveAsync(pichuSpecies);
 
     Variety pichuVariety = VarietyBuilder.Pichu(Faker, World, pichuSpecies);
@@ -264,7 +264,7 @@ public class EvolutionIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results (TargetId).")]
   public async Task Given_TargetId_When_SearchAsync_Then_Results()
   {
-    SpeciesAggregate pichuSpecies = SpeciesBuilder.Pichu(Faker, World);
+    PokemonSpecies pichuSpecies = SpeciesBuilder.Pichu(Faker, World);
     await _speciesRepository.SaveAsync(pichuSpecies);
 
     Variety pichuVariety = VarietyBuilder.Pichu(Faker, World, pichuSpecies);

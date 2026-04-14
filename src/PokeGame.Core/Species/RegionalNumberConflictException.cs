@@ -54,7 +54,7 @@ public class RegionalNumberConflictException : ConflictException
     }
   }
 
-  public RegionalNumberConflictException(SpeciesAggregate species, SpeciesId conflictId, RegionId regionId, Number number, string propertyName)
+  public RegionalNumberConflictException(PokemonSpecies species, SpeciesId conflictId, RegionId regionId, Number number, string propertyName)
     : base(BuildMessage(species, conflictId, regionId, number, propertyName))
   {
     WorldId = species.WorldId.ToGuid();
@@ -65,7 +65,7 @@ public class RegionalNumberConflictException : ConflictException
     PropertyName = propertyName;
   }
 
-  private static string BuildMessage(SpeciesAggregate species, SpeciesId conflictId, RegionId regionId, Number number, string propertyName) => new ErrorMessageBuilder(ErrorMessage)
+  private static string BuildMessage(PokemonSpecies species, SpeciesId conflictId, RegionId regionId, Number number, string propertyName) => new ErrorMessageBuilder(ErrorMessage)
     .AddData(nameof(WorldId), species.WorldId.ToGuid())
     .AddData(nameof(SpeciesId), species.EntityId)
     .AddData(nameof(ConflictId), conflictId.EntityId)

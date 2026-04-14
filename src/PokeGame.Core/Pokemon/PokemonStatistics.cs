@@ -21,7 +21,7 @@ public record PokemonStatistics
     Speed = CalculateOther(baseStatistics.Speed, individualValues.Speed, effortValues.Speed, level, nature.GetMultiplier(PokemonStatistic.Speed));
   }
 
-  public PokemonStatistics(Specimen pokemon) : this(pokemon.BaseStatistics, pokemon.IndividualValues, pokemon.EffortValues, pokemon.Level, pokemon.Nature)
+  public PokemonStatistics(Specimen specimen) : this(specimen.BaseStatistics, specimen.IndividualValues, specimen.EffortValues, specimen.Level, specimen.Nature)
   {
   }
 

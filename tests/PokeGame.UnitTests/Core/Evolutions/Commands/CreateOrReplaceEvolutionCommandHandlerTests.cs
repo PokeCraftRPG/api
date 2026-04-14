@@ -263,7 +263,7 @@ public class CreateOrReplaceEvolutionCommandHandlerTests
   [Fact(DisplayName = "It should throw InvalidEvolutionLineException when the source and target species are the same.")]
   public async Task Given_SameSpecies_When_HandleAsync_Then_InvalidEvolutionLineException()
   {
-    SpeciesAggregate species = new SpeciesBuilder(_faker).WithWorld(_world).Build();
+    PokemonSpecies species = new SpeciesBuilder(_faker).WithWorld(_world).Build();
     Variety sourceVariety = new VarietyBuilder(_faker).WithWorld(_world).WithSpecies(species).WithKey(new Slug("source-variety")).Build();
     Variety targetVariety = new VarietyBuilder(_faker).WithWorld(_world).WithSpecies(species).WithKey(new Slug("target-variety")).Build();
     _varietyRepository.Setup(x => x.LoadAsync(

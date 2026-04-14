@@ -6,7 +6,7 @@ namespace PokeGame.Core.Species;
 
 public interface ISpeciesManager
 {
-  Task<SpeciesAggregate> FindAsync(string species, string propertyName, CancellationToken cancellationToken = default);
+  Task<PokemonSpecies> FindAsync(string species, string propertyName, CancellationToken cancellationToken = default);
 
   Task<IReadOnlyDictionary<RegionId, Number?>> FindRegionalNumbersAsync(
     IEnumerable<RegionalNumberPayload> payloads,
@@ -29,7 +29,7 @@ internal class SpeciesManager : ISpeciesManager
     _speciesRepository = speciesRepository;
   }
 
-  public async Task<SpeciesAggregate> FindAsync(string idOrKey, string propertyName, CancellationToken cancellationToken)
+  public async Task<PokemonSpecies> FindAsync(string idOrKey, string propertyName, CancellationToken cancellationToken)
   {
     WorldId worldId = _context.WorldId;
 
@@ -37,7 +37,7 @@ internal class SpeciesManager : ISpeciesManager
     if (Guid.TryParse(idOrKey, out Guid id))
     {
       speciesId = new(worldId, id);
-      SpeciesAggregate? species = await _speciesRepository.LoadAsync(speciesId.Value, cancellationToken);
+      PokemonSpecies? species = await _speciesRepository.LoadAsync(speciesId.Value, cancellationToken);
       if (species is not null)
       {
         return species;

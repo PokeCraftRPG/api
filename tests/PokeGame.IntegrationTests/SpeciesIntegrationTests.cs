@@ -19,7 +19,7 @@ public class SpeciesIntegrationTests : IntegrationTests
   private Region _johto = null!;
   private Region _hoenn = null!;
   private Region _sinnoh = null!;
-  private SpeciesAggregate _species = null!;
+  private PokemonSpecies _species = null!;
 
   public SpeciesIntegrationTests() : base()
   {
@@ -130,9 +130,9 @@ public class SpeciesIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results.")]
   public async Task Given_Payload_When_SearchAsync_Then_Results()
   {
-    SpeciesAggregate eevee = SpeciesBuilder.Eevee(Faker, World);
-    SpeciesAggregate pikachu = SpeciesBuilder.Pikachu(Faker, World);
-    SpeciesAggregate raichu = SpeciesBuilder.Raichu(Faker, World);
+    PokemonSpecies eevee = SpeciesBuilder.Eevee(Faker, World);
+    PokemonSpecies pikachu = SpeciesBuilder.Pikachu(Faker, World);
+    PokemonSpecies raichu = SpeciesBuilder.Raichu(Faker, World);
     await _speciesRepository.SaveAsync([eevee, pikachu, raichu]);
 
     SearchSpeciesPayload payload = new()
@@ -154,8 +154,8 @@ public class SpeciesIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results (Category).")]
   public async Task Given_Category_When_SearchAsync_Then_Results()
   {
-    SpeciesAggregate eevee = SpeciesBuilder.Eevee(Faker, World);
-    SpeciesAggregate riolu = SpeciesBuilder.Riolu(Faker, World);
+    PokemonSpecies eevee = SpeciesBuilder.Eevee(Faker, World);
+    PokemonSpecies riolu = SpeciesBuilder.Riolu(Faker, World);
     await _speciesRepository.SaveAsync([eevee, riolu]);
 
     SearchSpeciesPayload payload = new()
@@ -174,9 +174,9 @@ public class SpeciesIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results (EggGroup).")]
   public async Task Given_EggGroup_When_SearchAsync_Then_Results()
   {
-    SpeciesAggregate eevee = SpeciesBuilder.Eevee(Faker, World);
-    SpeciesAggregate pikachu = SpeciesBuilder.Pikachu(Faker, World);
-    SpeciesAggregate riolu = SpeciesBuilder.Riolu(Faker, World);
+    PokemonSpecies eevee = SpeciesBuilder.Eevee(Faker, World);
+    PokemonSpecies pikachu = SpeciesBuilder.Pikachu(Faker, World);
+    PokemonSpecies riolu = SpeciesBuilder.Riolu(Faker, World);
     await _speciesRepository.SaveAsync([eevee, pikachu, riolu]);
 
     SearchSpeciesPayload payload = new()
@@ -208,9 +208,9 @@ public class SpeciesIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results (GrowthRate).")]
   public async Task Given_GrowthRate_When_SearchAsync_Then_Results()
   {
-    SpeciesAggregate drifloon = SpeciesBuilder.Drifloon(Faker, World);
-    SpeciesAggregate eevee = SpeciesBuilder.Eevee(Faker, World);
-    SpeciesAggregate riolu = SpeciesBuilder.Riolu(Faker, World);
+    PokemonSpecies drifloon = SpeciesBuilder.Drifloon(Faker, World);
+    PokemonSpecies eevee = SpeciesBuilder.Eevee(Faker, World);
+    PokemonSpecies riolu = SpeciesBuilder.Riolu(Faker, World);
     await _speciesRepository.SaveAsync([drifloon, eevee, riolu]);
 
     SearchSpeciesPayload payload = new()
@@ -239,7 +239,7 @@ public class SpeciesIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results (RegionId).")]
   public async Task Given_RegionId_When_SearchAsync_Then_Results()
   {
-    SpeciesAggregate pikachu = SpeciesBuilder.Pikachu(Faker, World);
+    PokemonSpecies pikachu = SpeciesBuilder.Pikachu(Faker, World);
     pikachu.SetRegionalNumber(_kanto, new Number(25), World.OwnerId);
     await _speciesRepository.SaveAsync(pikachu);
 

@@ -30,7 +30,7 @@ internal class SpeciesQuerier : ISpeciesQuerier
     _sql = sql;
   }
 
-  public async Task EnsureUnicityAsync(SpeciesAggregate species, CancellationToken cancellationToken)
+  public async Task EnsureUnicityAsync(PokemonSpecies species, CancellationToken cancellationToken)
   {
     Slug? key = null;
     Number? number = null;
@@ -60,7 +60,7 @@ internal class SpeciesQuerier : ISpeciesQuerier
         .SingleOrDefaultAsync(cancellationToken);
       if (streamId is not null && streamId != species.Id.Value)
       {
-        throw new PropertyConflictException<string>(species, new SpeciesId(streamId).EntityId, key.Value, nameof(SpeciesAggregate.Key));
+        throw new PropertyConflictException<string>(species, new SpeciesId(streamId).EntityId, key.Value, nameof(PokemonSpecies.Key));
       }
     }
 
@@ -71,7 +71,7 @@ internal class SpeciesQuerier : ISpeciesQuerier
         .SingleOrDefaultAsync(cancellationToken);
       if (streamId is not null && streamId != species.Id.Value)
       {
-        throw new PropertyConflictException<int>(species, new SpeciesId(streamId).EntityId, number.Value, nameof(SpeciesAggregate.Number));
+        throw new PropertyConflictException<int>(species, new SpeciesId(streamId).EntityId, number.Value, nameof(PokemonSpecies.Number));
       }
     }
 
@@ -82,7 +82,7 @@ internal class SpeciesQuerier : ISpeciesQuerier
         .SingleOrDefaultAsync(cancellationToken);
       if (streamId is not null && streamId != species.Id.Value)
       {
-        throw new RegionalNumberConflictException(species, new SpeciesId(streamId), regionalNumber.Key, regionalNumber.Value, nameof(SpeciesAggregate.RegionalNumbers));
+        throw new RegionalNumberConflictException(species, new SpeciesId(streamId), regionalNumber.Key, regionalNumber.Value, nameof(PokemonSpecies.RegionalNumbers));
       }
     }
   }
@@ -95,7 +95,7 @@ internal class SpeciesQuerier : ISpeciesQuerier
     return streamId is null ? null : new SpeciesId(streamId);
   }
 
-  public async Task<SpeciesModel> ReadAsync(SpeciesAggregate species, CancellationToken cancellationToken)
+  public async Task<SpeciesModel> ReadAsync(PokemonSpecies species, CancellationToken cancellationToken)
   {
     return await ReadAsync(species.Id, cancellationToken) ?? throw new InvalidOperationException($"The species entity '{species}' was not found.");
   }

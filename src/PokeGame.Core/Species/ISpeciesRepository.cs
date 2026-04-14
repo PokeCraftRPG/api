@@ -2,9 +2,9 @@
 
 public interface ISpeciesRepository
 {
-  Task<SpeciesAggregate?> LoadAsync(SpeciesId id, CancellationToken cancellationToken = default);
-  Task<IReadOnlyCollection<SpeciesAggregate>> LoadAsync(IEnumerable<SpeciesId> ids, CancellationToken cancellationToken = default);
+  Task<PokemonSpecies?> LoadAsync(SpeciesId id, CancellationToken cancellationToken = default);
+  Task<IReadOnlyCollection<PokemonSpecies>> LoadAsync(IEnumerable<SpeciesId> ids, CancellationToken cancellationToken = default);
 
-  Task SaveAsync(SpeciesAggregate species, CancellationToken cancellationToken = default);
-  Task SaveAsync(IEnumerable<SpeciesAggregate> species, CancellationToken cancellationToken = default);
+  Task SaveAsync(PokemonSpecies species, CancellationToken cancellationToken = default);
+  Task SaveAsync(IEnumerable<PokemonSpecies> species, CancellationToken cancellationToken = default);
 }

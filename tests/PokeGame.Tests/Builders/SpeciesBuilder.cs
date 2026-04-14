@@ -25,7 +25,7 @@ public interface ISpeciesBuilder
   ISpeciesBuilder WithRegionalNumber(RegionId regionId, Number? number);
   ISpeciesBuilder ClearChanges(bool clearChanges = true);
 
-  SpeciesAggregate Build();
+  PokemonSpecies Build();
 }
 
 public class SpeciesBuilder : ISpeciesBuilder
@@ -144,7 +144,7 @@ public class SpeciesBuilder : ISpeciesBuilder
     return this;
   }
 
-  public SpeciesAggregate Build()
+  public PokemonSpecies Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
     PokemonCategory category = _category ?? PokemonCategory.Standard;
@@ -156,7 +156,7 @@ public class SpeciesBuilder : ISpeciesBuilder
     EggCycles eggCycles = _eggCycles ?? new(_faker.Random.Byte(min: 1));
     EggGroups eggGroups = _eggGroups ?? _faker.EggGroups();
 
-    SpeciesAggregate species = _id.HasValue
+    PokemonSpecies species = _id.HasValue
       ? new(number, category, key, baseFriendship, catchRate, growthRate, eggCycles, eggGroups, world.OwnerId, _id.Value)
       : new(world, number, category, key, baseFriendship, catchRate, growthRate, eggCycles, eggGroups);
 
@@ -179,7 +179,7 @@ public class SpeciesBuilder : ISpeciesBuilder
     return species;
   }
 
-  public static SpeciesAggregate Darmanitan(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+  public static PokemonSpecies Darmanitan(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
     .WithWorld(world)
     .WithNumber(new Number(555))
     .WithCategory(PokemonCategory.Standard)
@@ -194,7 +194,7 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithNotes(new Notes("Galarian Darmanitan is unique with a regional Zen Mode form and top Fire-type Speed; inspired by Daruma dolls, gorillas, and snowmen, blending spiritual and folkloric themes."))
     .Build();
 
-  public static SpeciesAggregate Drifloon(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+  public static PokemonSpecies Drifloon(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
     .WithWorld(world)
     .WithNumber(new Number(425))
     .WithCategory(PokemonCategory.Standard)
@@ -209,7 +209,7 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithNotes(new Notes("Drifloon’s folklore ties it to the underworld and child-snatching myths; ideal for eerie encounters or supernatural plot hooks."))
     .Build();
 
-  public static SpeciesAggregate Eevee(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+  public static PokemonSpecies Eevee(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
     .WithWorld(world)
     .WithNumber(new Number(133))
     .WithCategory(PokemonCategory.Standard)
@@ -224,7 +224,7 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithNotes(new Notes("Eevee is a “blank slate” Pokémon designed for multiple evolutions (8 total), with unique mechanics, cultural impact, and evolution methods across games and media."))
     .Build();
 
-  public static SpeciesAggregate Groudon(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+  public static PokemonSpecies Groudon(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
     .WithWorld(world)
     .WithNumber(new Number(383))
     .WithCategory(PokemonCategory.Legendary)
@@ -239,7 +239,7 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithNotes(new Notes("Legendary Ground-type tied to land/volcanoes; no evolutions. Primal form is largest Fire-type with top stats; its stats mirror Kyogre’s in reverse."))
     .Build();
 
-  public static SpeciesAggregate Pichu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+  public static PokemonSpecies Pichu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
     .WithWorld(world)
     .WithNumber(new Number(172))
     .WithCategory(PokemonCategory.Baby)
@@ -254,7 +254,7 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithNotes(new Notes("Pichu: weakest Electric-type stats; Pikachu’s pre-evolution. Designed as its “next” form, inspired by rodents; notable trivia and naming origins included."))
     .Build();
 
-  public static SpeciesAggregate Pikachu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+  public static PokemonSpecies Pikachu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
     .WithWorld(world)
     .WithNumber(new Number(25))
     .WithCategory(PokemonCategory.Standard)
@@ -269,7 +269,7 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithNotes(new Notes("Iconic Pokémon: Pikachu has many exclusives (Z-Moves, events), a unique starter role, varied cries/designs, and major cultural and scientific impact."))
     .Build();
 
-  public static SpeciesAggregate Raichu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+  public static PokemonSpecies Raichu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
     .WithWorld(world)
     .WithNumber(new Number(26))
     .WithCategory(PokemonCategory.Standard)
@@ -284,7 +284,7 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithNotes(new Notes("Raichu trivia: Mouse Pokémon; can discharge up to 100,000 volts; notable forms (Alolan, Mega) and unique traits across games and lore."))
     .Build();
 
-  public static SpeciesAggregate Riolu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+  public static PokemonSpecies Riolu(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
     .WithWorld(world)
     .WithNumber(new Number(447))
     .WithCategory(PokemonCategory.Baby)
@@ -299,7 +299,7 @@ public class SpeciesBuilder : ISpeciesBuilder
     .WithNotes(new Notes("Riolu’s lore and rarity in Mystery Dungeon make it ideal as a special starter or hard-to-obtain companion with thematic, myth-inspired flavor."))
     .Build();
 
-  public static SpeciesAggregate Tepig(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
+  public static PokemonSpecies Tepig(Faker? faker = null, World? world = null) => new SpeciesBuilder(faker)
     .WithWorld(world)
     .WithNumber(new Number(498))
     .WithCategory(PokemonCategory.Standard)

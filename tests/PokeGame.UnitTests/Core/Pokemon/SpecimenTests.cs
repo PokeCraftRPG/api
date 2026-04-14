@@ -14,7 +14,7 @@ public class SpecimenTests
   private readonly Faker _faker = new();
 
   private readonly World _world;
-  private readonly SpeciesAggregate _species;
+  private readonly PokemonSpecies _species;
   private readonly Variety _variety;
   private readonly Form _form;
   private readonly Slug _key;
@@ -151,7 +151,7 @@ public class SpecimenTests
   [Fact(DisplayName = "It should throw WorldMismatchException when the species is not in the same world.")]
   public void Given_SpeciesWorldMismatch_When_ctor_Then_WorldMismatchException()
   {
-    SpeciesAggregate species = SpeciesBuilder.Pikachu();
+    PokemonSpecies species = SpeciesBuilder.Pikachu();
     PokemonId pokemonId = PokemonId.NewId(_world.Id);
     var exception = Assert.Throws<WorldMismatchException>(
       () => new Specimen(species, _variety, _form, _key, _gender, _isShiny, _teraType, _size, _abilitySlot, _nature, null, 0, _individualValues, null, null, null, null, _world.OwnerId, pokemonId));

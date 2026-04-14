@@ -5,7 +5,7 @@ using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Species;
 
-public class SpeciesAggregate : AggregateRoot, IEntityProvider
+public class PokemonSpecies : AggregateRoot, IEntityProvider
 {
   public const string EntityKind = "Species";
 
@@ -138,11 +138,11 @@ public class SpeciesAggregate : AggregateRoot, IEntityProvider
 
   public long Size => Key.Size + (Name?.Size ?? 0) + (Url?.Size ?? 0) + (Notes?.Size ?? 0);
 
-  public SpeciesAggregate() : base()
+  public PokemonSpecies() : base()
   {
   }
 
-  public SpeciesAggregate(
+  public PokemonSpecies(
     World world,
     Number number,
     PokemonCategory category,
@@ -156,7 +156,7 @@ public class SpeciesAggregate : AggregateRoot, IEntityProvider
   {
   }
 
-  public SpeciesAggregate(
+  public PokemonSpecies(
     Number number,
     PokemonCategory category,
     Slug key,

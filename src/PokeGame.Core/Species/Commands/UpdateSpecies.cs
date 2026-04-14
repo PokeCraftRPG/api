@@ -39,7 +39,7 @@ internal class UpdateSpeciesCommandHandler : ICommandHandler<UpdateSpeciesComman
     payload.Validate();
 
     SpeciesId speciesId = new(_context.WorldId, command.Id);
-    SpeciesAggregate? species = await _speciesRepository.LoadAsync(speciesId, cancellationToken);
+    PokemonSpecies? species = await _speciesRepository.LoadAsync(speciesId, cancellationToken);
     if (species is null)
     {
       return null;

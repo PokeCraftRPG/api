@@ -48,21 +48,21 @@ public class InvalidFormException : DomainException
     }
   }
 
-  public InvalidFormException(Specimen pokemon, Form target)
-    : base(BuildMessage(pokemon, target))
+  public InvalidFormException(Specimen specimen, Form target)
+    : base(BuildMessage(specimen, target))
   {
-    WorldId = pokemon.WorldId.ToGuid();
-    VarietyId = pokemon.VarietyId.EntityId;
-    SourceId = pokemon.FormId.EntityId;
+    WorldId = specimen.WorldId.ToGuid();
+    VarietyId = specimen.VarietyId.EntityId;
+    SourceId = specimen.FormId.EntityId;
     TargetId = target.EntityId;
-    PokemonId = pokemon.EntityId;
+    PokemonId = specimen.EntityId;
   }
 
-  private static string BuildMessage(Specimen pokemon, Form target) => new ErrorMessageBuilder(ErrorMessage)
-    .AddData(nameof(WorldId), pokemon.WorldId.ToGuid())
-    .AddData(nameof(VarietyId), pokemon.VarietyId.EntityId)
-    .AddData(nameof(SourceId), pokemon.FormId.EntityId)
+  private static string BuildMessage(Specimen specimen, Form target) => new ErrorMessageBuilder(ErrorMessage)
+    .AddData(nameof(WorldId), specimen.WorldId.ToGuid())
+    .AddData(nameof(VarietyId), specimen.VarietyId.EntityId)
+    .AddData(nameof(SourceId), specimen.FormId.EntityId)
     .AddData(nameof(TargetId), target.EntityId)
-    .AddData(nameof(PokemonId), pokemon.EntityId)
+    .AddData(nameof(PokemonId), specimen.EntityId)
     .Build();
 }

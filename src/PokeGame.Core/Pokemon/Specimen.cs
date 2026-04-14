@@ -119,7 +119,7 @@ public class Specimen : AggregateRoot, IEntityProvider
 
   public Specimen(
     World world,
-    SpeciesAggregate species,
+    PokemonSpecies species,
     Variety variety,
     Form form,
     Slug? key,
@@ -140,7 +140,7 @@ public class Specimen : AggregateRoot, IEntityProvider
   }
 
   public Specimen(
-    SpeciesAggregate species,
+    PokemonSpecies species,
     Variety variety,
     Form form,
     Slug? key,
