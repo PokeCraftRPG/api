@@ -46,9 +46,7 @@ internal class UpdateInventoryItemCommandHandler : ICommandHandler<UpdateInvento
     Item item = await _itemRepository.LoadAsync(itemId, cancellationToken)
       ?? throw new ItemNotFoundException(worldId, command.ItemId.ToString(), nameof(command.ItemId));
 
-    InventoryId inventoryId = new(trainer.Id);
-    InventoryAggregate inventory = await _inventoryRepository.LoadAsync(inventoryId, cancellationToken) ?? new(trainer);
-
+    InventoryAggregate inventory = await _inventoryRepository.LoadAsync(trainer, cancellationToken);
     inventory.Update(item, payload.Quantity, _context.UserId);
     await _inventoryRepository.SaveAsync(inventory, cancellationToken);
 

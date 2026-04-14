@@ -16,6 +16,7 @@ internal static class Pokemon
 
   public static readonly ColumnId AbilitySlot = new(nameof(PokemonEntity.AbilitySlot), Table);
   public static readonly ColumnId Characteristic = new(nameof(PokemonEntity.Characteristic), Table);
+  public static readonly ColumnId CurrentTrainerId = new(nameof(PokemonEntity.CurrentTrainerId), Table);
   public static readonly ColumnId EggCycles = new(nameof(PokemonEntity.EggCycles), Table);
   public static readonly ColumnId Experience = new(nameof(PokemonEntity.Experience), Table);
   public static readonly ColumnId FormId = new(nameof(PokemonEntity.FormId), Table);
@@ -30,9 +31,15 @@ internal static class Pokemon
   public static readonly ColumnId Key = new(nameof(PokemonEntity.Key), Table);
   public static readonly ColumnId Level = new(nameof(PokemonEntity.Level), Table);
   public static readonly ColumnId MaximumExperience = new(nameof(PokemonEntity.MaximumExperience), Table);
+  public static readonly ColumnId MetAtLevel = new(nameof(PokemonEntity.MetAtLevel), Table);
+  public static readonly ColumnId MetAtLocation = new(nameof(PokemonEntity.MetAtLocation), Table);
+  public static readonly ColumnId MetOn = new(nameof(PokemonEntity.MetOn), Table);
   public static readonly ColumnId Name = new(nameof(PokemonEntity.Name), Table);
   public static readonly ColumnId Nature = new(nameof(PokemonEntity.Nature), Table);
   public static readonly ColumnId Notes = new(nameof(PokemonEntity.Notes), Table);
+  public static readonly ColumnId OriginalTrainerId = new(nameof(PokemonEntity.OriginalTrainerId), Table);
+  public static readonly ColumnId OwnershipKind = new(nameof(PokemonEntity.OwnershipKind), Table);
+  public static readonly ColumnId PokeBallId = new(nameof(PokemonEntity.PokeBallId), Table);
   public static readonly ColumnId PokemonId = new(nameof(PokemonEntity.PokemonId), Table);
   public static readonly ColumnId Size = new(nameof(PokemonEntity.Size), Table);
   public static readonly ColumnId SpeciesId = new(nameof(PokemonEntity.SpeciesId), Table);

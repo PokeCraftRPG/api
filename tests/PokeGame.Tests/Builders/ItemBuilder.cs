@@ -196,6 +196,18 @@ public class ItemBuilder : IItemBuilder
     .WithProperties(new BerryProperties(healing: 80, false, null, false, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, null, false))
     .Build();
 
+  public static Item PokeBall(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("poke-ball"))
+    .WithName(new Name("Poké Ball"))
+    .WithDescription(new Description("A device for catching wild Pokémon. It's thrown like a ball at a Pokémon, comfortably encapsulating its target."))
+    .WithPrice(new Price(200))
+    .WithSprite(new Url("https://archives.bulbagarden.net/media/upload/7/79/Dream_Pok%C3%A9_Ball_Sprite.png"))
+    .WithUrl(new Url("https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9_Ball_(item)"))
+    .WithNotes(new Notes("Basic Poké Ball used to catch wild Pokémon (1× rate). Widely used across games; fails in some battles. Also adds Shedinja when Nincada evolves (Gen IV+)."))
+    .IsPokeBall()
+    .Build();
+
   public static Item Potion(Faker? faker = null, World? world = null) => new ItemBuilder(faker)
     .WithWorld(world)
     .WithKey(new Slug("potion"))

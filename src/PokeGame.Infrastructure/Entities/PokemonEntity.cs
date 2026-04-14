@@ -6,6 +6,7 @@ using PokeGame.Core.Forms;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Pokemon.Models;
+using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
 
 namespace PokeGame.Infrastructure.Entities;
@@ -59,6 +60,17 @@ internal class PokemonEntity : AggregateEntity
 
   public ItemEntity? HeldItem { get; private set; }
   public int? HeldItemId { get; private set; }
+
+  public OwnershipKind? OwnershipKind { get; private set; }
+  public TrainerEntity? OriginalTrainer { get; private set; }
+  public int? OriginalTrainerId { get; private set; }
+  public TrainerEntity? CurrentTrainer { get; private set; }
+  public int? CurrentTrainerId { get; private set; }
+  public ItemEntity? PokeBall { get; private set; }
+  public int? PokeBallId { get; private set; }
+  public int? MetAtLevel { get; private set; }
+  public string? MetAtLocation { get; private set; }
+  public DateTime? MetOn { get; private set; }
 
   public string? Sprite { get; private set; }
   public string? Url { get; private set; }
@@ -133,6 +145,13 @@ internal class PokemonEntity : AggregateEntity
     return actorIds;
   }
 
+  public void Catch(TrainerEntity trainer, ItemEntity pokeBall, PokemonCaught @event)
+  {
+    base.Update(@event);
+
+    SetOwnership(Core.Pokemon.OwnershipKind.Caught, trainer, pokeBall, @event.Level, @event.Location, @event.MetOn);
+  }
+
   public void Nickname(PokemonNicknamed @event)
   {
     base.Update(@event);
@@ -148,6 +167,29 @@ internal class PokemonEntity : AggregateEntity
     FormId = form.FormId;
 
     SetStatistics(@event.BaseStatistics);
+  }
+
+  public void Receive(TrainerEntity trainer, ItemEntity pokeBall, PokemonReceived @event)
+  {
+    base.Update(@event);
+
+    SetOwnership(Core.Pokemon.OwnershipKind.Received, trainer, pokeBall, @event.Level, @event.Location, @event.MetOn);
+  }
+
+  public void Release(PokemonReleased @event)
+  {
+    base.Update(@event);
+
+    OwnershipKind = null;
+    OriginalTrainer = null;
+    OriginalTrainerId = null;
+    CurrentTrainer = null;
+    CurrentTrainerId = null;
+    PokeBall = null;
+    PokeBallId = null;
+    MetAtLevel = null;
+    MetAtLocation = null;
+    MetOn = null;
   }
 
   public void SetHeldItem(ItemEntity? item, PokemonHeldItemChanged @event)
@@ -220,6 +262,24 @@ internal class PokemonEntity : AggregateEntity
 
     Vitality = Math.Min(Vitality, values.HP);
     Stamina = Math.Min(Stamina, values.HP);
+  }
+
+  private void SetOwnership(OwnershipKind kind, TrainerEntity trainer, ItemEntity pokeBall, Level level, Location location, DateTime metOn)
+  {
+    if (!OriginalTrainerId.HasValue)
+    {
+      OriginalTrainer = trainer;
+      OriginalTrainerId = trainer.TrainerId;
+    }
+
+    OwnershipKind = kind;
+    CurrentTrainer = trainer;
+    CurrentTrainerId = trainer.TrainerId;
+    PokeBall = pokeBall;
+    PokeBallId = pokeBall.ItemId;
+    MetAtLevel = level.Value;
+    MetAtLocation = location.Value;
+    MetOn = metOn.AsUniversalTime();
   }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";

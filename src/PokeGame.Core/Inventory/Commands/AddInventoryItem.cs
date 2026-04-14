@@ -46,9 +46,7 @@ internal class AddInventoryItemCommandHandler : ICommandHandler<AddInventoryItem
     Item item = await _itemRepository.LoadAsync(itemId, cancellationToken)
       ?? throw new ItemNotFoundException(worldId, command.ItemId.ToString(), nameof(command.ItemId));
 
-    InventoryId inventoryId = new(trainer.Id);
-    InventoryAggregate inventory = await _inventoryRepository.LoadAsync(inventoryId, cancellationToken) ?? new(trainer);
-
+    InventoryAggregate inventory = await _inventoryRepository.LoadAsync(trainer, cancellationToken);
     inventory.Add(item, payload.Quantity, _context.UserId);
     await _inventoryRepository.SaveAsync(inventory, cancellationToken);
 

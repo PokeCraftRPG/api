@@ -3,7 +3,9 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Items;
 using PokeGame.Core.Pokemon.Events;
+using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
+using PokeGame.Core.Trainers;
 using PokeGame.Core.Varieties;
 using PokeGame.Core.Worlds;
 
@@ -65,6 +67,9 @@ public class Specimen : AggregateRoot, IEntityProvider
   public PokemonCharacteristic Characteristic => PokemonCharacteristics.Instance.Find(IndividualValues, Size);
 
   public ItemId? HeldItemId { get; private set; }
+
+  public TrainerId? OriginalTrainerId { get; private set; }
+  public PokemonOwnership? Ownership { get; private set; }
 
   private Url? _sprite = null;
   public Url? Sprite
@@ -249,48 +254,27 @@ public class Specimen : AggregateRoot, IEntityProvider
     _friendship = @event.Friendship;
   }
 
-  public void Delete(UserId userId)
+  public void Catch(Trainer trainer, Item pokeBall, Location location, UserId userId)
   {
-    if (!IsDeleted)
+    WorldMismatchException.ThrowIfMismatch(Id, trainer.Id, nameof(trainer));
+    WorldMismatchException.ThrowIfMismatch(Id, pokeBall.Id, nameof(pokeBall));
+
+    if (pokeBall.Category != ItemCategory.PokeBall)
     {
-      Raise(new PokemonDeleted(), userId.ActorId);
+      throw new InvalidItemException(pokeBall, ItemCategory.PokeBall, nameof(PokemonOwnership.PokeBallId));
     }
-  }
 
-  public Entity GetEntity() => new(EntityKind, EntityId, WorldId, SizeBytes);
-
-  public void Nickname(Name? name, UserId userId)
-  {
-    if (Name != name)
+    if (Ownership is not null)
     {
-      Raise(new PokemonNicknamed(name), userId.ActorId);
+      throw new CannotCatchOwnedPokemonException(this);
     }
-  }
-  protected virtual void Handle(PokemonNicknamed @event)
-  {
-    Name = @event.Name;
-  }
 
-  public void RemoveHeldItem(UserId userId)
-  {
-    if (HeldItemId.HasValue)
-    {
-      Raise(new PokemonHeldItemChanged(ItemId: null), userId.ActorId);
-    }
+    Raise(new PokemonCaught(trainer.Id, pokeBall.Id, new Level(Level), location, DateTime.Now), userId.ActorId);
   }
-
-  public void SetHeldItem(Item item, UserId userId)
+  protected virtual void Handle(PokemonCaught @event)
   {
-    WorldMismatchException.ThrowIfMismatch(Id, item.Id, nameof(item));
-
-    if (HeldItemId != item.Id)
-    {
-      Raise(new PokemonHeldItemChanged(item.Id), userId.ActorId);
-    }
-  }
-  protected virtual void Handle(PokemonHeldItemChanged @event)
-  {
-    HeldItemId = @event.ItemId;
+    OriginalTrainerId = @event.TrainerId;
+    Ownership = new PokemonOwnership(OwnershipKind.Caught, @event.TrainerId, @event.PokeBallId, @event.Level, @event.Location, @event.MetOn);
   }
 
   public void ChangeForm(Form form, UserId userId)
@@ -315,6 +299,86 @@ public class Specimen : AggregateRoot, IEntityProvider
     PokemonStatistics statistics = new(BaseStatistics, IndividualValues, EffortValues, Level, Nature);
     Vitality = Math.Min(Vitality, statistics.HP);
     Stamina = Math.Min(Stamina, statistics.HP);
+  }
+
+  public void Delete(UserId userId)
+  {
+    if (!IsDeleted)
+    {
+      Raise(new PokemonDeleted(), userId.ActorId);
+    }
+  }
+
+  public Entity GetEntity() => new(EntityKind, EntityId, WorldId, SizeBytes);
+
+  public void Nickname(Name? name, UserId userId)
+  {
+    if (Name != name)
+    {
+      Raise(new PokemonNicknamed(name), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(PokemonNicknamed @event)
+  {
+    Name = @event.Name;
+  }
+
+  public void Receive(Trainer trainer, Item pokeBall, Location location, UserId userId)
+  {
+    WorldMismatchException.ThrowIfMismatch(Id, trainer.Id, nameof(trainer));
+    WorldMismatchException.ThrowIfMismatch(Id, pokeBall.Id, nameof(pokeBall));
+
+    if (pokeBall.Category != ItemCategory.PokeBall)
+    {
+      throw new InvalidItemException(pokeBall, ItemCategory.PokeBall, nameof(PokemonOwnership.PokeBallId));
+    }
+
+    Raise(new PokemonReceived(trainer.Id, pokeBall.Id, new Level(Level), location, DateTime.Now), userId.ActorId);
+  }
+  protected virtual void Handle(PokemonReceived @event)
+  {
+    OriginalTrainerId ??= @event.TrainerId;
+    Ownership = new PokemonOwnership(OwnershipKind.Received, @event.TrainerId, @event.PokeBallId, @event.Level, @event.Location, @event.MetOn);
+  }
+
+  public void RemoveHeldItem(UserId userId)
+  {
+    if (HeldItemId.HasValue)
+    {
+      Raise(new PokemonHeldItemChanged(ItemId: null), userId.ActorId);
+    }
+  }
+
+  public void Release(UserId userId)
+  {
+    if (Ownership is not null)
+    {
+      if (IsEgg)
+      {
+        throw new CannotReleaseEggPokemonException(this);
+      }
+
+      Raise(new PokemonReleased(), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(PokemonReleased _)
+  {
+    OriginalTrainerId = null;
+    Ownership = null;
+  }
+
+  public void SetHeldItem(Item item, UserId userId)
+  {
+    WorldMismatchException.ThrowIfMismatch(Id, item.Id, nameof(item));
+
+    if (HeldItemId != item.Id)
+    {
+      Raise(new PokemonHeldItemChanged(item.Id), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(PokemonHeldItemChanged @event)
+  {
+    HeldItemId = @event.ItemId;
   }
 
   public void SetKey(Slug key, UserId userId)

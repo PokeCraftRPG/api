@@ -12,6 +12,7 @@ namespace PokeGame.Infrastructure.Configurations;
 internal class PokemonConfiguration : AggregateConfiguration<PokemonEntity>, IEntityTypeConfiguration<PokemonEntity>
 {
   private const int GenderMaximumLength = 8;
+  private const int OwnershipKindMaximumLength = 8;
   private const int SizeMaximumLength = 10;
   private const int StatisticsMaximumLength = 100;
   private const int StatusConditionMaximumLength = 10;
@@ -35,6 +36,10 @@ internal class PokemonConfiguration : AggregateConfiguration<PokemonEntity>, IEn
     builder.HasIndex(x => new { x.WorldId, x.IsEgg });
     builder.HasIndex(x => new { x.WorldId, x.Level });
     builder.HasIndex(x => new { x.WorldId, x.HeldItemId });
+    builder.HasIndex(x => new { x.WorldId, x.OriginalTrainerId });
+    builder.HasIndex(x => new { x.WorldId, x.OwnershipKind });
+    builder.HasIndex(x => new { x.WorldId, x.CurrentTrainerId });
+    builder.HasIndex(x => new { x.WorldId, x.PokeBallId });
 
     builder.Property(x => x.Key).HasMaxLength(Constants.SlugMaximumLength);
     builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
@@ -47,6 +52,8 @@ internal class PokemonConfiguration : AggregateConfiguration<PokemonEntity>, IEn
     builder.Property(x => x.Statistics).HasMaxLength(StatisticsMaximumLength);
     builder.Property(x => x.StatusCondition).HasMaxLength(StatusConditionMaximumLength).HasConversion(new EnumToStringConverter<StatusCondition>());
     builder.Property(x => x.Characteristic).HasMaxLength(PokemonCharacteristic.MaximumLength);
+    builder.Property(x => x.OwnershipKind).HasMaxLength(OwnershipKindMaximumLength).HasConversion(new EnumToStringConverter<OwnershipKind>());
+    builder.Property(x => x.MetAtLocation).HasMaxLength(Constants.LocationMaximumLength);
     builder.Property(x => x.Sprite).HasMaxLength(Url.MaximumLength);
     builder.Property(x => x.Url).HasMaxLength(Url.MaximumLength);
 
@@ -56,6 +63,15 @@ internal class PokemonConfiguration : AggregateConfiguration<PokemonEntity>, IEn
     builder.HasOne(x => x.Form).WithMany(x => x.Pokemon).OnDelete(DeleteBehavior.Restrict);
     builder.HasOne(x => x.HeldItem).WithMany(x => x.HoldingPokemon)
       .HasForeignKey(x => x.HeldItemId).HasPrincipalKey(x => x.ItemId)
+      .OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.OriginalTrainer).WithMany(x => x.OriginalPokemon)
+      .HasPrincipalKey(x => x.TrainerId).HasForeignKey(x => x.OriginalTrainerId)
+      .OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.CurrentTrainer).WithMany(x => x.CurrentPokemon)
+      .HasPrincipalKey(x => x.TrainerId).HasForeignKey(x => x.CurrentTrainerId)
+      .OnDelete(DeleteBehavior.Restrict); ;
+    builder.HasOne(x => x.PokeBall).WithMany(x => x.ContainedPokemon)
+      .HasPrincipalKey(x => x.ItemId).HasForeignKey(x => x.PokeBallId)
       .OnDelete(DeleteBehavior.Restrict);
   }
 }

@@ -38,6 +38,8 @@ public class PokemonModel : Aggregate
 
   public ItemModel? HeldItem { get; set; }
 
+  public PokemonOwnershipModel? Ownership { get; set; }
+
   public string? Sprite { get; set; }
   public string? Url { get; set; }
   public string? Notes { get; set; }

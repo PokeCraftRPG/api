@@ -20,6 +20,7 @@ internal class TrainerService : ITrainerService
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<ITrainerService, TrainerService>();
+    services.AddTransient<ITrainerManager, TrainerManager>();
     services.AddTransient<ICommandHandler<CreateOrReplaceTrainerCommand, CreateOrReplaceTrainerResult>, CreateOrReplaceTrainerCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateTrainerCommand, TrainerModel?>, UpdateTrainerCommandHandler>();
     services.AddTransient<IQueryHandler<ReadTrainerQuery, TrainerModel?>, ReadTrainerQueryHandler>();

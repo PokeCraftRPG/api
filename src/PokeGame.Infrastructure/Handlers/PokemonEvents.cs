@@ -6,22 +6,28 @@ using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Handlers;
 
-internal class PokemonEvents : IEventHandler<PokemonCreated>,
+internal class PokemonEvents : IEventHandler<PokemonCaught>,
+  IEventHandler<PokemonCreated>,
   IEventHandler<PokemonDeleted>,
   IEventHandler<PokemonFormChanged>,
   IEventHandler<PokemonHeldItemChanged>,
   IEventHandler<PokemonKeyChanged>,
   IEventHandler<PokemonNicknamed>,
+  IEventHandler<PokemonReceived>,
+  IEventHandler<PokemonReleased>,
   IEventHandler<PokemonUpdated>
 {
   public static void Register(IServiceCollection services)
   {
+    services.AddTransient<IEventHandler<PokemonCaught>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonCreated>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonDeleted>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonFormChanged>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonHeldItemChanged>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonKeyChanged>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonNicknamed>, PokemonEvents>();
+    services.AddTransient<IEventHandler<PokemonReceived>, PokemonEvents>();
+    services.AddTransient<IEventHandler<PokemonReleased>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonUpdated>, PokemonEvents>();
   }
 
@@ -30,6 +36,23 @@ internal class PokemonEvents : IEventHandler<PokemonCreated>,
   public PokemonEvents(PokemonContext pokemon)
   {
     _pokemon = pokemon;
+  }
+
+  public async Task HandleAsync(PokemonCaught @event, CancellationToken cancellationToken)
+  {
+    PokemonEntity? pokemon = await _pokemon.Pokemon.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (pokemon is not null && pokemon.Version == (@event.Version - 1))
+    {
+      TrainerEntity trainer = await _pokemon.Trainers.SingleOrDefaultAsync(x => x.StreamId == @event.TrainerId.Value, cancellationToken)
+        ?? throw new InvalidOperationException($"The trainer entity 'StreamId={@event.TrainerId}' was not found.");
+
+      ItemEntity pokeBall = await _pokemon.Items.SingleOrDefaultAsync(x => x.StreamId == @event.PokeBallId.Value, cancellationToken)
+        ?? throw new InvalidOperationException($"The item entity 'StreamId={@event.PokeBallId}' was not found.");
+
+      pokemon.Catch(trainer, pokeBall, @event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
   }
 
   public async Task HandleAsync(PokemonCreated @event, CancellationToken cancellationToken)
@@ -110,6 +133,34 @@ internal class PokemonEvents : IEventHandler<PokemonCreated>,
     if (pokemon is not null && pokemon.Version == (@event.Version - 1))
     {
       pokemon.Nickname(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(PokemonReceived @event, CancellationToken cancellationToken)
+  {
+    PokemonEntity? pokemon = await _pokemon.Pokemon.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (pokemon is not null && pokemon.Version == (@event.Version - 1))
+    {
+      TrainerEntity trainer = await _pokemon.Trainers.SingleOrDefaultAsync(x => x.StreamId == @event.TrainerId.Value, cancellationToken)
+        ?? throw new InvalidOperationException($"The trainer entity 'StreamId={@event.TrainerId}' was not found.");
+
+      ItemEntity pokeBall = await _pokemon.Items.SingleOrDefaultAsync(x => x.StreamId == @event.PokeBallId.Value, cancellationToken)
+        ?? throw new InvalidOperationException($"The item entity 'StreamId={@event.PokeBallId}' was not found.");
+
+      pokemon.Receive(trainer, pokeBall, @event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(PokemonReleased @event, CancellationToken cancellationToken)
+  {
+    PokemonEntity? pokemon = await _pokemon.Pokemon.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (pokemon is not null && pokemon.Version == (@event.Version - 1))
+    {
+      pokemon.Release(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

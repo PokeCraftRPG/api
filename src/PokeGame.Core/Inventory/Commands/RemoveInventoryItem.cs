@@ -46,9 +46,7 @@ internal class RemoveInventoryItemCommandHandler : ICommandHandler<RemoveInvento
     Item item = await _itemRepository.LoadAsync(itemId, cancellationToken)
       ?? throw new ItemNotFoundException(worldId, command.ItemId.ToString(), nameof(command.ItemId));
 
-    InventoryId inventoryId = new(trainer.Id);
-    InventoryAggregate inventory = await _inventoryRepository.LoadAsync(inventoryId, cancellationToken) ?? new(trainer);
-
+    InventoryAggregate inventory = await _inventoryRepository.LoadAsync(trainer, cancellationToken);
     inventory.Remove(item, payload.Quantity, _context.UserId);
     await _inventoryRepository.SaveAsync(inventory, cancellationToken);
 
