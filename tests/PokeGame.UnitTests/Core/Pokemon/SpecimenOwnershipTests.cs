@@ -96,6 +96,29 @@ public class SpecimenOwnershipTests
     Assert.Equal("trainer", exception.ParamName);
   }
 
+  [Fact(DisplayName = "Move: it should move the Pokémon into the correct slot.")]
+  public void Given_Ownership_When_Move_Then_Moved()
+  {
+    _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+
+    PokemonSlot slot = new(1, 1);
+    _specimen.Move(slot, _world.OwnerId);
+    Assert.Equal(slot, _specimen.Slot);
+    Assert.Contains(_specimen.Changes, change => change is PokemonMoved moved && moved.ActorId == _world.OwnerId.ActorId);
+
+    _specimen.ClearChanges();
+    _specimen.Move(slot, _world.OwnerId);
+    Assert.False(_specimen.HasChanges);
+    Assert.Empty(_specimen.Changes);
+  }
+
+  [Fact(DisplayName = "Move: it should throw InvalidOperationException when the Pokémon is not owned by any trainer.")]
+  public void Given_NotOwned_When_Move_Then_InvalidOperationException()
+  {
+    var exception = Assert.Throws<InvalidOperationException>(() => _specimen.Move(new PokemonSlot(0), _world.OwnerId));
+    Assert.Equal($"The Pokémon 'Id={_specimen.Id}' is not owned by any trainer.", exception.Message);
+  }
+
   [Fact(DisplayName = "Receive: it should change the Pokémon ownership.")]
   public void Given_Wild_When_Receive_Then_Caught()
   {
@@ -176,12 +199,15 @@ public class SpecimenOwnershipTests
   public void Given_OwnedPokemon_When_Release_Then_Released()
   {
     _specimen.Catch(_trainer, _pokeBall, _location, _world.OwnerId);
-    Assert.True(_specimen.OriginalTrainerId.HasValue);
+    _specimen.Move(new PokemonSlot(0), _world.OwnerId);
+    Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);
     Assert.NotNull(_specimen.Ownership);
+    Assert.NotNull(_specimen.Slot);
 
     _specimen.Release(_world.OwnerId);
-    Assert.False(_specimen.OriginalTrainerId.HasValue);
+    Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);
     Assert.Null(_specimen.Ownership);
+    Assert.Null(_specimen.Slot);
     Assert.True(_specimen.HasChanges);
     Assert.Contains(_specimen.Changes, change => change is PokemonReleased released && released.ActorId == _world.OwnerId.ActorId);
 

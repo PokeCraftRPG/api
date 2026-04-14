@@ -310,16 +310,21 @@ internal class Mapper
       throw new ArgumentException("The held item is required.", nameof(source));
     }
 
-    if (source.OwnershipKind.HasValue || source.OriginalTrainerId.HasValue || source.CurrentTrainerId.HasValue
-      || source.PokeBallId.HasValue || source.MetAtLevel.HasValue || source.MetAtLocation is not null || source.MetOn.HasValue)
+    if (source.OriginalTrainer is not null)
+    {
+      destination.OriginalTrainer = ToTrainer(source.OriginalTrainer);
+    }
+    else if (source.OriginalTrainerId.HasValue)
+    {
+      throw new ArgumentException("The original trainer is required.", nameof(source));
+    }
+
+    if (source.OwnershipKind.HasValue || source.CurrentTrainerId.HasValue || source.PokeBallId.HasValue
+      || source.MetAtLevel.HasValue || source.MetAtLocation is not null || source.MetOn.HasValue)
     {
       if (!source.OwnershipKind.HasValue)
       {
         throw new ArgumentException("The ownership kind is required.", nameof(source));
-      }
-      if (source.OriginalTrainer is null)
-      {
-        throw new ArgumentException("The original trainer is required.", nameof(source));
       }
       if (source.CurrentTrainer is null)
       {
@@ -345,7 +350,6 @@ internal class Mapper
       destination.Ownership = new PokemonOwnershipModel
       {
         Kind = source.OwnershipKind.Value,
-        OriginalTrainer = ToTrainer(source.OriginalTrainer),
         CurrentTrainer = ToTrainer(source.CurrentTrainer),
         PokeBall = ToItem(source.PokeBall),
         Level = source.MetAtLevel.Value,

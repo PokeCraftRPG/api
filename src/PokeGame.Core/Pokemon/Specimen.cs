@@ -70,6 +70,7 @@ public class Specimen : AggregateRoot, IEntityProvider
 
   public TrainerId? OriginalTrainerId { get; private set; }
   public PokemonOwnership? Ownership { get; private set; }
+  public PokemonSlot? Slot { get; private set; }
 
   private Url? _sprite = null;
   public Url? Sprite
@@ -311,6 +312,22 @@ public class Specimen : AggregateRoot, IEntityProvider
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId, SizeBytes);
 
+  public void Move(PokemonSlot slot, UserId userId)
+  {
+    if (Ownership is null)
+    {
+      throw new InvalidOperationException($"The Pokémon 'Id={Id}' is not owned by any trainer.");
+    }
+    else if (Slot != slot)
+    {
+      Raise(new PokemonMoved(slot), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(PokemonMoved @event)
+  {
+    Slot = @event.Slot;
+  }
+
   public void Nickname(Name? name, UserId userId)
   {
     if (Name != name)
@@ -363,8 +380,8 @@ public class Specimen : AggregateRoot, IEntityProvider
   }
   protected virtual void Handle(PokemonReleased _)
   {
-    OriginalTrainerId = null;
     Ownership = null;
+    Slot = null;
   }
 
   public void SetHeldItem(Item item, UserId userId)

@@ -61,9 +61,10 @@ internal class PokemonEntity : AggregateEntity
   public ItemEntity? HeldItem { get; private set; }
   public int? HeldItemId { get; private set; }
 
-  public OwnershipKind? OwnershipKind { get; private set; }
   public TrainerEntity? OriginalTrainer { get; private set; }
   public int? OriginalTrainerId { get; private set; }
+
+  public OwnershipKind? OwnershipKind { get; private set; }
   public TrainerEntity? CurrentTrainer { get; private set; }
   public int? CurrentTrainerId { get; private set; }
   public ItemEntity? PokeBall { get; private set; }
@@ -71,6 +72,8 @@ internal class PokemonEntity : AggregateEntity
   public int? MetAtLevel { get; private set; }
   public string? MetAtLocation { get; private set; }
   public DateTime? MetOn { get; private set; }
+  public int? Position { get; private set; }
+  public int? Box { get; private set; }
 
   public string? Sprite { get; private set; }
   public string? Url { get; private set; }
@@ -152,13 +155,6 @@ internal class PokemonEntity : AggregateEntity
     SetOwnership(Core.Pokemon.OwnershipKind.Caught, trainer, pokeBall, @event.Level, @event.Location, @event.MetOn);
   }
 
-  public void Nickname(PokemonNicknamed @event)
-  {
-    base.Update(@event);
-
-    Name = @event.Name?.Value;
-  }
-
   public void ChangeForm(FormEntity form, PokemonFormChanged @event)
   {
     base.Update(@event);
@@ -167,6 +163,21 @@ internal class PokemonEntity : AggregateEntity
     FormId = form.FormId;
 
     SetStatistics(@event.BaseStatistics);
+  }
+
+  public void Nickname(PokemonNicknamed @event)
+  {
+    base.Update(@event);
+
+    Name = @event.Name?.Value;
+  }
+
+  public void Move(PokemonMoved @event)
+  {
+    base.Update(@event);
+
+    Position = @event.Slot.Position;
+    Box = @event.Slot.Box;
   }
 
   public void Receive(TrainerEntity trainer, ItemEntity pokeBall, PokemonReceived @event)
@@ -181,8 +192,6 @@ internal class PokemonEntity : AggregateEntity
     base.Update(@event);
 
     OwnershipKind = null;
-    OriginalTrainer = null;
-    OriginalTrainerId = null;
     CurrentTrainer = null;
     CurrentTrainerId = null;
     PokeBall = null;
@@ -190,6 +199,8 @@ internal class PokemonEntity : AggregateEntity
     MetAtLevel = null;
     MetAtLocation = null;
     MetOn = null;
+    Position = null;
+    Box = null;
   }
 
   public void SetHeldItem(ItemEntity? item, PokemonHeldItemChanged @event)

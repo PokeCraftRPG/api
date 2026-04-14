@@ -6,8 +6,6 @@ namespace PokeGame.Core.Pokemon.Models;
 public record PokemonOwnershipModel
 {
   public OwnershipKind Kind { get; set; }
-
-  public TrainerModel OriginalTrainer { get; set; } = new();
   public TrainerModel CurrentTrainer { get; set; } = new();
   public ItemModel PokeBall { get; set; } = new();
 

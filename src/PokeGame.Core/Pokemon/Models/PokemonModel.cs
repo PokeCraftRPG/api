@@ -3,6 +3,7 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Items.Models;
 using PokeGame.Core.Species;
+using PokeGame.Core.Trainers.Models;
 
 namespace PokeGame.Core.Pokemon.Models;
 
@@ -38,6 +39,7 @@ public class PokemonModel : Aggregate
 
   public ItemModel? HeldItem { get; set; }
 
+  public TrainerModel? OriginalTrainer { get; set; }
   public PokemonOwnershipModel? Ownership { get; set; }
 
   public string? Sprite { get; set; }

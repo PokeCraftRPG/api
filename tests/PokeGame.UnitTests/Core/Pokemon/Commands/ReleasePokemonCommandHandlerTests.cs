@@ -5,6 +5,7 @@ using PokeGame.Core.Items;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Rosters;
 using PokeGame.Core.Trainers;
 using PokeGame.Core.Worlds;
 
@@ -19,6 +20,7 @@ public class ReleasePokemonCommandHandlerTests
   private readonly Mock<IPermissionService> _permissionService = new();
   private readonly Mock<IPokemonQuerier> _pokemonQuerier = new();
   private readonly Mock<IPokemonRepository> _pokemonRepository = new();
+  private readonly Mock<IRosterRepository> _rosterRepository = new();
 
   private readonly TestContext _context;
   private readonly ReleasePokemonCommandHandler _handler;
@@ -31,7 +33,7 @@ public class ReleasePokemonCommandHandlerTests
   public ReleasePokemonCommandHandlerTests()
   {
     _context = new(_faker);
-    _handler = new(_context, _permissionService.Object, _pokemonQuerier.Object, _pokemonRepository.Object);
+    _handler = new(_context, _permissionService.Object, _pokemonQuerier.Object, _pokemonRepository.Object, _rosterRepository.Object);
 
     Assert.NotNull(_context.World);
     _world = _context.World;
@@ -40,11 +42,21 @@ public class ReleasePokemonCommandHandlerTests
     _pokeBall = ItemBuilder.PokeBall(_faker, _world);
   }
 
-  [Fact(DisplayName = "It should release the Pokémon.")]
-  public async Task Given_Pokemon_When_HandleAsync_Then_Released()
+  [Theory(DisplayName = "It should release the Pokémon.")]
+  [InlineData(false)]
+  [InlineData(true)]
+  public async Task Given_Pokemon_When_HandleAsync_Then_Released(bool inRoster)
   {
     _specimen.Receive(_trainer, _pokeBall, new Location("Mt. Coronet"), _world.OwnerId);
     _pokemonRepository.Setup(x => x.LoadAsync(_specimen.Id, _cancellationToken)).ReturnsAsync(_specimen);
+
+    Roster? roster = null;
+    if (inRoster)
+    {
+      roster = new(_trainer);
+      roster.Add(_specimen, _world.OwnerId);
+      _rosterRepository.Setup(x => x.LoadAsync(roster.Id, _cancellationToken)).ReturnsAsync(roster);
+    }
 
     PokemonModel model = new();
     _pokemonQuerier.Setup(x => x.ReadAsync(_specimen, _cancellationToken)).ReturnsAsync(model);
@@ -57,8 +69,15 @@ public class ReleasePokemonCommandHandlerTests
     _permissionService.Verify(x => x.CheckAsync(Actions.Release, _specimen, _cancellationToken), Times.Once());
     _pokemonRepository.Verify(x => x.SaveAsync(_specimen, _cancellationToken), Times.Once());
 
-    Assert.False(_specimen.OriginalTrainerId.HasValue);
+    Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);
     Assert.Null(_specimen.Ownership);
+    Assert.Null(_specimen.Slot);
+
+    if (roster is not null)
+    {
+      _rosterRepository.Verify(x => x.SaveAsync(roster, _cancellationToken), Times.Once());
+      Assert.Empty(roster.GetParty());
+    }
   }
 
   [Fact(DisplayName = "It should return null when the Pokémon was not found.")]
