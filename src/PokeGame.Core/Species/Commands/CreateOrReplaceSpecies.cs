@@ -43,7 +43,7 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
     WorldId worldId = _context.WorldId;
 
     SpeciesId speciesId = SpeciesId.NewId(worldId);
-    SpeciesAggregate? species = null;
+    PokemonSpecies? species = null;
     if (command.Id.HasValue)
     {
       speciesId = new(worldId, command.Id.Value);

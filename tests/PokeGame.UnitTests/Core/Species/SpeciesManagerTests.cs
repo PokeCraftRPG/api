@@ -30,30 +30,30 @@ public class SpeciesManagerTests
   [Fact(DisplayName = "FindAsync: it should return the species found by ID.")]
   public async Task Given_FoundById_When_FindAsync_Then_SpeciesReturned()
   {
-    SpeciesAggregate species = new SpeciesBuilder(_faker).WithWorld(_context.World).Build();
+    PokemonSpecies species = new SpeciesBuilder(_faker).WithWorld(_context.World).Build();
     _speciesRepository.Setup(x => x.LoadAsync(species.Id, _cancellationToken)).ReturnsAsync(species);
 
-    SpeciesAggregate found = await _manager.FindAsync($"  {species.EntityId.ToString().ToUpperInvariant()}  ", PropertyName, _cancellationToken);
+    PokemonSpecies found = await _manager.FindAsync($"  {species.EntityId.ToString().ToUpperInvariant()}  ", PropertyName, _cancellationToken);
     Assert.Same(species, found);
   }
 
   [Fact(DisplayName = "FindAsync: it should return the species found by key.")]
   public async Task Given_FoundByKey_When_FindAsync_Then_SpeciesReturned()
   {
-    SpeciesAggregate species = new SpeciesBuilder(_faker).WithWorld(_context.World).Build();
+    PokemonSpecies species = new SpeciesBuilder(_faker).WithWorld(_context.World).Build();
     _speciesRepository.Setup(x => x.LoadAsync(species.Id, _cancellationToken)).ReturnsAsync(species);
 
     string key = $"  {species.Key.Value.ToUpperInvariant()}  ";
     _speciesQuerier.Setup(x => x.FindIdAsync(key, _cancellationToken)).ReturnsAsync(species.Id);
 
-    SpeciesAggregate found = await _manager.FindAsync(key, PropertyName, _cancellationToken);
+    PokemonSpecies found = await _manager.FindAsync(key, PropertyName, _cancellationToken);
     Assert.Same(species, found);
   }
 
   [Fact(DisplayName = "FindAsync: it should throw InvalidOperationException when the species was not loaded.")]
   public async Task Given_NotLoaded_When_FindAsync_Then_InvalidOperationException()
   {
-    SpeciesAggregate species = new SpeciesBuilder(_faker).WithWorld(_context.World).Build();
+    PokemonSpecies species = new SpeciesBuilder(_faker).WithWorld(_context.World).Build();
     _speciesQuerier.Setup(x => x.FindIdAsync(species.Key.Value, _cancellationToken)).ReturnsAsync(species.Id);
 
     var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await _manager.FindAsync(species.Key.Value, PropertyName, _cancellationToken));

@@ -42,7 +42,7 @@ public class ChangePokemonFormCommandHandlerTests
   [Fact(DisplayName = "It should change the Pokémon form.")]
   public async Task Given_CanChangeForm_When_HandleAsync_Then_FormChanged()
   {
-    SpeciesAggregate species = SpeciesBuilder.Darmanitan(_faker, _context.World);
+    PokemonSpecies species = SpeciesBuilder.Darmanitan(_faker, _context.World);
     Variety variety = VarietyBuilder.Darmanitan(_faker, _context.World, species);
     Form form = FormBuilder.Darmanitan(_faker, _context.World, variety);
     Form zen = FormBuilder.DarmanitanZen(_faker, _context.World, variety);
@@ -81,7 +81,7 @@ public class ChangePokemonFormCommandHandlerTests
   [Fact(DisplayName = "It should throw InvalidOperationException when the variety was not loaded.")]
   public async Task Given_VarietyNotLoaded_When_HandleAsync_Then_InvalidOperationException()
   {
-    SpeciesAggregate species = SpeciesBuilder.Groudon(_faker, _context.World);
+    PokemonSpecies species = SpeciesBuilder.Groudon(_faker, _context.World);
     Variety variety = VarietyBuilder.Groudon(_faker, _context.World, species);
     Form form = FormBuilder.Groudon(_faker, _context.World, variety);
     Form primal = FormBuilder.GroudonPrimal(_faker, _context.World, variety);
@@ -99,7 +99,7 @@ public class ChangePokemonFormCommandHandlerTests
   [Fact(DisplayName = "It should throw PokemonCannotChangeFormException when the variety cannot change form.")]
   public async Task Given_CannotChangeForm_When_HandleAsync_Then_PokemonCannotChangeFormException()
   {
-    SpeciesAggregate species = SpeciesBuilder.Groudon(_faker, _context.World);
+    PokemonSpecies species = SpeciesBuilder.Groudon(_faker, _context.World);
     Variety variety = VarietyBuilder.Groudon(_faker, _context.World, species);
     Form form = FormBuilder.Groudon(_faker, _context.World, variety);
     Form primal = FormBuilder.GroudonPrimal(_faker, _context.World, variety);

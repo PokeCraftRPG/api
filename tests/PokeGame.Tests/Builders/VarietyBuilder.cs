@@ -12,7 +12,7 @@ public interface IVarietyBuilder
 {
   IVarietyBuilder WithId(VarietyId? id);
   IVarietyBuilder WithWorld(World? world);
-  IVarietyBuilder WithSpecies(SpeciesAggregate? species);
+  IVarietyBuilder WithSpecies(PokemonSpecies? species);
   IVarietyBuilder IsDefault(bool isDefault = true);
   IVarietyBuilder WithKey(Slug? key);
   IVarietyBuilder WithName(Name? name);
@@ -46,7 +46,7 @@ public class VarietyBuilder : IVarietyBuilder
   private Slug? _key = null;
   private Name? _name = null;
   private Notes? _notes = null;
-  private SpeciesAggregate? _species = null;
+  private PokemonSpecies? _species = null;
   private Url? _url = null;
   private World? _world = null;
 
@@ -67,7 +67,7 @@ public class VarietyBuilder : IVarietyBuilder
     return this;
   }
 
-  public IVarietyBuilder WithSpecies(SpeciesAggregate? species)
+  public IVarietyBuilder WithSpecies(PokemonSpecies? species)
   {
     _species = species;
     return this;
@@ -150,7 +150,7 @@ public class VarietyBuilder : IVarietyBuilder
   public Variety Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    SpeciesAggregate species = _species ?? new SpeciesBuilder(_faker).WithWorld(world).Build();
+    PokemonSpecies species = _species ?? new SpeciesBuilder(_faker).WithWorld(world).Build();
     Slug key = _key ?? new("a-variety");
 
     Variety variety = _id.HasValue ? new(species, _isDefault, key, world.OwnerId, _id.Value) : new(world, species, _isDefault, key);
@@ -188,7 +188,7 @@ public class VarietyBuilder : IVarietyBuilder
     return variety;
   }
 
-  public static Variety Darmanitan(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
+  public static Variety Darmanitan(Faker? faker = null, World? world = null, PokemonSpecies? species = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new VarietyBuilder(faker)
@@ -206,7 +206,7 @@ public class VarietyBuilder : IVarietyBuilder
       .Build();
   }
 
-  public static Variety DarmanitanGalar(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
+  public static Variety DarmanitanGalar(Faker? faker = null, World? world = null, PokemonSpecies? species = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new VarietyBuilder(faker)
@@ -223,7 +223,7 @@ public class VarietyBuilder : IVarietyBuilder
       .Build();
   }
 
-  public static Variety Eevee(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
+  public static Variety Eevee(Faker? faker = null, World? world = null, PokemonSpecies? species = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new VarietyBuilder(faker)
@@ -240,7 +240,7 @@ public class VarietyBuilder : IVarietyBuilder
       .Build();
   }
 
-  public static Variety Groudon(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
+  public static Variety Groudon(Faker? faker = null, World? world = null, PokemonSpecies? species = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new VarietyBuilder(faker)
@@ -256,7 +256,7 @@ public class VarietyBuilder : IVarietyBuilder
       .Build();
   }
 
-  public static Variety Pichu(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
+  public static Variety Pichu(Faker? faker = null, World? world = null, PokemonSpecies? species = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new VarietyBuilder(faker)
@@ -273,7 +273,7 @@ public class VarietyBuilder : IVarietyBuilder
       .Build();
   }
 
-  public static Variety Pikachu(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
+  public static Variety Pikachu(Faker? faker = null, World? world = null, PokemonSpecies? species = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new VarietyBuilder(faker)
@@ -290,7 +290,7 @@ public class VarietyBuilder : IVarietyBuilder
       .Build();
   }
 
-  public static Variety Raichu(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
+  public static Variety Raichu(Faker? faker = null, World? world = null, PokemonSpecies? species = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new VarietyBuilder(faker)
@@ -307,7 +307,7 @@ public class VarietyBuilder : IVarietyBuilder
       .WithNotes(new Notes("This is the default variety."))
       .Build();
   }
-  public static Variety Tepig(Faker? faker = null, World? world = null, SpeciesAggregate? species = null)
+  public static Variety Tepig(Faker? faker = null, World? world = null, PokemonSpecies? species = null)
   {
     world ??= new WorldBuilder(faker).Build();
     return new VarietyBuilder(faker)

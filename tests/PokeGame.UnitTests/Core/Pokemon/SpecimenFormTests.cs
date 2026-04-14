@@ -13,7 +13,7 @@ public class SpecimenFormTests
   private readonly Faker _faker = new();
 
   private readonly World _world;
-  private readonly SpeciesAggregate _species;
+  private readonly PokemonSpecies _species;
   private readonly Variety _variety;
   private readonly Form _form;
 

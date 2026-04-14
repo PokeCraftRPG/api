@@ -22,7 +22,7 @@ public class FormIntegrationTests : IntegrationTests
   private Ability _lightningRod = null!;
   private Ability _static = null!;
   private Ability _surgeSurfer = null!;
-  private SpeciesAggregate _species = null!;
+  private PokemonSpecies _species = null!;
   private Variety _variety = null!;
   private Form _form = null!;
 
@@ -298,7 +298,7 @@ public class FormIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results (VarietyId).")]
   public async Task Given_VarietyId_When_Search_Then_Results()
   {
-    SpeciesAggregate pikachuSpecies = SpeciesBuilder.Pikachu(Faker, World);
+    PokemonSpecies pikachuSpecies = SpeciesBuilder.Pikachu(Faker, World);
     await _speciesRepository.SaveAsync(pikachuSpecies);
 
     Variety pikachuVariety = VarietyBuilder.Pikachu(Faker, World, pikachuSpecies);
@@ -333,8 +333,8 @@ public class FormIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results.")]
   public async Task Given_Payload_When_Search_Then_Results()
   {
-    SpeciesAggregate pichuSpecies = SpeciesBuilder.Pichu(Faker, World);
-    SpeciesAggregate pikachuSpecies = SpeciesBuilder.Pikachu(Faker, World);
+    PokemonSpecies pichuSpecies = SpeciesBuilder.Pichu(Faker, World);
+    PokemonSpecies pikachuSpecies = SpeciesBuilder.Pikachu(Faker, World);
     await _speciesRepository.SaveAsync([pichuSpecies, pikachuSpecies]);
 
     Variety pichuVariety = VarietyBuilder.Pichu(Faker, World, pichuSpecies);

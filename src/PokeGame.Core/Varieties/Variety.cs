@@ -131,12 +131,12 @@ public class Variety : AggregateRoot, IEntityProvider
   {
   }
 
-  public Variety(World world, SpeciesAggregate species, bool isDefault, Slug key, UserId? userId = null)
+  public Variety(World world, PokemonSpecies species, bool isDefault, Slug key, UserId? userId = null)
     : this(species, isDefault, key, userId ?? world.OwnerId, VarietyId.NewId(world.Id))
   {
   }
 
-  public Variety(SpeciesAggregate species, bool isDefault, Slug key, UserId userId, VarietyId varietyId)
+  public Variety(PokemonSpecies species, bool isDefault, Slug key, UserId userId, VarietyId varietyId)
     : base(varietyId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(Id, species, nameof(species));

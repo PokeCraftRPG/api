@@ -24,7 +24,7 @@ public class PokemonIntegrationTests : IntegrationTests
 
   private Ability _blaze = null!;
   private Ability _thickFat = null!;
-  private SpeciesAggregate _species = null!;
+  private PokemonSpecies _species = null!;
   private Variety _variety = null!;
   private Form _form = null!;
   private Item _heldItem = null!;
@@ -69,7 +69,7 @@ public class PokemonIntegrationTests : IntegrationTests
     FormAbilities abilities = new(sheerForce, secondary: null, zenMode);
     await _abilityRepository.SaveAsync([sheerForce, zenMode]);
 
-    SpeciesAggregate species = SpeciesBuilder.Darmanitan(Faker, World);
+    PokemonSpecies species = SpeciesBuilder.Darmanitan(Faker, World);
     await _speciesRepository.SaveAsync(species);
 
     Variety variety = VarietyBuilder.Darmanitan(Faker, World, species);

@@ -73,7 +73,7 @@ internal class CreatePokemonCommandHandler : ICommandHandler<CreatePokemonComman
     Form form = await _formManager.FindAsync(payload.Form, nameof(payload.Form), cancellationToken);
     Variety variety = await _varietyRepository.LoadAsync(form.VarietyId, cancellationToken)
       ?? throw new InvalidOperationException($"The variety 'Id={form.VarietyId}' was not loaded.");
-    SpeciesAggregate species = await _speciesRepository.LoadAsync(variety.SpeciesId, cancellationToken)
+    PokemonSpecies species = await _speciesRepository.LoadAsync(variety.SpeciesId, cancellationToken)
       ?? throw new InvalidOperationException($"The species 'Id={variety.SpeciesId}' was not loaded.");
 
     Slug? key = Slug.TryCreate(payload.Key);

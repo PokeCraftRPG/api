@@ -13,7 +13,7 @@ public interface ISpecimenBuilder
 {
   ISpecimenBuilder WithId(PokemonId? id);
   ISpecimenBuilder WithWorld(World? world);
-  ISpecimenBuilder Is(SpeciesAggregate species, Variety variety, Form form);
+  ISpecimenBuilder Is(PokemonSpecies species, Variety variety, Form form);
   ISpecimenBuilder WithKey(Slug? key);
   ISpecimenBuilder WithName(Name? name);
   ISpecimenBuilder WithGender(PokemonGender? gender);
@@ -62,7 +62,7 @@ public class SpecimenBuilder : ISpecimenBuilder
   private PokemonNature? _nature = null;
   private Notes? _notes = null;
   private PokemonSize? _size = null;
-  private SpeciesAggregate? _species = null;
+  private PokemonSpecies? _species = null;
   private Url? _sprite = null;
   private int? _stamina = null;
   private PokemonType? _teraType = null;
@@ -89,7 +89,7 @@ public class SpecimenBuilder : ISpecimenBuilder
     return this;
   }
 
-  public ISpecimenBuilder Is(SpeciesAggregate species, Variety variety, Form form)
+  public ISpecimenBuilder Is(PokemonSpecies species, Variety variety, Form form)
   {
     _species = species;
     _variety = variety;
@@ -226,7 +226,7 @@ public class SpecimenBuilder : ISpecimenBuilder
   public Specimen Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    SpeciesAggregate species = _species ?? SpeciesBuilder.Pikachu(_faker, world);
+    PokemonSpecies species = _species ?? SpeciesBuilder.Pikachu(_faker, world);
     Variety variety = _variety ?? VarietyBuilder.Pikachu(_faker, world, species);
     Form form = _form ?? FormBuilder.Pikachu(_faker, world, variety, new FormAbilities(AbilityBuilder.Static(_faker, world), secondary: null, AbilityBuilder.LightningRod(_faker, world)));
     PokemonGender? gender = _gender ?? _randomizer.Gender(variety.GenderRatio);

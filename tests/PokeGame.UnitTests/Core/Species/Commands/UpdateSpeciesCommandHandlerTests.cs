@@ -71,7 +71,7 @@ public class UpdateSpeciesCommandHandlerTests
   [Fact(DisplayName = "It should update the existing species.")]
   public async Task Given_Exists_When_HandleAsync_Then_Replaced()
   {
-    SpeciesAggregate species = new SpeciesBuilder(_faker).WithWorld(_context.World).ClearChanges().Build();
+    PokemonSpecies species = new SpeciesBuilder(_faker).WithWorld(_context.World).ClearChanges().Build();
     _speciesRepository.Setup(x => x.LoadAsync(species.Id, _cancellationToken)).ReturnsAsync(species);
 
     UpdateSpeciesPayload payload = new()

@@ -55,7 +55,7 @@ internal class CreateOrReplaceVarietyCommandHandler : ICommandHandler<CreateOrRe
       variety = await _varietyRepository.LoadAsync(varietyId, cancellationToken);
     }
 
-    SpeciesAggregate species = await _speciesManager.FindAsync(payload.Species, nameof(payload.Species), cancellationToken);
+    PokemonSpecies species = await _speciesManager.FindAsync(payload.Species, nameof(payload.Species), cancellationToken);
     Slug key = new(payload.Key);
 
     bool created = false;

@@ -53,7 +53,7 @@ public class CreateOrReplaceVarietyCommandHandlerTests
     payload.Moves.Add(new VarietyMovePayload(Guid.NewGuid().ToString(), 0));
     CreateOrReplaceVarietyCommand command = new(payload, id);
 
-    SpeciesAggregate species = SpeciesBuilder.Pikachu(_faker, _context.World);
+    PokemonSpecies species = SpeciesBuilder.Pikachu(_faker, _context.World);
     _speciesManager.Setup(x => x.FindAsync(payload.Species, "Species", _cancellationToken)).ReturnsAsync(species);
 
     Dictionary<MoveId, int?> moves = new()
@@ -83,7 +83,7 @@ public class CreateOrReplaceVarietyCommandHandlerTests
   [Fact(DisplayName = "It should replace the existing variety.")]
   public async Task Given_Exists_When_HandleAsync_Then_Replaced()
   {
-    SpeciesAggregate species = SpeciesBuilder.Pikachu(_faker, _context.World);
+    PokemonSpecies species = SpeciesBuilder.Pikachu(_faker, _context.World);
 
     Variety variety = new VarietyBuilder(_faker).WithWorld(_context.World).WithSpecies(species).IsDefault().ClearChanges().Build();
     _varietyRepository.Setup(x => x.LoadAsync(variety.Id, _cancellationToken)).ReturnsAsync(variety);
@@ -127,7 +127,7 @@ public class CreateOrReplaceVarietyCommandHandlerTests
   [Fact(DisplayName = "It should throw ImmutablePropertyException when the species has changed.")]
   public async Task Given_SpeciesChanged_When_HandleAsync_Then_ImmutablePropertyException()
   {
-    SpeciesAggregate eevee = SpeciesBuilder.Eevee(_faker, _context.World);
+    PokemonSpecies eevee = SpeciesBuilder.Eevee(_faker, _context.World);
     Variety variety = new VarietyBuilder(_faker).WithWorld(_context.World).WithSpecies(eevee).IsDefault().ClearChanges().Build();
     _varietyRepository.Setup(x => x.LoadAsync(variety.Id, _cancellationToken)).ReturnsAsync(variety);
 
@@ -144,7 +144,7 @@ public class CreateOrReplaceVarietyCommandHandlerTests
     };
     CreateOrReplaceVarietyCommand command = new(payload, variety.EntityId);
 
-    SpeciesAggregate pikachu = SpeciesBuilder.Pikachu(_faker, _context.World);
+    PokemonSpecies pikachu = SpeciesBuilder.Pikachu(_faker, _context.World);
     _speciesManager.Setup(x => x.FindAsync(payload.Species, "Species", _cancellationToken)).ReturnsAsync(pikachu);
 
     var exception = await Assert.ThrowsAsync<ImmutablePropertyException<Guid>>(async () => await _handler.HandleAsync(command, _cancellationToken));

@@ -9,20 +9,20 @@ internal class SpeciesRepository : Repository, ISpeciesRepository
   {
   }
 
-  public async Task<SpeciesAggregate?> LoadAsync(SpeciesId id, CancellationToken cancellationToken)
+  public async Task<PokemonSpecies?> LoadAsync(SpeciesId id, CancellationToken cancellationToken)
   {
-    return await LoadAsync<SpeciesAggregate>(id.StreamId, cancellationToken);
+    return await LoadAsync<PokemonSpecies>(id.StreamId, cancellationToken);
   }
-  public async Task<IReadOnlyCollection<SpeciesAggregate>> LoadAsync(IEnumerable<SpeciesId> ids, CancellationToken cancellationToken)
+  public async Task<IReadOnlyCollection<PokemonSpecies>> LoadAsync(IEnumerable<SpeciesId> ids, CancellationToken cancellationToken)
   {
-    return await LoadAsync<SpeciesAggregate>(ids.Select(id => id.StreamId), cancellationToken);
+    return await LoadAsync<PokemonSpecies>(ids.Select(id => id.StreamId), cancellationToken);
   }
 
-  public async Task SaveAsync(SpeciesAggregate species, CancellationToken cancellationToken)
+  public async Task SaveAsync(PokemonSpecies species, CancellationToken cancellationToken)
   {
     await base.SaveAsync(species, cancellationToken);
   }
-  public async Task SaveAsync(IEnumerable<SpeciesAggregate> species, CancellationToken cancellationToken)
+  public async Task SaveAsync(IEnumerable<PokemonSpecies> species, CancellationToken cancellationToken)
   {
     await base.SaveAsync(species, cancellationToken);
   }

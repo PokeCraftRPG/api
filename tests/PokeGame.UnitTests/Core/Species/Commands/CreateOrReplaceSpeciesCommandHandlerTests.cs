@@ -62,7 +62,7 @@ public class CreateOrReplaceSpeciesCommandHandlerTests
     _speciesManager.Setup(x => x.FindRegionalNumbersAsync(payload.RegionalNumbers, "RegionalNumbers", _cancellationToken)).ReturnsAsync(regionalNumbers);
 
     SpeciesModel model = new();
-    _speciesQuerier.Setup(x => x.ReadAsync(It.IsAny<SpeciesAggregate>(), _cancellationToken)).ReturnsAsync(model);
+    _speciesQuerier.Setup(x => x.ReadAsync(It.IsAny<PokemonSpecies>(), _cancellationToken)).ReturnsAsync(model);
 
     CreateOrReplaceSpeciesResult result = await _handler.HandleAsync(command, _cancellationToken);
     Assert.True(result.Created);
@@ -74,8 +74,8 @@ public class CreateOrReplaceSpeciesCommandHandlerTests
       _speciesRepository.Verify(x => x.LoadAsync(speciesId, _cancellationToken), Times.Once());
     }
     _permissionService.Verify(x => x.CheckAsync(Actions.CreateSpecies, _cancellationToken), Times.Once());
-    _speciesQuerier.Verify(x => x.EnsureUnicityAsync(It.IsAny<SpeciesAggregate>(), _cancellationToken), Times.Once());
-    _storageService.Verify(x => x.ExecuteWithQuotaAsync(It.IsAny<SpeciesAggregate>(), It.IsAny<Func<Task>>(), _cancellationToken), Times.Once());
+    _speciesQuerier.Verify(x => x.EnsureUnicityAsync(It.IsAny<PokemonSpecies>(), _cancellationToken), Times.Once());
+    _storageService.Verify(x => x.ExecuteWithQuotaAsync(It.IsAny<PokemonSpecies>(), It.IsAny<Func<Task>>(), _cancellationToken), Times.Once());
   }
 
   [Fact(DisplayName = "It should replace the existing species.")]
@@ -83,7 +83,7 @@ public class CreateOrReplaceSpeciesCommandHandlerTests
   {
     Number number = new(25);
     PokemonCategory category = PokemonCategory.Standard;
-    SpeciesAggregate species = new SpeciesBuilder(_faker).WithWorld(_context.World).WithNumber(number).WithCategory(category).ClearChanges().Build();
+    PokemonSpecies species = new SpeciesBuilder(_faker).WithWorld(_context.World).WithNumber(number).WithCategory(category).ClearChanges().Build();
     _speciesRepository.Setup(x => x.LoadAsync(species.Id, _cancellationToken)).ReturnsAsync(species);
 
     CreateOrReplaceSpeciesPayload payload = new()
@@ -126,7 +126,7 @@ public class CreateOrReplaceSpeciesCommandHandlerTests
   [Fact(DisplayName = "It should throw ImmutablePropertyException when the category has changed.")]
   public async Task Given_CategoryChanged_When_HandleAsync_Then_ImmutablePropertyException()
   {
-    SpeciesAggregate species = new SpeciesBuilder(_faker).WithWorld(_context.World).WithCategory(PokemonCategory.Baby).ClearChanges().Build();
+    PokemonSpecies species = new SpeciesBuilder(_faker).WithWorld(_context.World).WithCategory(PokemonCategory.Baby).ClearChanges().Build();
     _speciesRepository.Setup(x => x.LoadAsync(species.Id, _cancellationToken)).ReturnsAsync(species);
 
     CreateOrReplaceSpeciesPayload payload = new()
@@ -157,7 +157,7 @@ public class CreateOrReplaceSpeciesCommandHandlerTests
   [Fact(DisplayName = "It should throw ImmutablePropertyException when the number has changed.")]
   public async Task Given_NumberChanged_When_HandleAsync_Then_ImmutablePropertyException()
   {
-    SpeciesAggregate species = new SpeciesBuilder(_faker).WithWorld(_context.World).WithNumber(new Number(172)).ClearChanges().Build();
+    PokemonSpecies species = new SpeciesBuilder(_faker).WithWorld(_context.World).WithNumber(new Number(172)).ClearChanges().Build();
     _speciesRepository.Setup(x => x.LoadAsync(species.Id, _cancellationToken)).ReturnsAsync(species);
 
     CreateOrReplaceSpeciesPayload payload = new()

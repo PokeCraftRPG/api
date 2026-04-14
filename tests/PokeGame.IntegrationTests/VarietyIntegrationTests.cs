@@ -22,7 +22,7 @@ public class VarietyIntegrationTests : IntegrationTests
   private Move _quickAttack = null!;
   private Move _thunderPunch = null!;
   private Move _thunderShock = null!;
-  private SpeciesAggregate _species = null!;
+  private PokemonSpecies _species = null!;
   private Variety _variety = null!;
 
   public VarietyIntegrationTests() : base()
@@ -178,8 +178,8 @@ public class VarietyIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results (CanChangeForm).")]
   public async Task Given_CanChangeForm_When_Search_Then_Results()
   {
-    SpeciesAggregate eeveeSpecies = SpeciesBuilder.Eevee(Faker, World);
-    SpeciesAggregate darmanitanSpecies = SpeciesBuilder.Darmanitan(Faker, World);
+    PokemonSpecies eeveeSpecies = SpeciesBuilder.Eevee(Faker, World);
+    PokemonSpecies darmanitanSpecies = SpeciesBuilder.Darmanitan(Faker, World);
     await _speciesRepository.SaveAsync([eeveeSpecies, darmanitanSpecies]);
 
     Variety eevee = VarietyBuilder.Eevee(Faker, World, eeveeSpecies);
@@ -202,8 +202,8 @@ public class VarietyIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results (SpeciesId).")]
   public async Task Given_SpeciesId_When_Search_Then_Results()
   {
-    SpeciesAggregate eeveeSpecies = SpeciesBuilder.Eevee(Faker, World);
-    SpeciesAggregate darmanitanSpecies = SpeciesBuilder.Darmanitan(Faker, World);
+    PokemonSpecies eeveeSpecies = SpeciesBuilder.Eevee(Faker, World);
+    PokemonSpecies darmanitanSpecies = SpeciesBuilder.Darmanitan(Faker, World);
     await _speciesRepository.SaveAsync([eeveeSpecies, darmanitanSpecies]);
 
     Variety eevee = VarietyBuilder.Eevee(Faker, World, eeveeSpecies);
@@ -235,9 +235,9 @@ public class VarietyIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results.")]
   public async Task Given_Payload_When_Search_Then_Results()
   {
-    SpeciesAggregate eeveeSpecies = SpeciesBuilder.Eevee(Faker, World);
-    SpeciesAggregate pichuSpecies = SpeciesBuilder.Pichu(Faker, World);
-    SpeciesAggregate pikachuSpecies = SpeciesBuilder.Pikachu(Faker, World);
+    PokemonSpecies eeveeSpecies = SpeciesBuilder.Eevee(Faker, World);
+    PokemonSpecies pichuSpecies = SpeciesBuilder.Pichu(Faker, World);
+    PokemonSpecies pikachuSpecies = SpeciesBuilder.Pikachu(Faker, World);
     await _speciesRepository.SaveAsync([eeveeSpecies, pichuSpecies, pikachuSpecies]);
 
     Variety eevee = VarietyBuilder.Eevee(Faker, World, eeveeSpecies);

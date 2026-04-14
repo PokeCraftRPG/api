@@ -15,14 +15,14 @@ public readonly struct SpeciesId : IEntityProvider
   {
     StreamId = streamId;
 
-    Entity entity = Entity.Parse(streamId.Value, SpeciesAggregate.EntityKind);
+    Entity entity = Entity.Parse(streamId.Value, PokemonSpecies.EntityKind);
     WorldId = entity.WorldId ?? throw new ArgumentException("The world identifier is required.", nameof(streamId));
     EntityId = entity.Id;
   }
 
   public SpeciesId(WorldId worldId, Guid entityId)
   {
-    Entity entity = new(SpeciesAggregate.EntityKind, entityId, worldId);
+    Entity entity = new(PokemonSpecies.EntityKind, entityId, worldId);
     StreamId = new StreamId(entity.ToString());
 
     WorldId = worldId;
@@ -35,7 +35,7 @@ public readonly struct SpeciesId : IEntityProvider
 
   public static SpeciesId NewId(WorldId worldId) => new(worldId, Guid.NewGuid());
 
-  public Entity GetEntity() => new(SpeciesAggregate.EntityKind, EntityId, WorldId);
+  public Entity GetEntity() => new(PokemonSpecies.EntityKind, EntityId, WorldId);
 
   public static bool operator ==(SpeciesId left, SpeciesId right) => left.Equals(right);
   public static bool operator !=(SpeciesId left, SpeciesId right) => !left.Equals(right);
