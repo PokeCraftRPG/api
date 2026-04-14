@@ -4,6 +4,7 @@ using PokeGame.Core.Items;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Rosters;
 using PokeGame.Core.Trainers;
 
 namespace PokeGame.Core.Pokemon.Commands;
@@ -18,6 +19,7 @@ internal class CatchPokemonCommandHandler : ICommandHandler<CatchPokemonCommand,
   private readonly IPermissionService _permissionService;
   private readonly IPokemonQuerier _pokemonQuerier;
   private readonly IPokemonRepository _pokemonRepository;
+  private readonly IRosterRepository _rosterRepository;
   private readonly ITrainerManager _trainerManager;
 
   public CatchPokemonCommandHandler(
@@ -27,6 +29,7 @@ internal class CatchPokemonCommandHandler : ICommandHandler<CatchPokemonCommand,
     IPermissionService permissionService,
     IPokemonQuerier pokemonQuerier,
     IPokemonRepository pokemonRepository,
+    IRosterRepository rosterRepository,
     ITrainerManager trainerManager)
   {
     _context = context;
@@ -35,6 +38,7 @@ internal class CatchPokemonCommandHandler : ICommandHandler<CatchPokemonCommand,
     _permissionService = permissionService;
     _pokemonQuerier = pokemonQuerier;
     _pokemonRepository = pokemonRepository;
+    _rosterRepository = rosterRepository;
     _trainerManager = trainerManager;
   }
 
@@ -54,17 +58,21 @@ internal class CatchPokemonCommandHandler : ICommandHandler<CatchPokemonCommand,
     Trainer trainer = await _trainerManager.FindAsync(payload.Trainer, nameof(payload.Trainer), cancellationToken);
     Item pokeBall = await _itemManager.FindAsync(payload.PokeBall, nameof(payload.PokeBall), cancellationToken);
 
+    UserId userId = _context.UserId;
+
     InventoryAggregate inventory = await _inventoryRepository.LoadAsync(trainer, cancellationToken);
     inventory.EnsureQuantity(pokeBall, quantity: 1);
-    inventory.Remove(pokeBall, quantity: 1, _context.UserId);
+    inventory.Remove(pokeBall, quantity: 1, userId);
 
     Location location = new(payload.Location);
-    specimen.Catch(trainer, pokeBall, location, _context.UserId);
+    specimen.Catch(trainer, pokeBall, location, userId);
 
-    // TODO(fpion): update storage
+    Roster roster = await _rosterRepository.LoadAsync(trainer, cancellationToken);
+    roster.Add(specimen, userId);
 
     await _inventoryRepository.SaveAsync(inventory, cancellationToken);
     await _pokemonRepository.SaveAsync(specimen, cancellationToken);
+    await _rosterRepository.SaveAsync(roster, cancellationToken);
 
     return await _pokemonQuerier.ReadAsync(specimen, cancellationToken);
   }

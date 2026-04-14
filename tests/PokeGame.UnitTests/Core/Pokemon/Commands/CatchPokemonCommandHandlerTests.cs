@@ -6,6 +6,7 @@ using PokeGame.Core.Items;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Rosters;
 using PokeGame.Core.Trainers;
 using PokeGame.Core.Worlds;
 
@@ -22,6 +23,7 @@ public class CatchPokemonCommandHandlerTests
   private readonly Mock<IPermissionService> _permissionService = new();
   private readonly Mock<IPokemonQuerier> _pokemonQuerier = new();
   private readonly Mock<IPokemonRepository> _pokemonRepository = new();
+  private readonly Mock<IRosterRepository> _rosterRepository = new();
   private readonly Mock<ITrainerManager> _trainerManager = new();
 
   private readonly TestContext _context;
@@ -42,6 +44,7 @@ public class CatchPokemonCommandHandlerTests
       _permissionService.Object,
       _pokemonQuerier.Object,
       _pokemonRepository.Object,
+      _rosterRepository.Object,
       _trainerManager.Object);
 
     Assert.NotNull(_context.World);
@@ -66,6 +69,9 @@ public class CatchPokemonCommandHandlerTests
     inventory.Add(_pokeBall, quantity, _world.OwnerId);
     _inventoryRepository.Setup(x => x.LoadAsync(_trainer, _cancellationToken)).ReturnsAsync(inventory);
 
+    Roster roster = new(_trainer);
+    _rosterRepository.Setup(x => x.LoadAsync(_trainer, _cancellationToken)).ReturnsAsync(roster);
+
     PokemonModel model = new();
     _pokemonQuerier.Setup(x => x.ReadAsync(_specimen, _cancellationToken)).ReturnsAsync(model);
 
@@ -76,10 +82,13 @@ public class CatchPokemonCommandHandlerTests
     _permissionService.Verify(x => x.CheckAsync(Actions.Catch, _specimen, _cancellationToken), Times.Once());
     _inventoryRepository.Verify(x => x.SaveAsync(inventory, _cancellationToken), Times.Once());
     _pokemonRepository.Verify(x => x.SaveAsync(_specimen, _cancellationToken), Times.Once());
+    _rosterRepository.Verify(x => x.SaveAsync(roster, _cancellationToken), Times.Once());
 
     Assert.Equal(quantity - 1, inventory.GetQuantity(_pokeBall));
     Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);
     Assert.NotNull(_specimen.Ownership);
+    Assert.Equal(new PokemonSlot(0), _specimen.Slot);
+    Assert.Equal(_specimen.Id, Assert.Single(roster.GetParty()));
   }
 
   [Fact(DisplayName = "It should return null when the Pokémon was not found.")]

@@ -2,8 +2,11 @@
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
+using PokeGame.Core.Items;
 using PokeGame.Core.Pokemon;
+using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
+using PokeGame.Core.Trainers;
 using PokeGame.Core.Varieties;
 using PokeGame.Core.Worlds;
 
@@ -31,6 +34,9 @@ public interface ISpecimenBuilder
   ISpecimenBuilder WithVitality(int? vitality);
   ISpecimenBuilder WithStamina(int? stamina);
   ISpecimenBuilder WithFriendship(Friendship? friendship);
+  ISpecimenBuilder HoldingItem(Item? heldItem);
+  ISpecimenBuilder Caught(Trainer? trainer, Item? pokeBall, Location? location);
+  ISpecimenBuilder Received(Trainer? trainer, Item? pokeBall, Location? location);
   ISpecimenBuilder WithSprite(Url? sprite);
   ISpecimenBuilder WithUrl(Url? url);
   ISpecimenBuilder WithNotes(Notes? notes);
@@ -52,20 +58,25 @@ public class SpecimenBuilder : ISpecimenBuilder
   private Form? _form = null;
   private Friendship? _friendship = null;
   private PokemonGender? _gender = null;
+  private Item? _heldItem = null;
   private PokemonId? _id = null;
   private IndividualValues? _individualValues = null;
   private bool _isEgg = false;
   private bool _isShiny = false;
   private Slug? _key = null;
   private int _level = 0;
+  private Location? _location = null;
   private Name? _name = null;
   private PokemonNature? _nature = null;
   private Notes? _notes = null;
+  private OwnershipKind? _ownershipKind = null;
+  private Item? _pokeBall = null;
   private PokemonSize? _size = null;
   private PokemonSpecies? _species = null;
   private Url? _sprite = null;
   private int? _stamina = null;
   private PokemonType? _teraType = null;
+  private Trainer? _trainer = null;
   private Url? _url = null;
   private Variety? _variety = null;
   private int? _vitality = null;
@@ -205,6 +216,30 @@ public class SpecimenBuilder : ISpecimenBuilder
     return this;
   }
 
+  public ISpecimenBuilder HoldingItem(Item? heldItem)
+  {
+    _heldItem = heldItem;
+    return this;
+  }
+
+  public ISpecimenBuilder Caught(Trainer? trainer, Item? pokeBall, Location? location)
+  {
+    _ownershipKind = OwnershipKind.Caught;
+    _trainer = trainer;
+    _pokeBall = pokeBall;
+    _location = location;
+    return this;
+  }
+
+  public ISpecimenBuilder Received(Trainer? trainer, Item? pokeBall, Location? location)
+  {
+    _ownershipKind = OwnershipKind.Received;
+    _trainer = trainer;
+    _pokeBall = pokeBall;
+    _location = location;
+    return this;
+  }
+
   public ISpecimenBuilder WithUrl(Url? url)
   {
     _url = url;
@@ -254,6 +289,21 @@ public class SpecimenBuilder : ISpecimenBuilder
     specimen.Url = _url;
     specimen.Notes = _notes;
     specimen.Update(world.OwnerId);
+
+    if (_ownershipKind.HasValue && _trainer is not null && _pokeBall is not null && _location is not null)
+    {
+      switch (_ownershipKind.Value)
+      {
+        case OwnershipKind.Caught:
+          specimen.Catch(_trainer, _pokeBall, _location, world.OwnerId);
+          break;
+        case OwnershipKind.Received:
+          specimen.Receive(_trainer, _pokeBall, _location, world.OwnerId);
+          break;
+        default:
+          throw new NotSupportedException($"The ownership kind '{_ownershipKind}' is not supported.");
+      }
+    }
 
     if (_clearChanges)
     {
