@@ -47,27 +47,27 @@ public class ChangePokemonFormCommandHandlerTests
     Form form = FormBuilder.Darmanitan(_faker, _context.World, variety);
     Form zen = FormBuilder.DarmanitanZen(_faker, _context.World, variety);
 
-    Specimen pokemon = new SpecimenBuilder(_faker).WithWorld(_context.World).Is(species, variety, form).Build();
-    _pokemonRepository.Setup(x => x.LoadAsync(pokemon.Id, _cancellationToken)).ReturnsAsync(pokemon);
+    Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_context.World).Is(species, variety, form).Build();
+    _pokemonRepository.Setup(x => x.LoadAsync(specimen.Id, _cancellationToken)).ReturnsAsync(specimen);
 
     _varietyRepository.Setup(x => x.LoadAsync(variety.Id, _cancellationToken)).ReturnsAsync(variety);
     _formManager.Setup(x => x.FindAsync(zen.Id.Value, "Form", _cancellationToken)).ReturnsAsync(zen);
 
     PokemonModel model = new();
-    _pokemonQuerier.Setup(x => x.ReadAsync(pokemon, _cancellationToken)).ReturnsAsync(model);
+    _pokemonQuerier.Setup(x => x.ReadAsync(specimen, _cancellationToken)).ReturnsAsync(model);
 
     ChangePokemonFormPayload payload = new(zen.Id.Value);
-    ChangePokemonFormCommand command = new(pokemon.EntityId, payload);
+    ChangePokemonFormCommand command = new(specimen.EntityId, payload);
 
     PokemonModel? result = await _handler.HandleAsync(command, _cancellationToken);
     Assert.NotNull(result);
     Assert.Same(model, result);
 
-    Assert.Equal(zen.Id, pokemon.FormId);
-    Assert.Equal(zen.BaseStatistics, pokemon.BaseStatistics);
+    Assert.Equal(zen.Id, specimen.FormId);
+    Assert.Equal(zen.BaseStatistics, specimen.BaseStatistics);
 
-    _permissionService.Verify(x => x.CheckAsync(Actions.ChangeForm, pokemon, _cancellationToken), Times.Once());
-    _storageService.Verify(x => x.ExecuteWithQuotaAsync(pokemon, It.IsAny<Func<Task>>(), _cancellationToken), Times.Once());
+    _permissionService.Verify(x => x.CheckAsync(Actions.ChangeForm, specimen, _cancellationToken), Times.Once());
+    _storageService.Verify(x => x.ExecuteWithQuotaAsync(specimen, It.IsAny<Func<Task>>(), _cancellationToken), Times.Once());
   }
 
   [Fact(DisplayName = "It should return null when the Pokémon was not found.")]
@@ -86,11 +86,11 @@ public class ChangePokemonFormCommandHandlerTests
     Form form = FormBuilder.Groudon(_faker, _context.World, variety);
     Form primal = FormBuilder.GroudonPrimal(_faker, _context.World, variety);
 
-    Specimen pokemon = new SpecimenBuilder(_faker).WithWorld(_context.World).Is(species, variety, form).Build();
-    _pokemonRepository.Setup(x => x.LoadAsync(pokemon.Id, _cancellationToken)).ReturnsAsync(pokemon);
+    Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_context.World).Is(species, variety, form).Build();
+    _pokemonRepository.Setup(x => x.LoadAsync(specimen.Id, _cancellationToken)).ReturnsAsync(specimen);
 
     ChangePokemonFormPayload payload = new(primal.Id.Value);
-    ChangePokemonFormCommand command = new(pokemon.EntityId, payload);
+    ChangePokemonFormCommand command = new(specimen.EntityId, payload);
 
     var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await _handler.HandleAsync(command, _cancellationToken));
     Assert.Equal($"The variety 'Id={variety.Id}' was not loaded.", exception.Message);
@@ -104,19 +104,19 @@ public class ChangePokemonFormCommandHandlerTests
     Form form = FormBuilder.Groudon(_faker, _context.World, variety);
     Form primal = FormBuilder.GroudonPrimal(_faker, _context.World, variety);
 
-    Specimen pokemon = new SpecimenBuilder(_faker).WithWorld(_context.World).Is(species, variety, form).Build();
-    _pokemonRepository.Setup(x => x.LoadAsync(pokemon.Id, _cancellationToken)).ReturnsAsync(pokemon);
+    Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_context.World).Is(species, variety, form).Build();
+    _pokemonRepository.Setup(x => x.LoadAsync(specimen.Id, _cancellationToken)).ReturnsAsync(specimen);
 
     _varietyRepository.Setup(x => x.LoadAsync(variety.Id, _cancellationToken)).ReturnsAsync(variety);
     _formManager.Setup(x => x.FindAsync(primal.Id.Value, "Form", _cancellationToken)).ReturnsAsync(primal);
 
     ChangePokemonFormPayload payload = new(primal.Id.Value);
-    ChangePokemonFormCommand command = new(pokemon.EntityId, payload);
+    ChangePokemonFormCommand command = new(specimen.EntityId, payload);
 
     var exception = await Assert.ThrowsAsync<PokemonCannotChangeFormException>(async () => await _handler.HandleAsync(command, _cancellationToken));
-    Assert.Equal(pokemon.WorldId.ToGuid(), exception.WorldId);
+    Assert.Equal(specimen.WorldId.ToGuid(), exception.WorldId);
     Assert.Equal(variety.EntityId, exception.VarietyId);
-    Assert.Equal(pokemon.EntityId, exception.PokemonId);
+    Assert.Equal(specimen.EntityId, exception.PokemonId);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when they payload is not valid.")]

@@ -79,15 +79,15 @@ public class PokemonIntegrationTests : IntegrationTests
     Form target = FormBuilder.DarmanitanZen(Faker, World, variety, abilities);
     await _formRepository.SaveAsync([source, target]);
 
-    Specimen pokemon = new SpecimenBuilder(Faker).WithWorld(World).Is(species, variety, source).Build();
-    await _pokemonRepository.SaveAsync(pokemon);
+    Specimen specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(species, variety, source).Build();
+    await _pokemonRepository.SaveAsync(specimen);
 
     ChangePokemonFormPayload payload = new($"  {target.Key.Value.ToUpperInvariant()}  ");
-    PokemonModel? model = await _pokemonService.ChangeFormAsync(pokemon.EntityId, payload);
+    PokemonModel? model = await _pokemonService.ChangeFormAsync(specimen.EntityId, payload);
     Assert.NotNull(model);
 
-    Assert.Equal(pokemon.EntityId, model.Id);
-    Assert.Equal(pokemon.Version + 1, model.Version);
+    Assert.Equal(specimen.EntityId, model.Id);
+    Assert.Equal(specimen.Version + 1, model.Version);
     Assert.Equal(Actor, model.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, model.UpdatedOn, TimeSpan.FromSeconds(10));
 
@@ -217,30 +217,30 @@ public class PokemonIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should read a Pokémon by ID.")]
   public async Task Given_Id_When_Read_Then_Found()
   {
-    Specimen pokemon = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).Build();
-    await _pokemonRepository.SaveAsync(pokemon);
+    Specimen specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).Build();
+    await _pokemonRepository.SaveAsync(specimen);
 
-    PokemonModel? model = await _pokemonService.ReadAsync(pokemon.EntityId);
+    PokemonModel? model = await _pokemonService.ReadAsync(specimen.EntityId);
     Assert.NotNull(model);
-    Assert.Equal(pokemon.EntityId, model.Id);
+    Assert.Equal(specimen.EntityId, model.Id);
   }
 
   [Fact(DisplayName = "It should read a Pokémon by Key.")]
   public async Task Given_Key_When_Read_Then_Found()
   {
-    Specimen pokemon = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).Build();
-    await _pokemonRepository.SaveAsync(pokemon);
+    Specimen specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).Build();
+    await _pokemonRepository.SaveAsync(specimen);
 
-    PokemonModel? model = await _pokemonService.ReadAsync(id: null, $"  {pokemon.Key.Value.ToUpperInvariant()}  ");
+    PokemonModel? model = await _pokemonService.ReadAsync(id: null, $"  {specimen.Key.Value.ToUpperInvariant()}  ");
     Assert.NotNull(model);
-    Assert.Equal(pokemon.EntityId, model.Id);
+    Assert.Equal(specimen.EntityId, model.Id);
   }
 
   [Fact(DisplayName = "It should update an existing Pokémon.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
-    Specimen pokemon = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).Build();
-    await _pokemonRepository.SaveAsync(pokemon);
+    Specimen specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).Build();
+    await _pokemonRepository.SaveAsync(specimen);
 
     UpdatePokemonPayload payload = new()
     {
@@ -251,11 +251,11 @@ public class PokemonIntegrationTests : IntegrationTests
       Notes = new Optional<string>("   Briquet is the starter Pokémon of Elliotto.   ")
     };
 
-    PokemonModel? model = await _pokemonService.UpdateAsync(pokemon.EntityId, payload);
+    PokemonModel? model = await _pokemonService.UpdateAsync(specimen.EntityId, payload);
     Assert.NotNull(model);
 
-    Assert.Equal(pokemon.EntityId, model.Id);
-    Assert.Equal(pokemon.Version + 3, model.Version);
+    Assert.Equal(specimen.EntityId, model.Id);
+    Assert.Equal(specimen.Version + 3, model.Version);
     Assert.Equal(Actor, model.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, model.UpdatedOn, TimeSpan.FromSeconds(10));
 
