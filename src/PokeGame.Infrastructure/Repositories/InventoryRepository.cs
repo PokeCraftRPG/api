@@ -27,8 +27,8 @@ internal class InventoryRepository : Repository, IInventoryRepository
   {
     await base.SaveAsync(inventory, cancellationToken);
   }
-  public async Task SaveAsync(IEnumerable<InventoryAggregate> inventory, CancellationToken cancellationToken)
+  public async Task SaveAsync(IEnumerable<InventoryAggregate> inventories, CancellationToken cancellationToken)
   {
-    await base.SaveAsync(inventory, cancellationToken);
+    await base.SaveAsync(inventories, cancellationToken);
   }
 }

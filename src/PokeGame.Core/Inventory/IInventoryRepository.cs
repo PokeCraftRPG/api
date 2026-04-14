@@ -9,5 +9,5 @@ public interface IInventoryRepository
   Task<IReadOnlyCollection<InventoryAggregate>> LoadAsync(IEnumerable<InventoryId> ids, CancellationToken cancellationToken = default);
 
   Task SaveAsync(InventoryAggregate inventory, CancellationToken cancellationToken = default);
-  Task SaveAsync(IEnumerable<InventoryAggregate> inventory, CancellationToken cancellationToken = default);
+  Task SaveAsync(IEnumerable<InventoryAggregate> inventories, CancellationToken cancellationToken = default);
 }
