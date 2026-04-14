@@ -61,9 +61,9 @@ internal class PokemonEntity : AggregateEntity
   public ItemEntity? HeldItem { get; private set; }
   public int? HeldItemId { get; private set; }
 
+  public OwnershipKind? OwnershipKind { get; private set; }
   public TrainerEntity? OriginalTrainer { get; private set; }
   public int? OriginalTrainerId { get; private set; }
-  public OwnershipKind? OwnershipKind { get; private set; }
   public TrainerEntity? CurrentTrainer { get; private set; }
   public int? CurrentTrainerId { get; private set; }
   public ItemEntity? PokeBall { get; private set; }
@@ -180,9 +180,9 @@ internal class PokemonEntity : AggregateEntity
   {
     base.Update(@event);
 
+    OwnershipKind = null;
     OriginalTrainer = null;
     OriginalTrainerId = null;
-    OwnershipKind = null;
     CurrentTrainer = null;
     CurrentTrainerId = null;
     PokeBall = null;
