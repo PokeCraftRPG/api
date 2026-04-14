@@ -90,7 +90,7 @@ internal class PermissionService : IPermissionService
   private bool IsAllowed(string action, Entity entity) => entity.Kind switch
   {
     Ability.EntityKind or Evolution.EntityKind or Form.EntityKind or Item.EntityKind or Move.EntityKind
-      or Region.EntityKind or PokemonSpecies.EntityKind or Trainer.EntityKind or Variety.EntityKind
+      or PokemonSpecies.EntityKind or Region.EntityKind or Trainer.EntityKind or Variety.EntityKind
       => action == Actions.Update && entity.WorldId == _context.WorldId && _context.IsWorldOwner,
     _ => false,
   };
