@@ -27,8 +27,8 @@ internal class RosterRepository : Repository, IRosterRepository
   {
     await base.SaveAsync(roster, cancellationToken);
   }
-  public async Task SaveAsync(IEnumerable<Roster> inventories, CancellationToken cancellationToken)
+  public async Task SaveAsync(IEnumerable<Roster> rosters, CancellationToken cancellationToken)
   {
-    await base.SaveAsync(inventories, cancellationToken);
+    await base.SaveAsync(rosters, cancellationToken);
   }
 }

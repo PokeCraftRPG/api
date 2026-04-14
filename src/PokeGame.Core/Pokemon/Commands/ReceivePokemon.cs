@@ -69,7 +69,7 @@ internal class ReceivePokemonCommandHandler : ICommandHandler<ReceivePokemonComm
     }
 
     Location location = new(payload.Location);
-    specimen.Receive(trainer, pokeBall, location, _context.UserId);
+    specimen.Receive(trainer, pokeBall, location, userId);
 
     Roster roster = await _rosterRepository.LoadAsync(trainer, cancellationToken);
     roster.Add(specimen, userId);
