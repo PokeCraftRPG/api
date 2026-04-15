@@ -57,13 +57,13 @@ public class SpecimenOwnershipTests
     Assert.Null(specimen.Ownership);
 
     specimen.Catch(_trainer, _pokeBall, _location, _world.OwnerId);
-    Assert.Null(_specimen.OriginalTrainerId);
+    Assert.Null(specimen.OriginalTrainerId);
 
     Assert.NotNull(specimen.Ownership);
     Assert.Equal(OwnershipKind.Caught, specimen.Ownership.Kind);
     Assert.Equal(_trainer.Id, specimen.Ownership.TrainerId);
     Assert.Equal(_pokeBall.Id, specimen.Ownership.PokeBallId);
-    Assert.Equal(_specimen.Level, specimen.Ownership.Level.Value);
+    Assert.Equal(specimen.Level, specimen.Ownership.Level.Value);
     Assert.Equal(_location, specimen.Ownership.Location);
     Assert.Equal(DateTime.Now, specimen.Ownership.MetOn, TimeSpan.FromSeconds(1));
 
