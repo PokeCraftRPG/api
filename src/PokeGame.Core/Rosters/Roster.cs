@@ -142,7 +142,7 @@ public class Roster : AggregateRoot, IEntityProvider
     IReadOnlyCollection<PokemonId> partyIds = GetParty();
     if (partyIds.All(id => excludedIds.Contains(id) || party[id].IsEgg))
     {
-      throw new NotImplementedException(); // TODO(fpion): implement
+      throw new InvalidPartyException(this);
     }
   }
 
