@@ -18,6 +18,74 @@ public record PokemonSlot
     new Validator().ValidateAndThrow(this);
   }
 
+  public bool IsGreaterThan(PokemonSlot slot)
+  {
+    if (Box != slot.Box)
+    {
+      throw new ArgumentException("Cannot compare slots that are not in the same box/party.", nameof(slot));
+    }
+
+    return Position > slot.Position;
+  }
+
+  public bool IsLessThan(PokemonSlot slot)
+  {
+    if (Box != slot.Box)
+    {
+      throw new ArgumentException("Cannot compare slots that are not in the same box/party.", nameof(slot));
+    }
+
+    return Position < slot.Position;
+  }
+
+  public PokemonSlot Next()
+  {
+    if (Box.HasValue)
+    {
+      if (Position == (BoxSize - 1))
+      {
+        if (Box == (BoxCount - 1))
+        {
+          throw new InvalidOperationException("The current slot is the last boxed slot.");
+        }
+
+        return new PokemonSlot(0, Box + 1);
+      }
+
+      return new PokemonSlot(Position + 1, Box);
+    }
+    else if (Position == (PartySize - 1))
+    {
+      throw new InvalidOperationException("The current slot is the last party slot.");
+    }
+
+    return new PokemonSlot(Position + 1);
+  }
+
+  public PokemonSlot Previous()
+  {
+    if (Box.HasValue)
+    {
+      if (Position == 0)
+      {
+        if (Box == 0)
+        {
+          throw new InvalidOperationException("The current slot is the first boxed slot.");
+        }
+
+        return new PokemonSlot(BoxSize - 1, Box - 1);
+      }
+
+      return new PokemonSlot(Position - 1, Box);
+    }
+    else if (Position == 0)
+    {
+      throw new InvalidOperationException("The current slot is the first party slot.");
+    }
+
+    return new PokemonSlot(Position - 1);
+  }
+
   private class Validator : AbstractValidator<PokemonSlot>
   {
     public Validator()

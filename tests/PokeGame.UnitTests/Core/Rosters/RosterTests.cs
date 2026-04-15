@@ -94,4 +94,47 @@ public class RosterTests
     Assert.Equal(specimen.Id.GetEntity(), Assert.Single(exception.Mismatched));
     Assert.Equal("specimen", exception.ParamName);
   }
+
+  [Fact(DisplayName = "Release: it should release the Pokémon when it is not the only one in the party.")]
+  public void Given_NotOnlyInParty_When_Release_Then_Released()
+  {
+    _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+    _roster.Add(_specimen, _world.OwnerId);
+
+    Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_world).Build();
+    specimen.Catch(_trainer, _pokeBall, _location, _world.OwnerId);
+    _roster.Add(specimen, _world.OwnerId);
+    Assert.Equal(new PokemonSlot(1), specimen.Slot);
+
+    Dictionary<PokemonId, Specimen> party = new()
+    {
+      [specimen.Id] = specimen
+    };
+    _roster.Release(_specimen, party, _world.OwnerId);
+
+    Assert.Null(_specimen.Ownership);
+    Assert.Equal(new PokemonSlot(0), specimen.Slot);
+    Assert.Equal([specimen.Id], _roster.GetParty());
+  }
+
+  [Fact(DisplayName = "Release: it should throw ArgumentException when the Pokémon is not in the roster.")]
+  public void Given_NotInRoster_When_Release_Then_ArgumentException()
+  {
+    var exception = Assert.Throws<ArgumentException>(() => _roster.Release(_specimen, new Dictionary<PokemonId, Specimen>(), _world.OwnerId));
+    Assert.Equal("specimen", exception.ParamName);
+    Assert.StartsWith($"The Pokémon '{_specimen}' is not in the trainer 'Id={_trainer.Id}' roster.", exception.Message);
+  }
+
+  [Fact(DisplayName = "Release: it should throw InvalidPartyException when the Pokémon is the only one in the party.")]
+  public void Given_OnlyInParty_When_Release_Then_InvalidPartyException()
+  {
+    _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+    _roster.Add(_specimen, _world.OwnerId);
+
+    Dictionary<PokemonId, Specimen> party = [];
+    var exception = Assert.Throws<InvalidPartyException>(() => _roster.Release(_specimen, party, _world.OwnerId));
+    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
+    Assert.Equal(_trainer.EntityId, exception.TrainerId);
+    Assert.Equal([_specimen.EntityId], exception.PartyIds);
+  }
 }

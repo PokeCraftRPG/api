@@ -8,6 +8,7 @@ using PokeGame.Core.Items;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Rosters;
 using PokeGame.Core.Species;
 using PokeGame.Core.Trainers;
 using PokeGame.Core.Varieties;
@@ -23,6 +24,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
   private readonly IItemRepository _itemRepository;
   private readonly IPokemonRepository _pokemonRepository;
   private readonly IPokemonService _pokemonService;
+  private readonly IRosterRepository _rosterRepository;
   private readonly ISpeciesRepository _speciesRepository;
   private readonly ITrainerRepository _trainerRepository;
   private readonly IVarietyRepository _varietyRepository;
@@ -44,6 +46,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     _itemRepository = ServiceProvider.GetRequiredService<IItemRepository>();
     _pokemonRepository = ServiceProvider.GetRequiredService<IPokemonRepository>();
     _pokemonService = ServiceProvider.GetRequiredService<IPokemonService>();
+    _rosterRepository = ServiceProvider.GetRequiredService<IRosterRepository>();
     _speciesRepository = ServiceProvider.GetRequiredService<ISpeciesRepository>();
     _trainerRepository = ServiceProvider.GetRequiredService<ITrainerRepository>();
     _varietyRepository = ServiceProvider.GetRequiredService<IVarietyRepository>();
@@ -202,7 +205,16 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
   public async Task Given_Ownership_When_Release_Then_Released()
   {
     _specimen.Receive(_trainer, _pokeBall, new Location("Viridian Forest"), World.OwnerId);
-    await _pokemonRepository.SaveAsync(_specimen);
+
+    Specimen specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).WithKey(new Slug("another-pokemon")).Build();
+    specimen.Catch(_trainer, _pokeBall, new Location("Mt. Coronet"), World.OwnerId);
+
+    Roster roster = new(_trainer);
+    roster.Add(_specimen, World.OwnerId);
+    roster.Add(specimen, World.OwnerId);
+    await _rosterRepository.SaveAsync(roster);
+
+    await _pokemonRepository.SaveAsync([_specimen, specimen]);
 
     PokemonModel? pokemon = await _pokemonService.ReleaseAsync(_specimen.EntityId);
     Assert.NotNull(pokemon);
@@ -216,5 +228,18 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
 
     Assert.Null(pokemon.Ownership);
+
+    pokemon = await _pokemonService.ReadAsync(specimen.EntityId);
+    Assert.NotNull(pokemon);
+
+    Assert.Equal(specimen.Version + 1, pokemon.Version);
+
+    Assert.NotNull(pokemon.OriginalTrainer);
+    Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
+
+    Assert.NotNull(pokemon.Ownership);
+    Assert.Equal(_trainer.EntityId, pokemon.Ownership.CurrentTrainer.Id);
+    Assert.Equal(0, pokemon.Ownership.Position);
+    Assert.Null(pokemon.Ownership.Box);
   }
 }

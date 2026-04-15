@@ -65,7 +65,27 @@ public class Roster : AggregateRoot, IEntityProvider
     // TODO(fpion): shift party members
   }
 
-  public bool Remove(Specimen specimen, UserId userId)
+  public void Release(Specimen specimen, IReadOnlyDictionary<PokemonId, Specimen> party, UserId userId)
+  {
+    if (!_slots.TryGetValue(specimen.Id, out PokemonSlot? previousSlot))
+    {
+      throw new ArgumentException($"The Pokémon '{specimen}' is not in the trainer 'Id={TrainerId}' roster.", nameof(specimen));
+    }
+    else if (specimen.Slot is not null && !specimen.Slot.Box.HasValue)
+    {
+      EnsurePartyIsNotEmpty(party, [specimen.Id]);
+    }
+
+    specimen.Release(userId);
+    Remove(specimen, userId);
+
+    if (!previousSlot.Box.HasValue)
+    {
+      ShiftPartyMembers(previousSlot, party, [specimen.Id], userId);
+    }
+  }
+
+  public bool Remove(Specimen specimen, UserId userId) // TODO(fpion): remove this method
   {
     if (!_slots.ContainsKey(specimen.Id))
     {
@@ -117,6 +137,15 @@ public class Roster : AggregateRoot, IEntityProvider
     _slots[@event.PokemonId] = @event.Slot;
   }
 
+  private void EnsurePartyIsNotEmpty(IReadOnlyDictionary<PokemonId, Specimen> party, IReadOnlyCollection<PokemonId> excludedIds)
+  {
+    IReadOnlyCollection<PokemonId> partyIds = GetParty();
+    if (partyIds.All(id => excludedIds.Contains(id) || party[id].IsEgg))
+    {
+      throw new InvalidPartyException(this);
+    }
+  }
+
   private PokemonSlot FindFirstAvailable()
   {
     return FindFirstPartyAvailable() ?? FindFirstBoxedAvailable() ?? throw new RosterIsFullException(this);
@@ -140,5 +169,25 @@ public class Roster : AggregateRoot, IEntityProvider
   {
     int position = GetParty().Count;
     return position < PokemonSlot.PartySize ? new PokemonSlot(position) : null;
+  }
+
+  private void ShiftPartyMembers(PokemonSlot previousSlot, IReadOnlyDictionary<PokemonId, Specimen> party, IReadOnlyCollection<PokemonId> excludedIds, UserId userId)
+  {
+    IReadOnlyCollection<PokemonId> partyIds = GetParty();
+    foreach (PokemonId partyId in partyIds)
+    {
+      if (!excludedIds.Contains(partyId))
+      {
+        PokemonSlot slot = _slots[partyId];
+        if (slot.IsGreaterThan(previousSlot))
+        {
+          slot = slot.Previous();
+
+          Specimen member = party[partyId];
+          member.Move(slot, userId);
+          Raise(new RosterPokemonMoved(member.Id, slot), userId.ActorId);
+        }
+      }
+    }
   }
 }
