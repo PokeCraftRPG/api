@@ -46,9 +46,14 @@ internal class ReleasePokemonCommandHandler : ICommandHandler<ReleasePokemonComm
 
     RosterId rosterId = new(specimen.Ownership.TrainerId);
     Roster roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken) ?? new(rosterId);
-    roster.Release(specimen, _context.UserId);
 
-    await _pokemonRepository.SaveAsync(specimen, cancellationToken);
+    IEnumerable<PokemonId> partyIds = roster.GetParty().Except([specimen.Id]);
+    IReadOnlyDictionary<PokemonId, Specimen> party = (partyIds.Any() ? await _pokemonRepository.LoadAsync(partyIds, cancellationToken) : [])
+      .ToDictionary(x => x.Id, x => x);
+
+    roster.Release(specimen, party, _context.UserId);
+
+    await _pokemonRepository.SaveAsync(new Specimen[] { specimen }.Concat(party.Values), cancellationToken);
     await _rosterRepository.SaveAsync(roster, cancellationToken);
 
     return await _pokemonQuerier.ReadAsync(specimen, cancellationToken);
