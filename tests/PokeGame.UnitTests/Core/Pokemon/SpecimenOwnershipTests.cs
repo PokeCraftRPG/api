@@ -118,6 +118,50 @@ public class SpecimenOwnershipTests
     Assert.Equal("trainer", exception.ParamName);
   }
 
+  [Fact(DisplayName = "Deposit: it should deposit a Pokémon in a box.")]
+  public void Given_InParty_When_Deposit_Then_Deposited()
+  {
+    _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+    _specimen.Move(new PokemonSlot(0), _world.OwnerId);
+
+    PokemonSlot slot = new(0, 0);
+    _specimen.Deposit(slot, _world.OwnerId);
+    Assert.Equal(slot, _specimen.Slot);
+    Assert.Contains(_specimen.Changes, change => change is PokemonDeposited deposited && deposited.ActorId == _world.OwnerId.ActorId);
+  }
+
+  [Fact(DisplayName = "Deposit: it should throw ArgumentException when the new slot is not in a box.")]
+  public void Given_NotInBox_When_Deposit_Then_ArgumentException()
+  {
+    _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+
+    PokemonSlot slot = new(0);
+    _specimen.Move(slot, _world.OwnerId);
+
+    var exception = Assert.Throws<ArgumentException>(() => _specimen.Deposit(slot, _world.OwnerId));
+    Assert.Equal("slot", exception.ParamName);
+    Assert.StartsWith("The slot must have a box number.", exception.Message);
+  }
+
+  [Fact(DisplayName = "Deposit: it should throw InvalidOperationException when the Pokémon has no owner.")]
+  public void Given_HasNoOwner_When_Deposit_Then_InvalidOperationException()
+  {
+    var exception = Assert.Throws<InvalidOperationException>(() => _specimen.Deposit(new PokemonSlot(0, 0), _world.OwnerId));
+    Assert.Equal($"The Pokémon 'Id={_specimen.Id}' is not owned by any trainer.", exception.Message);
+  }
+
+  [Fact(DisplayName = "Deposit: it should throw InvalidOperationException when the Pokémon is not in the party.")]
+  public void Given_NotInParty_When_Deposit_Then_InvalidOperationException()
+  {
+    _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+
+    PokemonSlot slot = new(0, 0);
+    _specimen.Move(slot, _world.OwnerId);
+
+    var exception = Assert.Throws<InvalidOperationException>(() => _specimen.Deposit(slot, _world.OwnerId));
+    Assert.Equal($"The Pokémon 'Id={_specimen.Id}' is not in the party of its owning trainer.", exception.Message);
+  }
+
   [Fact(DisplayName = "Move: it should move the Pokémon into the correct slot.")]
   public void Given_Ownership_When_Move_Then_Moved()
   {

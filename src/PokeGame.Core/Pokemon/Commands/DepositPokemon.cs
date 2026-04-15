@@ -41,14 +41,18 @@ internal class DepositPokemonCommandHandler : ICommandHandler<DepositPokemonComm
 
     if (specimen.Ownership is null)
     {
-      throw new NotImplementedException(); // TODO(fpion): implement
+      throw new PokemonHasNoOwnerException(specimen);
     }
 
     RosterId rosterId = new(specimen.Ownership.TrainerId);
     Roster roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken) ?? new(rosterId);
-    roster.Deposit(specimen, _context.UserId);
 
-    await _pokemonRepository.SaveAsync(specimen, cancellationToken);
+    IEnumerable<PokemonId> partyIds = roster.GetParty().Except([specimen.Id]);
+    IReadOnlyDictionary<PokemonId, Specimen> party = (await _pokemonRepository.LoadAsync(partyIds, cancellationToken)).ToDictionary(x => x.Id, x => x);
+
+    roster.Deposit(specimen, party, _context.UserId);
+
+    await _pokemonRepository.SaveAsync(new Specimen[] { specimen }.Concat(party.Values), cancellationToken);
     await _rosterRepository.SaveAsync(roster, cancellationToken);
 
     return await _pokemonQuerier.ReadAsync(specimen, cancellationToken);
