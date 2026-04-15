@@ -43,17 +43,8 @@ public class Roster : AggregateRoot, IEntityProvider
     {
       PokemonSlot slot = FindFirstAvailable();
       specimen.Move(slot, userId);
-      Raise(new RosterPokemonAdded(specimen.Id, slot), userId.ActorId);
+      Raise(new RosterPokemonMoved(specimen.Id, slot), userId.ActorId);
     }
-  }
-  protected virtual void Handle(RosterPokemonAdded @event) // TODO(fpion): move this method
-  {
-    if (_slots.TryGetValue(@event.PokemonId, out PokemonSlot? previousSlot))
-    {
-      _pokemon.Remove(previousSlot);
-    }
-    _pokemon[@event.Slot] = @event.PokemonId;
-    _slots[@event.PokemonId] = @event.Slot;
   }
 
   public void Deposit(Specimen specimen, UserId userId)
@@ -69,7 +60,7 @@ public class Roster : AggregateRoot, IEntityProvider
 
     PokemonSlot slot = FindFirstBoxedAvailable() ?? throw new RosterIsFullException(this); // TODO(fpion): or the storage/box system is full
     specimen.Deposit(slot, userId);
-    Raise(new RosterPokemonAdded(specimen.Id, slot), userId.ActorId);
+    Raise(new RosterPokemonMoved(specimen.Id, slot), userId.ActorId);
 
     // TODO(fpion): shift party members
   }
@@ -113,7 +104,17 @@ public class Roster : AggregateRoot, IEntityProvider
 
     PokemonSlot slot = FindFirstPartyAvailable() ?? throw new NotImplementedException();
     specimen.Withdraw(slot, userId);
-    Raise(new RosterPokemonAdded(specimen.Id, slot), userId.ActorId);
+    Raise(new RosterPokemonMoved(specimen.Id, slot), userId.ActorId);
+  }
+
+  protected virtual void Handle(RosterPokemonMoved @event)
+  {
+    if (_slots.TryGetValue(@event.PokemonId, out PokemonSlot? previousSlot))
+    {
+      _pokemon.Remove(previousSlot);
+    }
+    _pokemon[@event.Slot] = @event.PokemonId;
+    _slots[@event.PokemonId] = @event.Slot;
   }
 
   private PokemonSlot FindFirstAvailable()

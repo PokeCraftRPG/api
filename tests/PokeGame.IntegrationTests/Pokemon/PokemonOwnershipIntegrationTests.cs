@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
+using PokeGame.Core;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Inventory;
@@ -65,7 +66,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     _form = FormBuilder.Pikachu(Faker, World, _variety, new FormAbilities(_static, secondary: null, _lightningRod));
     await _formRepository.SaveAsync(_form);
 
-    _specimen = new SpecimenBuilder(Faker).Is(_species, _variety, _form).WithWorld(World).Build();
+    _specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).Build();
     await _pokemonRepository.SaveAsync(_specimen);
 
     _trainer = TrainerBuilder.AshKetchum(Faker, World);
@@ -105,6 +106,45 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(_trainer.EntityId, pokemon.Ownership.CurrentTrainer.Id);
     Assert.Equal(_pokeBall.EntityId, pokemon.Ownership.PokeBall.Id);
     Assert.Equal(_specimen.Level, pokemon.Ownership.Level);
+    Assert.Equal(payload.Location.Trim(), pokemon.Ownership.Location);
+    Assert.Equal(DateTime.UtcNow, pokemon.Ownership.MetOn, TimeSpan.FromSeconds(10));
+
+    Assert.Equal(0, pokemon.Ownership.Position);
+    Assert.Null(pokemon.Ownership.Box);
+  }
+
+  [Fact(DisplayName = "It should catch an egg Pokémon.")]
+  public async Task Given_Egg_When_Catch_Then_Caught()
+  {
+    Specimen specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).IsEgg().WithKey(new Slug("an-egg")).Build();
+    await _pokemonRepository.SaveAsync(specimen);
+
+    InventoryAggregate inventory = await _inventoryRepository.LoadAsync(_trainer);
+    inventory.Add(_pokeBall, quantity: 1, World.OwnerId);
+    await _inventoryRepository.SaveAsync(inventory);
+
+    CatchPokemonPayload payload = new()
+    {
+      Trainer = $"  {_trainer.Key.Value.ToUpperInvariant()}  ",
+      PokeBall = $"  {_pokeBall.EntityId.ToString().ToUpperInvariant()}  ",
+      Location = "  Viridian Forest  "
+    };
+
+    PokemonModel? pokemon = await _pokemonService.CatchAsync(specimen.EntityId, payload);
+    Assert.NotNull(pokemon);
+
+    Assert.Equal(specimen.EntityId, pokemon.Id);
+    Assert.Equal(specimen.Version + 2, pokemon.Version);
+    Assert.Equal(Actor, pokemon.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, pokemon.UpdatedOn, TimeSpan.FromSeconds(10));
+
+    Assert.Null(pokemon.OriginalTrainer);
+
+    Assert.NotNull(pokemon.Ownership);
+    Assert.Equal(OwnershipKind.Caught, pokemon.Ownership.Kind);
+    Assert.Equal(_trainer.EntityId, pokemon.Ownership.CurrentTrainer.Id);
+    Assert.Equal(_pokeBall.EntityId, pokemon.Ownership.PokeBall.Id);
+    Assert.Equal(specimen.Level, pokemon.Ownership.Level);
     Assert.Equal(payload.Location.Trim(), pokemon.Ownership.Location);
     Assert.Equal(DateTime.UtcNow, pokemon.Ownership.MetOn, TimeSpan.FromSeconds(10));
 

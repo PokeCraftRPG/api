@@ -51,6 +51,9 @@ internal class ReleasePokemonCommandHandler : ICommandHandler<ReleasePokemonComm
 
     specimen.Release(userId);
 
+    // TODO(fpion): releasing a Pokémon from the party should shift the following party members
+    // TODO(fpion): releasing a Pokémon should not empty the party if the user is not a gamemaster
+
     await _pokemonRepository.SaveAsync(specimen, cancellationToken);
 
     if (roster is not null)
