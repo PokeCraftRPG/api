@@ -274,7 +274,10 @@ public class Specimen : AggregateRoot, IEntityProvider
   }
   protected virtual void Handle(PokemonCaught @event)
   {
-    OriginalTrainerId = @event.TrainerId;
+    if (!IsEgg)
+    {
+      OriginalTrainerId = @event.TrainerId;
+    }
     Ownership = new PokemonOwnership(OwnershipKind.Caught, @event.TrainerId, @event.PokeBallId, @event.Level, @event.Location, @event.MetOn);
   }
 

@@ -293,7 +293,7 @@ internal class PokemonEntity : AggregateEntity
 
   private void SetOwnership(OwnershipKind kind, TrainerEntity trainer, ItemEntity pokeBall, Level level, Location location, DateTime metOn)
   {
-    if (!OriginalTrainerId.HasValue)
+    if (!OriginalTrainerId.HasValue && (kind != Core.Pokemon.OwnershipKind.Caught || !IsEgg))
     {
       OriginalTrainer = trainer;
       OriginalTrainerId = trainer.TrainerId;

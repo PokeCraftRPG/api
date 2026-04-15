@@ -49,6 +49,28 @@ public class SpecimenOwnershipTests
     Assert.Contains(_specimen.Changes, change => change is PokemonCaught caught && caught.ActorId == _world.OwnerId.ActorId);
   }
 
+  [Fact(DisplayName = "Catch: it should catch an egg Pokémon.")]
+  public void Given_Egg_When_Catch_Then_Caught()
+  {
+    Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_world).IsEgg().Build();
+    Assert.False(specimen.OriginalTrainerId.HasValue);
+    Assert.Null(specimen.Ownership);
+
+    specimen.Catch(_trainer, _pokeBall, _location, _world.OwnerId);
+    Assert.Null(_specimen.OriginalTrainerId);
+
+    Assert.NotNull(specimen.Ownership);
+    Assert.Equal(OwnershipKind.Caught, specimen.Ownership.Kind);
+    Assert.Equal(_trainer.Id, specimen.Ownership.TrainerId);
+    Assert.Equal(_pokeBall.Id, specimen.Ownership.PokeBallId);
+    Assert.Equal(_specimen.Level, specimen.Ownership.Level.Value);
+    Assert.Equal(_location, specimen.Ownership.Location);
+    Assert.Equal(DateTime.Now, specimen.Ownership.MetOn, TimeSpan.FromSeconds(1));
+
+    Assert.True(specimen.HasChanges);
+    Assert.Contains(specimen.Changes, change => change is PokemonCaught caught && caught.ActorId == _world.OwnerId.ActorId);
+  }
+
   [Fact(DisplayName = "Catch: it should throw CannotCatchOwnedPokemonException when the Pokémon already has a trainer.")]
   public void Given_NotWild_When_Catch_Then_CannotCatchOwnedPokemonException()
   {
