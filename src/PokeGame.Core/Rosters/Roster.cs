@@ -19,7 +19,15 @@ public class Roster : AggregateRoot, IEntityProvider
   {
   }
 
-  public Roster(Trainer trainer) : base(new RosterId(trainer.Id).StreamId)
+  public Roster(Trainer trainer) : this(trainer.Id)
+  {
+  }
+
+  public Roster(TrainerId trainerId) : this(new RosterId(trainerId))
+  {
+  }
+
+  public Roster(RosterId rosterId) : base(rosterId.StreamId)
   {
   }
 
@@ -38,7 +46,7 @@ public class Roster : AggregateRoot, IEntityProvider
       Raise(new RosterPokemonAdded(specimen.Id, slot), userId.ActorId);
     }
   }
-  protected virtual void Handle(RosterPokemonAdded @event)
+  protected virtual void Handle(RosterPokemonAdded @event) // TODO(fpion): move this method
   {
     if (_slots.TryGetValue(@event.PokemonId, out PokemonSlot? previousSlot))
     {
@@ -46,6 +54,24 @@ public class Roster : AggregateRoot, IEntityProvider
     }
     _pokemon[@event.Slot] = @event.PokemonId;
     _slots[@event.PokemonId] = @event.Slot;
+  }
+
+  public void Deposit(Specimen specimen, UserId userId)
+  {
+    if (!_slots.TryGetValue(specimen.Id, out PokemonSlot? previousSlot))
+    {
+      throw new NotImplementedException(); // TODO(fpion): throw or return false
+    }
+    else if (previousSlot.Box.HasValue)
+    {
+      throw new NotImplementedException(); // TODO(fpion): throw or return false
+    }
+
+    PokemonSlot slot = FindFirstBoxedAvailable() ?? throw new RosterIsFullException(this); // TODO(fpion): or the storage/box system is full
+    specimen.Deposit(slot, userId);
+    Raise(new RosterPokemonAdded(specimen.Id, slot), userId.ActorId);
+
+    // TODO(fpion): shift party members
   }
 
   public bool Remove(Specimen specimen, UserId userId)
@@ -67,9 +93,32 @@ public class Roster : AggregateRoot, IEntityProvider
     _slots.Remove(@event.PokemonId);
   }
 
+  public Entity GetEntity() => new(EntityKind, TrainerId.EntityId, TrainerId.WorldId);
+
+  public IReadOnlyCollection<PokemonId> GetParty() => _slots
+    .Where(x => !x.Value.Box.HasValue)
+    .OrderBy(x => x.Value.Position)
+    .Select(x => x.Key).ToList().AsReadOnly();
+
+  public void Withdraw(Specimen specimen, UserId userId)
+  {
+    if (!_slots.TryGetValue(specimen.Id, out PokemonSlot? previousSlot))
+    {
+      throw new NotImplementedException(); // TODO(fpion): throw or return false
+    }
+    else if (!previousSlot.Box.HasValue)
+    {
+      throw new NotImplementedException(); // TODO(fpion): throw or return false
+    }
+
+    PokemonSlot slot = FindFirstPartyAvailable() ?? throw new NotImplementedException();
+    specimen.Withdraw(slot, userId);
+    Raise(new RosterPokemonAdded(specimen.Id, slot), userId.ActorId);
+  }
+
   private PokemonSlot FindFirstAvailable()
   {
-    return FindFirstPartyAvailable() ?? FindFirstBoxedAvailable() ?? throw new RosterFullException(this);
+    return FindFirstPartyAvailable() ?? FindFirstBoxedAvailable() ?? throw new RosterIsFullException(this);
   }
   private PokemonSlot? FindFirstBoxedAvailable()
   {
@@ -91,11 +140,4 @@ public class Roster : AggregateRoot, IEntityProvider
     int position = GetParty().Count;
     return position < PokemonSlot.PartySize ? new PokemonSlot(position) : null;
   }
-
-  public Entity GetEntity() => new(EntityKind, TrainerId.EntityId, TrainerId.WorldId);
-
-  public IReadOnlyCollection<PokemonId> GetParty() => _slots
-    .Where(x => !x.Value.Box.HasValue)
-    .OrderBy(x => x.Value.Position)
-    .Select(x => x.Key).ToList().AsReadOnly();
 }

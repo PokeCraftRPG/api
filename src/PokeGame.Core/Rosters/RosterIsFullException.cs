@@ -3,7 +3,7 @@ using Logitar;
 
 namespace PokeGame.Core.Rosters;
 
-public class RosterFullException : DomainException
+public class RosterIsFullException : DomainException
 {
   private const string ErrorMessage = "The Pokémon roster is full.";
 
@@ -29,7 +29,7 @@ public class RosterFullException : DomainException
     }
   }
 
-  public RosterFullException(Roster roster) : base(BuildMessage(roster))
+  public RosterIsFullException(Roster roster) : base(BuildMessage(roster))
   {
     WorldId = roster.TrainerId.WorldId.ToGuid();
     TrainerId = roster.TrainerId.EntityId;

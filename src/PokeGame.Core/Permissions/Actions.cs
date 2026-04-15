@@ -18,10 +18,12 @@ public static class Actions
   public const string CreateVariety = "CreateVariety";
   public const string CreateWorld = "CreateWorld";
   public const string Decline = "Decline";
+  public const string Deposit = "Deposit";
   public const string Receive = "Receive";
   public const string Release = "Release";
   public const string RevokeMembership = "RevokeMembership";
   public const string SendMembershipInvitation = "SendMembershipInvitation";
   public const string TransferOwnership = "TransferOwnership";
   public const string Update = "Update";
+  public const string Withdraw = "Withdraw";
 }

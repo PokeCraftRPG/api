@@ -165,6 +165,14 @@ internal class PokemonEntity : AggregateEntity
     SetStatistics(@event.BaseStatistics);
   }
 
+  public void Deposit(PokemonDeposited @event)
+  {
+    base.Update(@event);
+
+    Position = @event.Slot.Position;
+    Box = @event.Slot.Box;
+  }
+
   public void Nickname(PokemonNicknamed @event)
   {
     base.Update(@event);
@@ -234,6 +242,14 @@ internal class PokemonEntity : AggregateEntity
     {
       Notes = @event.Notes.Value?.Value;
     }
+  }
+
+  public void Withdraw(PokemonWithdrawn @event)
+  {
+    base.Update(@event);
+
+    Position = @event.Slot.Position;
+    Box = @event.Slot.Box;
   }
 
   public PokemonStatisticsModel GetStatistics()
