@@ -310,6 +310,26 @@ public class Specimen : AggregateRoot, IEntityProvider
     }
   }
 
+  public void Deposit(PokemonSlot slot, UserId userId)
+  {
+    if (Ownership is null)
+    {
+      throw new InvalidOperationException($"The Pokémon 'Id={Id}' is not owned by any trainer."); // TODO(fpion): implement
+    }
+    else if (!slot.Box.HasValue)
+    {
+      throw new ArgumentException("The Pokémon must be deposited inside a box.", nameof(slot)); // TODO(fpion): implement
+    }
+    else if (Slot != slot)
+    {
+      Raise(new PokemonDeposited(slot.Position, slot.Box.Value), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(PokemonDeposited @event)
+  {
+    Slot = new PokemonSlot(@event.Position, @event.Box);
+  }
+
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId, SizeBytes);
 
   public void Move(PokemonSlot slot, UserId userId)
@@ -435,6 +455,26 @@ public class Specimen : AggregateRoot, IEntityProvider
     {
       _notes = @event.Notes.Value;
     }
+  }
+
+  public void Withdraw(PokemonSlot slot, UserId userId)
+  {
+    if (Ownership is null)
+    {
+      throw new InvalidOperationException($"The Pokémon 'Id={Id}' is not owned by any trainer."); // TODO(fpion): implement
+    }
+    else if (slot.Box.HasValue)
+    {
+      throw new ArgumentException("The Pokémon must be withdrawn from a box.", nameof(slot)); // TODO(fpion): implement
+    }
+    else if (Slot != slot)
+    {
+      Raise(new PokemonWithdrawn(slot.Position), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(PokemonWithdrawn @event)
+  {
+    Slot = new PokemonSlot(@event.Position);
   }
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";

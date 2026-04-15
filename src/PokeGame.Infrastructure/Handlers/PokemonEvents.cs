@@ -9,6 +9,7 @@ namespace PokeGame.Infrastructure.Handlers;
 internal class PokemonEvents : IEventHandler<PokemonCaught>,
   IEventHandler<PokemonCreated>,
   IEventHandler<PokemonDeleted>,
+  IEventHandler<PokemonDeposited>,
   IEventHandler<PokemonFormChanged>,
   IEventHandler<PokemonHeldItemChanged>,
   IEventHandler<PokemonKeyChanged>,
@@ -16,13 +17,15 @@ internal class PokemonEvents : IEventHandler<PokemonCaught>,
   IEventHandler<PokemonNicknamed>,
   IEventHandler<PokemonReceived>,
   IEventHandler<PokemonReleased>,
-  IEventHandler<PokemonUpdated>
+  IEventHandler<PokemonUpdated>,
+  IEventHandler<PokemonWithdrawn>
 {
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IEventHandler<PokemonCaught>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonCreated>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonDeleted>, PokemonEvents>();
+    services.AddTransient<IEventHandler<PokemonDeposited>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonFormChanged>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonHeldItemChanged>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonKeyChanged>, PokemonEvents>();
@@ -31,6 +34,7 @@ internal class PokemonEvents : IEventHandler<PokemonCaught>,
     services.AddTransient<IEventHandler<PokemonReceived>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonReleased>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonUpdated>, PokemonEvents>();
+    services.AddTransient<IEventHandler<PokemonWithdrawn>, PokemonEvents>();
   }
 
   private readonly PokemonContext _pokemon;
@@ -81,6 +85,17 @@ internal class PokemonEvents : IEventHandler<PokemonCaught>,
     if (pokemon is not null)
     {
       _pokemon.Remove(pokemon);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(PokemonDeposited @event, CancellationToken cancellationToken)
+  {
+    PokemonEntity? pokemon = await _pokemon.Pokemon.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (pokemon is not null && pokemon.Version == (@event.Version - 1))
+    {
+      pokemon.Deposit(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
@@ -185,6 +200,17 @@ internal class PokemonEvents : IEventHandler<PokemonCaught>,
     if (pokemon is not null && pokemon.Version == (@event.Version - 1))
     {
       pokemon.Update(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(PokemonWithdrawn @event, CancellationToken cancellationToken)
+  {
+    PokemonEntity? pokemon = await _pokemon.Pokemon.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (pokemon is not null && pokemon.Version == (@event.Version - 1))
+    {
+      pokemon.Withdraw(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
