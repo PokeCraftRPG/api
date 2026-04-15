@@ -81,6 +81,40 @@ public class ReceivePokemonCommandHandlerTests
     Assert.Equal(_specimen.Id, Assert.Single(roster.GetParty()));
   }
 
+  [Fact(DisplayName = "It should only load the roster once when it is the same trainer.")]
+  public async Task Given_SameTrainer_When_HandleAsync_Then_RosterLoadedOnce()
+  {
+    _specimen.Receive(_trainer, _pokeBall, new Location("Mt. Coronet"), _world.OwnerId);
+
+    ReceivePokemonPayload payload = new(_trainer.Key.Value, _pokeBall.Key.Value, "Mt. Coronet");
+    ReceivePokemonCommand command = new(_specimen.EntityId, payload);
+
+    _pokemonRepository.Setup(x => x.LoadAsync(_specimen.Id, _cancellationToken)).ReturnsAsync(_specimen);
+    _trainerManager.Setup(x => x.FindAsync(payload.Trainer, "Trainer", _cancellationToken)).ReturnsAsync(_trainer);
+    _itemManager.Setup(x => x.FindAsync(payload.PokeBall, "PokeBall", _cancellationToken)).ReturnsAsync(_pokeBall);
+
+    Roster roster = new(_trainer);
+    _rosterRepository.Setup(x => x.LoadAsync(_trainer, _cancellationToken)).ReturnsAsync(roster);
+
+    PokemonModel model = new();
+    _pokemonQuerier.Setup(x => x.ReadAsync(_specimen, _cancellationToken)).ReturnsAsync(model);
+
+    PokemonModel? result = await _handler.HandleAsync(command, _cancellationToken);
+    Assert.NotNull(result);
+    Assert.Same(model, result);
+
+    _permissionService.Verify(x => x.CheckAsync(Actions.Receive, _specimen, _cancellationToken), Times.Once());
+    _pokemonRepository.Verify(x => x.SaveAsync(_specimen, _cancellationToken), Times.Once());
+    _rosterRepository.Verify(x => x.LoadAsync(_trainer, _cancellationToken), Times.Once());
+    _rosterRepository.Verify(x => x.SaveAsync(It.Is<IEnumerable<Roster>>(r => r.Single().Equals(roster)), _cancellationToken), Times.Once());
+    _rosterRepository.VerifyNoOtherCalls();
+
+    Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);
+    Assert.NotNull(_specimen.Ownership);
+    Assert.Equal(new PokemonSlot(0), _specimen.Slot);
+    Assert.Equal(_specimen.Id, Assert.Single(roster.GetParty()));
+  }
+
   [Fact(DisplayName = "It should return null when the Pokémon was not found.")]
   public async Task Given_NotFound_When_HandleAsync_Then_NullReturned()
   {

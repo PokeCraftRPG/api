@@ -57,7 +57,7 @@ internal class ReceivePokemonCommandHandler : ICommandHandler<ReceivePokemonComm
     UserId userId = _context.UserId;
 
     List<Roster> rosters = new(capacity: 2);
-    if (specimen.Ownership is not null)
+    if (specimen.Ownership is not null && specimen.Ownership.TrainerId != trainer.Id)
     {
       RosterId rosterId = new(specimen.Ownership.TrainerId);
       Roster? previousRoster = await _rosterRepository.LoadAsync(rosterId, cancellationToken);

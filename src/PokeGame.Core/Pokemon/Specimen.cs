@@ -350,6 +350,9 @@ public class Specimen : AggregateRoot, IEntityProvider
       throw new InvalidItemException(pokeBall, ItemCategory.PokeBall, nameof(PokemonOwnership.PokeBallId));
     }
 
+    // TODO(fpion): do nothing when the trainer is the same?
+    // TODO(fpion): we currently can change the Poké Ball and Location by calling Receive with the current trainer!
+
     Raise(new PokemonReceived(trainer.Id, pokeBall.Id, new Level(Level), location, DateTime.Now), userId.ActorId);
   }
   protected virtual void Handle(PokemonReceived @event)
