@@ -30,7 +30,7 @@ public class GenusTests
   [Fact(DisplayName = "ctor: it should throw ValidationException when the value is too long.")]
   public void Given_TooLong_When_ctor_Then_ValidationException()
   {
-    string value = _faker.Random.String(Genus.MaximumLength + 1);
+    string value = _faker.Random.String(Genus.MaximumLength + 1, 'a', 'z');
     var exception = Assert.Throws<FluentValidation.ValidationException>(() => new Genus(value));
     Assert.Single(exception.Errors);
     Assert.Contains(exception.Errors, e => e.ErrorCode == "MaximumLengthValidator" && e.PropertyName == "Value");
