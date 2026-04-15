@@ -115,7 +115,8 @@ public class PokemonSlotTests
   [InlineData(true)]
   public void Given_BoxedSlot_When_Next_Then_NextSlot(bool isLast)
   {
-    PokemonSlot slot = new(isLast ? PokemonSlot.BoxSize - 1 : _faker.Random.Int(0, PokemonSlot.BoxSize - 2), _faker.Random.Int(0, PokemonSlot.BoxCount - 1));
+    int box = isLast ? _faker.Random.Int(0, PokemonSlot.BoxCount - 2) : _faker.Random.Int(0, PokemonSlot.BoxCount - 1);
+    PokemonSlot slot = new(isLast ? PokemonSlot.BoxSize - 1 : _faker.Random.Int(0, PokemonSlot.BoxSize - 2), box);
     PokemonSlot next = slot.Next();
 
     if (isLast)
@@ -161,7 +162,8 @@ public class PokemonSlotTests
   [InlineData(true)]
   public void Given_BoxedSlot_When_Previous_Then_PreviousSlot(bool isFirst)
   {
-    PokemonSlot slot = new(isFirst ? 0 : _faker.Random.Int(1, PokemonSlot.BoxSize - 1), _faker.Random.Int(0, PokemonSlot.BoxCount - 1));
+    int box = isFirst ? _faker.Random.Int(1, PokemonSlot.BoxCount - 1) : _faker.Random.Int(0, PokemonSlot.BoxCount - 1);
+    PokemonSlot slot = new(isFirst ? 0 : _faker.Random.Int(1, PokemonSlot.BoxSize - 1), box);
     PokemonSlot previous = slot.Previous();
 
     if (isFirst)
