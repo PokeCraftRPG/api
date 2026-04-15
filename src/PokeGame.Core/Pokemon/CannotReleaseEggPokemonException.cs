@@ -38,7 +38,7 @@ public class CannotReleaseEggPokemonException : DomainException
   public CannotReleaseEggPokemonException(Specimen specimen) : base(BuildMessage(specimen))
   {
     WorldId = specimen.WorldId.ToGuid();
-    PokemonId = specimen.Id.EntityId;
+    PokemonId = specimen.EntityId;
     EggCycles = specimen.EggCycles?.Value;
   }
 

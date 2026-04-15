@@ -65,7 +65,27 @@ public class Roster : AggregateRoot, IEntityProvider
     // TODO(fpion): shift party members
   }
 
-  public bool Remove(Specimen specimen, UserId userId)
+  public void Release(Specimen specimen, UserId userId)
+  {
+    if (!_slots.TryGetValue(specimen.Id, out PokemonSlot? previousSlot))
+    {
+      throw new NotImplementedException(); // TODO(fpion): implement
+    }
+    else if (specimen.Slot is not null && !specimen.Slot.Box.HasValue)
+    {
+      // TODO(fpion): EnsurePartyIsNotEmpty(party, [specimen.Id]); bypass if gamemaster
+    }
+
+    specimen.Release(userId);
+    Remove(specimen, userId);
+
+    if (!previousSlot.Box.HasValue)
+    {
+      // TODO(fpion): ShiftPartyMembers(previousSlot, party, [specimen.Id], userId);
+    }
+  }
+
+  public bool Remove(Specimen specimen, UserId userId) // TODO(fpion): remove this method
   {
     if (!_slots.ContainsKey(specimen.Id))
     {

@@ -39,27 +39,17 @@ internal class ReleasePokemonCommandHandler : ICommandHandler<ReleasePokemonComm
     }
     await _permissionService.CheckAsync(Actions.Release, specimen, cancellationToken);
 
-    UserId userId = _context.UserId;
-
-    Roster? roster = null;
-    if (specimen.Ownership is not null)
+    if (specimen.Ownership is null)
     {
-      RosterId rosterId = new(specimen.Ownership.TrainerId);
-      roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken);
-      roster?.Remove(specimen, userId);
+      throw new PokemonHasNoOwnerException(specimen);
     }
 
-    specimen.Release(userId);
-
-    // TODO(fpion): releasing a Pokémon from the party should shift the following party members
-    // TODO(fpion): releasing a Pokémon should not empty the party if the user is not a gamemaster
+    RosterId rosterId = new(specimen.Ownership.TrainerId);
+    Roster roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken) ?? new(rosterId);
+    roster.Release(specimen, _context.UserId);
 
     await _pokemonRepository.SaveAsync(specimen, cancellationToken);
-
-    if (roster is not null)
-    {
-      await _rosterRepository.SaveAsync(roster, cancellationToken);
-    }
+    await _rosterRepository.SaveAsync(roster, cancellationToken);
 
     return await _pokemonQuerier.ReadAsync(specimen, cancellationToken);
   }

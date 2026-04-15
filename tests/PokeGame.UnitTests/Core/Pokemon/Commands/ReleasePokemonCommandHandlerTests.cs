@@ -42,21 +42,15 @@ public class ReleasePokemonCommandHandlerTests
     _pokeBall = ItemBuilder.PokeBall(_faker, _world);
   }
 
-  [Theory(DisplayName = "It should release the Pokémon.")]
-  [InlineData(false)]
-  [InlineData(true)]
-  public async Task Given_Pokemon_When_HandleAsync_Then_Released(bool inRoster)
+  [Fact(DisplayName = "It should release the Pokémon.")]
+  public async Task Given_Pokemon_When_HandleAsync_Then_Released()
   {
     _specimen.Receive(_trainer, _pokeBall, new Location("Mt. Coronet"), _world.OwnerId);
     _pokemonRepository.Setup(x => x.LoadAsync(_specimen.Id, _cancellationToken)).ReturnsAsync(_specimen);
 
-    Roster? roster = null;
-    if (inRoster)
-    {
-      roster = new(_trainer);
-      roster.Add(_specimen, _world.OwnerId);
-      _rosterRepository.Setup(x => x.LoadAsync(roster.Id, _cancellationToken)).ReturnsAsync(roster);
-    }
+    Roster roster = new(_trainer);
+    roster.Add(_specimen, _world.OwnerId);
+    _rosterRepository.Setup(x => x.LoadAsync(roster.Id, _cancellationToken)).ReturnsAsync(roster);
 
     PokemonModel model = new();
     _pokemonQuerier.Setup(x => x.ReadAsync(_specimen, _cancellationToken)).ReturnsAsync(model);
@@ -73,11 +67,8 @@ public class ReleasePokemonCommandHandlerTests
     Assert.Null(_specimen.Ownership);
     Assert.Null(_specimen.Slot);
 
-    if (roster is not null)
-    {
-      _rosterRepository.Verify(x => x.SaveAsync(roster, _cancellationToken), Times.Once());
-      Assert.Empty(roster.GetParty());
-    }
+    _rosterRepository.Verify(x => x.SaveAsync(roster, _cancellationToken), Times.Once());
+    Assert.Empty(roster.GetParty());
   }
 
   [Fact(DisplayName = "It should return null when the Pokémon was not found.")]
@@ -85,5 +76,16 @@ public class ReleasePokemonCommandHandlerTests
   {
     ReleasePokemonCommand command = new(Guid.NewGuid());
     Assert.Null(await _handler.HandleAsync(command, _cancellationToken));
+  }
+
+  [Fact(DisplayName = "It should throw PokemonHasNoOwnerException when the Pokémon is wild.")]
+  public async Task Given_Wild_When_HandleAsync_Then_PokemonHasNoOwnerException()
+  {
+    _pokemonRepository.Setup(x => x.LoadAsync(_specimen.Id, _cancellationToken)).ReturnsAsync(_specimen);
+
+    ReleasePokemonCommand command = new(_specimen.EntityId);
+    var exception = await Assert.ThrowsAsync<PokemonHasNoOwnerException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
+    Assert.Equal(_specimen.EntityId, exception.PokemonId);
   }
 }
