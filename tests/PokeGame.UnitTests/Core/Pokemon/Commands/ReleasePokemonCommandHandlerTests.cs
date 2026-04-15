@@ -45,10 +45,17 @@ public class ReleasePokemonCommandHandlerTests
   [Fact(DisplayName = "It should release the Pokémon.")]
   public async Task Given_Pokemon_When_HandleAsync_Then_Released()
   {
+    Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_world).Build();
+    specimen.Catch(_trainer, _pokeBall, new Location("Viridian Forest"), _world.OwnerId);
+    _pokemonRepository.Setup(x => x.LoadAsync(
+      It.Is<IEnumerable<PokemonId>>(y => y.SequenceEqual(new PokemonId[] { specimen.Id })),
+      _cancellationToken)).ReturnsAsync([specimen]);
+
     _specimen.Receive(_trainer, _pokeBall, new Location("Mt. Coronet"), _world.OwnerId);
     _pokemonRepository.Setup(x => x.LoadAsync(_specimen.Id, _cancellationToken)).ReturnsAsync(_specimen);
 
     Roster roster = new(_trainer);
+    roster.Add(specimen, _world.OwnerId);
     roster.Add(_specimen, _world.OwnerId);
     _rosterRepository.Setup(x => x.LoadAsync(roster.Id, _cancellationToken)).ReturnsAsync(roster);
 
@@ -61,14 +68,16 @@ public class ReleasePokemonCommandHandlerTests
     Assert.Same(model, result);
 
     _permissionService.Verify(x => x.CheckAsync(Actions.Release, _specimen, _cancellationToken), Times.Once());
-    _pokemonRepository.Verify(x => x.SaveAsync(_specimen, _cancellationToken), Times.Once());
+    _pokemonRepository.Verify(x => x.SaveAsync(
+      It.Is<IEnumerable<Specimen>>(y => y.SequenceEqual(new Specimen[] { _specimen, specimen })),
+      _cancellationToken), Times.Once());
 
     Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);
     Assert.Null(_specimen.Ownership);
     Assert.Null(_specimen.Slot);
 
     _rosterRepository.Verify(x => x.SaveAsync(roster, _cancellationToken), Times.Once());
-    Assert.Empty(roster.GetParty());
+    Assert.Equal([specimen.Id], roster.GetParty());
   }
 
   [Fact(DisplayName = "It should return null when the Pokémon was not found.")]
