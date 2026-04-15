@@ -287,4 +287,41 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(0, pokemon.Ownership.Position);
     Assert.Null(pokemon.Ownership.Box);
   }
+
+  [Fact(DisplayName = "It should withdraw a Pokémon.")]
+  public async Task Given_Ownership_When_Withdraw_Then_Withdrawn()
+  {
+    _specimen.Receive(_trainer, _pokeBall, new Location("Viridian Forest"), World.OwnerId);
+
+    Specimen specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).WithKey(new Slug("another-pokemon")).Build();
+    specimen.Catch(_trainer, _pokeBall, new Location("Mt. Coronet"), World.OwnerId);
+    Dictionary<PokemonId, Specimen> party = new()
+    {
+      [specimen.Id] = specimen
+    };
+
+    Roster roster = new(_trainer);
+    roster.Add(_specimen, World.OwnerId);
+    roster.Add(specimen, World.OwnerId);
+    roster.Deposit(_specimen, party, World.OwnerId);
+    await _rosterRepository.SaveAsync(roster);
+
+    await _pokemonRepository.SaveAsync([_specimen, specimen]);
+
+    PokemonModel? pokemon = await _pokemonService.WithdrawAsync(_specimen.EntityId);
+    Assert.NotNull(pokemon);
+
+    Assert.Equal(_specimen.EntityId, pokemon.Id);
+    Assert.Equal(_specimen.Version + 1, pokemon.Version);
+    Assert.Equal(Actor, pokemon.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, pokemon.UpdatedOn, TimeSpan.FromSeconds(10));
+
+    Assert.NotNull(pokemon.OriginalTrainer);
+    Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
+
+    Assert.NotNull(pokemon.Ownership);
+    Assert.Equal(_trainer.EntityId, pokemon.Ownership.CurrentTrainer.Id);
+    Assert.Equal(1, pokemon.Ownership.Position);
+    Assert.Null(pokemon.Ownership.Box);
+  }
 }
