@@ -466,16 +466,18 @@ public class Specimen : AggregateRoot, IEntityProvider
   {
     if (Ownership is null)
     {
-      throw new InvalidOperationException($"The Pokémon 'Id={Id}' is not owned by any trainer."); // TODO(fpion): implement
+      throw new InvalidOperationException($"The Pokémon 'Id={Id}' is not owned by any trainer.");
+    }
+    else if (Slot is null || !Slot.Box.HasValue)
+    {
+      throw new InvalidOperationException($"The Pokémon 'Id={Id}' is already in the party of its owning trainer.");
     }
     else if (slot.Box.HasValue)
     {
-      throw new ArgumentException("The Pokémon must be withdrawn from a box.", nameof(slot)); // TODO(fpion): implement
+      throw new ArgumentException("The slot must not have a box number.", nameof(slot));
     }
-    else if (Slot != slot)
-    {
-      Raise(new PokemonWithdrawn(slot.Position), userId.ActorId);
-    }
+
+    Raise(new PokemonWithdrawn(slot.Position), userId.ActorId);
   }
   protected virtual void Handle(PokemonWithdrawn @event)
   {

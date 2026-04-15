@@ -117,14 +117,14 @@ public class Roster : AggregateRoot, IEntityProvider
   {
     if (!_slots.TryGetValue(specimen.Id, out PokemonSlot? previousSlot))
     {
-      throw new NotImplementedException(); // TODO(fpion): throw or return false
+      throw new ArgumentException($"The Pokémon '{specimen}' is not in the trainer 'Id={TrainerId}' roster.", nameof(specimen));
     }
     else if (!previousSlot.Box.HasValue)
     {
-      throw new NotImplementedException(); // TODO(fpion): throw or return false
+      throw new PokemonAlreadyInPartyException(specimen);
     }
 
-    PokemonSlot slot = FindFirstPartyAvailable() ?? throw new NotImplementedException();
+    PokemonSlot slot = FindFirstPartyAvailable() ?? throw new PartyIsFullException(this);
     specimen.Withdraw(slot, userId);
     Raise(new RosterPokemonMoved(specimen.Id, slot), userId.ActorId);
   }

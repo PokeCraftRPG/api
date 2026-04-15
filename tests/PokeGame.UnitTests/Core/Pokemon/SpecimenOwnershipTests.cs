@@ -294,4 +294,48 @@ public class SpecimenOwnershipTests
     Assert.Equal(specimen.EntityId, exception.PokemonId);
     Assert.Equal(specimen.EggCycles?.Value, exception.EggCycles);
   }
+
+  [Fact(DisplayName = "Withdraw: it should withdraw a Pokémon from a box.")]
+  public void Given_InParty_When_Withdraw_Then_Withdrawed()
+  {
+    _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+    _specimen.Move(new PokemonSlot(0, 0), _world.OwnerId);
+
+    PokemonSlot slot = new(0);
+    _specimen.Withdraw(slot, _world.OwnerId);
+    Assert.Equal(slot, _specimen.Slot);
+    Assert.Contains(_specimen.Changes, change => change is PokemonWithdrawn withdrawn && withdrawn.ActorId == _world.OwnerId.ActorId);
+  }
+
+  [Fact(DisplayName = "Withdraw: it should throw ArgumentException when the new slot is in a box.")]
+  public void Given_NotInBox_When_Withdraw_Then_ArgumentException()
+  {
+    _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+
+    PokemonSlot slot = new(0, 0);
+    _specimen.Move(slot, _world.OwnerId);
+
+    var exception = Assert.Throws<ArgumentException>(() => _specimen.Withdraw(slot, _world.OwnerId));
+    Assert.Equal("slot", exception.ParamName);
+    Assert.StartsWith("The slot must not have a box number.", exception.Message);
+  }
+
+  [Fact(DisplayName = "Withdraw: it should throw InvalidOperationException when the Pokémon has no owner.")]
+  public void Given_HasNoOwner_When_Withdraw_Then_InvalidOperationException()
+  {
+    var exception = Assert.Throws<InvalidOperationException>(() => _specimen.Withdraw(new PokemonSlot(0, 0), _world.OwnerId));
+    Assert.Equal($"The Pokémon 'Id={_specimen.Id}' is not owned by any trainer.", exception.Message);
+  }
+
+  [Fact(DisplayName = "Withdraw: it should throw InvalidOperationException when the Pokémon is already in the party.")]
+  public void Given_NotInParty_When_Withdraw_Then_InvalidOperationException()
+  {
+    _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+
+    PokemonSlot slot = new(0);
+    _specimen.Move(slot, _world.OwnerId);
+
+    var exception = Assert.Throws<InvalidOperationException>(() => _specimen.Withdraw(slot, _world.OwnerId));
+    Assert.Equal($"The Pokémon 'Id={_specimen.Id}' is already in the party of its owning trainer.", exception.Message);
+  }
 }

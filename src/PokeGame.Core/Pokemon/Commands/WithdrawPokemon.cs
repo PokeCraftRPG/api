@@ -41,7 +41,7 @@ internal class WithdrawPokemonCommandHandler : ICommandHandler<WithdrawPokemonCo
 
     if (specimen.Ownership is null)
     {
-      throw new NotImplementedException(); // TODO(fpion): implement
+      throw new PokemonHasNoOwnerException(specimen);
     }
 
     RosterId rosterId = new(specimen.Ownership.TrainerId);
