@@ -155,6 +155,51 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Null(pokemon.Ownership.Box);
   }
 
+  [Fact(DisplayName = "It should deposit a Pokémon.")]
+  public async Task Given_Ownership_When_Deposit_Then_Deposited()
+  {
+    _specimen.Receive(_trainer, _pokeBall, new Location("Viridian Forest"), World.OwnerId);
+
+    Specimen specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).WithKey(new Slug("another-pokemon")).Build();
+    specimen.Catch(_trainer, _pokeBall, new Location("Mt. Coronet"), World.OwnerId);
+
+    Roster roster = new(_trainer);
+    roster.Add(_specimen, World.OwnerId);
+    roster.Add(specimen, World.OwnerId);
+    await _rosterRepository.SaveAsync(roster);
+
+    await _pokemonRepository.SaveAsync([_specimen, specimen]);
+
+    PokemonModel? pokemon = await _pokemonService.DepositAsync(_specimen.EntityId);
+    Assert.NotNull(pokemon);
+
+    Assert.Equal(_specimen.EntityId, pokemon.Id);
+    Assert.Equal(_specimen.Version + 1, pokemon.Version);
+    Assert.Equal(Actor, pokemon.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, pokemon.UpdatedOn, TimeSpan.FromSeconds(10));
+
+    Assert.NotNull(pokemon.OriginalTrainer);
+    Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
+
+    Assert.NotNull(pokemon.Ownership);
+    Assert.Equal(_trainer.EntityId, pokemon.Ownership.CurrentTrainer.Id);
+    Assert.Equal(0, pokemon.Ownership.Position);
+    Assert.Equal(0, pokemon.Ownership.Box);
+
+    pokemon = await _pokemonService.ReadAsync(specimen.EntityId);
+    Assert.NotNull(pokemon);
+
+    Assert.Equal(specimen.Version + 1, pokemon.Version);
+
+    Assert.NotNull(pokemon.OriginalTrainer);
+    Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
+
+    Assert.NotNull(pokemon.Ownership);
+    Assert.Equal(_trainer.EntityId, pokemon.Ownership.CurrentTrainer.Id);
+    Assert.Equal(0, pokemon.Ownership.Position);
+    Assert.Null(pokemon.Ownership.Box);
+  }
+
   [Fact(DisplayName = "It should receive a Pokémon.")]
   public async Task Given_Pokemon_When_Receive_Then_Received()
   {
