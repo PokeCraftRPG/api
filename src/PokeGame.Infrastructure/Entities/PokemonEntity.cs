@@ -169,8 +169,8 @@ internal class PokemonEntity : AggregateEntity
   {
     base.Update(@event);
 
-    Position = @event.Slot.Position;
-    Box = @event.Slot.Box;
+    Position = @event.Position;
+    Box = @event.Box;
   }
 
   public void Nickname(PokemonNicknamed @event)
@@ -248,8 +248,8 @@ internal class PokemonEntity : AggregateEntity
   {
     base.Update(@event);
 
-    Position = @event.Slot.Position;
-    Box = @event.Slot.Box;
+    Position = @event.Position;
+    Box = null;
   }
 
   public PokemonStatisticsModel GetStatistics()
