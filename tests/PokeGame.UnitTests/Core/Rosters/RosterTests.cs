@@ -2,6 +2,7 @@
 using PokeGame.Builders;
 using PokeGame.Core.Items;
 using PokeGame.Core.Pokemon;
+using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Rosters.Events;
 using PokeGame.Core.Trainers;
@@ -95,6 +96,104 @@ public class RosterTests
     Assert.Equal("specimen", exception.ParamName);
   }
 
+  [Fact(DisplayName = "Deposit: it should deposit the Pokémon in the first available boxed slot.")]
+  public void Given_NotOnlyInParty_When_Deposit_Then_Deposited()
+  {
+    Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_world).Received(_trainer, _pokeBall, _location).Build();
+    _roster.Add(specimen, _world.OwnerId);
+
+    _specimen.Catch(_trainer, _pokeBall, _location, _world.OwnerId);
+    _roster.Add(_specimen, _world.OwnerId);
+
+    Dictionary<PokemonId, Specimen> party = new()
+    {
+      [specimen.Id] = specimen
+    };
+    _roster.Deposit(_specimen, party, _world.OwnerId);
+
+    Assert.Equal(new PokemonSlot(0, 0), _specimen.Slot);
+    Assert.Contains(_specimen.Changes, change => change is PokemonDeposited deposited && deposited.ActorId == _world.OwnerId.ActorId);
+
+    Assert.Equal([specimen.Id], _roster.GetParty());
+  }
+
+  [Fact(DisplayName = "Deposit: it should throw ArgumentException when the Pokémon is not in the roster.")]
+  public void Given_NotInRoster_When_Deposit_Then_ArgumentException()
+  {
+    var exception = Assert.Throws<ArgumentException>(() => _roster.Deposit(_specimen, new Dictionary<PokemonId, Specimen>(), _world.OwnerId));
+    Assert.Equal("specimen", exception.ParamName);
+    Assert.StartsWith($"The Pokémon '{_specimen}' is not in the trainer 'Id={_trainer.Id}' roster.", exception.Message);
+  }
+
+  [Fact(DisplayName = "Deposit: it should throw InvalidPartyException when the Pokémon is the only one in the party.")]
+  public void Given_OnlyInParty_When_Deposit_Then_InvalidPartyException()
+  {
+    Specimen egg = new SpecimenBuilder(_faker).WithWorld(_world).IsEgg().Received(_trainer, _pokeBall, _location).Build();
+    _roster.Add(egg, _world.OwnerId);
+
+    _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+    _roster.Add(_specimen, _world.OwnerId);
+
+    Dictionary<PokemonId, Specimen> party = new()
+    {
+      [egg.Id] = egg
+    };
+    var exception = Assert.Throws<InvalidPartyException>(() => _roster.Deposit(_specimen, party, _world.OwnerId));
+    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
+    Assert.Equal(_trainer.EntityId, exception.TrainerId);
+    Assert.Equal([egg.EntityId, _specimen.EntityId], exception.PartyIds);
+  }
+
+  [Fact(DisplayName = "Deposit: it should throw PokemonIsNotInPartyException when the Pokémon is not in the party.")]
+  public void Given_NotInParty_When_Deposit_Then_PokemonIsNotInPartyException()
+  {
+    Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_world).Received(_trainer, _pokeBall, _location).Build();
+    _roster.Add(specimen, _world.OwnerId);
+
+    _specimen.Catch(_trainer, _pokeBall, _location, _world.OwnerId);
+    _roster.Add(_specimen, _world.OwnerId);
+
+    Dictionary<PokemonId, Specimen> party = new()
+    {
+      [specimen.Id] = specimen
+    };
+    _roster.Deposit(_specimen, party, _world.OwnerId);
+
+    var exception = Assert.Throws<PokemonIsNotInPartyException>(() => _roster.Deposit(_specimen, party, _world.OwnerId));
+    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
+    Assert.Equal(_specimen.EntityId, exception.PokemonId);
+  }
+
+  [Fact(DisplayName = "Deposit: it should throw RosterIsFullException when the boxes are full.")]
+  public void Given_BoxesAreFull_When_Deposit_Then_RosterIsFullException()
+  {
+    Dictionary<PokemonId, Specimen> party = new()
+    {
+      [_specimen.Id] = _specimen
+    };
+
+    _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+    _roster.Add(_specimen, _world.OwnerId);
+
+    for (int i = 1; i < PokemonSlot.PartySize; i++)
+    {
+      Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_world).Received(_trainer, _pokeBall, _location).Build();
+      party[specimen.Id] = specimen;
+      _roster.Add(specimen, _world.OwnerId);
+    }
+
+    int total = PokemonSlot.BoxCount * PokemonSlot.BoxSize;
+    for (int i = 0; i < total; i++)
+    {
+      Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_world).Received(_trainer, _pokeBall, _location).Build();
+      _roster.Add(specimen, _world.OwnerId);
+    }
+
+    var exception = Assert.Throws<RosterIsFullException>(() => _roster.Deposit(_specimen, party, _world.OwnerId));
+    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
+    Assert.Equal(_trainer.EntityId, exception.TrainerId);
+  }
+
   [Fact(DisplayName = "Release: it should release the Pokémon when it is not the only one in the party.")]
   public void Given_NotOnlyInParty_When_Release_Then_Released()
   {
@@ -128,13 +227,19 @@ public class RosterTests
   [Fact(DisplayName = "Release: it should throw InvalidPartyException when the Pokémon is the only one in the party.")]
   public void Given_OnlyInParty_When_Release_Then_InvalidPartyException()
   {
+    Specimen egg = new SpecimenBuilder(_faker).WithWorld(_world).IsEgg().Received(_trainer, _pokeBall, _location).Build();
+    _roster.Add(egg, _world.OwnerId);
+
     _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
     _roster.Add(_specimen, _world.OwnerId);
 
-    Dictionary<PokemonId, Specimen> party = [];
+    Dictionary<PokemonId, Specimen> party = new()
+    {
+      [egg.Id] = egg
+    };
     var exception = Assert.Throws<InvalidPartyException>(() => _roster.Release(_specimen, party, _world.OwnerId));
     Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
     Assert.Equal(_trainer.EntityId, exception.TrainerId);
-    Assert.Equal([_specimen.EntityId], exception.PartyIds);
+    Assert.Equal([egg.EntityId, _specimen.EntityId], exception.PartyIds);
   }
 }

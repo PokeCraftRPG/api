@@ -2,6 +2,6 @@
 
 public abstract record ItemProperties
 {
-  [JsonInclude]
+  [JsonIgnore]
   public abstract ItemCategory Category { get; }
 }

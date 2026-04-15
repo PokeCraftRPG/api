@@ -21,7 +21,7 @@ public interface IMedicineProperties
 
 public record MedicineProperties : ItemProperties, IMedicineProperties
 {
-  [JsonInclude]
+  [JsonIgnore]
   public override ItemCategory Category { get; } = ItemCategory.Medicine;
 
   public bool IsHerbal { get; }

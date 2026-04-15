@@ -47,22 +47,24 @@ public class Roster : AggregateRoot, IEntityProvider
     }
   }
 
-  public void Deposit(Specimen specimen, UserId userId)
+  public void Deposit(Specimen specimen, IReadOnlyDictionary<PokemonId, Specimen> party, UserId userId)
   {
     if (!_slots.TryGetValue(specimen.Id, out PokemonSlot? previousSlot))
     {
-      throw new NotImplementedException(); // TODO(fpion): throw or return false
+      throw new ArgumentException($"The Pokémon '{specimen}' is not in the trainer 'Id={TrainerId}' roster.", nameof(specimen));
     }
     else if (previousSlot.Box.HasValue)
     {
-      throw new NotImplementedException(); // TODO(fpion): throw or return false
+      throw new PokemonIsNotInPartyException(specimen);
     }
 
-    PokemonSlot slot = FindFirstBoxedAvailable() ?? throw new RosterIsFullException(this); // TODO(fpion): or the storage/box system is full
+    EnsurePartyIsNotEmpty(party, [specimen.Id]);
+
+    PokemonSlot slot = FindFirstBoxedAvailable() ?? throw new RosterIsFullException(this);
     specimen.Deposit(slot, userId);
     Raise(new RosterPokemonMoved(specimen.Id, slot), userId.ActorId);
 
-    // TODO(fpion): shift party members
+    ShiftPartyMembers(previousSlot, party, [specimen.Id], userId);
   }
 
   public void Release(Specimen specimen, IReadOnlyDictionary<PokemonId, Specimen> party, UserId userId)
@@ -71,7 +73,7 @@ public class Roster : AggregateRoot, IEntityProvider
     {
       throw new ArgumentException($"The Pokémon '{specimen}' is not in the trainer 'Id={TrainerId}' roster.", nameof(specimen));
     }
-    else if (specimen.Slot is not null && !specimen.Slot.Box.HasValue)
+    else if (!previousSlot.Box.HasValue)
     {
       EnsurePartyIsNotEmpty(party, [specimen.Id]);
     }
