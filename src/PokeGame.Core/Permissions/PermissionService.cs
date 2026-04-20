@@ -97,7 +97,7 @@ internal class PermissionService : IPermissionService
 
   private bool IsAllowed(string action, Specimen specimen) => action switch
   {
-    Actions.Catch or Actions.ChangeForm or Actions.Deposit or Actions.Receive or Actions.Release or Actions.Update or Actions.Withdraw
+    Actions.Catch or Actions.ChangeForm or Actions.Deposit or Actions.Gift or Actions.Receive or Actions.Release or Actions.Update or Actions.Withdraw
       => specimen.WorldId == _context.WorldId && _context.IsWorldOwner,
     _ => false,
   };

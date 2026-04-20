@@ -88,6 +88,18 @@ public class DepositPokemonCommandHandlerTests
     Assert.Null(await _handler.HandleAsync(command, _cancellationToken));
   }
 
+  [Fact(DisplayName = "It should throw PokemonHasNoOwnerException when the Pokémon does not have a slot.")]
+  public async Task Given_NoSlot_When_HandleAsync_Then_PokemonHasNoOwnerException()
+  {
+    _specimen.Receive(_trainer, _pokeBall, new Location("Pallet Town"), _world.OwnerId);
+    _pokemonRepository.Setup(x => x.LoadAsync(_specimen.Id, _cancellationToken)).ReturnsAsync(_specimen);
+
+    DepositPokemonCommand command = new(_specimen.EntityId);
+    var exception = await Assert.ThrowsAsync<PokemonHasNoOwnerException>(async () => await _handler.HandleAsync(command, _cancellationToken));
+    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
+    Assert.Equal(_specimen.EntityId, exception.PokemonId);
+  }
+
   [Fact(DisplayName = "It should throw PokemonHasNoOwnerException when the Pokémon is wild.")]
   public async Task Given_Wild_When_HandleAsync_Then_PokemonHasNoOwnerException()
   {

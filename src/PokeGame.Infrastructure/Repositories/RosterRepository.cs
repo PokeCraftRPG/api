@@ -12,7 +12,11 @@ internal class RosterRepository : Repository, IRosterRepository
 
   public async Task<Roster> LoadAsync(Trainer trainer, CancellationToken cancellationToken)
   {
-    return await LoadAsync(new RosterId(trainer.Id), cancellationToken) ?? new(trainer);
+    return await LoadAsync(trainer.Id, cancellationToken);
+  }
+  public async Task<Roster> LoadAsync(TrainerId trainerId, CancellationToken cancellationToken)
+  {
+    return await LoadAsync(new RosterId(trainerId), cancellationToken) ?? new(trainerId);
   }
   public async Task<Roster?> LoadAsync(RosterId id, CancellationToken cancellationToken)
   {

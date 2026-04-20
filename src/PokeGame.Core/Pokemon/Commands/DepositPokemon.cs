@@ -39,7 +39,7 @@ internal class DepositPokemonCommandHandler : ICommandHandler<DepositPokemonComm
     }
     await _permissionService.CheckAsync(Actions.Deposit, specimen, cancellationToken);
 
-    if (specimen.Ownership is null)
+    if (specimen.Ownership is null || specimen.Slot is null)
     {
       throw new PokemonHasNoOwnerException(specimen);
     }
@@ -49,7 +49,7 @@ internal class DepositPokemonCommandHandler : ICommandHandler<DepositPokemonComm
 
     IEnumerable<PokemonId> memberIds = roster.GetParty().Except([specimen.Id]);
     List<Specimen> members = new(await _pokemonRepository.LoadAsync(memberIds, cancellationToken));
-    if (specimen.Slot is not null && !specimen.Slot.Box.HasValue)
+    if (!specimen.Slot.Box.HasValue)
     {
       members.Add(specimen);
     }

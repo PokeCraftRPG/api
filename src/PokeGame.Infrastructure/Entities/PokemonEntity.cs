@@ -173,6 +173,18 @@ internal class PokemonEntity : AggregateEntity
     Box = @event.Box;
   }
 
+  public void Gift(TrainerEntity trainer, PokemonGifted @event)
+  {
+    if (PokeBall is null)
+    {
+      throw new InvalidOperationException("The Poké ball is required.");
+    }
+
+    base.Update(@event);
+
+    SetOwnership(Core.Pokemon.OwnershipKind.Gifted, trainer, PokeBall, @event.Level, @event.Location, @event.MetOn);
+  }
+
   public void Nickname(PokemonNicknamed @event)
   {
     base.Update(@event);
