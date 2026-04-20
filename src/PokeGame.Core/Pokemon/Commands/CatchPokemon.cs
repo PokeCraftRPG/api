@@ -58,6 +58,8 @@ internal class CatchPokemonCommandHandler : ICommandHandler<CatchPokemonCommand,
     Trainer trainer = await _trainerManager.FindAsync(payload.Trainer, nameof(payload.Trainer), cancellationToken);
     Item pokeBall = await _itemManager.FindAsync(payload.PokeBall, nameof(payload.PokeBall), cancellationToken);
 
+    // TODO(fpion): idempotency
+
     UserId userId = _context.UserId;
 
     InventoryAggregate inventory = await _inventoryRepository.LoadAsync(trainer, cancellationToken);

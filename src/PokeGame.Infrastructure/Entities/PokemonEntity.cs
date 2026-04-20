@@ -152,6 +152,11 @@ internal class PokemonEntity : AggregateEntity
   {
     base.Update(@event);
 
+    if (!IsEgg)
+    {
+      SetOriginalTrainer(trainer);
+    }
+
     SetOwnership(Core.Pokemon.OwnershipKind.Caught, trainer, pokeBall, @event.Level, @event.Location, @event.MetOn);
   }
 
@@ -203,6 +208,11 @@ internal class PokemonEntity : AggregateEntity
   public void Receive(TrainerEntity trainer, ItemEntity pokeBall, PokemonReceived @event)
   {
     base.Update(@event);
+
+    if (!IsEgg)
+    {
+      SetOriginalTrainer(trainer);
+    }
 
     SetOwnership(Core.Pokemon.OwnershipKind.Received, trainer, pokeBall, @event.Level, @event.Location, @event.MetOn);
   }
@@ -303,14 +313,14 @@ internal class PokemonEntity : AggregateEntity
     Stamina = Math.Min(Stamina, values.HP);
   }
 
+  private void SetOriginalTrainer(TrainerEntity trainer)
+  {
+    OriginalTrainer = trainer;
+    OriginalTrainerId = trainer.TrainerId;
+  }
+
   private void SetOwnership(OwnershipKind kind, TrainerEntity trainer, ItemEntity pokeBall, Level level, Location location, DateTime metOn)
   {
-    if (!OriginalTrainerId.HasValue && (kind != Core.Pokemon.OwnershipKind.Caught || !IsEgg))
-    {
-      OriginalTrainer = trainer;
-      OriginalTrainerId = trainer.TrainerId;
-    }
-
     OwnershipKind = kind;
     CurrentTrainer = trainer;
     CurrentTrainerId = trainer.TrainerId;

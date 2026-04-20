@@ -267,7 +267,7 @@ public class Specimen : AggregateRoot, IEntityProvider
 
     if (Ownership is not null)
     {
-      throw new CannotCatchOwnedPokemonException(this);
+      throw new PokemonIsNotWildException(this);
     }
 
     Raise(new PokemonCaught(trainer.Id, pokeBall.Id, new Level(Level), location, DateTime.Now), userId.ActorId);
@@ -393,14 +393,19 @@ public class Specimen : AggregateRoot, IEntityProvider
       throw new InvalidItemException(pokeBall, ItemCategory.PokeBall, nameof(PokemonOwnership.PokeBallId));
     }
 
-    // TODO(fpion): do nothing when the trainer is the same?
-    // TODO(fpion): we currently can change the Poké Ball and Location by calling Receive with the current trainer!
+    if (Ownership is not null)
+    {
+      throw new PokemonIsNotWildException(this);
+    }
 
     Raise(new PokemonReceived(trainer.Id, pokeBall.Id, new Level(Level), location, DateTime.Now), userId.ActorId);
   }
   protected virtual void Handle(PokemonReceived @event)
   {
-    OriginalTrainerId ??= @event.TrainerId; // TODO(fpion): remove the coalescing operator.
+    if (!IsEgg)
+    {
+      OriginalTrainerId = @event.TrainerId;
+    }
     Ownership = new PokemonOwnership(OwnershipKind.Received, @event.TrainerId, @event.PokeBallId, @event.Level, @event.Location, @event.MetOn);
   }
 

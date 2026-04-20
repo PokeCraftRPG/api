@@ -87,16 +87,6 @@ public class Roster : AggregateRoot, IEntityProvider
     }
   }
 
-  public bool Remove(Specimen specimen, UserId userId) // TODO(fpion): remove this method
-  {
-    if (!_slots.ContainsKey(specimen.Id))
-    {
-      return false;
-    }
-
-    Raise(new RosterPokemonRemoved(specimen.Id), userId.ActorId);
-    return true;
-  }
   public void Remove(Specimen specimen, PokemonParty party, UserId userId)
   {
     if (!_slots.TryGetValue(specimen.Id, out PokemonSlot? slot))

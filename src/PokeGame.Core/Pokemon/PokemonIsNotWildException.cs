@@ -3,9 +3,9 @@ using Logitar;
 
 namespace PokeGame.Core.Pokemon;
 
-public class CannotCatchOwnedPokemonException : DomainException
+public class PokemonIsNotWildException : DomainException
 {
-  private const string ErrorMessage = "A Pokémon owned by another trainer cannot be caught.";
+  private const string ErrorMessage = "The specified Pokémon is not wild.";
 
   public Guid WorldId
   {
@@ -35,7 +35,7 @@ public class CannotCatchOwnedPokemonException : DomainException
     }
   }
 
-  public CannotCatchOwnedPokemonException(Specimen specimen) : base(BuildMessage(specimen))
+  public PokemonIsNotWildException(Specimen specimen) : base(BuildMessage(specimen))
   {
     WorldId = specimen.WorldId.ToGuid();
     PokemonId = specimen.EntityId;
