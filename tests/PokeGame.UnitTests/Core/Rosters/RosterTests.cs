@@ -228,6 +228,57 @@ public class RosterTests
     Assert.Equal([egg.EntityId, _specimen.EntityId], exception.MemberIds);
   }
 
+  [Fact(DisplayName = "Release: it should remove the Pokémon from the roster.")]
+  public void Given_NotOnlyInParty_When_Release_Then_Removed()
+  {
+    _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+    _roster.Add(_specimen, _world.OwnerId);
+
+    PokemonOwnership? ownership = _specimen.Ownership;
+    PokemonSlot? slot = _specimen.Slot;
+    Assert.NotNull(ownership);
+    Assert.NotNull(slot);
+
+    Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_world).Build();
+    specimen.Catch(_trainer, _pokeBall, _location, _world.OwnerId);
+    _roster.Add(specimen, _world.OwnerId);
+    Assert.Equal(new PokemonSlot(1), specimen.Slot);
+
+    PokemonParty party = new([_specimen, specimen]);
+    _roster.Remove(_specimen, party, _world.OwnerId);
+
+    Assert.Equal(ownership, _specimen.Ownership);
+    Assert.Equal(slot, _specimen.Slot);
+
+    Assert.Equal(new PokemonSlot(0), specimen.Slot);
+    Assert.Equal([specimen.Id], _roster.GetParty());
+  }
+
+  [Fact(DisplayName = "Remove: it should throw ArgumentException when the Pokémon is not in the roster.")]
+  public void Given_NotInRoster_When_Remove_Then_ArgumentException()
+  {
+    PokemonParty party = new(_trainer.Id);
+    var exception = Assert.Throws<ArgumentException>(() => _roster.Remove(_specimen, party, _world.OwnerId));
+    Assert.Equal("specimen", exception.ParamName);
+    Assert.StartsWith($"The Pokémon '{_specimen}' is not in the trainer 'Id={_trainer.Id}' roster.", exception.Message);
+  }
+
+  [Fact(DisplayName = "Remove: it should throw InvalidPartyException when the Pokémon is the only one in the party.")]
+  public void Given_OnlyInParty_When_Remove_Then_InvalidPartyException()
+  {
+    Specimen egg = new SpecimenBuilder(_faker).WithWorld(_world).IsEgg().Received(_trainer, _pokeBall, _location).Build();
+    _roster.Add(egg, _world.OwnerId);
+
+    _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+    _roster.Add(_specimen, _world.OwnerId);
+
+    PokemonParty party = new([egg, _specimen]);
+    var exception = Assert.Throws<InvalidPartyException>(() => _roster.Remove(_specimen, party, _world.OwnerId));
+    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
+    Assert.Equal(_trainer.EntityId, exception.TrainerId);
+    Assert.Equal([egg.EntityId, _specimen.EntityId], exception.MemberIds);
+  }
+
   [Fact(DisplayName = "Withdraw: it should withdraw the Pokémon in the first available party slot.")]
   public void Given_InBoxes_When_Withdraw_Then_Withdrawn()
   {

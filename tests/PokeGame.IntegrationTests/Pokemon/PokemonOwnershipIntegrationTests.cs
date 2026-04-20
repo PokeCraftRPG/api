@@ -156,7 +156,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
   }
 
   [Fact(DisplayName = "It should deposit a Pokémon.")]
-  public async Task Given_Ownership_When_Deposit_Then_Deposited()
+  public async Task Given_Pokemon_When_Deposit_Then_Deposited()
   {
     _specimen.Receive(_trainer, _pokeBall, new Location("Viridian Forest"), World.OwnerId);
 
@@ -198,6 +198,52 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(_trainer.EntityId, pokemon.Ownership.CurrentTrainer.Id);
     Assert.Equal(0, pokemon.Ownership.Position);
     Assert.Null(pokemon.Ownership.Box);
+  }
+
+  [Theory(DisplayName = "It should gift a Pokémon.")]
+  [InlineData(false)]
+  [InlineData(true)]
+  public async Task Given_Ownership_When_Gift_Then_Gifted(bool isBoxed)
+  {
+    Trainer trainer = new TrainerBuilder(Faker).WithWorld(World).Build();
+    await _trainerRepository.SaveAsync(trainer);
+
+    _specimen.Receive(trainer, _pokeBall, new Location("Pallet Town"), World.OwnerId);
+
+    Specimen specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).WithKey(new Slug("another-pokemon")).Build();
+    specimen.Catch(trainer, _pokeBall, new Location("Viridian Forest"), World.OwnerId);
+
+    Roster roster = new(trainer);
+    roster.Add(_specimen, World.OwnerId);
+    roster.Add(specimen, World.OwnerId);
+    if (isBoxed)
+    {
+      roster.Deposit(_specimen, new PokemonParty([_specimen, specimen]), World.OwnerId);
+    }
+
+    await _pokemonRepository.SaveAsync([_specimen, specimen]);
+    await _rosterRepository.SaveAsync(roster);
+
+    GiftPokemonPayload payload = new($"  {_trainer.Key.Value.ToUpperInvariant()}  ", "  Mt. Coronet  ");
+    PokemonModel? model = await _pokemonService.GiftAsync(_specimen.EntityId, payload);
+    Assert.NotNull(model);
+
+    Assert.Equal(_specimen.EntityId, model.Id);
+    Assert.Equal(_specimen.Version + (isBoxed ? 2 : 1), model.Version);
+    Assert.Equal(Actor, model.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, model.UpdatedOn, TimeSpan.FromSeconds(10));
+
+    Assert.NotNull(model.OriginalTrainer);
+    Assert.Equal(trainer.EntityId, model.OriginalTrainer.Id);
+    Assert.NotNull(model.Ownership);
+    Assert.Equal(OwnershipKind.Gifted, model.Ownership.Kind);
+    Assert.Equal(_trainer.EntityId, model.Ownership.CurrentTrainer.Id);
+    Assert.Equal(_pokeBall.EntityId, model.Ownership.PokeBall.Id);
+    Assert.Equal(_specimen.Level, model.Ownership.Level);
+    Assert.Equal(payload.Location.Trim(), model.Ownership.Location);
+    Assert.Equal(DateTime.UtcNow, model.Ownership.MetOn, TimeSpan.FromSeconds(10));
+    Assert.Equal(0, model.Ownership.Position);
+    Assert.Null(model.Ownership.Box);
   }
 
   [Fact(DisplayName = "It should receive a Pokémon.")]
@@ -246,8 +292,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Null(pokemon.Ownership.Box);
   }
 
-  [Fact(DisplayName = "It should release a boxed Pokémon.")]
-  public async Task Given_Boxed_When_Release_Then_Released()
+  [Theory(DisplayName = "It should release a Pokémon.")]
+  [InlineData(false)]
+  [InlineData(true)]
+  public async Task Given_Pokemon_When_Release_Then_Released(bool isBoxed)
   {
     _specimen.Receive(_trainer, _pokeBall, new Location("Viridian Forest"), World.OwnerId);
 
@@ -257,7 +305,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Roster roster = new(_trainer);
     roster.Add(_specimen, World.OwnerId);
     roster.Add(specimen, World.OwnerId);
-    roster.Deposit(_specimen, new PokemonParty([_specimen, specimen]), World.OwnerId);
+    if (isBoxed)
+    {
+      roster.Deposit(_specimen, new PokemonParty([_specimen, specimen]), World.OwnerId);
+    }
 
     await _pokemonRepository.SaveAsync([_specimen, specimen]);
     await _rosterRepository.SaveAsync(roster);
@@ -278,49 +329,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     pokemon = await _pokemonService.ReadAsync(specimen.EntityId);
     Assert.NotNull(pokemon);
 
-    Assert.Equal(specimen.Version, pokemon.Version);
-
-    Assert.NotNull(pokemon.OriginalTrainer);
-    Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
-
-    Assert.NotNull(pokemon.Ownership);
-    Assert.Equal(_trainer.EntityId, pokemon.Ownership.CurrentTrainer.Id);
-    Assert.Equal(0, pokemon.Ownership.Position);
-    Assert.Null(pokemon.Ownership.Box);
-  }
-
-  [Fact(DisplayName = "It should release a party Pokémon.")]
-  public async Task Given_Party_When_Release_Then_Released()
-  {
-    _specimen.Receive(_trainer, _pokeBall, new Location("Viridian Forest"), World.OwnerId);
-
-    Specimen specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).WithKey(new Slug("another-pokemon")).Build();
-    specimen.Catch(_trainer, _pokeBall, new Location("Mt. Coronet"), World.OwnerId);
-
-    Roster roster = new(_trainer);
-    roster.Add(_specimen, World.OwnerId);
-    roster.Add(specimen, World.OwnerId);
-
-    await _pokemonRepository.SaveAsync([_specimen, specimen]);
-    await _rosterRepository.SaveAsync(roster);
-
-    PokemonModel? pokemon = await _pokemonService.ReleaseAsync(_specimen.EntityId);
-    Assert.NotNull(pokemon);
-
-    Assert.Equal(_specimen.EntityId, pokemon.Id);
-    Assert.Equal(_specimen.Version + 1, pokemon.Version);
-    Assert.Equal(Actor, pokemon.UpdatedBy);
-    Assert.Equal(DateTime.UtcNow, pokemon.UpdatedOn, TimeSpan.FromSeconds(10));
-
-    Assert.NotNull(pokemon.OriginalTrainer);
-    Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
-
-    Assert.Null(pokemon.Ownership);
-
-    pokemon = await _pokemonService.ReadAsync(specimen.EntityId);
-    Assert.NotNull(pokemon);
-
-    Assert.Equal(specimen.Version + 1, pokemon.Version);
+    Assert.Equal(specimen.Version + (isBoxed ? 0 : 1), pokemon.Version);
 
     Assert.NotNull(pokemon.OriginalTrainer);
     Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
@@ -332,7 +341,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
   }
 
   [Fact(DisplayName = "It should withdraw a Pokémon.")]
-  public async Task Given_Ownership_When_Withdraw_Then_Withdrawn()
+  public async Task Given_Pokemon_When_Withdraw_Then_Withdrawn()
   {
     _specimen.Receive(_trainer, _pokeBall, new Location("Viridian Forest"), World.OwnerId);
 

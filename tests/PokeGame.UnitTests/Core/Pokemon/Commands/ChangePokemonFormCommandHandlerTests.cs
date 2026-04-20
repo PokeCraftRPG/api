@@ -119,7 +119,7 @@ public class ChangePokemonFormCommandHandlerTests
     Assert.Equal(specimen.EntityId, exception.PokemonId);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when they payload is not valid.")]
+  [Fact(DisplayName = "It should throw ValidationException when the payload is not valid.")]
   public async Task Given_InvalidPayload_When_HandleAsync_Then_ValidationException()
   {
     ChangePokemonFormPayload payload = new();

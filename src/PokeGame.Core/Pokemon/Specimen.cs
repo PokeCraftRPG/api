@@ -337,6 +337,24 @@ public class Specimen : AggregateRoot, IEntityProvider
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId, SizeBytes);
 
+  public void Gift(Trainer trainer, Location location, UserId userId)
+  {
+    WorldMismatchException.ThrowIfMismatch(Id, trainer.Id, nameof(trainer));
+
+    if (Ownership is null)
+    {
+      throw new PokemonHasNoOwnerException(this);
+    }
+    else if (Ownership.TrainerId != trainer.Id)
+    {
+      Raise(new PokemonGifted(trainer.Id, Ownership.PokeBallId, new Level(Level), location, DateTime.Now), userId.ActorId);
+    }
+  }
+  protected virtual void Handle(PokemonGifted @event)
+  {
+    Ownership = new PokemonOwnership(OwnershipKind.Gifted, @event.TrainerId, @event.PokeBallId, @event.Level, @event.Location, @event.MetOn);
+  }
+
   public void Move(PokemonSlot slot, UserId userId)
   {
     if (Ownership is null)
@@ -382,7 +400,7 @@ public class Specimen : AggregateRoot, IEntityProvider
   }
   protected virtual void Handle(PokemonReceived @event)
   {
-    OriginalTrainerId ??= @event.TrainerId;
+    OriginalTrainerId ??= @event.TrainerId; // TODO(fpion): remove the coalescing operator.
     Ownership = new PokemonOwnership(OwnershipKind.Received, @event.TrainerId, @event.PokeBallId, @event.Level, @event.Location, @event.MetOn);
   }
 

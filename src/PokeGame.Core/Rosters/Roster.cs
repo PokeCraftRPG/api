@@ -69,21 +69,21 @@ public class Roster : AggregateRoot, IEntityProvider
 
   public void Release(Specimen specimen, PokemonParty party, UserId userId)
   {
-    if (!_slots.TryGetValue(specimen.Id, out PokemonSlot? previousSlot))
+    if (!_slots.TryGetValue(specimen.Id, out PokemonSlot? slot))
     {
       throw new ArgumentException($"The Pokémon '{specimen}' is not in the trainer 'Id={TrainerId}' roster.", nameof(specimen));
     }
-    else if (!previousSlot.Box.HasValue)
+    else if (!slot.Box.HasValue)
     {
       party.EnsureIsValidWithout(specimen);
     }
 
     specimen.Release(userId);
-    Remove(specimen, userId);
+    Raise(new RosterPokemonRemoved(specimen.Id), userId.ActorId);
 
-    if (!previousSlot.Box.HasValue)
+    if (!slot.Box.HasValue)
     {
-      ShiftAfter(party, specimen, previousSlot, userId);
+      ShiftAfter(party, specimen, slot, userId);
     }
   }
 
@@ -96,6 +96,24 @@ public class Roster : AggregateRoot, IEntityProvider
 
     Raise(new RosterPokemonRemoved(specimen.Id), userId.ActorId);
     return true;
+  }
+  public void Remove(Specimen specimen, PokemonParty party, UserId userId)
+  {
+    if (!_slots.TryGetValue(specimen.Id, out PokemonSlot? slot))
+    {
+      throw new ArgumentException($"The Pokémon '{specimen}' is not in the trainer 'Id={TrainerId}' roster.", nameof(specimen));
+    }
+    else if (!slot.Box.HasValue)
+    {
+      party.EnsureIsValidWithout(specimen);
+    }
+
+    Raise(new RosterPokemonRemoved(specimen.Id), userId.ActorId);
+
+    if (!slot.Box.HasValue)
+    {
+      ShiftAfter(party, specimen, slot, userId);
+    }
   }
   protected virtual void Handle(RosterPokemonRemoved @event)
   {

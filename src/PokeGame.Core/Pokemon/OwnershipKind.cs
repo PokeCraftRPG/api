@@ -2,6 +2,7 @@
 
 public enum OwnershipKind
 {
-  Caught = 0,
+  Caught,
+  Gifted,
   Received
 }
