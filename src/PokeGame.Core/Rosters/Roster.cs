@@ -64,7 +64,7 @@ public class Roster : AggregateRoot, IEntityProvider
     specimen.Deposit(slot, userId);
     Raise(new RosterPokemonMoved(specimen.Id, slot), userId.ActorId);
 
-    ShiftAfter(party, previousSlot, userId);
+    ShiftAfter(party, specimen, previousSlot, userId);
   }
 
   public void Release(Specimen specimen, PokemonParty party, UserId userId)
@@ -83,7 +83,7 @@ public class Roster : AggregateRoot, IEntityProvider
 
     if (!previousSlot.Box.HasValue)
     {
-      ShiftAfter(party, previousSlot, userId);
+      ShiftAfter(party, specimen, previousSlot, userId);
     }
   }
 
@@ -164,12 +164,13 @@ public class Roster : AggregateRoot, IEntityProvider
     return position < PokemonSlot.PartySize ? new PokemonSlot(position) : null;
   }
 
-  private void ShiftAfter(PokemonParty party, PokemonSlot previousSlot, UserId userId)
+  private void ShiftAfter(PokemonParty party, Specimen specimen, PokemonSlot previousSlot, UserId userId)
   {
     foreach (Specimen member in party.Members)
     {
-      if (_slots.TryGetValue(member.Id, out PokemonSlot? slot))
+      if (!member.Equals(specimen))
       {
+        PokemonSlot slot = _slots[member.Id];
         if (slot.IsGreaterThan(previousSlot))
         {
           slot = slot.Previous();
