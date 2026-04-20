@@ -42,8 +42,8 @@ public class ReleasePokemonCommandHandlerTests
     _pokeBall = ItemBuilder.PokeBall(_faker, _world);
   }
 
-  [Fact(DisplayName = "It should release the Pokémon.")]
-  public async Task Given_Pokemon_When_HandleAsync_Then_Released()
+  [Fact(DisplayName = "It should release a party Pokémon.")]
+  public async Task Given_Party_When_HandleAsync_Then_Released()
   {
     Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_world).Build();
     specimen.Catch(_trainer, _pokeBall, new Location("Viridian Forest"), _world.OwnerId);
@@ -69,7 +69,7 @@ public class ReleasePokemonCommandHandlerTests
 
     _permissionService.Verify(x => x.CheckAsync(Actions.Release, _specimen, _cancellationToken), Times.Once());
     _pokemonRepository.Verify(x => x.SaveAsync(
-      It.Is<IEnumerable<Specimen>>(y => y.SequenceEqual(new Specimen[] { _specimen, specimen })),
+      It.Is<IEnumerable<Specimen>>(y => y.SequenceEqual(new Specimen[] { specimen, _specimen })),
       _cancellationToken), Times.Once());
 
     Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);

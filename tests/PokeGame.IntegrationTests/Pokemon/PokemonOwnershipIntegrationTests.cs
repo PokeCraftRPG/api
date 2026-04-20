@@ -295,10 +295,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     Specimen specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).WithKey(new Slug("another-pokemon")).Build();
     specimen.Catch(_trainer, _pokeBall, new Location("Mt. Coronet"), World.OwnerId);
-    Dictionary<PokemonId, Specimen> party = new()
-    {
-      [specimen.Id] = specimen
-    };
+
+    PokemonParty party = new([_specimen, specimen]);
 
     Roster roster = new(_trainer);
     roster.Add(_specimen, World.OwnerId);

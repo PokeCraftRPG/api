@@ -6,7 +6,7 @@ public record PokemonSlot
 {
   public const int BoxCount = 32;
   public const int BoxSize = 5 * 6;
-  public const int PartySize = 6;
+  public const int PartySize = PokemonParty.MaximumSize; // TODO(fpion): remove this const
 
   public int Position { get; }
   public int? Box { get; }

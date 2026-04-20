@@ -47,13 +47,24 @@ internal class ReleasePokemonCommandHandler : ICommandHandler<ReleasePokemonComm
     RosterId rosterId = new(specimen.Ownership.TrainerId);
     Roster roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken) ?? new(rosterId);
 
-    // TODO(fpion): do not load the party if the specimen is in a box
-    IEnumerable<PokemonId> partyIds = roster.GetParty().Except([specimen.Id]);
-    IReadOnlyDictionary<PokemonId, Specimen> party = (await _pokemonRepository.LoadAsync(partyIds, cancellationToken)).ToDictionary(x => x.Id, x => x);
+    if (specimen.Slot is null || specimen.Slot.Box.HasValue)
+    {
+      PokemonParty party = new(specimen.Ownership.TrainerId);
+      roster.Release(specimen, party, _context.UserId);
 
-    roster.Release(specimen, party, _context.UserId);
+      await _pokemonRepository.SaveAsync(specimen, cancellationToken);
+    }
+    else
+    {
+      IEnumerable<PokemonId> partyIds = roster.GetParty().Except([specimen.Id]);
+      IEnumerable<Specimen> members = (await _pokemonRepository.LoadAsync(partyIds, cancellationToken)).Concat([specimen]);
 
-    await _pokemonRepository.SaveAsync(new Specimen[] { specimen }.Concat(party.Values), cancellationToken);
+      PokemonParty party = new(members);
+      roster.Release(specimen, party, _context.UserId);
+
+      await _pokemonRepository.SaveAsync(party.Members, cancellationToken);
+    }
+
     await _rosterRepository.SaveAsync(roster, cancellationToken);
 
     return await _pokemonQuerier.ReadAsync(specimen, cancellationToken);
