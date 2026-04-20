@@ -63,9 +63,7 @@ internal class GiftPokemonCommandHandler : ICommandHandler<GiftPokemonCommand, P
       {
         IEnumerable<PokemonId> memberIds = sourceRoster.GetParty().Except([specimen.Id]);
         IEnumerable<Specimen> members = (await _pokemonRepository.LoadAsync(memberIds, cancellationToken)).Concat([specimen]);
-
         party = new(members);
-        party.EnsureIsValidWithout(specimen);
       }
       sourceRoster.Remove(specimen, party, userId);
 
