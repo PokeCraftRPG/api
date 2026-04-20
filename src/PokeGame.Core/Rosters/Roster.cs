@@ -47,7 +47,7 @@ public class Roster : AggregateRoot, IEntityProvider
     }
   }
 
-  public void Deposit(Specimen specimen, IReadOnlyDictionary<PokemonId, Specimen> party, UserId userId)
+  public void Deposit(Specimen specimen, PokemonParty party, UserId userId)
   {
     if (!_slots.TryGetValue(specimen.Id, out PokemonSlot? previousSlot))
     {
@@ -58,16 +58,16 @@ public class Roster : AggregateRoot, IEntityProvider
       throw new PokemonIsNotInPartyException(specimen);
     }
 
-    EnsurePartyIsNotEmpty(party, [specimen.Id]);
+    party.EnsureIsValidWithout(specimen);
 
     PokemonSlot slot = FindFirstBoxedAvailable() ?? throw new RosterIsFullException(this);
     specimen.Deposit(slot, userId);
     Raise(new RosterPokemonMoved(specimen.Id, slot), userId.ActorId);
 
-    ShiftPartyMembers(previousSlot, party, [specimen.Id], userId);
+    ShiftAfter(party, specimen, previousSlot, userId);
   }
 
-  public void Release(Specimen specimen, IReadOnlyDictionary<PokemonId, Specimen> party, UserId userId)
+  public void Release(Specimen specimen, PokemonParty party, UserId userId)
   {
     if (!_slots.TryGetValue(specimen.Id, out PokemonSlot? previousSlot))
     {
@@ -75,7 +75,7 @@ public class Roster : AggregateRoot, IEntityProvider
     }
     else if (!previousSlot.Box.HasValue)
     {
-      EnsurePartyIsNotEmpty(party, [specimen.Id]);
+      party.EnsureIsValidWithout(specimen);
     }
 
     specimen.Release(userId);
@@ -83,7 +83,7 @@ public class Roster : AggregateRoot, IEntityProvider
 
     if (!previousSlot.Box.HasValue)
     {
-      ShiftPartyMembers(previousSlot, party, [specimen.Id], userId);
+      ShiftAfter(party, specimen, previousSlot, userId);
     }
   }
 
@@ -139,15 +139,6 @@ public class Roster : AggregateRoot, IEntityProvider
     _slots[@event.PokemonId] = @event.Slot;
   }
 
-  private void EnsurePartyIsNotEmpty(IReadOnlyDictionary<PokemonId, Specimen> party, IReadOnlyCollection<PokemonId> excludedIds)
-  {
-    IReadOnlyCollection<PokemonId> partyIds = GetParty();
-    if (partyIds.All(id => excludedIds.Contains(id) || party[id].IsEgg))
-    {
-      throw new InvalidPartyException(this);
-    }
-  }
-
   private PokemonSlot FindFirstAvailable()
   {
     return FindFirstPartyAvailable() ?? FindFirstBoxedAvailable() ?? throw new RosterIsFullException(this);
@@ -173,19 +164,17 @@ public class Roster : AggregateRoot, IEntityProvider
     return position < PokemonSlot.PartySize ? new PokemonSlot(position) : null;
   }
 
-  private void ShiftPartyMembers(PokemonSlot previousSlot, IReadOnlyDictionary<PokemonId, Specimen> party, IReadOnlyCollection<PokemonId> excludedIds, UserId userId)
+  private void ShiftAfter(PokemonParty party, Specimen specimen, PokemonSlot previousSlot, UserId userId)
   {
-    IReadOnlyCollection<PokemonId> partyIds = GetParty();
-    foreach (PokemonId partyId in partyIds)
+    foreach (Specimen member in party.Members)
     {
-      if (!excludedIds.Contains(partyId))
+      if (!member.Equals(specimen))
       {
-        PokemonSlot slot = _slots[partyId];
+        PokemonSlot slot = _slots[member.Id];
         if (slot.IsGreaterThan(previousSlot))
         {
           slot = slot.Previous();
 
-          Specimen member = party[partyId];
           member.Move(slot, userId);
           Raise(new RosterPokemonMoved(member.Id, slot), userId.ActorId);
         }

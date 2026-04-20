@@ -42,8 +42,45 @@ public class ReleasePokemonCommandHandlerTests
     _pokeBall = ItemBuilder.PokeBall(_faker, _world);
   }
 
-  [Fact(DisplayName = "It should release the Pokémon.")]
-  public async Task Given_Pokemon_When_HandleAsync_Then_Released()
+  [Fact(DisplayName = "It should release a boxed Pokémon.")]
+  public async Task Given_Boxed_When_HandleAsync_Then_Released()
+  {
+    Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_world).Build();
+    specimen.Catch(_trainer, _pokeBall, new Location("Viridian Forest"), _world.OwnerId);
+    _pokemonRepository.Setup(x => x.LoadAsync(
+      It.Is<IEnumerable<PokemonId>>(y => y.SequenceEqual(new PokemonId[] { specimen.Id })),
+      _cancellationToken)).ReturnsAsync([specimen]);
+
+    _specimen.Receive(_trainer, _pokeBall, new Location("Mt. Coronet"), _world.OwnerId);
+    _pokemonRepository.Setup(x => x.LoadAsync(_specimen.Id, _cancellationToken)).ReturnsAsync(_specimen);
+
+    Roster roster = new(_trainer);
+    roster.Add(specimen, _world.OwnerId);
+    roster.Add(_specimen, _world.OwnerId);
+    roster.Deposit(_specimen, new PokemonParty([specimen, _specimen]), _world.OwnerId);
+    _rosterRepository.Setup(x => x.LoadAsync(roster.Id, _cancellationToken)).ReturnsAsync(roster);
+
+    PokemonModel model = new();
+    _pokemonQuerier.Setup(x => x.ReadAsync(_specimen, _cancellationToken)).ReturnsAsync(model);
+
+    ReleasePokemonCommand command = new(_specimen.EntityId);
+    PokemonModel? result = await _handler.HandleAsync(command, _cancellationToken);
+    Assert.NotNull(result);
+    Assert.Same(model, result);
+
+    _permissionService.Verify(x => x.CheckAsync(Actions.Release, _specimen, _cancellationToken), Times.Once());
+    _pokemonRepository.Verify(x => x.SaveAsync(_specimen, _cancellationToken), Times.Once());
+
+    Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);
+    Assert.Null(_specimen.Ownership);
+    Assert.Null(_specimen.Slot);
+
+    _rosterRepository.Verify(x => x.SaveAsync(roster, _cancellationToken), Times.Once());
+    Assert.Equal([specimen.Id], roster.GetParty());
+  }
+
+  [Fact(DisplayName = "It should release a party Pokémon.")]
+  public async Task Given_Party_When_HandleAsync_Then_Released()
   {
     Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_world).Build();
     specimen.Catch(_trainer, _pokeBall, new Location("Viridian Forest"), _world.OwnerId);
@@ -69,7 +106,7 @@ public class ReleasePokemonCommandHandlerTests
 
     _permissionService.Verify(x => x.CheckAsync(Actions.Release, _specimen, _cancellationToken), Times.Once());
     _pokemonRepository.Verify(x => x.SaveAsync(
-      It.Is<IEnumerable<Specimen>>(y => y.SequenceEqual(new Specimen[] { _specimen, specimen })),
+      It.Is<IEnumerable<Specimen>>(y => y.SequenceEqual(new Specimen[] { specimen, _specimen })),
       _cancellationToken), Times.Once());
 
     Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);

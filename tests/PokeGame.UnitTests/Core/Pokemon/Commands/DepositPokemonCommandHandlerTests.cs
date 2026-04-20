@@ -69,7 +69,7 @@ public class DepositPokemonCommandHandlerTests
 
     _permissionService.Verify(x => x.CheckAsync(Actions.Deposit, _specimen, _cancellationToken), Times.Once());
     _pokemonRepository.Verify(x => x.SaveAsync(
-      It.Is<IEnumerable<Specimen>>(y => y.SequenceEqual(new Specimen[] { _specimen, specimen })),
+      It.Is<IEnumerable<Specimen>>(y => y.SequenceEqual(new Specimen[] { specimen, _specimen })),
       _cancellationToken), Times.Once());
 
     Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);

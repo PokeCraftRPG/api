@@ -56,10 +56,7 @@ public class WithdrawPokemonCommandHandlerTests
     roster.Add(_specimen, _world.OwnerId);
     _rosterRepository.Setup(x => x.LoadAsync(roster.Id, _cancellationToken)).ReturnsAsync(roster);
 
-    Dictionary<PokemonId, Specimen> party = new()
-    {
-      [specimen.Id] = specimen
-    };
+    PokemonParty party = new([specimen, _specimen]);
     roster.Deposit(_specimen, party, _world.OwnerId);
 
     PokemonModel model = new();

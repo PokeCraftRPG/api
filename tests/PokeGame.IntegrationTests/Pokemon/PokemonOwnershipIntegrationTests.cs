@@ -166,9 +166,9 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Roster roster = new(_trainer);
     roster.Add(_specimen, World.OwnerId);
     roster.Add(specimen, World.OwnerId);
-    await _rosterRepository.SaveAsync(roster);
 
     await _pokemonRepository.SaveAsync([_specimen, specimen]);
+    await _rosterRepository.SaveAsync(roster);
 
     PokemonModel? pokemon = await _pokemonService.DepositAsync(_specimen.EntityId);
     Assert.NotNull(pokemon);
@@ -246,8 +246,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Null(pokemon.Ownership.Box);
   }
 
-  [Fact(DisplayName = "It should release a Pokémon.")]
-  public async Task Given_Ownership_When_Release_Then_Released()
+  [Fact(DisplayName = "It should release a boxed Pokémon.")]
+  public async Task Given_Boxed_When_Release_Then_Released()
   {
     _specimen.Receive(_trainer, _pokeBall, new Location("Viridian Forest"), World.OwnerId);
 
@@ -257,9 +257,52 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Roster roster = new(_trainer);
     roster.Add(_specimen, World.OwnerId);
     roster.Add(specimen, World.OwnerId);
-    await _rosterRepository.SaveAsync(roster);
+    roster.Deposit(_specimen, new PokemonParty([_specimen, specimen]), World.OwnerId);
 
     await _pokemonRepository.SaveAsync([_specimen, specimen]);
+    await _rosterRepository.SaveAsync(roster);
+
+    PokemonModel? pokemon = await _pokemonService.ReleaseAsync(_specimen.EntityId);
+    Assert.NotNull(pokemon);
+
+    Assert.Equal(_specimen.EntityId, pokemon.Id);
+    Assert.Equal(_specimen.Version + 1, pokemon.Version);
+    Assert.Equal(Actor, pokemon.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, pokemon.UpdatedOn, TimeSpan.FromSeconds(10));
+
+    Assert.NotNull(pokemon.OriginalTrainer);
+    Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
+
+    Assert.Null(pokemon.Ownership);
+
+    pokemon = await _pokemonService.ReadAsync(specimen.EntityId);
+    Assert.NotNull(pokemon);
+
+    Assert.Equal(specimen.Version, pokemon.Version);
+
+    Assert.NotNull(pokemon.OriginalTrainer);
+    Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
+
+    Assert.NotNull(pokemon.Ownership);
+    Assert.Equal(_trainer.EntityId, pokemon.Ownership.CurrentTrainer.Id);
+    Assert.Equal(0, pokemon.Ownership.Position);
+    Assert.Null(pokemon.Ownership.Box);
+  }
+
+  [Fact(DisplayName = "It should release a party Pokémon.")]
+  public async Task Given_Party_When_Release_Then_Released()
+  {
+    _specimen.Receive(_trainer, _pokeBall, new Location("Viridian Forest"), World.OwnerId);
+
+    Specimen specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).WithKey(new Slug("another-pokemon")).Build();
+    specimen.Catch(_trainer, _pokeBall, new Location("Mt. Coronet"), World.OwnerId);
+
+    Roster roster = new(_trainer);
+    roster.Add(_specimen, World.OwnerId);
+    roster.Add(specimen, World.OwnerId);
+
+    await _pokemonRepository.SaveAsync([_specimen, specimen]);
+    await _rosterRepository.SaveAsync(roster);
 
     PokemonModel? pokemon = await _pokemonService.ReleaseAsync(_specimen.EntityId);
     Assert.NotNull(pokemon);
@@ -295,18 +338,14 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     Specimen specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).WithKey(new Slug("another-pokemon")).Build();
     specimen.Catch(_trainer, _pokeBall, new Location("Mt. Coronet"), World.OwnerId);
-    Dictionary<PokemonId, Specimen> party = new()
-    {
-      [specimen.Id] = specimen
-    };
 
     Roster roster = new(_trainer);
     roster.Add(_specimen, World.OwnerId);
     roster.Add(specimen, World.OwnerId);
-    roster.Deposit(_specimen, party, World.OwnerId);
-    await _rosterRepository.SaveAsync(roster);
+    roster.Deposit(_specimen, new PokemonParty([_specimen, specimen]), World.OwnerId);
 
     await _pokemonRepository.SaveAsync([_specimen, specimen]);
+    await _rosterRepository.SaveAsync(roster);
 
     PokemonModel? pokemon = await _pokemonService.WithdrawAsync(_specimen.EntityId);
     Assert.NotNull(pokemon);
