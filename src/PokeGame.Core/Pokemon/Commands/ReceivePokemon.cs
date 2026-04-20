@@ -54,29 +54,18 @@ internal class ReceivePokemonCommandHandler : ICommandHandler<ReceivePokemonComm
     Trainer trainer = await _trainerManager.FindAsync(payload.Trainer, nameof(payload.Trainer), cancellationToken);
     Item pokeBall = await _itemManager.FindAsync(payload.PokeBall, nameof(payload.PokeBall), cancellationToken);
 
-    UserId userId = _context.UserId;
+    // TODO(fpion): idempotency
 
-    List<Roster> rosters = new(capacity: 2);
-    if (specimen.Ownership is not null && specimen.Ownership.TrainerId != trainer.Id)
-    {
-      RosterId rosterId = new(specimen.Ownership.TrainerId);
-      Roster? previousRoster = await _rosterRepository.LoadAsync(rosterId, cancellationToken);
-      if (previousRoster is not null)
-      {
-        previousRoster.Remove(specimen, userId);
-        rosters.Add(previousRoster);
-      }
-    }
+    UserId userId = _context.UserId;
 
     Location location = new(payload.Location);
     specimen.Receive(trainer, pokeBall, location, userId);
 
     Roster roster = await _rosterRepository.LoadAsync(trainer, cancellationToken);
     roster.Add(specimen, userId);
-    rosters.Add(roster);
 
     await _pokemonRepository.SaveAsync(specimen, cancellationToken);
-    await _rosterRepository.SaveAsync(rosters, cancellationToken);
+    await _rosterRepository.SaveAsync(roster, cancellationToken);
 
     return await _pokemonQuerier.ReadAsync(specimen, cancellationToken);
   }

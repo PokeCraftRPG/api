@@ -246,27 +246,14 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Null(model.Ownership.Box);
   }
 
-  [Fact(DisplayName = "It should receive a Pokémon.")]
-  public async Task Given_Pokemon_When_Receive_Then_Received()
+  [Fact(DisplayName = "It should receive a wild Pokémon.")]
+  public async Task Given_Wild_When_Receive_Then_Received()
   {
-    Trainer trainer = new TrainerBuilder(Faker).WithWorld(World).Build();
-    await _trainerRepository.SaveAsync(trainer);
-
-    Item greatBall = ItemBuilder.GreatBall(Faker, World);
-    await _itemRepository.SaveAsync(greatBall);
-
-    InventoryAggregate inventory = await _inventoryRepository.LoadAsync(trainer);
-    inventory.Add(greatBall, quantity: 1, World.OwnerId);
-    await _inventoryRepository.SaveAsync(inventory);
-
-    _specimen.Catch(trainer, greatBall, new Location("Viridian Forest"), World.OwnerId);
-    await _pokemonRepository.SaveAsync(_specimen);
-
     ReceivePokemonPayload payload = new()
     {
       Trainer = $"  {_trainer.Key.Value.ToUpperInvariant()}  ",
       PokeBall = $"  {_pokeBall.EntityId.ToString().ToUpperInvariant()}  ",
-      Location = "  Pallet Town  "
+      Location = "  Mt. Coronet  "
     };
 
     PokemonModel? pokemon = await _pokemonService.ReceiveAsync(_specimen.EntityId, payload);
@@ -278,13 +265,48 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(DateTime.UtcNow, pokemon.UpdatedOn, TimeSpan.FromSeconds(10));
 
     Assert.NotNull(pokemon.OriginalTrainer);
-    Assert.Equal(trainer.EntityId, pokemon.OriginalTrainer.Id);
+    Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
 
     Assert.NotNull(pokemon.Ownership);
     Assert.Equal(OwnershipKind.Received, pokemon.Ownership.Kind);
     Assert.Equal(_trainer.EntityId, pokemon.Ownership.CurrentTrainer.Id);
     Assert.Equal(_pokeBall.EntityId, pokemon.Ownership.PokeBall.Id);
     Assert.Equal(_specimen.Level, pokemon.Ownership.Level);
+    Assert.Equal(payload.Location.Trim(), pokemon.Ownership.Location);
+    Assert.Equal(DateTime.UtcNow, pokemon.Ownership.MetOn, TimeSpan.FromSeconds(10));
+
+    Assert.Equal(0, pokemon.Ownership.Position);
+    Assert.Null(pokemon.Ownership.Box);
+  }
+
+  [Fact(DisplayName = "It should receive an egg Pokémon.")]
+  public async Task Given_Egg_When_Receive_Then_Received()
+  {
+    Specimen specimen = new SpecimenBuilder(Faker).WithWorld(World).Is(_species, _variety, _form).IsEgg().WithKey(new Slug("an-egg")).Build();
+    await _pokemonRepository.SaveAsync(specimen);
+
+    ReceivePokemonPayload payload = new()
+    {
+      Trainer = $"  {_trainer.Key.Value.ToUpperInvariant()}  ",
+      PokeBall = $"  {_pokeBall.EntityId.ToString().ToUpperInvariant()}  ",
+      Location = "  Mt. Coronet  "
+    };
+
+    PokemonModel? pokemon = await _pokemonService.ReceiveAsync(specimen.EntityId, payload);
+    Assert.NotNull(pokemon);
+
+    Assert.Equal(specimen.EntityId, pokemon.Id);
+    Assert.Equal(specimen.Version + 2, pokemon.Version);
+    Assert.Equal(Actor, pokemon.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, pokemon.UpdatedOn, TimeSpan.FromSeconds(10));
+
+    Assert.Null(pokemon.OriginalTrainer);
+
+    Assert.NotNull(pokemon.Ownership);
+    Assert.Equal(OwnershipKind.Received, pokemon.Ownership.Kind);
+    Assert.Equal(_trainer.EntityId, pokemon.Ownership.CurrentTrainer.Id);
+    Assert.Equal(_pokeBall.EntityId, pokemon.Ownership.PokeBall.Id);
+    Assert.Equal(specimen.Level, pokemon.Ownership.Level);
     Assert.Equal(payload.Location.Trim(), pokemon.Ownership.Location);
     Assert.Equal(DateTime.UtcNow, pokemon.Ownership.MetOn, TimeSpan.FromSeconds(10));
 

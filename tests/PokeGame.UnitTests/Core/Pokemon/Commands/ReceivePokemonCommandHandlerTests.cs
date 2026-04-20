@@ -51,8 +51,8 @@ public class ReceivePokemonCommandHandlerTests
     _pokeBall = ItemBuilder.PokeBall(_faker, _world);
   }
 
-  [Fact(DisplayName = "It should change the Pokémon ownership.")]
-  public async Task Given_Pokemon_When_HandleAsync_Then_Received()
+  [Fact(DisplayName = "It should receive a wild Pokémon.")]
+  public async Task Given_Wild_When_HandleAsync_Then_Caught()
   {
     ReceivePokemonPayload payload = new(_trainer.Key.Value, _pokeBall.Key.Value, "Mt. Coronet");
     ReceivePokemonCommand command = new(_specimen.EntityId, payload);
@@ -73,41 +73,7 @@ public class ReceivePokemonCommandHandlerTests
 
     _permissionService.Verify(x => x.CheckAsync(Actions.Receive, _specimen, _cancellationToken), Times.Once());
     _pokemonRepository.Verify(x => x.SaveAsync(_specimen, _cancellationToken), Times.Once());
-    _rosterRepository.Verify(x => x.SaveAsync(It.Is<IEnumerable<Roster>>(r => r.Single().Equals(roster)), _cancellationToken), Times.Once());
-
-    Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);
-    Assert.NotNull(_specimen.Ownership);
-    Assert.Equal(new PokemonSlot(0), _specimen.Slot);
-    Assert.Equal(_specimen.Id, Assert.Single(roster.GetParty()));
-  }
-
-  [Fact(DisplayName = "It should only load the roster once when it is the same trainer.")]
-  public async Task Given_SameTrainer_When_HandleAsync_Then_RosterLoadedOnce()
-  {
-    _specimen.Receive(_trainer, _pokeBall, new Location("Mt. Coronet"), _world.OwnerId);
-
-    ReceivePokemonPayload payload = new(_trainer.Key.Value, _pokeBall.Key.Value, "Mt. Coronet");
-    ReceivePokemonCommand command = new(_specimen.EntityId, payload);
-
-    _pokemonRepository.Setup(x => x.LoadAsync(_specimen.Id, _cancellationToken)).ReturnsAsync(_specimen);
-    _trainerManager.Setup(x => x.FindAsync(payload.Trainer, "Trainer", _cancellationToken)).ReturnsAsync(_trainer);
-    _itemManager.Setup(x => x.FindAsync(payload.PokeBall, "PokeBall", _cancellationToken)).ReturnsAsync(_pokeBall);
-
-    Roster roster = new(_trainer);
-    _rosterRepository.Setup(x => x.LoadAsync(_trainer, _cancellationToken)).ReturnsAsync(roster);
-
-    PokemonModel model = new();
-    _pokemonQuerier.Setup(x => x.ReadAsync(_specimen, _cancellationToken)).ReturnsAsync(model);
-
-    PokemonModel? result = await _handler.HandleAsync(command, _cancellationToken);
-    Assert.NotNull(result);
-    Assert.Same(model, result);
-
-    _permissionService.Verify(x => x.CheckAsync(Actions.Receive, _specimen, _cancellationToken), Times.Once());
-    _pokemonRepository.Verify(x => x.SaveAsync(_specimen, _cancellationToken), Times.Once());
-    _rosterRepository.Verify(x => x.LoadAsync(_trainer, _cancellationToken), Times.Once());
-    _rosterRepository.Verify(x => x.SaveAsync(It.Is<IEnumerable<Roster>>(r => r.Single().Equals(roster)), _cancellationToken), Times.Once());
-    _rosterRepository.VerifyNoOtherCalls();
+    _rosterRepository.Verify(x => x.SaveAsync(roster, _cancellationToken), Times.Once());
 
     Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);
     Assert.NotNull(_specimen.Ownership);
@@ -137,53 +103,5 @@ public class ReceivePokemonCommandHandlerTests
     Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "Trainer");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "NotEmptyValidator" && e.PropertyName == "PokeBall");
     Assert.Contains(exception.Errors, e => e.ErrorCode == "MaximumLengthValidator" && e.PropertyName == "Location");
-  }
-
-  [Theory(DisplayName = "It should transfer the Pokémon ownership.")]
-  [InlineData(false)]
-  [InlineData(true)]
-  public async Task Given_OwnedPokemon_When_HandleAsync_Then_Transferred(bool inRoster)
-  {
-    Trainer trainer = new TrainerBuilder(_faker).WithWorld(_world).Build();
-    _specimen.Receive(trainer, _pokeBall, new Location("Mt. Coronet"), _world.OwnerId);
-
-    Roster previousRoster = new(trainer);
-    if (inRoster)
-    {
-      previousRoster.Add(_specimen, _world.OwnerId);
-      _rosterRepository.Setup(x => x.LoadAsync(previousRoster.Id, _cancellationToken)).ReturnsAsync(previousRoster);
-    }
-
-    ReceivePokemonPayload payload = new(_trainer.Key.Value, _pokeBall.Key.Value, "Mt. Coronet");
-    ReceivePokemonCommand command = new(_specimen.EntityId, payload);
-
-    _pokemonRepository.Setup(x => x.LoadAsync(_specimen.Id, _cancellationToken)).ReturnsAsync(_specimen);
-    _trainerManager.Setup(x => x.FindAsync(payload.Trainer, "Trainer", _cancellationToken)).ReturnsAsync(_trainer);
-    _itemManager.Setup(x => x.FindAsync(payload.PokeBall, "PokeBall", _cancellationToken)).ReturnsAsync(_pokeBall);
-
-    Specimen pokemon = new SpecimenBuilder(_faker).WithWorld(_world).Caught(_trainer, _pokeBall, new Location("Viridian Forest")).Build();
-    Roster roster = new(_trainer);
-    roster.Add(pokemon, _world.OwnerId);
-    _rosterRepository.Setup(x => x.LoadAsync(_trainer, _cancellationToken)).ReturnsAsync(roster);
-
-    PokemonModel model = new();
-    _pokemonQuerier.Setup(x => x.ReadAsync(_specimen, _cancellationToken)).ReturnsAsync(model);
-
-    PokemonModel? result = await _handler.HandleAsync(command, _cancellationToken);
-    Assert.NotNull(result);
-    Assert.Same(model, result);
-
-    _permissionService.Verify(x => x.CheckAsync(Actions.Receive, _specimen, _cancellationToken), Times.Once());
-    _pokemonRepository.Verify(x => x.SaveAsync(_specimen, _cancellationToken), Times.Once());
-    _rosterRepository.Verify(x => x.SaveAsync(
-      It.Is<IEnumerable<Roster>>(r => inRoster ? r.SequenceEqual(new Roster[] { previousRoster, roster }) : r.Single().Equals(roster)),
-      _cancellationToken), Times.Once());
-
-    Assert.Equal(trainer.Id, _specimen.OriginalTrainerId);
-    Assert.NotNull(_specimen.Ownership);
-    Assert.Equal(_trainer.Id, _specimen.Ownership.TrainerId);
-    Assert.Equal(new PokemonSlot(1), _specimen.Slot);
-    Assert.Empty(previousRoster.GetParty());
-    Assert.Equal([pokemon.Id, _specimen.Id], roster.GetParty());
   }
 }

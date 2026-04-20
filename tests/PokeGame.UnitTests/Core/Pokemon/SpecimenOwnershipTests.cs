@@ -1,7 +1,6 @@
 ﻿using Bogus;
 using PokeGame.Builders;
 using PokeGame.Core.Items;
-using PokeGame.Core.Items.Properties;
 using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Trainers;
@@ -71,13 +70,13 @@ public class SpecimenOwnershipTests
     Assert.Contains(specimen.Changes, change => change is PokemonCaught caught && caught.ActorId == _world.OwnerId.ActorId);
   }
 
-  [Fact(DisplayName = "Catch: it should throw CannotCatchOwnedPokemonException when the Pokémon already has a trainer.")]
-  public void Given_NotWild_When_Catch_Then_CannotCatchOwnedPokemonException()
+  [Fact(DisplayName = "Catch: it should throw PokemonIsNotWildException when the Pokémon already has a trainer.")]
+  public void Given_NotWild_When_Catch_Then_PokemonIsNotWildException()
   {
     Trainer trainer = new TrainerBuilder(_faker).WithWorld(_world).Build();
     _specimen.Catch(_trainer, _pokeBall, _location, _world.OwnerId);
 
-    var exception = Assert.Throws<CannotCatchOwnedPokemonException>(() => _specimen.Catch(_trainer, _pokeBall, _location, _world.OwnerId));
+    var exception = Assert.Throws<PokemonIsNotWildException>(() => _specimen.Catch(_trainer, _pokeBall, _location, _world.OwnerId));
     Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
     Assert.Equal(_specimen.EntityId, exception.PokemonId);
     Assert.Equal(_trainer.EntityId, exception.TrainerId);
@@ -185,8 +184,8 @@ public class SpecimenOwnershipTests
     Assert.Equal($"The Pokémon 'Id={_specimen.Id}' is not owned by any trainer.", exception.Message);
   }
 
-  [Fact(DisplayName = "Receive: it should change the Pokémon ownership.")]
-  public void Given_Wild_When_Receive_Then_Caught()
+  [Fact(DisplayName = "Receive: it should receive a wild Pokémon.")]
+  public void Given_Wild_When_Receive_Then_Received()
   {
     Assert.False(_specimen.OriginalTrainerId.HasValue);
     Assert.Null(_specimen.Ownership);
@@ -204,26 +203,28 @@ public class SpecimenOwnershipTests
 
     Assert.True(_specimen.HasChanges);
     Assert.Contains(_specimen.Changes, change => change is PokemonReceived received && received.ActorId == _world.OwnerId.ActorId);
+  }
 
-    _specimen.ClearChanges();
+  [Fact(DisplayName = "Receive: it should receive an egg Pokémon.")]
+  public void Given_Egg_When_Receive_Then_Received()
+  {
+    Specimen specimen = new SpecimenBuilder(_faker).WithWorld(_world).IsEgg().Build();
+    Assert.False(specimen.OriginalTrainerId.HasValue);
+    Assert.Null(specimen.Ownership);
 
-    Trainer trainer = new TrainerBuilder(_faker).WithWorld(_world).Build();
-    Item greatBall = new ItemBuilder(_faker).WithWorld(_world).WithKey(new Slug("great-ball")).IsPokeBall(new PokeBallProperties(1.5, false, 0, 1.0)).Build();
-    Location location = new("Mt. Coronet");
+    specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+    Assert.Null(specimen.OriginalTrainerId);
 
-    _specimen.Receive(trainer, greatBall, location, _world.OwnerId);
-    Assert.Equal(_trainer.Id, _specimen.OriginalTrainerId);
+    Assert.NotNull(specimen.Ownership);
+    Assert.Equal(OwnershipKind.Received, specimen.Ownership.Kind);
+    Assert.Equal(_trainer.Id, specimen.Ownership.TrainerId);
+    Assert.Equal(_pokeBall.Id, specimen.Ownership.PokeBallId);
+    Assert.Equal(specimen.Level, specimen.Ownership.Level.Value);
+    Assert.Equal(_location, specimen.Ownership.Location);
+    Assert.Equal(DateTime.Now, specimen.Ownership.MetOn, TimeSpan.FromSeconds(1));
 
-    Assert.NotNull(_specimen.Ownership);
-    Assert.Equal(OwnershipKind.Received, _specimen.Ownership.Kind);
-    Assert.Equal(trainer.Id, _specimen.Ownership.TrainerId);
-    Assert.Equal(greatBall.Id, _specimen.Ownership.PokeBallId);
-    Assert.Equal(_specimen.Level, _specimen.Ownership.Level.Value);
-    Assert.Equal(location, _specimen.Ownership.Location);
-    Assert.Equal(DateTime.Now, _specimen.Ownership.MetOn, TimeSpan.FromSeconds(1));
-
-    Assert.True(_specimen.HasChanges);
-    Assert.Contains(_specimen.Changes, change => change is PokemonReceived received && received.ActorId == _world.OwnerId.ActorId);
+    Assert.True(specimen.HasChanges);
+    Assert.Contains(specimen.Changes, change => change is PokemonReceived received && received.ActorId == _world.OwnerId.ActorId);
   }
 
   [Fact(DisplayName = "Receive: it should throw InvalidItemException when the item is not a Poké Ball.")]
@@ -237,6 +238,18 @@ public class SpecimenOwnershipTests
     Assert.Equal(potion.Category, exception.ActualCategory);
     Assert.Equal(ItemCategory.PokeBall, exception.ExpectedCategory);
     Assert.Equal("PokeBallId", exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "Receive: it should throw PokemonIsNotWildException when the Pokémon already has a trainer.")]
+  public void Given_NotWild_When_Receive_Then_PokemonIsNotWildException()
+  {
+    Trainer trainer = new TrainerBuilder(_faker).WithWorld(_world).Build();
+    _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId);
+
+    var exception = Assert.Throws<PokemonIsNotWildException>(() => _specimen.Receive(_trainer, _pokeBall, _location, _world.OwnerId));
+    Assert.Equal(_world.Id.ToGuid(), exception.WorldId);
+    Assert.Equal(_specimen.EntityId, exception.PokemonId);
+    Assert.Equal(_trainer.EntityId, exception.TrainerId);
   }
 
   [Fact(DisplayName = "Receive: it should throw WorldMismatchException when the Poké Ball is not in the same world.")]
