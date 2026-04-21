@@ -20,6 +20,7 @@ public static class Actions
   public const string Decline = "Decline";
   public const string Deposit = "Deposit";
   public const string Gift = "Gift";
+  public const string Move = "Move";
   public const string Receive = "Receive";
   public const string Release = "Release";
   public const string RevokeMembership = "RevokeMembership";

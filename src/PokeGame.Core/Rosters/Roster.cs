@@ -67,6 +67,40 @@ public class Roster : AggregateRoot, IEntityProvider
     ShiftAfter(party, specimen, previousSlot, userId);
   }
 
+  public void Move(Specimen specimen, PokemonSlot slot, PokemonParty party, UserId userId)
+  {
+    if (!_slots.TryGetValue(specimen.Id, out PokemonSlot? previousSlot))
+    {
+      throw new ArgumentException($"The Pokémon '{specimen}' is not in the trainer 'Id={TrainerId}' roster.", nameof(specimen));
+    }
+    else if (!slot.Box.HasValue)
+    {
+      throw new ArgumentException("The slot must not be in the party.", nameof(slot));
+    }
+    else if (!previousSlot.Box.HasValue)
+    {
+      party.EnsureIsValidWithout(specimen);
+    }
+
+    if (_pokemon.TryGetValue(slot, out PokemonId pokemonId))
+    {
+      if (pokemonId.Equals(specimen.Id))
+      {
+        return;
+      }
+
+      throw new NotImplementedException(); // TODO(fpion): 409 Conflict
+    }
+
+    specimen.Move(slot, userId);
+    Raise(new RosterPokemonMoved(specimen.Id, slot), userId.ActorId);
+
+    if (!previousSlot.Box.HasValue)
+    {
+      ShiftAfter(party, specimen, previousSlot, userId);
+    }
+  }
+
   public void Release(Specimen specimen, PokemonParty party, UserId userId)
   {
     if (!_slots.TryGetValue(specimen.Id, out PokemonSlot? slot))

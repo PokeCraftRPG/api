@@ -5,9 +5,9 @@ using PokeGame.Core.Rosters;
 
 namespace PokeGame.Core.Pokemon.Commands;
 
-internal record ReleasePokemonCommand(Guid Id) : ICommand<PokemonModel?>;
+internal record MovePokemonCommand(Guid Id, MovePokemonPayload Payload) : ICommand<PokemonModel?>;
 
-internal class ReleasePokemonCommandHandler : ICommandHandler<ReleasePokemonCommand, PokemonModel?>
+internal class MovePokemonCommandHandler : ICommandHandler<MovePokemonCommand, PokemonModel?>
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
@@ -15,7 +15,7 @@ internal class ReleasePokemonCommandHandler : ICommandHandler<ReleasePokemonComm
   private readonly IPokemonRepository _pokemonRepository;
   private readonly IRosterRepository _rosterRepository;
 
-  public ReleasePokemonCommandHandler(
+  public MovePokemonCommandHandler(
     IContext context,
     IPermissionService permissionService,
     IPokemonQuerier pokemonQuerier,
@@ -29,28 +29,31 @@ internal class ReleasePokemonCommandHandler : ICommandHandler<ReleasePokemonComm
     _rosterRepository = rosterRepository;
   }
 
-  public async Task<PokemonModel?> HandleAsync(ReleasePokemonCommand command, CancellationToken cancellationToken)
+  public async Task<PokemonModel?> HandleAsync(MovePokemonCommand command, CancellationToken cancellationToken)
   {
+    MovePokemonPayload payload = command.Payload;
+    payload.Validate();
+
     PokemonId pokemonId = new(_context.WorldId, command.Id);
     Specimen? specimen = await _pokemonRepository.LoadAsync(pokemonId, cancellationToken);
     if (specimen is null)
     {
       return null;
     }
-    await _permissionService.CheckAsync(Actions.Release, specimen, cancellationToken);
+    await _permissionService.CheckAsync(Actions.Move, specimen, cancellationToken);
 
     if (specimen.Ownership is null || specimen.Slot is null)
     {
       throw new PokemonHasNoOwnerException(specimen);
     }
 
-    RosterId rosterId = new(specimen.Ownership.TrainerId);
-    Roster roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken) ?? new(rosterId);
+    Roster roster = await _rosterRepository.LoadAsync(specimen.Ownership.TrainerId, cancellationToken);
+    PokemonSlot slot = new(payload.Position, payload.Box);
 
     if (specimen.Slot.Box.HasValue)
     {
       PokemonParty party = new(specimen.Ownership.TrainerId);
-      roster.Release(specimen, party, _context.UserId);
+      roster.Move(specimen, slot, party, _context.UserId);
 
       await _pokemonRepository.SaveAsync(specimen, cancellationToken);
     }
@@ -60,7 +63,7 @@ internal class ReleasePokemonCommandHandler : ICommandHandler<ReleasePokemonComm
       IEnumerable<Specimen> members = (await _pokemonRepository.LoadAsync(partyIds, cancellationToken)).Concat([specimen]);
 
       PokemonParty party = new(members);
-      roster.Release(specimen, party, _context.UserId);
+      roster.Move(specimen, slot, party, _context.UserId);
 
       await _pokemonRepository.SaveAsync(party.Members, cancellationToken);
     }

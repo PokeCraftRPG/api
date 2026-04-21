@@ -73,7 +73,7 @@ internal class GiftPokemonCommandHandler : ICommandHandler<GiftPokemonCommand, P
       Roster destinationRoster = await _rosterRepository.LoadAsync(trainer, cancellationToken);
       destinationRoster.Add(specimen, userId);
 
-      await _pokemonRepository.SaveAsync(specimen, cancellationToken);
+      await _pokemonRepository.SaveAsync(specimen, cancellationToken); // TODO(fpion): wrong! we heed to save the party members!
       await _rosterRepository.SaveAsync([sourceRoster, destinationRoster], cancellationToken);
     }
 
