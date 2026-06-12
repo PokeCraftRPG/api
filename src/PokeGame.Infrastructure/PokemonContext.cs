@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure;
 
@@ -7,6 +8,9 @@ public class PokemonContext : DbContext
   public PokemonContext(DbContextOptions<PokemonContext> options) : base(options)
   {
   }
+
+  internal DbSet<OutboxMessageEntity> OutboxMessages => Set<OutboxMessageEntity>();
+  internal DbSet<WorldEntity> Worlds => Set<WorldEntity>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

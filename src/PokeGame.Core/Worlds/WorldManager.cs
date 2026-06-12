@@ -31,7 +31,7 @@ internal class WorldManager : IWorldManager
 
     if (key is not null)
     {
-      WorldId? otherId = await _worldQuerier.FindIdAsync(key, cancellationToken);
+      WorldId? otherId = await _worldQuerier.TryGetIdAsync(key, cancellationToken);
       if (otherId.HasValue && !otherId.Value.Equals(world.Id))
       {
         throw new KeyAlreadyUsedException(world, otherId.Value.EntityId, key, nameof(world.Key));

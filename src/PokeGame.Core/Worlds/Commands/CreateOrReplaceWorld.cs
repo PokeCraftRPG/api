@@ -66,7 +66,7 @@ internal class CreateOrReplaceWorldCommandHandler : ICommandHandler<CreateOrRepl
     await _worldManager.EnsureUnicityAsync(world, cancellationToken);
     await _worldRepository.SaveAsync(world, cancellationToken);
 
-    WorldModel model = await _worldQuerier.ReadAsync(world, cancellationToken);
+    WorldModel model = await _worldQuerier.FindAsync(world, cancellationToken);
     return new CreateOrReplaceWorldResult(model, created);
   }
 }

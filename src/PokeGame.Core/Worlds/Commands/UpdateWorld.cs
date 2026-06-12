@@ -60,6 +60,6 @@ internal class UpdateWorldCommandHandler : ICommandHandler<UpdateWorldCommand, W
     await _worldManager.EnsureUnicityAsync(world, cancellationToken);
     await _worldRepository.SaveAsync(world, cancellationToken);
 
-    return await _worldQuerier.ReadAsync(world, cancellationToken);
+    return await _worldQuerier.FindAsync(world, cancellationToken);
   }
 }
