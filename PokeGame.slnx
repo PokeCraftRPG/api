@@ -12,4 +12,5 @@
     <Project Path="tests/PokeGame.Tests/PokeGame.Tests.csproj" Id="82ec8510-bb07-4ae4-bc75-a92865f1390a" />
   </Folder>
   <Project Path="src/PokeGame.Core/PokeGame.Core.csproj" Id="59c81592-41c5-4748-a34f-f1221d5817db" />
+  <Project Path="src/PokeGame.Infrastructure/PokeGame.Infrastructure.csproj" Id="8dbc45b6-a555-48ca-ad83-31a281d89135" />
 </Solution>
