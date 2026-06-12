@@ -1,4 +1,6 @@
 ﻿using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Search;
+using Logitar.Data;
 using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
@@ -13,13 +15,15 @@ internal class WorldQuerier : IWorldQuerier
 {
   private readonly IActorService _actorService;
   private readonly IContext _context;
+  private readonly ISqlHelper _sqlHelper;
   private readonly DbSet<WorldEntity> _worlds;
 
-  public WorldQuerier(IActorService actorService, IContext context, PokemonContext pokemon)
+  public WorldQuerier(IActorService actorService, IContext context, PokemonContext pokemon, ISqlHelper sqlHelper)
   {
     _actorService = actorService;
     _context = context;
     _worlds = pokemon.Worlds;
+    _sqlHelper = sqlHelper;
   }
 
   public async Task<int> CountAsync(CancellationToken cancellationToken)
@@ -55,6 +59,60 @@ internal class WorldQuerier : IWorldQuerier
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
 
+  public async Task<SearchResults<WorldModel>> SearchAsync(SearchWorldsPayload payload, CancellationToken cancellationToken)
+  {
+    IQueryBuilder builder = _sqlHelper.Query(Db.Worlds.Table).SelectAll(Db.Worlds.Table)
+        .Where(Db.Worlds.OwnerId, Operators.IsEqualTo(_context.UserId.Value))
+        .ApplyIdFilter(Db.Worlds.EntityId, payload.Ids);
+    _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Worlds.Key, Db.Worlds.Name);
+
+    IQueryable<WorldEntity> query = _worlds.FromQuery(builder).AsNoTracking();
+
+    long total = await query.LongCountAsync(cancellationToken);
+
+    IOrderedQueryable<WorldEntity>? ordered = null;
+    foreach (WorldSortOption sort in payload.Sort)
+    {
+      switch (sort.Field)
+      {
+        case WorldSort.CreatedOn:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.CreatedOn) : query.OrderBy(x => x.CreatedOn))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.CreatedOn) : ordered.ThenBy(x => x.CreatedOn));
+          break;
+        case WorldSort.Key:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.Key) : query.OrderBy(x => x.Key))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.Key) : ordered.ThenBy(x => x.Key));
+          break;
+        case WorldSort.Name:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.Name ?? x.Key) : query.OrderBy(x => x.Name ?? x.Key))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.Name ?? x.Key) : ordered.ThenBy(x => x.Name ?? x.Key));
+          break;
+        case WorldSort.UpdatedOn:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.UpdatedOn) : query.OrderBy(x => x.UpdatedOn))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.UpdatedOn) : ordered.ThenBy(x => x.UpdatedOn));
+          break;
+      }
+    }
+    query = ordered ?? query;
+
+    query = query.ApplyPaging(payload);
+
+    WorldEntity[] entities = await query.ToArrayAsync(cancellationToken);
+    IReadOnlyCollection<WorldModel> worlds = await MapAsync(entities, cancellationToken);
+
+    return new SearchResults<WorldModel>(worlds, total);
+  }
+
+  public async Task<WorldId?> TryGetIdAsync(Slug key, CancellationToken cancellationToken)
+  {
+    string? streamId = await _worlds.Where(x => x.Key == key.Value).Select(x => x.StreamId).SingleOrDefaultAsync(cancellationToken);
+    return streamId is null ? null : new WorldId(streamId);
+  }
+
   private async Task<WorldModel> MapAsync(WorldEntity world, CancellationToken cancellationToken)
   {
     return (await MapAsync([world], cancellationToken)).Single();
@@ -66,11 +124,5 @@ internal class WorldQuerier : IWorldQuerier
     Mapper mapper = new(actors);
 
     return worlds.Select(mapper.ToWorld).ToList().AsReadOnly();
-  }
-
-  public async Task<WorldId?> TryGetIdAsync(Slug key, CancellationToken cancellationToken)
-  {
-    string? streamId = await _worlds.Where(x => x.Key == key.Value).Select(x => x.StreamId).SingleOrDefaultAsync(cancellationToken);
-    return streamId is null ? null : new WorldId(streamId);
   }
 }

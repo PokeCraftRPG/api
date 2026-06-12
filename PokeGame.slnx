@@ -13,4 +13,5 @@
   </Folder>
   <Project Path="src/PokeGame.Core/PokeGame.Core.csproj" Id="59c81592-41c5-4748-a34f-f1221d5817db" />
   <Project Path="src/PokeGame.Infrastructure/PokeGame.Infrastructure.csproj" Id="8dbc45b6-a555-48ca-ad83-31a281d89135" />
+  <Project Path="src/PokeGame.PostgreSQL/PokeGame.PostgreSQL.csproj" Id="a49b0213-f3ba-45a4-82eb-3c4406b779eb" />
 </Solution>
