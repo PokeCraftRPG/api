@@ -1,12 +1,11 @@
 ﻿using Logitar.Data;
-using PokeGame.Infrastructure.Configurations;
 using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Db;
 
 internal static class Worlds
 {
-  public static readonly TableId Table = new(Schemas.Game, nameof(PokemonContext.Worlds), alias: null);
+  public static readonly TableId Table = new(Schemas.Pokemon, nameof(PokemonContext.Worlds), alias: null);
 
   public static readonly ColumnId CreatedBy = new(nameof(WorldEntity.CreatedBy), Table);
   public static readonly ColumnId CreatedOn = new(nameof(WorldEntity.CreatedOn), Table);

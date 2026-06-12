@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PokeGame.Core;
+using PokeGame.Infrastructure.Db;
 using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Configurations;
@@ -12,7 +13,7 @@ internal class WorldConfiguration : AggregateConfiguration<WorldEntity>, IEntity
   {
     base.Configure(builder);
 
-    builder.ToTable(nameof(PokemonContext.Worlds), Schemas.Game);
+    builder.ToTable(nameof(PokemonContext.Worlds), Schemas.Pokemon);
     builder.HasKey(x => x.WorldId);
 
     builder.HasIndex(x => x.EntityId).IsUnique();
