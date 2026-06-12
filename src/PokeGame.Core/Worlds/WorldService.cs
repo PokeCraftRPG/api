@@ -2,12 +2,14 @@
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Worlds.Commands;
 using PokeGame.Core.Worlds.Models;
+using PokeGame.Core.Worlds.Queries;
 
 namespace PokeGame.Core.Worlds;
 
 public interface IWorldService
 {
   Task<CreateOrReplaceWorldResult> CreateOrReplaceAsync(CreateOrReplaceWorldPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
+  Task<WorldModel?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
   Task<WorldModel?> UpdateAsync(Guid id, UpdateWorldPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -19,6 +21,7 @@ internal class WorldService : IWorldService
     services.AddTransient<IWorldManager, WorldManager>();
     services.AddTransient<ICommandHandler<CreateOrReplaceWorldCommand, CreateOrReplaceWorldResult>, CreateOrReplaceWorldCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateWorldCommand, WorldModel?>, UpdateWorldCommandHandler>();
+    services.AddTransient<IQueryHandler<ReadWorldQuery, WorldModel?>, ReadWorldQueryHandler>();
   }
 
   private readonly ICommandBus _commandBus;
@@ -34,6 +37,12 @@ internal class WorldService : IWorldService
   {
     CreateOrReplaceWorldCommand command = new(payload, id);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<WorldModel?> ReadAsync(Guid? id, string? key, CancellationToken cancellationToken)
+  {
+    ReadWorldQuery query = new(id, key);
+    return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 
   public async Task<WorldModel?> UpdateAsync(Guid id, UpdateWorldPayload payload, CancellationToken cancellationToken)
