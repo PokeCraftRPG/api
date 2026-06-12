@@ -34,7 +34,7 @@ internal class WorldManager : IWorldManager
       WorldId? otherId = await _worldQuerier.FindIdAsync(key, cancellationToken);
       if (otherId.HasValue && !otherId.Value.Equals(world.Id))
       {
-        throw new NotImplementedException(); // TODO(fpion): 409 Conflict
+        throw new KeyAlreadyUsedException(world, otherId.Value.EntityId, key, nameof(world.Key));
       }
     }
   }
