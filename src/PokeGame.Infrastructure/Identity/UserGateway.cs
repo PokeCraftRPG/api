@@ -14,6 +14,16 @@ internal class UserGateway : IUserGateway
     _userClient = userClient;
   }
 
+  public async Task<User> AuthenticateAsync(string uniqueName, string password, CancellationToken cancellationToken)
+  {
+    AuthenticateUserPayload payload = new(uniqueName, password);
+    return await _userClient.AuthenticateAsync(payload, cancellationToken);
+  }
+
+  public async Task<User?> FindAsync(Guid id, CancellationToken cancellationToken)
+  {
+    return await _userClient.ReadAsync(id, uniqueName: null, customIdentifier: null, cancellationToken);
+  }
   public async Task<IReadOnlyCollection<User>> FindAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken)
   {
     if (!ids.Any())

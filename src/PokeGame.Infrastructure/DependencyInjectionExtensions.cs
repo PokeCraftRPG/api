@@ -1,6 +1,7 @@
 ﻿using Logitar.CQRS;
 using Logitar.EventSourcing.EntityFrameworkCore.Relational;
 using Logitar.EventSourcing.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Worlds;
@@ -30,6 +31,7 @@ public static class DependencyInjectionExtensions
       .AddMemoryCache()
       .AddQueriers()
       .AddRepositories()
+      .AddSingleton(serviceProvider => TokensSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddSingleton<IEventSerializer, EventSerializer>()
       .AddScoped<IEventBus, EventBus>()
       .AddTransient<ICommandHandler<MigrateDatabaseCommand, Unit>, MigrateDatabaseCommandHandler>();
@@ -43,7 +45,12 @@ public static class DependencyInjectionExtensions
 
   private static IServiceCollection AddIdentityGateways(this IServiceCollection services)
   {
-    return services.AddSingleton<IUserGateway, UserGateway>();
+    return services
+      .AddSingleton<IApiKeyGateway, ApiKeyGateway>()
+      .AddSingleton<IRealmGateway, RealmGateway>()
+      .AddSingleton<ISessionGateway, SessionGateway>()
+      .AddSingleton<ITokenGateway, TokenGateway>()
+      .AddSingleton<IUserGateway, UserGateway>();
   }
 
   private static IServiceCollection AddQueriers(this IServiceCollection services)
