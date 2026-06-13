@@ -15,6 +15,8 @@ internal class WorldEntity : AggregateEntity
   public string? Name { get; private set; }
   public string? Description { get; private set; }
 
+  public List<RegionEntity> Regions { get; private set; } = [];
+
   public WorldEntity(WorldCreated @event) : base(@event)
   {
     EntityId = new WorldId(@event.StreamId).EntityId;
