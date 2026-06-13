@@ -1,4 +1,5 @@
-﻿using Logitar.EventSourcing;
+﻿using Krakenar.Contracts;
+using Logitar.EventSourcing;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Worlds;
 
@@ -13,4 +14,6 @@ public interface IContext
   bool IsWorldOwner { get; }
 
   WorldId? TryGetWorldId();
+
+  IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes();
 }

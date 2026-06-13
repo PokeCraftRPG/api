@@ -11,7 +11,7 @@ This project is setup to use migrations. All the commands below must be executed
 To create a new migration, execute the following command. Do not forget to provide a migration name!
 
 ```sh
-dotnet ef migrations add <YOUR_MIGRATION_NAME> --context PokeGameContext --project src/PokeGame.PostgreSQL --startup-project src/PokeGame
+dotnet ef migrations add <YOUR_MIGRATION_NAME> --context PokemonContext --project src/PokeGame.PostgreSQL --startup-project src/PokeGame
 ```
 
 ### Remove a migration
@@ -19,7 +19,7 @@ dotnet ef migrations add <YOUR_MIGRATION_NAME> --context PokeGameContext --proje
 To remove the latest unapplied migration, execute the following command.
 
 ```sh
-dotnet ef migrations remove --context PokeGameContext --project src/PokeGame.PostgreSQL --startup-project src/PokeGame
+dotnet ef migrations remove --context PokemonContext --project src/PokeGame.PostgreSQL --startup-project src/PokeGame
 ```
 
 ### Generate a script
@@ -27,5 +27,5 @@ dotnet ef migrations remove --context PokeGameContext --project src/PokeGame.Pos
 To generate a script, execute the following command. Do not forget to provide a source migration name!
 
 ```sh
-dotnet ef migrations script <SOURCE_MIGRATION> --context PokeGameContext --project src/PokeGame.PostgreSQL --startup-project src/PokeGame
+dotnet ef migrations script <SOURCE_MIGRATION> --context PokemonContext --project src/PokeGame.PostgreSQL --startup-project src/PokeGame
 ```
