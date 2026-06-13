@@ -32,6 +32,8 @@ internal class WorldEntity : AggregateEntity
 
   public void Describe(WorldDescribed @event)
   {
+    base.Update(@event);
+
     Description = @event.Description?.Value;
   }
 
@@ -44,11 +46,15 @@ internal class WorldEntity : AggregateEntity
 
   public void Rename(WorldRenamed @event)
   {
+    base.Update(@event);
+
     Name = @event.Name?.Value;
   }
 
   public void SetKey(WorldKeyChanged @event)
   {
+    base.Update(@event);
+
     Key = @event.Key.Value;
   }
 

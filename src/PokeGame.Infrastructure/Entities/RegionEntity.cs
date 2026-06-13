@@ -30,16 +30,22 @@ internal class RegionEntity : AggregateEntity
 
   public void Describe(RegionDescribed @event)
   {
+    base.Update(@event);
+
     Description = @event.Description?.Value;
   }
 
   public void Rename(RegionRenamed @event)
   {
+    base.Update(@event);
+
     Name = @event.Name?.Value;
   }
 
   public void SetKey(RegionKeyChanged @event)
   {
+    base.Update(@event);
+
     Key = @event.Key.Value;
   }
 
