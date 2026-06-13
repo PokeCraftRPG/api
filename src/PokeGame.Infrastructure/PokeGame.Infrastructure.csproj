@@ -20,10 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PokeGame.Core\PokeGame.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Using Include="System.Diagnostics.CodeAnalysis" />
     <Using Include="System.Reflection" />
     <Using Include="System.Runtime.ExceptionServices" />

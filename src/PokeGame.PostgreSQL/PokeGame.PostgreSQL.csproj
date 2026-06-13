@@ -18,8 +18,4 @@
     <PackageReference Include="Logitar.EventSourcing.EntityFrameworkCore.PostgreSQL" Version="10.1.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\PokeGame.Infrastructure\PokeGame.Infrastructure.csproj" />
-  </ItemGroup>
-
 </Project>

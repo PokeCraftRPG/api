@@ -29,10 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PokeGame.PostgreSQL\PokeGame.PostgreSQL.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Using Include="System.Net.Mime" />
     <Using Include="System.Security.Claims" />
     <Using Include="System.Text" />
