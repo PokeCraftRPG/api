@@ -59,7 +59,7 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Equal(Actor, world.CreatedBy);
     Assert.Equal(DateTime.UtcNow, world.CreatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(Actor, world.UpdatedBy);
-    Assert.Equal(DateTime.UtcNow, world.UpdatedOn, TimeSpan.FromSeconds(10));
+    Assert.True(world.CreatedOn < world.UpdatedOn);
 
     Assert.Equal(Actor, world.Owner);
     Assert.Equal(payload.Key.ToLowerInvariant(), world.Key);
@@ -101,7 +101,7 @@ public class WorldIntegrationTests : IntegrationTests
 
     Assert.Equal(id, world.Id);
     Assert.Equal(_world.Version + 3, world.Version);
-    Assert.Equal(Actor, world.CreatedBy);
+    Assert.Equal(_world.CreatedBy, world.CreatedBy.ToActorId());
     Assert.Equal(_world.CreatedOn.AsUniversalTime(), world.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, world.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, world.UpdatedOn, TimeSpan.FromSeconds(10));
@@ -123,7 +123,7 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Empty(results.Items);
   }
 
-  [Fact(DisplayName = "It should return null when the world was not found (Read).")]
+  [Fact(DisplayName = "It should return null when the world was not read.")]
   public async Task Given_NotFound_When_Read_Then_NullReturned()
   {
     World world = new WorldBuilder(Faker).WithKey(new Slug("another-world")).Build();
@@ -132,7 +132,7 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Null(await _worldService.ReadAsync(world.EntityId, world.Key.Value));
   }
 
-  [Fact(DisplayName = "It should return null when the world was not found (Update).")]
+  [Fact(DisplayName = "It should return null when the world was not updated.")]
   public async Task Given_NotFound_When_Update_Then_NullReturned()
   {
     Assert.Null(await _worldService.UpdateAsync(Guid.Empty, new UpdateWorldPayload()));
@@ -154,17 +154,47 @@ public class WorldIntegrationTests : IntegrationTests
     }
   }
 
-  [Fact(DisplayName = "It should throw KeyAlreadyUsedException when the key is already used.")]
-  public async Task Given_KeyConflict_When_EnsureUnicity_Then_KeyAlreadyUsedException()
+  [Theory(DisplayName = "It should throw KeyAlreadyUsedException when creating or replacing a world.")]
+  [InlineData(false)]
+  [InlineData(true)]
+  public async Task Given_KeyConflict_When_CreateOrReplace_Then_KeyAlreadyUsedException(bool exists)
   {
+    Guid id = Guid.NewGuid();
+    if (exists)
+    {
+      Assert.NotNull(Context.World);
+      id = Context.World.EntityId;
+    }
+
     CreateOrReplaceWorldPayload payload = new()
     {
       Key = _world.Key.Value
     };
 
-    var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _worldService.CreateOrReplaceAsync(payload));
+    var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _worldService.CreateOrReplaceAsync(payload, id));
     Assert.Null(exception.WorldId);
     Assert.Equal(World.EntityKind, exception.EntityKind);
+    Assert.Equal(id, exception.EntityId);
+    Assert.Equal(_world.EntityId, exception.ConflictingId);
+    Assert.Equal(payload.Key, exception.AttemptedKey);
+    Assert.Equal("Key", exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating an existing world.")]
+  public async Task Given_KeyConflict_When_Update_Then_KeyAlreadyUsedException()
+  {
+    Assert.NotNull(Context.World);
+
+    Guid id = Context.World.EntityId;
+    UpdateWorldPayload payload = new()
+    {
+      Key = _world.Key.Value
+    };
+
+    var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _worldService.UpdateAsync(id, payload));
+    Assert.Null(exception.WorldId);
+    Assert.Equal(World.EntityKind, exception.EntityKind);
+    Assert.Equal(id, exception.EntityId);
     Assert.Equal(_world.EntityId, exception.ConflictingId);
     Assert.Equal(payload.Key, exception.AttemptedKey);
     Assert.Equal("Key", exception.PropertyName);
@@ -218,7 +248,7 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Equal(_world.GetEntity().ToString(), exception.Resource);
   }
 
-  [Fact(DisplayName = "It should throw TooManyResultsException when many worlds were found.")]
+  [Fact(DisplayName = "It should throw TooManyResultsException when many worlds were read.")]
   public async Task Given_ManyFound_When_Read_Then_TooManyResultsException()
   {
     Assert.NotNull(Context.World);
@@ -243,7 +273,7 @@ public class WorldIntegrationTests : IntegrationTests
 
     Assert.Equal(id, world.Id);
     Assert.Equal(_world.Version + 2, world.Version);
-    Assert.Equal(Actor, world.CreatedBy);
+    Assert.Equal(_world.CreatedBy, world.CreatedBy.ToActorId());
     Assert.Equal(_world.CreatedOn.AsUniversalTime(), world.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, world.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, world.UpdatedOn, TimeSpan.FromSeconds(10));

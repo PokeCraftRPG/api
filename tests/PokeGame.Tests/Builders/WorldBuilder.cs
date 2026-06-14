@@ -1,5 +1,6 @@
 ﻿using Bogus;
 using Krakenar.Contracts.Users;
+using Logitar.EventSourcing;
 using PokeGame.Core;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Worlds;
@@ -66,12 +67,13 @@ public class WorldBuilder : IWorldBuilder
   {
     User owner = _owner ?? new UserBuilder(_faker).Build();
     UserId ownerId = new(owner);
+    ActorId actorId = ownerId.ActorId;
 
-    Slug key = _key ?? new("Pokémon");
+    Slug key = _key ?? new("World");
 
     World world = new(ownerId, key, _worldId);
-    world.Rename(_name, ownerId.ActorId);
-    world.Describe(_description, ownerId.ActorId);
+    world.Rename(_name, actorId);
+    world.Describe(_description, actorId);
 
     return world;
   }
