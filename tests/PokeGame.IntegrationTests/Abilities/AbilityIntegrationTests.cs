@@ -1,4 +1,4 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Logitar;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +18,7 @@ public class AbilityIntegrationTests : IntegrationTests
   private readonly IAbilityService _abilityService;
 
   private Ability _chlorophyll = null!;
-  private Ability _overgrow = null!;
+  private Ability _static = null!;
 
   public AbilityIntegrationTests()
   {
@@ -30,9 +30,9 @@ public class AbilityIntegrationTests : IntegrationTests
   {
     await base.InitializeAsync();
 
-    _overgrow = new AbilityBuilder().WithWorld(Context.World).Build();
+    _static = new AbilityBuilder().WithWorld(Context.World).Build();
     _chlorophyll = new AbilityBuilder().WithWorld(Context.World).WithKey(new Slug("chlorophyll")).Build();
-    await _abilityRepository.SaveAsync([_overgrow, _chlorophyll]);
+    await _abilityRepository.SaveAsync([_static, _chlorophyll]);
   }
 
   [Theory(DisplayName = "It should create a new ability.")]
@@ -42,9 +42,9 @@ public class AbilityIntegrationTests : IntegrationTests
   {
     CreateOrReplaceAbilityPayload payload = new()
     {
-      Key = "Intimidate",
-      Name = " Intimidate ",
-      Description = "  Lowers the opposing Pokémon's Attack stat.  "
+      Key = "Static",
+      Name = " Static ",
+      Description = "  The Pokémon is charged with static electricity and may paralyze attackers that make direct contact with it.  "
     };
     Guid? id = withId ? Guid.NewGuid() : null;
 
@@ -71,17 +71,17 @@ public class AbilityIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should read an ability by ID.")]
   public async Task Given_Id_When_Read_Then_Found()
   {
-    AbilityModel? ability = await _abilityService.ReadAsync(_overgrow.EntityId);
+    AbilityModel? ability = await _abilityService.ReadAsync(_static.EntityId);
     Assert.NotNull(ability);
-    Assert.Equal(_overgrow.EntityId, ability.Id);
+    Assert.Equal(_static.EntityId, ability.Id);
   }
 
   [Fact(DisplayName = "It should read an ability by key.")]
   public async Task Given_Key_When_Read_Then_Found()
   {
-    AbilityModel? ability = await _abilityService.ReadAsync(id: null, _overgrow.Key.Value);
+    AbilityModel? ability = await _abilityService.ReadAsync(id: null, _static.Key.Value);
     Assert.NotNull(ability);
-    Assert.Equal(_overgrow.EntityId, ability.Id);
+    Assert.Equal(_static.EntityId, ability.Id);
   }
 
   [Fact(DisplayName = "It should replace an existing ability.")]
@@ -89,11 +89,11 @@ public class AbilityIntegrationTests : IntegrationTests
   {
     CreateOrReplaceAbilityPayload payload = new()
     {
-      Key = "Intimidate",
-      Name = " Intimidate ",
-      Description = "  Lowers the opposing Pokémon's Attack stat.  "
+      Key = "Static",
+      Name = " Static ",
+      Description = "  The Pokémon is charged with static electricity and may paralyze attackers that make direct contact with it.  "
     };
-    Guid id = _overgrow.EntityId;
+    Guid id = _static.EntityId;
 
     CreateOrReplaceAbilityResult result = await _abilityService.CreateOrReplaceAsync(payload, id);
     AbilityModel ability = result.Ability;
@@ -101,9 +101,9 @@ public class AbilityIntegrationTests : IntegrationTests
     Assert.False(result.Created);
 
     Assert.Equal(id, ability.Id);
-    Assert.Equal(_overgrow.Version + 3, ability.Version);
-    Assert.Equal(_overgrow.CreatedBy, ability.CreatedBy.ToActorId());
-    Assert.Equal(_overgrow.CreatedOn.AsUniversalTime(), ability.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(_static.Version + 3, ability.Version);
+    Assert.Equal(_static.CreatedBy, ability.CreatedBy.ToActorId());
+    Assert.Equal(_static.CreatedOn.AsUniversalTime(), ability.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, ability.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, ability.UpdatedOn, TimeSpan.FromSeconds(10));
 
@@ -127,7 +127,7 @@ public class AbilityIntegrationTests : IntegrationTests
   public async Task Given_NotFound_When_Read_Then_NullReturned()
   {
     Context.World = new WorldBuilder().Build();
-    Assert.Null(await _abilityService.ReadAsync(_overgrow.EntityId, _overgrow.Key.Value));
+    Assert.Null(await _abilityService.ReadAsync(_static.EntityId, _static.Key.Value));
   }
 
   [Fact(DisplayName = "It should return null when the ability was not updated.")]
@@ -145,7 +145,7 @@ public class AbilityIntegrationTests : IntegrationTests
     Assert.Equal(2, results.Total);
 
     Assert.Equal(results.Total, results.Items.Count);
-    Assert.Contains(results.Items, ability => ability.Id == _overgrow.EntityId);
+    Assert.Contains(results.Items, ability => ability.Id == _static.EntityId);
     Assert.Contains(results.Items, ability => ability.Id == _chlorophyll.EntityId);
   }
 
@@ -162,7 +162,7 @@ public class AbilityIntegrationTests : IntegrationTests
 
     CreateOrReplaceAbilityPayload payload = new()
     {
-      Key = _overgrow.Key.Value
+      Key = _static.Key.Value
     };
 
     var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _abilityService.CreateOrReplaceAsync(payload, id));
@@ -170,7 +170,7 @@ public class AbilityIntegrationTests : IntegrationTests
     Assert.Equal(Context.World.EntityId, exception.WorldId);
     Assert.Equal(Ability.EntityKind, exception.EntityKind);
     Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_overgrow.EntityId, exception.ConflictingId);
+    Assert.Equal(_static.EntityId, exception.ConflictingId);
     Assert.Equal(payload.Key, exception.AttemptedKey);
     Assert.Equal("Key", exception.PropertyName);
   }
@@ -181,7 +181,7 @@ public class AbilityIntegrationTests : IntegrationTests
     Guid id = _chlorophyll.EntityId;
     UpdateAbilityPayload payload = new()
     {
-      Key = _overgrow.Key.Value
+      Key = _static.Key.Value
     };
 
     var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _abilityService.UpdateAsync(id, payload));
@@ -189,7 +189,7 @@ public class AbilityIntegrationTests : IntegrationTests
     Assert.Equal(Context.World.EntityId, exception.WorldId);
     Assert.Equal(Ability.EntityKind, exception.EntityKind);
     Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_overgrow.EntityId, exception.ConflictingId);
+    Assert.Equal(_static.EntityId, exception.ConflictingId);
     Assert.Equal(payload.Key, exception.AttemptedKey);
     Assert.Equal("Key", exception.PropertyName);
   }
@@ -220,10 +220,10 @@ public class AbilityIntegrationTests : IntegrationTests
       Key = "denied-ability"
     };
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _abilityService.CreateOrReplaceAsync(payload, _overgrow.EntityId));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _abilityService.CreateOrReplaceAsync(payload, _static.EntityId));
     Assert.Equal(Actor.ToActorId().Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
-    Assert.Equal(_overgrow.GetEntity().ToString(), exception.Resource);
+    Assert.Equal(_static.GetEntity().ToString(), exception.Resource);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating an existing ability.")]
@@ -233,16 +233,16 @@ public class AbilityIntegrationTests : IntegrationTests
 
     UpdateAbilityPayload payload = new();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _abilityService.UpdateAsync(_overgrow.EntityId, payload));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _abilityService.UpdateAsync(_static.EntityId, payload));
     Assert.Equal(Actor.ToActorId().Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
-    Assert.Equal(_overgrow.GetEntity().ToString(), exception.Resource);
+    Assert.Equal(_static.GetEntity().ToString(), exception.Resource);
   }
 
   [Fact(DisplayName = "It should throw TooManyResultsException when many abilities were read.")]
   public async Task Given_ManyFound_When_Read_Then_TooManyResultsException()
   {
-    var exception = await Assert.ThrowsAsync<TooManyResultsException<AbilityModel>>(async () => await _abilityService.ReadAsync(_overgrow.EntityId, _chlorophyll.Key.Value));
+    var exception = await Assert.ThrowsAsync<TooManyResultsException<AbilityModel>>(async () => await _abilityService.ReadAsync(_static.EntityId, _chlorophyll.Key.Value));
     Assert.Equal(1, exception.ExpectedCount);
     Assert.Equal(2, exception.ActualCount);
   }
@@ -250,10 +250,10 @@ public class AbilityIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should update an existing ability.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
-    Guid id = _overgrow.EntityId;
+    Guid id = _static.EntityId;
     UpdateAbilityPayload payload = new()
     {
-      Name = new Optional<string>(" Overgrow "),
+      Name = new Optional<string>(" Static "),
       Description = new Optional<string>("  Powers up Grass-type moves when the Pokémon's HP is low.  ")
     };
 
@@ -261,13 +261,13 @@ public class AbilityIntegrationTests : IntegrationTests
     Assert.NotNull(ability);
 
     Assert.Equal(id, ability.Id);
-    Assert.Equal(_overgrow.Version + 2, ability.Version);
-    Assert.Equal(_overgrow.CreatedBy, ability.CreatedBy.ToActorId());
-    Assert.Equal(_overgrow.CreatedOn.AsUniversalTime(), ability.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(_static.Version + 2, ability.Version);
+    Assert.Equal(_static.CreatedBy, ability.CreatedBy.ToActorId());
+    Assert.Equal(_static.CreatedOn.AsUniversalTime(), ability.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, ability.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, ability.UpdatedOn, TimeSpan.FromSeconds(10));
 
-    Assert.Equal(_overgrow.Key.Value, ability.Key);
+    Assert.Equal(_static.Key.Value, ability.Key);
     Assert.Equal(payload.Name.Value?.Trim(), ability.Name);
     Assert.Equal(payload.Description.Value?.Trim(), ability.Description);
   }
