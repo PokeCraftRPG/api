@@ -17,7 +17,7 @@ public class RegionIntegrationTests : IntegrationTests
   private readonly IRegionRepository _regionRepository;
   private readonly IRegionService _regionService;
 
-  private Region _kanto = null!;
+  private Region _region = null!;
   private Region _johto = null!;
 
   public RegionIntegrationTests()
@@ -30,9 +30,9 @@ public class RegionIntegrationTests : IntegrationTests
   {
     await base.InitializeAsync();
 
-    _kanto = new RegionBuilder().WithWorld(Context.World).Build();
-    _johto = new RegionBuilder().WithWorld(Context.World).WithKey(new Slug("johto")).Build();
-    await _regionRepository.SaveAsync([_kanto, _johto]);
+    _region = new RegionBuilder(Faker).WithWorld(Context.World).Build();
+    _johto = RegionBuilder.Johto(Faker, Context.World);
+    await _regionRepository.SaveAsync([_region, _johto]);
   }
 
   [Theory(DisplayName = "It should create a new region.")]
@@ -71,17 +71,17 @@ public class RegionIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should read a region by ID.")]
   public async Task Given_Id_When_Read_Then_Found()
   {
-    RegionModel? region = await _regionService.ReadAsync(_kanto.EntityId);
+    RegionModel? region = await _regionService.ReadAsync(_region.EntityId);
     Assert.NotNull(region);
-    Assert.Equal(_kanto.EntityId, region.Id);
+    Assert.Equal(_region.EntityId, region.Id);
   }
 
   [Fact(DisplayName = "It should read a region by key.")]
   public async Task Given_Key_When_Read_Then_Found()
   {
-    RegionModel? region = await _regionService.ReadAsync(id: null, _kanto.Key.Value);
+    RegionModel? region = await _regionService.ReadAsync(id: null, _region.Key.Value);
     Assert.NotNull(region);
-    Assert.Equal(_kanto.EntityId, region.Id);
+    Assert.Equal(_region.EntityId, region.Id);
   }
 
   [Fact(DisplayName = "It should replace an existing region.")]
@@ -93,7 +93,7 @@ public class RegionIntegrationTests : IntegrationTests
       Name = " Kanto ",
       Description = "  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla aliquet, dolor sed sollicitudin biam.  "
     };
-    Guid id = _kanto.EntityId;
+    Guid id = _region.EntityId;
 
     CreateOrReplaceRegionResult result = await _regionService.CreateOrReplaceAsync(payload, id);
     RegionModel region = result.Region;
@@ -101,9 +101,9 @@ public class RegionIntegrationTests : IntegrationTests
     Assert.False(result.Created);
 
     Assert.Equal(id, region.Id);
-    Assert.Equal(_kanto.Version + 3, region.Version);
-    Assert.Equal(_kanto.CreatedBy, region.CreatedBy.ToActorId());
-    Assert.Equal(_kanto.CreatedOn.AsUniversalTime(), region.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(_region.Version + 3, region.Version);
+    Assert.Equal(_region.CreatedBy, region.CreatedBy.ToActorId());
+    Assert.Equal(_region.CreatedOn.AsUniversalTime(), region.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, region.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, region.UpdatedOn, TimeSpan.FromSeconds(10));
 
@@ -127,7 +127,7 @@ public class RegionIntegrationTests : IntegrationTests
   public async Task Given_NotFound_When_Read_Then_NullReturned()
   {
     Context.World = new WorldBuilder().Build();
-    Assert.Null(await _regionService.ReadAsync(_kanto.EntityId, _kanto.Key.Value));
+    Assert.Null(await _regionService.ReadAsync(_region.EntityId, _region.Key.Value));
   }
 
   [Fact(DisplayName = "It should return null when the region was not updated.")]
@@ -145,7 +145,7 @@ public class RegionIntegrationTests : IntegrationTests
     Assert.Equal(2, results.Total);
 
     Assert.Equal(results.Total, results.Items.Count);
-    Assert.Contains(results.Items, region => region.Id == _kanto.EntityId);
+    Assert.Contains(results.Items, region => region.Id == _region.EntityId);
     Assert.Contains(results.Items, region => region.Id == _johto.EntityId);
   }
 
@@ -162,7 +162,7 @@ public class RegionIntegrationTests : IntegrationTests
 
     CreateOrReplaceRegionPayload payload = new()
     {
-      Key = _kanto.Key.Value
+      Key = _region.Key.Value
     };
 
     var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _regionService.CreateOrReplaceAsync(payload, id));
@@ -170,7 +170,7 @@ public class RegionIntegrationTests : IntegrationTests
     Assert.Equal(Context.World.EntityId, exception.WorldId);
     Assert.Equal(Region.EntityKind, exception.EntityKind);
     Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_kanto.EntityId, exception.ConflictingId);
+    Assert.Equal(_region.EntityId, exception.ConflictingId);
     Assert.Equal(payload.Key, exception.AttemptedKey);
     Assert.Equal("Key", exception.PropertyName);
   }
@@ -181,7 +181,7 @@ public class RegionIntegrationTests : IntegrationTests
     Guid id = _johto.EntityId;
     UpdateRegionPayload payload = new()
     {
-      Key = _kanto.Key.Value
+      Key = _region.Key.Value
     };
 
     var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _regionService.UpdateAsync(id, payload));
@@ -189,7 +189,7 @@ public class RegionIntegrationTests : IntegrationTests
     Assert.Equal(Context.World.EntityId, exception.WorldId);
     Assert.Equal(Region.EntityKind, exception.EntityKind);
     Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_kanto.EntityId, exception.ConflictingId);
+    Assert.Equal(_region.EntityId, exception.ConflictingId);
     Assert.Equal(payload.Key, exception.AttemptedKey);
     Assert.Equal("Key", exception.PropertyName);
   }
@@ -220,10 +220,10 @@ public class RegionIntegrationTests : IntegrationTests
       Key = "denied-region"
     };
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _regionService.CreateOrReplaceAsync(payload, _kanto.EntityId));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _regionService.CreateOrReplaceAsync(payload, _region.EntityId));
     Assert.Equal(Actor.ToActorId().Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
-    Assert.Equal(_kanto.GetEntity().ToString(), exception.Resource);
+    Assert.Equal(_region.GetEntity().ToString(), exception.Resource);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating an existing region.")]
@@ -233,16 +233,16 @@ public class RegionIntegrationTests : IntegrationTests
 
     UpdateRegionPayload payload = new();
 
-    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _regionService.UpdateAsync(_kanto.EntityId, payload));
+    var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _regionService.UpdateAsync(_region.EntityId, payload));
     Assert.Equal(Actor.ToActorId().Value, exception.Principal);
     Assert.Equal(Actions.Update, exception.Action);
-    Assert.Equal(_kanto.GetEntity().ToString(), exception.Resource);
+    Assert.Equal(_region.GetEntity().ToString(), exception.Resource);
   }
 
   [Fact(DisplayName = "It should throw TooManyResultsException when many regions were read.")]
   public async Task Given_ManyFound_When_Read_Then_TooManyResultsException()
   {
-    var exception = await Assert.ThrowsAsync<TooManyResultsException<RegionModel>>(async () => await _regionService.ReadAsync(_kanto.EntityId, _johto.Key.Value));
+    var exception = await Assert.ThrowsAsync<TooManyResultsException<RegionModel>>(async () => await _regionService.ReadAsync(_region.EntityId, _johto.Key.Value));
     Assert.Equal(1, exception.ExpectedCount);
     Assert.Equal(2, exception.ActualCount);
   }
@@ -250,7 +250,7 @@ public class RegionIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should update an existing region.")]
   public async Task Given_Exists_When_Update_Then_Updated()
   {
-    Guid id = _kanto.EntityId;
+    Guid id = _region.EntityId;
     UpdateRegionPayload payload = new()
     {
       Name = new Optional<string>(" Kanto "),
@@ -261,13 +261,13 @@ public class RegionIntegrationTests : IntegrationTests
     Assert.NotNull(region);
 
     Assert.Equal(id, region.Id);
-    Assert.Equal(_kanto.Version + 2, region.Version);
-    Assert.Equal(_kanto.CreatedBy, region.CreatedBy.ToActorId());
-    Assert.Equal(_kanto.CreatedOn.AsUniversalTime(), region.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(_region.Version + 2, region.Version);
+    Assert.Equal(_region.CreatedBy, region.CreatedBy.ToActorId());
+    Assert.Equal(_region.CreatedOn.AsUniversalTime(), region.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, region.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, region.UpdatedOn, TimeSpan.FromSeconds(10));
 
-    Assert.Equal(_kanto.Key.Value, region.Key);
+    Assert.Equal(_region.Key.Value, region.Key);
     Assert.Equal(payload.Name.Value?.Trim(), region.Name);
     Assert.Equal(payload.Description.Value?.Trim(), region.Description);
   }

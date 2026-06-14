@@ -74,4 +74,35 @@ public class AbilityBuilder : IAbilityBuilder
 
     return ability;
   }
+
+  public static Ability Blaze(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("blaze"))
+    .WithName(new Name("Blaze"))
+    .WithDescription(new Description("Powers up Fire-type moves when the Pokémon's HP is low."))
+    .Build();
+  public static Ability LightningRod(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("lightning-rod"))
+    .WithName(new Name("Lightning Rod"))
+    .WithDescription(new Description("The Pokémon draws in all Electric-type moves. Instead of taking damage from them, its Sp. Atk stat is boosted."))
+    .Build();
+  public static Ability Overgrow(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("overgrow"))
+    .WithName(new Name("Overgrow"))
+    .WithDescription(new Description("Powers up Grass-type moves when the Pokémon's HP is low."))
+    .Build();
+  public static Ability Static(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("static"))
+    .WithName(new Name("Static"))
+    .WithDescription(new Description("The Pokémon is charged with static electricity and may paralyze attackers that make direct contact with it."))
+    .Build();
+  public static Ability Torrent(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("torrent"))
+    .WithName(new Name("Torrent"))
+    .WithDescription(new Description("Powers up Water-type moves when the Pokémon's HP is low"))
+    .Build();
 }

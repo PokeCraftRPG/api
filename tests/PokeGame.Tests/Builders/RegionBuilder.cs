@@ -74,4 +74,25 @@ public class RegionBuilder : IRegionBuilder
 
     return region;
   }
+
+  public static Region Hoenn(Faker? faker = null, World? world = null) => new RegionBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("hoenn"))
+    .WithName(new Name("Hoenn"))
+    .Build();
+  public static Region Johto(Faker? faker = null, World? world = null) => new RegionBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("johto"))
+    .WithName(new Name("Johto"))
+    .Build();
+  public static Region Kanto(Faker? faker = null, World? world = null) => new RegionBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("kanto"))
+    .WithName(new Name("Kanto"))
+    .Build();
+  public static Region Sinnoh(Faker? faker = null, World? world = null) => new RegionBuilder(faker)
+    .WithWorld(world)
+    .WithKey(new Slug("sinnoh"))
+    .WithName(new Name("Sinnoh"))
+    .Build();
 }
