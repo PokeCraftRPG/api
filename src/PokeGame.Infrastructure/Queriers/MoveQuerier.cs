@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.Data;
 using Logitar.EventSourcing;
@@ -60,6 +60,15 @@ internal class MoveQuerier : IMoveQuerier
       .ApplyWorldFilter(Db.Moves.WorldId, _context.WorldId)
       .ApplyIdFilter(Db.Moves.EntityId, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Moves.Key, Db.Moves.Name);
+
+    if (payload.Type.HasValue)
+    {
+      builder.Where(Db.Moves.Type, Operators.IsEqualTo(payload.Type.Value.ToString()));
+    }
+    if (payload.Category.HasValue)
+    {
+      builder.Where(Db.Moves.Category, Operators.IsEqualTo(payload.Category.Value.ToString()));
+    }
 
     IQueryable<MoveEntity> query = _moves.FromQuery(builder).AsNoTracking();
 

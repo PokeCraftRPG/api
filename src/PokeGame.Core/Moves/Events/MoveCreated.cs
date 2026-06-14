@@ -1,3 +1,3 @@
 ﻿using Logitar.EventSourcing;
 namespace PokeGame.Core.Moves.Events;
-public record MoveCreated(Slug Key) : DomainEvent;
+public record MoveCreated(PokemonType Type, MoveCategory Category, Slug Key) : DomainEvent;

@@ -12,6 +12,9 @@ public class Move : AggregateRoot, IEntityProvider
   public WorldId WorldId => Id.WorldId;
   public Guid EntityId => Id.EntityId;
 
+  public PokemonType Type { get; private set; }
+  public MoveCategory Category { get; private set; }
+
   private Slug? _key = null;
   public Slug Key => _key ?? throw new InvalidOperationException("The key was not initialized.");
   public Name? Name { get; private set; }
@@ -21,18 +24,30 @@ public class Move : AggregateRoot, IEntityProvider
   {
   }
 
-  public Move(World world, Slug key, ActorId? actorId = null)
-    : this(MoveId.NewId(world.Id), key, actorId)
+  public Move(World world, PokemonType type, MoveCategory category, Slug key, ActorId? actorId = null)
+    : this(MoveId.NewId(world.Id), type, category, key, actorId)
   {
   }
 
-  public Move(MoveId moveId, Slug key, ActorId? actorId = null)
+  public Move(MoveId moveId, PokemonType type, MoveCategory category, Slug key, ActorId? actorId = null)
     : base(moveId.StreamId)
   {
-    Raise(new MoveCreated(key), actorId);
+    if (!Enum.IsDefined(type))
+    {
+      throw new ArgumentOutOfRangeException(nameof(type));
+    }
+    if (!Enum.IsDefined(category))
+    {
+      throw new ArgumentOutOfRangeException(nameof(category));
+    }
+
+    Raise(new MoveCreated(type, category, key), actorId);
   }
   protected virtual void Handle(MoveCreated @event)
   {
+    Type = @event.Type;
+    Category = @event.Category;
+
     _key = @event.Key;
   }
 

@@ -47,6 +47,8 @@ internal class Mapper
     MoveModel destination = new()
     {
       Id = source.EntityId,
+      Type = source.Type,
+      Category = source.Category,
       Key = source.Key,
       Name = source.Name,
       Description = source.Description
