@@ -8,7 +8,6 @@ using PokeGame.Core.Actors;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Regions.Models;
-using PokeGame.Core.Worlds;
 
 namespace PokeGame.Regions;
 
@@ -17,7 +16,6 @@ public class RegionIntegrationTests : IntegrationTests
 {
   private readonly IRegionRepository _regionRepository;
   private readonly IRegionService _regionService;
-  private readonly IWorldRepository _worldRepository;
 
   private Region _kanto = null!;
   private Region _johto = null!;
@@ -26,7 +24,6 @@ public class RegionIntegrationTests : IntegrationTests
   {
     _regionRepository = ServiceProvider.GetRequiredService<IRegionRepository>();
     _regionService = ServiceProvider.GetRequiredService<IRegionService>();
-    _worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
   }
 
   public override async Task InitializeAsync()
