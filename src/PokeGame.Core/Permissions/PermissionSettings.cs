@@ -5,7 +5,7 @@ namespace PokeGame.Core.Permissions;
 
 internal record PermissionSettings
 {
-  private const string SectionKey = "Permission";
+  private const string SectionKey = "Permissions";
 
   public int WorldLimit { get; set; }
 
@@ -13,7 +13,7 @@ internal record PermissionSettings
   {
     PermissionSettings settings = configuration.GetSection(SectionKey).Get<PermissionSettings>() ?? new();
 
-    settings.WorldLimit = EnvironmentHelper.GetInt32("PERMISSION_WORLD_LIMIT", settings.WorldLimit);
+    settings.WorldLimit = EnvironmentHelper.GetInt32("PERMISSIONS_WORLD_LIMIT", settings.WorldLimit);
 
     return settings;
   }

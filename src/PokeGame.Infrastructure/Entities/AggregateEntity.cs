@@ -24,6 +24,8 @@ internal abstract class AggregateEntity
 
     CreatedBy = @event.ActorId?.Value;
     CreatedOn = @event.OccurredOn.AsUniversalTime();
+
+    Update(@event);
   }
 
   public virtual IReadOnlyCollection<ActorId> GetActorIds()

@@ -9,6 +9,7 @@
     <File Path="README.md" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="tests/PokeGame.IntegrationTests/PokeGame.IntegrationTests.csproj" Id="0ec0b7a8-6342-447f-bcb3-0afa75e9360f" />
     <Project Path="tests/PokeGame.Tests/PokeGame.Tests.csproj" Id="82ec8510-bb07-4ae4-bc75-a92865f1390a" />
   </Folder>
   <Project Path="src/PokeGame.Core/PokeGame.Core.csproj" Id="59c81592-41c5-4748-a34f-f1221d5817db" />

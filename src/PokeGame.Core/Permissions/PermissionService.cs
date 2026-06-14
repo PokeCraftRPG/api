@@ -61,15 +61,19 @@ internal class PermissionService : IPermissionService
 
   private async Task<bool> IsAllowedAsync(string action, CancellationToken cancellationToken)
   {
-    if (action == Actions.CreateWorld)
+    switch (action)
     {
-      int count = await _worldQuerier.CountAsync(cancellationToken);
-      return count < _settings.WorldLimit;
+      case Actions.CreateRegion:
+        return _context.IsWorldOwner;
+      case Actions.CreateWorld:
+        int count = await _worldQuerier.CountAsync(cancellationToken);
+        return count < _settings.WorldLimit;
+      default:
+        return false;
     }
-    return false;
   }
 
   private bool IsAllowed(string action, World _) => action == Actions.Update && _context.IsWorldOwner;
 
-  private bool IsAllowed(string action, Entity entity) => action == Actions.Update && entity.WorldId == _context.TryGetWorldId();
+  private bool IsAllowed(string action, Entity entity) => action == Actions.Update && entity.WorldId == _context.TryGetWorldId() && _context.IsWorldOwner;
 }
