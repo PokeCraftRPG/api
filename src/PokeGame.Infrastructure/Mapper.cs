@@ -51,7 +51,10 @@ internal class Mapper
       Category = source.Category,
       Key = source.Key,
       Name = source.Name,
-      Description = source.Description
+      Description = source.Description,
+      Accuracy = source.Accuracy,
+      Power = source.Power,
+      PowerPoints = source.PowerPoints
     };
 
     MapAggregate(source, destination);

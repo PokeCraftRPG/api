@@ -22,6 +22,9 @@ internal class MoveConfiguration : AggregateConfiguration<MoveEntity>, IEntityTy
     builder.HasIndex(x => new { x.WorldId, x.Category });
     builder.HasIndex(x => new { x.WorldId, x.Key }).IsUnique();
     builder.HasIndex(x => new { x.WorldId, x.Name });
+    builder.HasIndex(x => new { x.WorldId, x.Accuracy });
+    builder.HasIndex(x => new { x.WorldId, x.Power });
+    builder.HasIndex(x => new { x.WorldId, x.PowerPoints });
 
     builder.Property(x => x.Type).HasMaxLength(8).HasConversion(new EnumToStringConverter<PokemonType>());
     builder.Property(x => x.Category).HasMaxLength(8).HasConversion(new EnumToStringConverter<MoveCategory>());

@@ -11,5 +11,9 @@ public class MoveModel : Aggregate
   public string? Name { get; set; }
   public string? Description { get; set; }
 
+  public byte? Accuracy { get; set; }
+  public byte? Power { get; set; }
+  public byte PowerPoints { get; set; }
+
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
 }

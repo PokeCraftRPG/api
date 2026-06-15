@@ -79,6 +79,15 @@ internal class MoveQuerier : IMoveQuerier
     {
       switch (sort.Field)
       {
+        case MoveSort.Accuracy:
+          ordered = (ordered is null)
+            ? (sort.IsDescending
+              ? query.OrderByDescending(x => x.Accuracy.HasValue).ThenByDescending(x => x.Accuracy)
+              : query.OrderByDescending(x => x.Accuracy.HasValue).ThenBy(x => x.Accuracy))
+            : (sort.IsDescending
+              ? ordered.ThenByDescending(x => x.Accuracy.HasValue).ThenByDescending(x => x.Accuracy)
+              : ordered.ThenByDescending(x => x.Accuracy.HasValue).ThenBy(x => x.Accuracy));
+          break;
         case MoveSort.CreatedOn:
           ordered = (ordered is null)
             ? (sort.IsDescending ? query.OrderByDescending(x => x.CreatedOn) : query.OrderBy(x => x.CreatedOn))
@@ -93,6 +102,20 @@ internal class MoveQuerier : IMoveQuerier
           ordered = (ordered is null)
             ? (sort.IsDescending ? query.OrderByDescending(x => x.Name ?? x.Key) : query.OrderBy(x => x.Name ?? x.Key))
             : (sort.IsDescending ? ordered.ThenByDescending(x => x.Name ?? x.Key) : ordered.ThenBy(x => x.Name ?? x.Key));
+          break;
+        case MoveSort.Power:
+          ordered = (ordered is null)
+            ? (sort.IsDescending
+              ? query.OrderByDescending(x => x.Power.HasValue).ThenByDescending(x => x.Power)
+              : query.OrderByDescending(x => x.Power.HasValue).ThenBy(x => x.Power))
+            : (sort.IsDescending
+              ? ordered.ThenByDescending(x => x.Power.HasValue).ThenByDescending(x => x.Power)
+              : ordered.ThenByDescending(x => x.Power.HasValue).ThenBy(x => x.Power));
+          break;
+        case MoveSort.PowerPoints:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.PowerPoints) : query.OrderBy(x => x.PowerPoints))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.PowerPoints) : ordered.ThenBy(x => x.PowerPoints));
           break;
         case MoveSort.UpdatedOn:
           ordered = (ordered is null)

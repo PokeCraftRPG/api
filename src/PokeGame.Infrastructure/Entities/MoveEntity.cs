@@ -19,6 +19,10 @@ internal class MoveEntity : AggregateEntity
   public string? Name { get; private set; }
   public string? Description { get; private set; }
 
+  public byte? Accuracy { get; private set; }
+  public byte? Power { get; private set; }
+  public byte PowerPoints { get; private set; }
+
   public MoveEntity(WorldEntity world, MoveCreated @event) : base(@event)
   {
     World = world;

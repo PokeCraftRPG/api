@@ -20,6 +20,11 @@ public class Move : AggregateRoot, IEntityProvider
   public Name? Name { get; private set; }
   public Description? Description { get; private set; }
 
+  public Accuracy? Accuracy { get; private set; }
+  public Power? Power { get; private set; }
+  private readonly PowerPoints? _powerPoints = null;
+  public PowerPoints PowerPoints => _powerPoints ?? throw new InvalidOperationException("The power points were not initialized.");
+
   public Move() : base()
   {
   }
@@ -49,6 +54,8 @@ public class Move : AggregateRoot, IEntityProvider
     Category = @event.Category;
 
     _key = @event.Key;
+
+    // TODO(fpion): set PP
   }
 
   public void Delete(ActorId? actorId = null)
@@ -84,6 +91,8 @@ public class Move : AggregateRoot, IEntityProvider
   {
     Name = @event.Name;
   }
+
+  // TODO(fpion): game data
 
   public void SetKey(Slug key, ActorId? actorId = null)
   {
