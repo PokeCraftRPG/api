@@ -62,7 +62,7 @@ internal class ExceptionHandler : IExceptionHandler
     return await _problemDetailsService.TryWriteAsync(context);
   }
 
-  private static bool IsBadRequest(Exception exception) => exception is ValidationException;
+  private static bool IsBadRequest(Exception exception) => exception is DomainException || exception is ValidationException;
 
   private static bool IsForbidden(Exception exception) => exception is PermissionDeniedException;
 

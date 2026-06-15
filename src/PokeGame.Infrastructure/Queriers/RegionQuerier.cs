@@ -39,6 +39,14 @@ internal class RegionQuerier : IRegionQuerier
     return await MapAsync(region, cancellationToken);
   }
 
+  public async Task<IReadOnlyCollection<RegionKey>> ListKeysAsync(CancellationToken cancellationToken)
+  {
+    var keys = await _regions.Where(x => x.World!.StreamId == _context.WorldId.Value)
+      .Select(x => new { x.StreamId, x.EntityId, x.Key })
+      .ToArrayAsync(cancellationToken);
+    return keys.Select(key => new RegionKey(new RegionId(key.StreamId), key.EntityId, key.Key)).ToList().AsReadOnly();
+  }
+
   public async Task<RegionModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     RegionEntity? region = await _regions.AsNoTracking()

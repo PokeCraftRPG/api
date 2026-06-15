@@ -52,7 +52,33 @@ internal class RegionManager : IRegionManager
 
     if (capacity > 0)
     {
-      // TODO(fpion): implement
+      IReadOnlyCollection<RegionKey> keys = await _regionQuerier.ListKeysAsync(cancellationToken);
+      Dictionary<Guid, RegionId> regionByIds = new(keys.Count);
+      Dictionary<string, RegionId> regionByKeys = new(capacity);
+      foreach (RegionKey key in keys)
+      {
+        regionByIds[key.EntityId] = key.Id;
+        regionByKeys[key.Key] = key.Id;
+      }
+
+      HashSet<string> missingRegions = new(capacity);
+      foreach (RegionalNumberPayload payload in payloads)
+      {
+        if ((Guid.TryParse(payload.Region, out Guid id) && regionByIds.TryGetValue(id, out RegionId regionId))
+          || regionByKeys.TryGetValue(Slug.Normalize(payload.Region), out regionId))
+        {
+          regionalNumbers[regionId] = Number.TryCreate(payload.Number);
+        }
+        else
+        {
+          missingRegions.Add(payload.Region);
+        }
+      }
+
+      if (missingRegions.Count > 0)
+      {
+        throw new RegionsNotFoundException(missingRegions, propertyName);
+      }
     }
 
     return regionalNumbers.AsReadOnly();
