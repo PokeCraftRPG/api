@@ -7,6 +7,7 @@ public record SearchSpeciesPayload : SearchPayload
   public PokemonCategory? Category { get; set; }
   public GrowthRate? GrowthRate { get; set; }
   public EggGroup? EggGroup { get; set; }
+  public Guid? RegionId { get; set; }
 
   public new List<SpeciesSortOption> Sort { get; set; } = [];
 }
