@@ -35,6 +35,10 @@ internal class ExceptionHandler : IExceptionHandler
     {
       statusCode = StatusCodes.Status403Forbidden;
     }
+    else if (exception is NotFoundException)
+    {
+      statusCode = StatusCodes.Status404NotFound;
+    }
     else if (exception is ConflictException)
     {
       statusCode = StatusCodes.Status409Conflict;
