@@ -117,7 +117,7 @@ public class PokemonSpecies : AggregateRoot, IEntityProvider
   public void RemoveRegionalNumber(Region region, ActorId? actorId = null) => RemoveRegionalNumber(region.Id, actorId);
   public void RemoveRegionalNumber(RegionId regionId, ActorId? actorId = null)
   {
-    // TODO(fpion): check world
+    WorldMismatchException.ThrowIfMismatch(this, regionId);
 
     if (_regionalNumbers.ContainsKey(regionId))
     {
@@ -174,7 +174,7 @@ public class PokemonSpecies : AggregateRoot, IEntityProvider
   public void SetRegionalNumber(Region region, Number number, ActorId? actorId = null) => SetRegionalNumber(region.Id, number, actorId);
   public void SetRegionalNumber(RegionId regionId, Number number, ActorId? actorId = null)
   {
-    // TODO(fpion): check world
+    WorldMismatchException.ThrowIfMismatch(this, regionId);
 
     if (!_regionalNumbers.TryGetValue(regionId, out Number? existingNumber) || existingNumber != number)
     {
