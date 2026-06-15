@@ -1,4 +1,4 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Moves;
@@ -12,6 +12,7 @@ namespace PokeGame.Infrastructure.Handlers;
 internal class MoveEvents : IEventHandler<MoveCreated>,
   IEventHandler<MoveDeleted>,
   IEventHandler<MoveDescribed>,
+  IEventHandler<MoveGameDataChanged>,
   IEventHandler<MoveKeyChanged>,
   IEventHandler<MoveRenamed>
 {
@@ -20,6 +21,7 @@ internal class MoveEvents : IEventHandler<MoveCreated>,
     services.AddTransient<IEventHandler<MoveCreated>, MoveEvents>();
     services.AddTransient<IEventHandler<MoveDeleted>, MoveEvents>();
     services.AddTransient<IEventHandler<MoveDescribed>, MoveEvents>();
+    services.AddTransient<IEventHandler<MoveGameDataChanged>, MoveEvents>();
     services.AddTransient<IEventHandler<MoveKeyChanged>, MoveEvents>();
     services.AddTransient<IEventHandler<MoveRenamed>, MoveEvents>();
   }
@@ -75,6 +77,19 @@ internal class MoveEvents : IEventHandler<MoveCreated>,
       UnexpectedVersionException.ThrowIfUnexpected(@event, move);
 
       move.Describe(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    },
+    cancellationToken);
+
+  public async Task HandleAsync(MoveGameDataChanged @event, CancellationToken cancellationToken) => await _outbox.HandleAsync(
+    @event,
+    async (@event, cancellationToken) =>
+    {
+      MoveEntity? move = await _pokemon.Moves.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+      UnexpectedVersionException.ThrowIfUnexpected(@event, move);
+
+      move.SetGameData(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     },

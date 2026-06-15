@@ -22,7 +22,7 @@ public class Move : AggregateRoot, IEntityProvider
 
   public Accuracy? Accuracy { get; private set; }
   public Power? Power { get; private set; }
-  private readonly PowerPoints? _powerPoints = null;
+  private PowerPoints? _powerPoints = null;
   public PowerPoints PowerPoints => _powerPoints ?? throw new InvalidOperationException("The power points were not initialized.");
 
   public Move() : base()
@@ -92,7 +92,19 @@ public class Move : AggregateRoot, IEntityProvider
     Name = @event.Name;
   }
 
-  // TODO(fpion): game data
+  public void SetGameData(Accuracy? accuracy, Power? power, PowerPoints powerPoints, ActorId? actorId = null)
+  {
+    if (!Equals(Accuracy, accuracy) || !Equals(Power, power) || !Equals(PowerPoints, powerPoints))
+    {
+      Raise(new MoveGameDataChanged(accuracy, power, powerPoints), actorId);
+    }
+  }
+  protected virtual void Handle(MoveGameDataChanged @event)
+  {
+    Accuracy = @event.Accuracy;
+    Power = @event.Power;
+    _powerPoints = @event.PowerPoints;
+  }
 
   public void SetKey(Slug key, ActorId? actorId = null)
   {

@@ -16,7 +16,7 @@ public class PowerPoints
     new Validator().ValidateAndThrow(this);
   }
 
-  public static Power? TryCreate(byte? value) => value.HasValue ? new(value.Value) : null;
+  public static PowerPoints? TryCreate(byte? value) => value.HasValue ? new(value.Value) : null;
 
   public override bool Equals(object? obj) => obj is PowerPoints powerPoints && powerPoints.Value == Value;
   public override int GetHashCode() => Value.GetHashCode();

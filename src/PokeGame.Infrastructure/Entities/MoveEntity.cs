@@ -53,6 +53,15 @@ internal class MoveEntity : AggregateEntity
     Name = @event.Name?.Value;
   }
 
+  public void SetGameData(MoveGameDataChanged @event)
+  {
+    base.Update(@event);
+
+    Accuracy = @event.Accuracy?.Value;
+    Power = @event.Power?.Value;
+    PowerPoints = @event.PowerPoints.Value;
+  }
+
   public void SetKey(MoveKeyChanged @event)
   {
     base.Update(@event);

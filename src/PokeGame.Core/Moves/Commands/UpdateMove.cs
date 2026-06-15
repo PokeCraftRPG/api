@@ -57,6 +57,11 @@ internal class UpdateMoveCommandHandler : ICommandHandler<UpdateMoveCommand, Mov
       move.Describe(Description.TryCreate(payload.Description.Value), actorId);
     }
 
+    Accuracy? accuracy = payload.Accuracy is null ? move.Accuracy : Accuracy.TryCreate(payload.Accuracy.Value);
+    Power? power = payload.Power is null ? move.Power : Power.TryCreate(payload.Power.Value);
+    PowerPoints powerPoints = PowerPoints.TryCreate(payload.PowerPoints) ?? move.PowerPoints;
+    move.SetGameData(accuracy, power, powerPoints, actorId);
+
     await _moveManager.EnsureUnicityAsync(move, cancellationToken);
     await _moveRepository.SaveAsync(move, cancellationToken);
 

@@ -71,6 +71,7 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
 
     move.Rename(Name.TryCreate(payload.Name), actorId);
     move.Describe(Description.TryCreate(payload.Description), actorId);
+    move.SetGameData(Accuracy.TryCreate(payload.Accuracy), Power.TryCreate(payload.Power), new PowerPoints(payload.PowerPoints), actorId);
 
     await _moveManager.EnsureUnicityAsync(move, cancellationToken);
     await _moveRepository.SaveAsync(move, cancellationToken);
