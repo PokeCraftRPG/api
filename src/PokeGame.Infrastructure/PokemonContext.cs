@@ -10,6 +10,7 @@ public class PokemonContext : DbContext
   }
 
   internal DbSet<AbilityEntity> Abilities => Set<AbilityEntity>();
+  internal DbSet<MoveEntity> Moves => Set<MoveEntity>();
   internal DbSet<OutboxMessageEntity> OutboxMessages => Set<OutboxMessageEntity>();
   internal DbSet<RegionEntity> Regions => Set<RegionEntity>();
   internal DbSet<WorldEntity> Worlds => Set<WorldEntity>();

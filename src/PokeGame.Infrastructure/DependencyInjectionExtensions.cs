@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Abilities;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure.Actors;
@@ -42,6 +43,7 @@ public static class DependencyInjectionExtensions
   private static IServiceCollection AddEventHandlers(this IServiceCollection services)
   {
     AbilityEvents.Register(services);
+    MoveEvents.Register(services);
     RegionEvents.Register(services);
     WorldEvents.Register(services);
     return services;
@@ -61,6 +63,7 @@ public static class DependencyInjectionExtensions
   {
     return services
       .AddScoped<IAbilityQuerier, AbilityQuerier>()
+      .AddScoped<IMoveQuerier, MoveQuerier>()
       .AddScoped<IRegionQuerier, RegionQuerier>()
       .AddScoped<IWorldQuerier, WorldQuerier>();
   }
@@ -69,6 +72,7 @@ public static class DependencyInjectionExtensions
   {
     return services
       .AddScoped<IAbilityRepository, AbilityRepository>()
+      .AddScoped<IMoveRepository, MoveRepository>()
       .AddScoped<IRegionRepository, RegionRepository>()
       .AddScoped<IWorldRepository, WorldRepository>();
   }

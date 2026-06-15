@@ -11,8 +11,8 @@ using PokeGame.Infrastructure;
 namespace PokeGame.PostgreSQL.Migrations
 {
     [DbContext(typeof(PokemonContext))]
-    [Migration("20260614203357_AddAbilities")]
-    partial class AddAbilities
+    [Migration("20260615035850_CreateMovesTable")]
+    partial class CreateMovesTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -95,6 +95,108 @@ namespace PokeGame.PostgreSQL.Migrations
                     b.HasIndex("WorldId", "Name");
 
                     b.ToTable("Abilities", "Pokemon");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.MoveEntity", b =>
+                {
+                    b.Property<int>("MoveId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MoveId"));
+
+                    b.Property<byte?>("Accuracy")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<byte?>("Power")
+                        .HasColumnType("smallint");
+
+                    b.Property<byte>("PowerPoints")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("StreamId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("WorldId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("MoveId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("CreatedOn");
+
+                    b.HasIndex("StreamId");
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.HasIndex("UpdatedOn");
+
+                    b.HasIndex("Version");
+
+                    b.HasIndex("WorldId", "Accuracy");
+
+                    b.HasIndex("WorldId", "Category");
+
+                    b.HasIndex("WorldId", "EntityId")
+                        .IsUnique();
+
+                    b.HasIndex("WorldId", "Key")
+                        .IsUnique();
+
+                    b.HasIndex("WorldId", "Name");
+
+                    b.HasIndex("WorldId", "Power");
+
+                    b.HasIndex("WorldId", "PowerPoints");
+
+                    b.HasIndex("WorldId", "Type");
+
+                    b.ToTable("Moves", "Pokemon");
                 });
 
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.OutboxMessageEntity", b =>
@@ -305,6 +407,17 @@ namespace PokeGame.PostgreSQL.Migrations
                     b.Navigation("World");
                 });
 
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.MoveEntity", b =>
+                {
+                    b.HasOne("PokeGame.Infrastructure.Entities.WorldEntity", "World")
+                        .WithMany("Moves")
+                        .HasForeignKey("WorldId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("World");
+                });
+
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.RegionEntity", b =>
                 {
                     b.HasOne("PokeGame.Infrastructure.Entities.WorldEntity", "World")
@@ -319,6 +432,8 @@ namespace PokeGame.PostgreSQL.Migrations
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.WorldEntity", b =>
                 {
                     b.Navigation("Abilities");
+
+                    b.Navigation("Moves");
 
                     b.Navigation("Regions");
                 });
