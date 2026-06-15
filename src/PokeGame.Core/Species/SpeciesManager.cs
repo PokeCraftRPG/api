@@ -42,7 +42,11 @@ internal class SpeciesManager : ISpeciesManager
 
     if (number is not null)
     {
-      // TODO(fpion): implement
+      SpeciesId? otherId = await _speciesQuerier.TryGetIdAsync(number, regionId: null, cancellationToken);
+      if (otherId.HasValue && !otherId.Value.Equals(species.Id))
+      {
+        throw new NumberAlreadyUsedException(species, otherId.Value, number, regionId: null, nameof(species.Number));
+      }
     }
 
     if (key is not null)
@@ -56,7 +60,11 @@ internal class SpeciesManager : ISpeciesManager
 
     foreach (KeyValuePair<RegionId, Number> regionalNumber in regionalNumbers)
     {
-      // TODO(fpion): implement
+      SpeciesId? otherId = await _speciesQuerier.TryGetIdAsync(regionalNumber.Value, regionalNumber.Key, cancellationToken);
+      if (otherId.HasValue && !otherId.Value.Equals(species.Id))
+      {
+        throw new NumberAlreadyUsedException(species, otherId.Value, regionalNumber.Value, regionalNumber.Key, nameof(species.RegionalNumbers));
+      }
     }
   }
 }

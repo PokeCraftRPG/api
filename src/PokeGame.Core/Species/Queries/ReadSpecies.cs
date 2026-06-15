@@ -1,10 +1,10 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Logitar.CQRS;
 using PokeGame.Core.Species.Models;
 
 namespace PokeGame.Core.Species.Queries;
 
-internal record ReadSpeciesQuery(Guid? Id = null, string? Key = null) : IQuery<SpeciesModel?>;
+internal record ReadSpeciesQuery(Guid? Id = null, int? Number = null, string? Key = null) : IQuery<SpeciesModel?>;
 
 internal class ReadSpeciesQueryHandler : IQueryHandler<ReadSpeciesQuery, SpeciesModel?>
 {
@@ -17,11 +17,20 @@ internal class ReadSpeciesQueryHandler : IQueryHandler<ReadSpeciesQuery, Species
 
   public async Task<SpeciesModel?> HandleAsync(ReadSpeciesQuery query, CancellationToken cancellationToken)
   {
-    Dictionary<Guid, SpeciesModel> species = new(capacity: 2);
+    Dictionary<Guid, SpeciesModel> species = new(capacity: 3);
 
     if (query.Id.HasValue)
     {
       SpeciesModel? result = await _speciesQuerier.ReadAsync(query.Id.Value, cancellationToken);
+      if (result is not null)
+      {
+        species[result.Id] = result;
+      }
+    }
+
+    if (query.Number.HasValue)
+    {
+      SpeciesModel? result = await _speciesQuerier.ReadAsync(query.Number.Value, cancellationToken);
       if (result is not null)
       {
         species[result.Id] = result;

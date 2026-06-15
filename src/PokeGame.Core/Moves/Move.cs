@@ -96,6 +96,7 @@ public class Move : AggregateRoot, IEntityProvider
   {
     if (!Equals(Accuracy, accuracy) || !Equals(Power, power) || !Equals(PowerPoints, powerPoints))
     {
+      // TODO(fpion): status moves should not have Power!
       Raise(new MoveGameDataChanged(accuracy, power, powerPoints), actorId);
     }
   }
