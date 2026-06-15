@@ -1,4 +1,4 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Logitar;
 using Microsoft.Extensions.DependencyInjection;
@@ -62,7 +62,7 @@ public class MoveIntegrationTests : IntegrationTests
     {
       Assert.Equal(id.Value, move.Id);
     }
-    Assert.Equal(4, move.Version);
+    Assert.Equal(3, move.Version);
     Assert.Equal(Actor, move.CreatedBy);
     Assert.Equal(DateTime.UtcNow, move.CreatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(Actor, move.UpdatedBy);
@@ -186,7 +186,7 @@ public class MoveIntegrationTests : IntegrationTests
       Category = exists ? MoveCategory.Special : MoveCategory.Physical,
       Key = _move.Key.Value,
       Accuracy = exists ? (byte?)100 : 100,
-      Power = exists ? (byte?)90 : (byte?)40,
+      Power = exists ? 90 : (byte?)40,
       PowerPoints = exists ? (byte)15 : (byte)35
     };
 
