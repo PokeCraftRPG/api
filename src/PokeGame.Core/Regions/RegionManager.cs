@@ -1,11 +1,14 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using PokeGame.Core.Regions.Events;
+using PokeGame.Core.Species;
+using PokeGame.Core.Species.Models;
 
 namespace PokeGame.Core.Regions;
 
 public interface IRegionManager
 {
   Task EnsureUnicityAsync(Region region, CancellationToken cancellationToken = default);
+  Task<IReadOnlyDictionary<RegionId, Number?>> FindRegionalNumbersAsync(IEnumerable<RegionalNumberPayload> payloads, string propertyName, CancellationToken cancellationToken = default);
 }
 
 internal class RegionManager : IRegionManager
@@ -37,5 +40,21 @@ internal class RegionManager : IRegionManager
         throw new KeyAlreadyUsedException(region, otherId.Value.EntityId, key, nameof(region.Key));
       }
     }
+  }
+
+  public async Task<IReadOnlyDictionary<RegionId, Number?>> FindRegionalNumbersAsync(
+    IEnumerable<RegionalNumberPayload> payloads,
+    string propertyName,
+    CancellationToken cancellationToken)
+  {
+    int capacity = payloads.Count();
+    Dictionary<RegionId, Number?> regionalNumbers = new(capacity);
+
+    if (capacity > 0)
+    {
+      // TODO(fpion): implement
+    }
+
+    return regionalNumbers.AsReadOnly();
   }
 }
