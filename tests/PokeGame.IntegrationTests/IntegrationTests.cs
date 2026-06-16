@@ -90,6 +90,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     StringBuilder query = new();
     TableId[] tables =
     [
+      Infrastructure.Db.Species.Table,
       Infrastructure.Db.Regions.Table,
       Infrastructure.Db.Moves.Table,
       Infrastructure.Db.Abilities.Table,
