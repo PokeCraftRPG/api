@@ -46,6 +46,7 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
       species = await _speciesRepository.LoadAsync(speciesId, cancellationToken);
     }
 
+    Number number = new(payload.Number);
     Slug key = new(payload.Key);
     Friendship baseFriendship = new(payload.BaseFriendship);
     CatchRate catchRate = new(payload.CatchRate);
@@ -58,7 +59,7 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
     {
       await _permissionService.CheckAsync(Actions.CreateSpecies, cancellationToken);
 
-      species = new PokemonSpecies(speciesId, new Number(payload.Number), payload.Category, key, catchRate, eggCycles, baseFriendship, payload.GrowthRate, eggGroups, actorId);
+      species = new PokemonSpecies(speciesId, number, payload.Category, key, catchRate, eggCycles, baseFriendship, payload.GrowthRate, eggGroups, actorId);
       created = true;
     }
     else
@@ -67,11 +68,11 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
 
       if (payload.Number != species.Number.Value)
       {
-        throw new NotImplementedException(); // TODO(fpion): implement
+        throw new ImmutablePropertyException<Number>(species, species.Number, number, nameof(PokemonSpecies.Number));
       }
       if (payload.Category != species.Category)
       {
-        throw new NotImplementedException(); // TODO(fpion): implement
+        throw new ImmutablePropertyException<PokemonCategory>(species, species.Category, payload.Category, nameof(PokemonSpecies.Category));
       }
 
       species.SetKey(key, actorId);
