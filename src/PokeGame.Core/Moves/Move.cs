@@ -46,7 +46,10 @@ public class Move : AggregateRoot, IEntityProvider
       throw new ArgumentOutOfRangeException(nameof(category));
     }
 
-    // TODO(fpion): status moves should not have Power!
+    if (category == MoveCategory.Status && power is not null)
+    {
+      throw new InvalidMovePowerException(this, power, nameof(Power));
+    }
 
     Raise(new MoveCreated(type, category, key, accuracy, power, powerPoints), actorId);
   }
@@ -100,7 +103,10 @@ public class Move : AggregateRoot, IEntityProvider
   {
     if (!Equals(Accuracy, accuracy) || !Equals(Power, power) || !Equals(PowerPoints, powerPoints))
     {
-      // TODO(fpion): status moves should not have Power!
+      if (Category == MoveCategory.Status && power is not null)
+      {
+        throw new InvalidMovePowerException(this, power, nameof(Power));
+      }
       Raise(new MoveGameDataChanged(accuracy, power, powerPoints), actorId);
     }
   }
