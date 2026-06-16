@@ -3,7 +3,7 @@ using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Regions;
 
-public readonly struct RegionId
+public readonly struct RegionId : IEntityProvider
 {
   public StreamId StreamId { get; }
   public string Value => StreamId.Value;
@@ -37,6 +37,8 @@ public readonly struct RegionId
 
   public static bool operator ==(RegionId left, RegionId right) => left.Equals(right);
   public static bool operator !=(RegionId left, RegionId right) => !left.Equals(right);
+
+  public Entity GetEntity() => new(Region.EntityKind, EntityId, WorldId);
 
   public override bool Equals([NotNullWhen(true)] object? obj) => obj is RegionId id && id.Value == Value;
   public override int GetHashCode() => Value.GetHashCode();

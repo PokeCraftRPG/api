@@ -43,6 +43,9 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
     }
 
     Slug key = new(payload.Key);
+    Accuracy? accuracy = Accuracy.TryCreate(payload.Accuracy);
+    Power? power = Power.TryCreate(payload.Power);
+    PowerPoints powerPoints = new(payload.PowerPoints);
     ActorId? actorId = _context.ActorId;
 
     bool created = false;
@@ -50,7 +53,7 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
     {
       await _permissionService.CheckAsync(Actions.CreateMove, cancellationToken);
 
-      move = new Move(moveId, payload.Type, payload.Category, key, actorId);
+      move = new Move(moveId, payload.Type, payload.Category, key, powerPoints, accuracy, power, actorId);
       created = true;
     }
     else
@@ -59,19 +62,19 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
 
       if (payload.Type != move.Type)
       {
-        throw new NotImplementedException(); // TODO(fpion): implement
+        throw new ImmutablePropertyException<PokemonType>(move, move.Type, payload.Type, nameof(Move.Type));
       }
       if (payload.Category != move.Category)
       {
-        throw new NotImplementedException(); // TODO(fpion): implement
+        throw new ImmutablePropertyException<MoveCategory>(move, move.Category, payload.Category, nameof(Move.Category));
       }
 
       move.SetKey(key, actorId);
+      move.SetGameData(accuracy, power, powerPoints, actorId);
     }
 
     move.Rename(Name.TryCreate(payload.Name), actorId);
     move.Describe(Description.TryCreate(payload.Description), actorId);
-    move.SetGameData(Accuracy.TryCreate(payload.Accuracy), Power.TryCreate(payload.Power), new PowerPoints(payload.PowerPoints), actorId);
 
     await _moveManager.EnsureUnicityAsync(move, cancellationToken);
     await _moveRepository.SaveAsync(move, cancellationToken);

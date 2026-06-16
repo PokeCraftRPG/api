@@ -66,6 +66,7 @@ internal class PermissionService : IPermissionService
       case Actions.CreateAbility:
       case Actions.CreateMove:
       case Actions.CreateRegion:
+      case Actions.CreateSpecies:
         return _context.IsWorldOwner;
       case Actions.CreateWorld:
         int count = await _worldQuerier.CountAsync(cancellationToken);

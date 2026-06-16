@@ -1,4 +1,4 @@
-using Bogus;
+﻿using Bogus;
 using Logitar.EventSourcing;
 using PokeGame.Core;
 using PokeGame.Core.Moves;
@@ -106,11 +106,12 @@ public class MoveBuilder : IMoveBuilder
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
     Slug key = _key ?? new("move");
+    PowerPoints powerPoints = _powerPoints ?? new(1);
     ActorId actorId = world.OwnerId.ActorId;
 
     Move move = _moveId.HasValue
-      ? new(_moveId.Value, _type, _category, key, actorId)
-      : new(world, _type, _category, key, actorId);
+      ? new(_moveId.Value, _type, _category, key, powerPoints, _accuracy, _power, actorId)
+      : new(world, _type, _category, key, powerPoints, _accuracy, _power, actorId);
     move.Rename(_name, actorId);
     move.Describe(_description, actorId);
     move.SetGameData(_accuracy, _power, _powerPoints ?? new PowerPoints(35), actorId);

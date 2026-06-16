@@ -29,12 +29,12 @@ public class Move : AggregateRoot, IEntityProvider
   {
   }
 
-  public Move(World world, PokemonType type, MoveCategory category, Slug key, ActorId? actorId = null)
-    : this(MoveId.NewId(world.Id), type, category, key, actorId)
+  public Move(World world, PokemonType type, MoveCategory category, Slug key, PowerPoints powerPoints, Accuracy? accuracy = null, Power? power = null, ActorId? actorId = null)
+    : this(MoveId.NewId(world.Id), type, category, key, powerPoints, accuracy, power, actorId)
   {
   }
 
-  public Move(MoveId moveId, PokemonType type, MoveCategory category, Slug key, ActorId? actorId = null)
+  public Move(MoveId moveId, PokemonType type, MoveCategory category, Slug key, PowerPoints powerPoints, Accuracy? accuracy = null, Power? power = null, ActorId? actorId = null)
     : base(moveId.StreamId)
   {
     if (!Enum.IsDefined(type))
@@ -46,7 +46,12 @@ public class Move : AggregateRoot, IEntityProvider
       throw new ArgumentOutOfRangeException(nameof(category));
     }
 
-    Raise(new MoveCreated(type, category, key), actorId);
+    if (category == MoveCategory.Status && power is not null)
+    {
+      throw new InvalidMovePowerException(this, power, nameof(Power));
+    }
+
+    Raise(new MoveCreated(type, category, key, accuracy, power, powerPoints), actorId);
   }
   protected virtual void Handle(MoveCreated @event)
   {
@@ -55,7 +60,9 @@ public class Move : AggregateRoot, IEntityProvider
 
     _key = @event.Key;
 
-    // TODO(fpion): set PP
+    Accuracy = @event.Accuracy;
+    Power = @event.Power;
+    _powerPoints = @event.PowerPoints;
   }
 
   public void Delete(ActorId? actorId = null)
@@ -96,6 +103,10 @@ public class Move : AggregateRoot, IEntityProvider
   {
     if (!Equals(Accuracy, accuracy) || !Equals(Power, power) || !Equals(PowerPoints, powerPoints))
     {
+      if (Category == MoveCategory.Status && power is not null)
+      {
+        throw new InvalidMovePowerException(this, power, nameof(Power));
+      }
       Raise(new MoveGameDataChanged(accuracy, power, powerPoints), actorId);
     }
   }

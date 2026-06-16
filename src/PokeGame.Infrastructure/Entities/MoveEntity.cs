@@ -33,6 +33,10 @@ internal class MoveEntity : AggregateEntity
     Category = @event.Category;
 
     Key = @event.Key.Value;
+
+    Accuracy = @event.Accuracy?.Value;
+    Power = @event.Power?.Value;
+    PowerPoints = @event.PowerPoints.Value;
   }
 
   private MoveEntity() : base()
