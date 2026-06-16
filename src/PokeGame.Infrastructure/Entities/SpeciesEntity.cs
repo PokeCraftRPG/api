@@ -62,7 +62,7 @@ internal class SpeciesEntity : AggregateEntity
   {
     base.Update(@event);
 
-    return RegionalNumbers.SingleOrDefault(x => x.Region?.StreamId == @event.StreamId.Value);
+    return RegionalNumbers.SingleOrDefault(x => x.Region?.StreamId == @event.RegionId.Value);
   }
 
   public void Rename(SpeciesRenamed @event)

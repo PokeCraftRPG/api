@@ -29,6 +29,7 @@ internal class SpeciesManager : ISpeciesManager
       if (change is SpeciesCreated)
       {
         number = species.Number;
+        key = species.Key;
       }
       else if (change is SpeciesKeyChanged)
       {
