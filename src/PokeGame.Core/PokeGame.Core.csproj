@@ -15,16 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="Krakenar.Contracts" Version="2.1.0" />
-    <PackageReference Include="Logitar.CQRS" Version="10.1.0" />
-    <PackageReference Include="Logitar.EventSourcing" Version="10.1.1" />
-    <PackageReference Include="Logitar.Security" Version="10.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="System.Diagnostics.CodeAnalysis" />
-    <Using Include="System.Text.Json.Serialization" />
   </ItemGroup>
 
 </Project>

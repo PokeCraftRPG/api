@@ -1,11 +1,7 @@
-﻿using FluentValidation;
-using Krakenar.Contracts;
-using Logitar;
+﻿using Krakenar.Contracts;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using PokeGame.Core;
-using PokeGame.Core.Permissions;
 using PokeGame.Extensions;
 using PokeGame.Settings;
 
@@ -27,23 +23,7 @@ internal class ExceptionHandler : IExceptionHandler
   public virtual async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
   {
     int? statusCode = null;
-    if (IsBadRequest(exception))
-    {
-      statusCode = StatusCodes.Status400BadRequest;
-    }
-    else if (IsForbidden(exception))
-    {
-      statusCode = StatusCodes.Status403Forbidden;
-    }
-    else if (exception is NotFoundException)
-    {
-      statusCode = StatusCodes.Status404NotFound;
-    }
-    else if (exception is ConflictException)
-    {
-      statusCode = StatusCodes.Status409Conflict;
-    }
-    else if (_errorSettings.ExposeDetail)
+    if (_errorSettings.ExposeDetail)
     {
       statusCode = StatusCodes.Status500InternalServerError;
     }
@@ -66,21 +46,12 @@ internal class ExceptionHandler : IExceptionHandler
     return await _problemDetailsService.TryWriteAsync(context);
   }
 
-  private static bool IsBadRequest(Exception exception) => exception is DomainException || exception is ValidationException;
-
-  private static bool IsForbidden(Exception exception) => exception is PermissionDeniedException;
-
   private static Error ToError(Exception exception)
   {
     Error error;
     if (exception is ErrorException errorException)
     {
       error = errorException.Error;
-    }
-    else if (exception is ValidationException validation)
-    {
-      error = new(exception.GetErrorCode(), "Validation failed.");
-      error.Data["Failures"] = validation.Errors;
     }
     else
     {
