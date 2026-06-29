@@ -225,7 +225,11 @@ public class RegionIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a new region.")]
   public async Task Given_NotExist_When_CreateOrReplace_Then_PermissionDeniedException()
   {
-    Context.World = new WorldBuilder().Build();
+    World world = new WorldBuilder().WithKey("another-world").Build();
+    _worldRepository.Add(world);
+
+    Context.World = world;
+    await Context.SaveChangesAsync();
 
     CreateOrReplaceRegionPayload payload = new()
     {
@@ -237,7 +241,7 @@ public class RegionIntegrationTests : IntegrationTests
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _regionService.CreateOrReplaceAsync(payload));
     Assert.Equal(Context.UserId, exception.UserId);
     Assert.Equal(Actions.CreateRegion, exception.Action);
-    Assert.Null(exception.Resource);
+    Assert.Equal(world.Identifier.ToString(), exception.Resource);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing an existing region.")]

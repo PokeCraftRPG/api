@@ -1,6 +1,6 @@
-using Logitar.CQRS;
-using PokeGame.Core.Permissions;
+﻿using Logitar.CQRS;
 using PokeGame.Core.Abilities.Models;
+using PokeGame.Core.Permissions;
 
 namespace PokeGame.Core.Abilities.Commands;
 
@@ -8,15 +8,15 @@ internal record DeleteAbilityCommand(Guid Id) : ICommand<AbilityModel?>;
 
 internal class DeleteAbilityCommandHandler : ICommandHandler<DeleteAbilityCommand, AbilityModel?>
 {
+  private readonly IAbilityRepository _abilityRepository;
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
-  private readonly IAbilityRepository _abilityRepository;
 
-  public DeleteAbilityCommandHandler(IContext context, IPermissionService permissionService, IAbilityRepository abilityRepository)
+  public DeleteAbilityCommandHandler(IAbilityRepository abilityRepository, IContext context, IPermissionService permissionService)
   {
+    _abilityRepository = abilityRepository;
     _context = context;
     _permissionService = permissionService;
-    _abilityRepository = abilityRepository;
   }
 
   public async Task<AbilityModel?> HandleAsync(DeleteAbilityCommand command, CancellationToken cancellationToken)

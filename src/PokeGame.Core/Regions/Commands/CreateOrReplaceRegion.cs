@@ -2,6 +2,7 @@
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Regions.Events;
 using PokeGame.Core.Regions.Models;
+using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Regions.Commands;
 
@@ -12,12 +13,18 @@ internal class CreateOrReplaceRegionCommandHandler : ICommandHandler<CreateOrRep
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
   private readonly IRegionRepository _regionRepository;
+  private readonly IWorldRepository _worldRepository;
 
-  public CreateOrReplaceRegionCommandHandler(IContext context, IPermissionService permissionService, IRegionRepository regionRepository)
+  public CreateOrReplaceRegionCommandHandler(
+    IContext context,
+    IPermissionService permissionService,
+    IRegionRepository regionRepository,
+    IWorldRepository worldRepository)
   {
     _context = context;
     _permissionService = permissionService;
     _regionRepository = regionRepository;
+    _worldRepository = worldRepository;
   }
 
   public async Task<CreateOrReplaceRegionResult> HandleAsync(CreateOrReplaceRegionCommand command, CancellationToken cancellationToken)
@@ -34,9 +41,11 @@ internal class CreateOrReplaceRegionCommandHandler : ICommandHandler<CreateOrRep
     bool created = false;
     if (region is null)
     {
-      await _permissionService.CheckAsync(Actions.CreateRegion, cancellationToken);
+      World world = await _worldRepository.LoadAsync(_context.WorldId, cancellationToken)
+        ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not loaded.");
+      await _permissionService.CheckAsync(Actions.CreateRegion, world, cancellationToken);
 
-      region = new Region(_context.WorldId, payload.Key, _context.UserId, command.Id, payload.Name, payload.Description);
+      region = new Region(world, payload.Key, _context.UserId, command.Id, payload.Name, payload.Description);
       _regionRepository.Add(region);
       created = true;
     }
