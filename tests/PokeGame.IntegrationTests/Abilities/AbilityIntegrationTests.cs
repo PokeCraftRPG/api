@@ -225,7 +225,11 @@ public class AbilityIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a new ability.")]
   public async Task Given_NotExist_When_CreateOrReplace_Then_PermissionDeniedException()
   {
-    Context.World = new WorldBuilder().Build();
+    World world = new WorldBuilder().WithKey("another-world").Build();
+    _worldRepository.Add(world);
+
+    Context.World = world;
+    await Context.SaveChangesAsync();
 
     CreateOrReplaceAbilityPayload payload = new()
     {
@@ -237,7 +241,7 @@ public class AbilityIntegrationTests : IntegrationTests
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _abilityService.CreateOrReplaceAsync(payload));
     Assert.Equal(Context.UserId, exception.UserId);
     Assert.Equal(Actions.CreateAbility, exception.Action);
-    Assert.Null(exception.Resource);
+    Assert.Equal(world.Identifier.ToString(), exception.Resource);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing an existing ability.")]

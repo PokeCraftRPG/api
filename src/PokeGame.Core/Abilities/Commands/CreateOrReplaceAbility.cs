@@ -1,7 +1,8 @@
-using Logitar.CQRS;
-using PokeGame.Core.Permissions;
+﻿using Logitar.CQRS;
 using PokeGame.Core.Abilities.Events;
 using PokeGame.Core.Abilities.Models;
+using PokeGame.Core.Permissions;
+using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Abilities.Commands;
 
@@ -9,15 +10,21 @@ internal record CreateOrReplaceAbilityCommand(CreateOrReplaceAbilityPayload Payl
 
 internal class CreateOrReplaceAbilityCommandHandler : ICommandHandler<CreateOrReplaceAbilityCommand, CreateOrReplaceAbilityResult>
 {
+  private readonly IAbilityRepository _abilityRepository;
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
-  private readonly IAbilityRepository _abilityRepository;
+  private readonly IWorldRepository _worldRepository;
 
-  public CreateOrReplaceAbilityCommandHandler(IContext context, IPermissionService permissionService, IAbilityRepository abilityRepository)
+  public CreateOrReplaceAbilityCommandHandler(
+    IAbilityRepository abilityRepository,
+    IContext context,
+    IPermissionService permissionService,
+    IWorldRepository worldRepository)
   {
+    _abilityRepository = abilityRepository;
     _context = context;
     _permissionService = permissionService;
-    _abilityRepository = abilityRepository;
+    _worldRepository = worldRepository;
   }
 
   public async Task<CreateOrReplaceAbilityResult> HandleAsync(CreateOrReplaceAbilityCommand command, CancellationToken cancellationToken)
@@ -34,9 +41,11 @@ internal class CreateOrReplaceAbilityCommandHandler : ICommandHandler<CreateOrRe
     bool created = false;
     if (ability is null)
     {
-      await _permissionService.CheckAsync(Actions.CreateAbility, cancellationToken);
+      World world = await _worldRepository.LoadAsync(_context.WorldId, cancellationToken)
+        ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not loaded.");
+      await _permissionService.CheckAsync(Actions.CreateAbility, world, cancellationToken);
 
-      ability = new Ability(_context.WorldId, payload.Key, _context.UserId, command.Id, payload.Name, payload.Description);
+      ability = new Ability(world, payload.Key, _context.UserId, command.Id, payload.Name, payload.Description);
       _abilityRepository.Add(ability);
       created = true;
     }

@@ -63,7 +63,7 @@ public class AbilityBuilder : IAbilityBuilder
   public Ability Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    return new Ability(world.Id, _key, world.OwnerId, _id, _name, _description);
+    return new Ability(world, _key, world.OwnerId, _id, _name, _description);
   }
 
   public static Ability Adaptability(Faker? faker = null, World? world = null) => new AbilityBuilder(faker)

@@ -63,7 +63,7 @@ public class RegionBuilder : IRegionBuilder
   public Region Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
-    return new Region(world.Id, _key, world.OwnerId, _id, _name, _description);
+    return new Region(world, _key, world.OwnerId, _id, _name, _description);
   }
 
   public static Region Hoenn(Faker? faker = null, World? world = null) => new RegionBuilder(faker)

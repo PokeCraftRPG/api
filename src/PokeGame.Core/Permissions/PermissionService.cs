@@ -55,9 +55,6 @@ internal class PermissionService : IPermissionService
   {
     switch (action)
     {
-      case Actions.CreateAbility:
-      case Actions.CreateRegion:
-        return _context.IsWorldOwner();
       case Actions.CreateWorld:
         int count = await _worldRepository.CountAsync(cancellationToken);
         return count < _settings.WorldLimit;
@@ -70,6 +67,8 @@ internal class PermissionService : IPermissionService
   {
     switch (action)
     {
+      case Actions.CreateAbility:
+      case Actions.CreateRegion:
       case Actions.Update:
         return world.OwnerId == _context.TryGetUserId();
       default:

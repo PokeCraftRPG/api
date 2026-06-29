@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using PokeGame.Core.Abilities.Events;
 using PokeGame.Core.Worlds;
 
@@ -26,11 +26,12 @@ public class Ability : IAuditable, IResource, IVersioned
 
   public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
 
-  public Ability(Guid worldId, string key, Guid userId, Guid? id = null, string? name = null, string? description = null, DateTime? createdOn = null)
+  public Ability(World world, string key, Guid userId, Guid? id = null, string? name = null, string? description = null, DateTime? createdOn = null)
   {
     createdOn = (createdOn ?? DateTime.Now).AsUniversalTime();
 
-    WorldId = worldId;
+    World = world;
+    WorldId = world.Id;
     Id = id ?? Guid.NewGuid();
 
     CreatedBy = userId;

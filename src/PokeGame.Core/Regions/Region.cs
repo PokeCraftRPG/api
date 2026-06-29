@@ -26,11 +26,12 @@ public class Region : IAuditable, IResource, IVersioned
 
   public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
 
-  public Region(Guid worldId, string key, Guid userId, Guid? id = null, string? name = null, string? description = null, DateTime? createdOn = null)
+  public Region(World world, string key, Guid userId, Guid? id = null, string? name = null, string? description = null, DateTime? createdOn = null)
   {
     createdOn = (createdOn ?? DateTime.Now).AsUniversalTime();
 
-    WorldId = worldId;
+    World = world;
+    WorldId = world.Id;
     Id = id ?? Guid.NewGuid();
 
     CreatedBy = userId;

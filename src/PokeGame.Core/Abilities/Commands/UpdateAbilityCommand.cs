@@ -1,7 +1,7 @@
-using Logitar.CQRS;
-using PokeGame.Core.Permissions;
+﻿using Logitar.CQRS;
 using PokeGame.Core.Abilities.Events;
 using PokeGame.Core.Abilities.Models;
+using PokeGame.Core.Permissions;
 
 namespace PokeGame.Core.Abilities.Commands;
 
@@ -9,15 +9,15 @@ internal record UpdateAbilityCommand(Guid Id, UpdateAbilityPayload Payload) : IC
 
 internal class UpdateAbilityCommandHandler : ICommandHandler<UpdateAbilityCommand, AbilityModel?>
 {
+  private readonly IAbilityRepository _abilityRepository;
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
-  private readonly IAbilityRepository _abilityRepository;
 
-  public UpdateAbilityCommandHandler(IContext context, IPermissionService permissionService, IAbilityRepository abilityRepository)
+  public UpdateAbilityCommandHandler(IAbilityRepository abilityRepository, IContext context, IPermissionService permissionService)
   {
+    _abilityRepository = abilityRepository;
     _context = context;
     _permissionService = permissionService;
-    _abilityRepository = abilityRepository;
   }
 
   public async Task<AbilityModel?> HandleAsync(UpdateAbilityCommand command, CancellationToken cancellationToken)
