@@ -2,7 +2,6 @@
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Regions.Events;
 using PokeGame.Core.Regions.Models;
-using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Regions.Commands;
 
@@ -35,10 +34,9 @@ internal class CreateOrReplaceRegionCommandHandler : ICommandHandler<CreateOrRep
     bool created = false;
     if (region is null)
     {
-      World world = null!; // TODO(fpion): implement
-      await _permissionService.CheckAsync(Actions.CreateRegion, world, cancellationToken);
+      await _permissionService.CheckAsync(Actions.CreateRegion, cancellationToken);
 
-      region = new Region(world, payload.Key, _context.UserId, command.Id, payload.Name, payload.Description);
+      region = new Region(_context.WorldId, payload.Key, _context.UserId, command.Id, payload.Name, payload.Description);
       _regionRepository.Add(region);
       created = true;
     }

@@ -25,6 +25,8 @@ internal class RegionConfiguration : IEntityTypeConfiguration<Region>
     builder.Property(x => x.Key).HasMaxLength(Constants.KeyMaximumLength);
     builder.Property(x => x.Name).HasMaxLength(Constants.NameMaximumLength);
 
-    builder.HasOne(x => x.World).WithMany(x => x.Regions).OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.World).WithMany(x => x.Regions)
+      .HasForeignKey(x => x.WorldId).HasPrincipalKey(x => x.Id)
+      .OnDelete(DeleteBehavior.Restrict);
   }
 }

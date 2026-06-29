@@ -33,12 +33,6 @@ internal static class QueryingExtensions
     return query;
   }
 
-  public static IQueryBuilder ApplyWorldFilter(this IQueryBuilder query, ColumnId column, Guid worldId)
-  {
-    OperatorCondition condition = new(Db.Worlds.Id, Operators.IsEqualTo(worldId));
-    return query.Join(Db.Worlds.WorldId, column, condition);
-  }
-
   public static IQueryable<T> FromQuery<T>(this DbSet<T> entities, IQueryBuilder query) where T : class
   {
     return entities.FromQuery(query.Build());

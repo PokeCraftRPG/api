@@ -18,5 +18,4 @@ public static class Regions
   public static readonly ColumnId UpdatedOn = new(nameof(Region.UpdatedOn), Table);
   public static readonly ColumnId Version = new(nameof(Region.Version), Table);
   public static readonly ColumnId WorldId = new(nameof(Region.WorldId), Table);
-  public static readonly ColumnId WorldUid = new(nameof(Region.WorldUid), Table);
 }

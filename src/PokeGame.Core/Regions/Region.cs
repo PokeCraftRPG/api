@@ -11,8 +11,7 @@ public class Region : IAuditable, IResource, IVersioned
   public int RegionId { get; private set; }
 
   public World? World { get; private set; }
-  public int WorldId { get; private set; }
-  public Guid WorldUid { get; private set; }
+  public Guid WorldId { get; private set; }
   public Guid Id { get; private set; }
 
   public string Key { get; private set; } = string.Empty;
@@ -25,15 +24,13 @@ public class Region : IAuditable, IResource, IVersioned
   public Guid UpdatedBy { get; private set; }
   public DateTime UpdatedOn { get; private set; }
 
-  public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldUid);
+  public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
 
-  public Region(World world, string key, Guid userId, Guid? id = null, string? name = null, string? description = null, DateTime? createdOn = null)
+  public Region(Guid worldId, string key, Guid userId, Guid? id = null, string? name = null, string? description = null, DateTime? createdOn = null)
   {
     createdOn = (createdOn ?? DateTime.Now).AsUniversalTime();
 
-    World = world;
-    WorldId = world.WorldId;
-    WorldUid = world.Id;
+    WorldId = worldId;
     Id = id ?? Guid.NewGuid();
 
     CreatedBy = userId;

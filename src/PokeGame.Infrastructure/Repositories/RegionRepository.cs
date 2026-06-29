@@ -41,7 +41,7 @@ internal class RegionRepository : Repository, IRegionRepository
 
   public async Task EnsureUnicityAsync(Region region, CancellationToken cancellationToken)
   {
-    Guid? regionId = await Database.Regions.Where(x => x.Key == region.Key && x.World!.Id == _context.WorldId)
+    Guid? regionId = await Database.Regions.Where(x => x.Key == region.Key && x.WorldId == _context.WorldId)
       .Select(x => (Guid?)x.Id)
       .SingleOrDefaultAsync(cancellationToken);
     if (regionId.HasValue && !regionId.Value.Equals(region.Id))
@@ -52,7 +52,7 @@ internal class RegionRepository : Repository, IRegionRepository
 
   public async Task<Region?> LoadAsync(Guid id, CancellationToken cancellationToken)
   {
-    return await Database.Regions.SingleOrDefaultAsync(x => x.Id == id && x.World!.Id == _context.WorldId, cancellationToken);
+    return await Database.Regions.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
   }
 
   public async Task<RegionModel> ReadAsync(Region region, CancellationToken cancellationToken)
@@ -62,7 +62,7 @@ internal class RegionRepository : Repository, IRegionRepository
   public async Task<RegionModel?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     Region? region = await Database.Regions.AsNoTracking()
-      .Where(x => x.Id == id && x.World!.Id == _context.WorldId)
+      .Where(x => x.Id == id && x.WorldId == _context.WorldId)
       .SingleOrDefaultAsync(cancellationToken);
 
     return region is null ? null : await MapAsync(region, cancellationToken);
@@ -70,7 +70,7 @@ internal class RegionRepository : Repository, IRegionRepository
   public async Task<RegionModel?> ReadAsync(string key, CancellationToken cancellationToken)
   {
     Region? region = await Database.Regions.AsNoTracking()
-      .Where(x => x.Key == SlugHelper.Format(key) && x.World!.Id == _context.WorldId)
+      .Where(x => x.Key == SlugHelper.Format(key) && x.WorldId == _context.WorldId)
       .SingleOrDefaultAsync(cancellationToken);
 
     return region is null ? null : await MapAsync(region, cancellationToken);
@@ -79,7 +79,7 @@ internal class RegionRepository : Repository, IRegionRepository
   public async Task<SearchResults<RegionModel>> SearchAsync(SearchRegionsPayload payload, CancellationToken cancellationToken)
   {
     IQueryBuilder builder = _sqlHelper.Query(Db.Regions.Table).SelectAll(Db.Regions.Table)
-      .ApplyWorldFilter(Db.Regions.WorldId, _context.WorldId)
+      .Where(Db.Regions.WorldId, Operators.IsEqualTo(_context.WorldId))
       .ApplyIdFilter(Db.Regions.Id, payload.Ids);
     _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Regions.Name);
 
