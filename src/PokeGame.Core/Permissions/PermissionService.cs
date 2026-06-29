@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Permissions;
@@ -13,6 +14,7 @@ internal class PermissionService : IPermissionService
 {
   public static void Register(IServiceCollection services)
   {
+    services.AddSingleton(serviceProvider => PermissionSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()));
     services.AddTransient<IPermissionService, PermissionService>();
   }
 
