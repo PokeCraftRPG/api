@@ -15,7 +15,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Krakenar.Client" Version="2.1.0" />
+    <PackageReference Include="Logitar.Data" Version="10.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PokeGame.Core\PokeGame.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="System.Reflection" />
+    <Using Include="System.Text.Json" />
+    <Using Include="System.Text.Json.Serialization" />
   </ItemGroup>
 
 </Project>
