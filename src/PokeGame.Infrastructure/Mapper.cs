@@ -2,6 +2,8 @@
 using Krakenar.Contracts.Actors;
 using Logitar;
 using PokeGame.Core;
+using PokeGame.Core.Regions;
+using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Models;
 
@@ -22,6 +24,21 @@ internal class Mapper
     {
       _actors[actor.Key] = actor.Value;
     }
+  }
+
+  public RegionModel ToRegion(Region source)
+  {
+    RegionModel destination = new()
+    {
+      Id = source.Id,
+      Key = source.Key,
+      Name = source.Name,
+      Description = source.Description
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
   }
 
   public WorldModel ToWorld(World source)

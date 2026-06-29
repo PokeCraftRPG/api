@@ -1,17 +1,18 @@
 ﻿using Logitar;
-using PokeGame.Core.Regions;
-using PokeGame.Core.Worlds.Events;
+using PokeGame.Core.Regions.Events;
+using PokeGame.Core.Worlds;
 
-namespace PokeGame.Core.Worlds;
+namespace PokeGame.Core.Regions;
 
-public class World : IAuditable, IResource, IVersioned
+public class Region : IAuditable, IResource, IVersioned
 {
-  public const string ResourceKind = "World";
+  public const string ResourceKind = "Region";
 
-  public int WorldId { get; private set; }
+  public int RegionId { get; private set; }
+
+  public World? World { get; private set; }
+  public Guid WorldId { get; private set; }
   public Guid Id { get; private set; }
-
-  public Guid OwnerId { get; private set; }
 
   public string Key { get; private set; } = string.Empty;
   public string? Name { get; private set; }
@@ -23,44 +24,40 @@ public class World : IAuditable, IResource, IVersioned
   public Guid UpdatedBy { get; private set; }
   public DateTime UpdatedOn { get; private set; }
 
-  public ResourceIdentifier Identifier => new(ResourceKind, Id);
+  public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
 
-  public List<Region> Regions { get; private set; } = [];
-
-  public World(Guid ownerId, string key, Guid? id = null, string? name = null, string? description = null, DateTime? createdOn = null)
+  public Region(Guid worldId, string key, Guid userId, Guid? id = null, string? name = null, string? description = null, DateTime? createdOn = null)
   {
     createdOn = (createdOn ?? DateTime.Now).AsUniversalTime();
 
+    WorldId = worldId;
     Id = id ?? Guid.NewGuid();
 
-    OwnerId = ownerId;
-
-    CreatedBy = ownerId;
+    CreatedBy = userId;
     CreatedOn = createdOn.Value;
 
-    Update(key, name, description, ownerId, createdOn);
+    Update(key, name, description, userId, createdOn);
   }
 
-  private World()
+  private Region()
   {
   }
 
   public IReadOnlyCollection<Guid> GetUserIds()
   {
-    HashSet<Guid> userIds = new(capacity: 3);
-    userIds.Add(OwnerId);
+    HashSet<Guid> userIds = new(capacity: 2);
     userIds.Add(CreatedBy);
     userIds.Add(UpdatedBy);
     return userIds;
   }
 
-  public WorldUpdated Update(string key, string? name, string? description, Guid userId, DateTime? updatedOn = null)
+  public RegionUpdated Update(string key, string? name, string? description, Guid userId, DateTime? updatedOn = null)
   {
     Version++;
     UpdatedBy = userId;
     UpdatedOn = (updatedOn ?? DateTime.Now).AsUniversalTime();
 
-    WorldUpdated record = new(this);
+    RegionUpdated record = new(this);
 
     key = SlugHelper.Format(key);
     if (!Equals(Key, key))
@@ -86,7 +83,7 @@ public class World : IAuditable, IResource, IVersioned
     return record;
   }
 
-  public override bool Equals(object? obj) => obj is World world && world.WorldId == WorldId;
-  public override int GetHashCode() => WorldId.GetHashCode();
-  public override string ToString() => $"{Name ?? Key} | {base.ToString()} (WorldId={WorldId})";
+  public override bool Equals(object? obj) => obj is Region region && region.RegionId == RegionId;
+  public override int GetHashCode() => RegionId.GetHashCode();
+  public override string ToString() => $"{Name ?? Key} | {base.ToString()} (RegionId={RegionId})";
 }

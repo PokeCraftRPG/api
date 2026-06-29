@@ -80,6 +80,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     StringBuilder sql = new();
     TableId[] tables =
     [
+      Infrastructure.Db.Regions.Table,
       Infrastructure.Db.Worlds.Table,
       Infrastructure.Db.History.Table
     ];
@@ -97,10 +98,9 @@ public abstract class IntegrationTests : IAsyncLifetime
       It.IsAny<CancellationToken>())).ReturnsAsync(new SearchResults<User>([Context.User]));
 
     IWorldRepository worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
-    World world = new WorldBuilder(Faker).WithOwner(Context.User).Build();
-    worldRepository.Add(world);
+    Context.World = new WorldBuilder(Faker).WithOwner(Context.User).Build();
+    worldRepository.Add(Context.World);
     await Context.SaveChangesAsync();
-    Context.World = await worldRepository.ReadAsync(world);
   }
 
   public virtual Task DisposeAsync() => Task.CompletedTask;
