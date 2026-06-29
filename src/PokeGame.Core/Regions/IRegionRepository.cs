@@ -6,7 +6,7 @@ namespace PokeGame.Core.Regions;
 
 public interface IRegionRepository
 {
-  void Add(Region region);
+  void Add(params Region[] regions);
   void Remove(Region region);
   void Update(Region region, RegionUpdated record);
 

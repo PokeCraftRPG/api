@@ -23,10 +23,13 @@ internal class RegionRepository : Repository, IRegionRepository
     _sqlHelper = sqlHelper;
   }
 
-  public void Add(Region region)
+  public void Add(params Region[] regions)
   {
-    Database.Regions.Add(region);
-    base.RecordChange(new RegionCreated(region));
+    foreach (Region region in regions)
+    {
+      Database.Regions.Add(region);
+      base.RecordChange(new RegionCreated(region));
+    }
   }
   public void Remove(Region region)
   {
