@@ -15,7 +15,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="Krakenar.Contracts" Version="2.1.0" />
+    <PackageReference Include="Logitar.CQRS" Version="10.1.0" />
   </ItemGroup>
 
 </Project>
