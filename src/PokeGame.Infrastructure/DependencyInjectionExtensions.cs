@@ -1,6 +1,7 @@
 ﻿using Logitar.CQRS;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Regions;
 using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Caching;
@@ -28,6 +29,8 @@ public static class DependencyInjectionExtensions
 
   private static IServiceCollection AddRepositories(this IServiceCollection services)
   {
-    return services.AddScoped<IWorldRepository, WorldRepository>();
+    return services
+      .AddScoped<IRegionRepository, RegionRepository>()
+      .AddScoped<IWorldRepository, WorldRepository>();
   }
 }

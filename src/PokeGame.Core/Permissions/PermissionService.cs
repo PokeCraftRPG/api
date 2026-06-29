@@ -67,6 +67,7 @@ internal class PermissionService : IPermissionService
   {
     switch (action)
     {
+      case Actions.CreateRegion:
       case Actions.Update:
         return world.OwnerId == _context.TryGetUserId();
       default:
