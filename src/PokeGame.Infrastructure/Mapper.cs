@@ -2,6 +2,8 @@
 using Krakenar.Contracts.Actors;
 using Logitar;
 using PokeGame.Core;
+using PokeGame.Core.Abilities;
+using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Worlds;
@@ -24,6 +26,21 @@ internal class Mapper
     {
       _actors[actor.Key] = actor.Value;
     }
+  }
+
+  public AbilityModel ToAbility(Ability source)
+  {
+    AbilityModel destination = new()
+    {
+      Id = source.Id,
+      Key = source.Key,
+      Name = source.Name,
+      Description = source.Description
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
   }
 
   public RegionModel ToRegion(Region source)

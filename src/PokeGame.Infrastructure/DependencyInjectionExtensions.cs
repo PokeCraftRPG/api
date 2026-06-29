@@ -1,5 +1,6 @@
 ﻿using Logitar.CQRS;
 using Microsoft.Extensions.DependencyInjection;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Worlds;
@@ -30,6 +31,7 @@ public static class DependencyInjectionExtensions
   private static IServiceCollection AddRepositories(this IServiceCollection services)
   {
     return services
+      .AddScoped<IAbilityRepository, AbilityRepository>()
       .AddScoped<IRegionRepository, RegionRepository>()
       .AddScoped<IWorldRepository, WorldRepository>();
   }
