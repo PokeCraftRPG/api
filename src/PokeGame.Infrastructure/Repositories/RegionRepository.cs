@@ -41,7 +41,7 @@ internal class RegionRepository : Repository, IRegionRepository
 
   public async Task EnsureUnicityAsync(Region region, CancellationToken cancellationToken)
   {
-    Guid? regionId = await Database.Regions.Where(x => x.WorldId == region.WorldId && x.Key == region.Key)
+    Guid? regionId = await Database.Regions.Where(x => x.Key == region.Key && x.World!.Id == _context.WorldId)
       .Select(x => (Guid?)x.Id)
       .SingleOrDefaultAsync(cancellationToken);
     if (regionId.HasValue && !regionId.Value.Equals(region.Id))
