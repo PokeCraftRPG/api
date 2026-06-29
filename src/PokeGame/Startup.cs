@@ -1,5 +1,10 @@
-﻿using Krakenar.Contracts.Constants;
+﻿using Krakenar.Client;
+using Krakenar.Contracts.Constants;
+using PokeGame.Core;
 using PokeGame.Extensions;
+using PokeGame.Infrastructure;
+using PokeGame.Middlewares;
+using PokeGame.PostgreSQL;
 using PokeGame.Settings;
 
 namespace PokeGame;
@@ -20,6 +25,13 @@ internal class Startup : StartupBase
   public override void ConfigureServices(IServiceCollection services)
   {
     base.ConfigureServices(services);
+
+    services.AddPokeGameCore();
+    services.AddPokeGameInfrastructure();
+    services.AddPokeGamePostgreSQL(_configuration);
+    services.AddSingleton<IContext, HttpApplicationContext>();
+
+    services.AddKrakenarClient(_configuration);
 
     services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
     services.AddHttpContextAccessor();
@@ -85,6 +97,7 @@ internal class Startup : StartupBase
     application.UseSession();
     application.UseAuthentication();
     application.UseAuthorization();
+    application.UseMiddleware<ResolveWorld>();
 
     application.MapControllers();
   }

@@ -12,7 +12,7 @@ internal class AddHeaderParameters : IOperationFilter
     {
       In = ParameterLocation.Header,
       Name = Headers.World,
-      Description = "Enter your world ID or slug in the input below:"
+      Description = "Enter your world ID or key in the input below:"
     });
   }
 }
