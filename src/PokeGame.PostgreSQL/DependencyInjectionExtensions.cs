@@ -19,6 +19,8 @@ public static class DependencyInjectionExtensions
   }
   public static IServiceCollection AddPokeGamePostgreSQL(this IServiceCollection services, string connectionString)
   {
-    return services.AddDbContext<PokemonContext>(options => options.UseNpgsql(connectionString, options => options.MigrationsAssembly("PokeGame.PostgreSQL")));
+    return services
+      .AddDbContext<PokemonContext>(options => options.UseNpgsql(connectionString, options => options.MigrationsAssembly("PokeGame.PostgreSQL")))
+      .AddSingleton<ISqlHelper, PostgresHelper>();
   }
 }

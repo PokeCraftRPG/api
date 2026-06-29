@@ -1,4 +1,6 @@
 ﻿using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Search;
+using Logitar.Data;
 using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
 using PokeGame.Core.Worlds;
@@ -12,11 +14,13 @@ internal class WorldRepository : Repository, IWorldRepository
 {
   private readonly IActorService _actorService;
   private readonly IContext _context;
+  private readonly ISqlHelper _sqlHelper;
 
-  public WorldRepository(IActorService actorService, IContext context, PokemonContext database) : base(database)
+  public WorldRepository(IActorService actorService, IContext context, PokemonContext database, ISqlHelper sqlHelper) : base(database)
   {
     _actorService = actorService;
     _context = context;
+    _sqlHelper = sqlHelper;
   }
 
   public void Add(World world)
@@ -75,6 +79,54 @@ internal class WorldRepository : Repository, IWorldRepository
       .SingleOrDefaultAsync(cancellationToken);
 
     return world is null ? null : await MapAsync(world, cancellationToken);
+  }
+
+  public async Task<SearchResults<WorldModel>> SearchAsync(SearchWorldsPayload payload, CancellationToken cancellationToken)
+  {
+    IQueryBuilder builder = _sqlHelper.Query(Db.Worlds.Table).SelectAll(Db.Worlds.Table)
+      .ApplyIdFilter(Db.Worlds.Id, payload.Ids)
+      .Where();
+    _sqlHelper.ApplyTextSearch(builder, payload.Search, Db.Worlds.Name);
+
+    IQueryable<World> query = Database.Worlds.FromQuery(builder).AsNoTracking();
+
+    long total = await query.LongCountAsync(cancellationToken);
+
+    IOrderedQueryable<World>? ordered = null;
+    foreach (WorldSortOption sort in payload.Sort)
+    {
+      switch (sort.Field)
+      {
+        case WorldSort.CreatedOn:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.CreatedOn) : query.OrderBy(x => x.CreatedOn))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.CreatedOn) : ordered.ThenBy(x => x.CreatedOn));
+          break;
+        case WorldSort.Key:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.Key) : query.OrderBy(x => x.Key))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.Key) : ordered.ThenBy(x => x.Key));
+          break;
+        case WorldSort.Name:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.Name ?? x.Key) : query.OrderBy(x => x.Name ?? x.Key))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.Name ?? x.Key) : ordered.ThenBy(x => x.Name ?? x.Key));
+          break;
+        case WorldSort.UpdatedOn:
+          ordered = (ordered is null)
+            ? (sort.IsDescending ? query.OrderByDescending(x => x.UpdatedOn) : query.OrderBy(x => x.UpdatedOn))
+            : (sort.IsDescending ? ordered.ThenByDescending(x => x.UpdatedOn) : ordered.ThenBy(x => x.UpdatedOn));
+          break;
+      }
+    }
+    query = ordered ?? query;
+
+    query = query.ApplyPaging(payload);
+
+    World[] entities = await query.ToArrayAsync(cancellationToken);
+    IReadOnlyCollection<WorldModel> worlds = await MapAsync(entities, cancellationToken);
+
+    return new SearchResults<WorldModel>(worlds, total);
   }
 
   private async Task<WorldModel> MapAsync(World world, CancellationToken cancellationToken)
