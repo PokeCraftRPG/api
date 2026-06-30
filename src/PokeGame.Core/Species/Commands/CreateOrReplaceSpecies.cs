@@ -59,18 +59,18 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
       species = new PokemonSpecies(
         world,
         payload.Number,
-        payload.Category,
         payload.Key,
-        payload.BaseFriendship,
         payload.CatchRate,
-        payload.GrowthRate,
         payload.EggCycles,
-        payload.EggGroups.Primary,
-        payload.EggGroups.Secondary,
         _context.UserId,
         command.Id,
+        payload.Category,
         payload.Name,
         payload.Description,
+        payload.BaseFriendship,
+        payload.GrowthRate,
+        payload.EggGroups.Primary,
+        payload.EggGroups.Secondary,
         regionalNumbers);
       _speciesRepository.Add(species);
       created = true;
