@@ -9,9 +9,9 @@ public class MoveCreated : CreateEvent
   public string? Name { get; set; }
   public string? Description { get; set; }
 
-  public byte? Accuracy { get; set; }
-  public byte? Power { get; set; }
-  public byte PowerPoints { get; set; }
+  public int? Accuracy { get; set; }
+  public int? Power { get; set; }
+  public int PowerPoints { get; set; }
 
   public MoveCreated() : base()
   {

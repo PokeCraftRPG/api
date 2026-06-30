@@ -4,9 +4,9 @@ namespace PokeGame.Core.Validation;
 
 internal static class ValidationExtensions
 {
-  public static IRuleBuilderOptions<T, byte> Accuracy<T>(this IRuleBuilder<T, byte> ruleBuilder)
+  public static IRuleBuilderOptions<T, int> Accuracy<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween((byte)1, (byte)100);
+    return ruleBuilder.InclusiveBetween(1, 100);
   }
 
   public static IRuleBuilderOptions<T, string> Description<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -24,13 +24,13 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(Constants.NameMaximumLength);
   }
 
-  public static IRuleBuilderOptions<T, byte> Power<T>(this IRuleBuilder<T, byte> ruleBuilder)
+  public static IRuleBuilderOptions<T, int> Power<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween((byte)1, (byte)250);
+    return ruleBuilder.InclusiveBetween(1, 250);
   }
 
-  public static IRuleBuilderOptions<T, byte> PowerPoints<T>(this IRuleBuilder<T, byte> ruleBuilder)
+  public static IRuleBuilderOptions<T, int> PowerPoints<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween((byte)1, (byte)40);
+    return ruleBuilder.InclusiveBetween(1, 40);
   }
 }

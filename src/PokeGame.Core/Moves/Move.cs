@@ -21,9 +21,9 @@ public class Move : IAuditable, IResource, IVersioned
   public string? Name { get; private set; }
   public string? Description { get; private set; }
 
-  public byte? Accuracy { get; private set; }
-  public byte? Power { get; private set; }
-  public byte PowerPoints { get; private set; }
+  public int? Accuracy { get; private set; }
+  public int? Power { get; private set; }
+  public int PowerPoints { get; private set; }
 
   public long Version { get; private set; }
   public Guid CreatedBy { get; private set; }
@@ -38,13 +38,13 @@ public class Move : IAuditable, IResource, IVersioned
     PokemonType type,
     MoveCategory category,
     string key,
-    byte powerPoints,
+    int powerPoints,
     Guid userId,
     Guid? id = null,
     string? name = null,
     string? description = null,
-    byte? accuracy = null,
-    byte? power = null,
+    int? accuracy = null,
+    int? power = null,
     DateTime? createdOn = null)
   {
     createdOn = (createdOn ?? DateTime.Now).AsUniversalTime();
@@ -78,9 +78,9 @@ public class Move : IAuditable, IResource, IVersioned
     string key,
     string? name,
     string? description,
-    byte? accuracy,
-    byte? power,
-    byte powerPoints,
+    int? accuracy,
+    int? power,
+    int powerPoints,
     Guid userId,
     DateTime? updatedOn = null)
   {
@@ -113,19 +113,19 @@ public class Move : IAuditable, IResource, IVersioned
 
     if (!Equals(Accuracy, accuracy))
     {
-      record.Accuracy = new Change<byte?>(Accuracy, accuracy);
+      record.Accuracy = new Change<int?>(Accuracy, accuracy);
       Accuracy = accuracy;
     }
 
     if (!Equals(Power, power))
     {
-      record.Power = new Change<byte?>(Power, power);
+      record.Power = new Change<int?>(Power, power);
       Power = power;
     }
 
     if (!Equals(PowerPoints, powerPoints))
     {
-      record.PowerPoints = new Change<byte>(PowerPoints, powerPoints);
+      record.PowerPoints = new Change<int>(PowerPoints, powerPoints);
       PowerPoints = powerPoints;
     }
 

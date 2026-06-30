@@ -6,9 +6,9 @@ public class MoveUpdated : UpdateEvent
   public Change<string>? Name { get; set; }
   public Change<string>? Description { get; set; }
 
-  public Change<byte?>? Accuracy { get; set; }
-  public Change<byte?>? Power { get; set; }
-  public Change<byte>? PowerPoints { get; set; }
+  public Change<int?>? Accuracy { get; set; }
+  public Change<int?>? Power { get; set; }
+  public Change<int>? PowerPoints { get; set; }
 
   public MoveUpdated() : base()
   {
