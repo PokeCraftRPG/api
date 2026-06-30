@@ -18,6 +18,7 @@ public record CreateOrReplaceSpeciesPayload
 
   public int EggCycles { get; set; }
   public EggGroupsModel EggGroups { get; set; } = new();
+
   public List<RegionalNumberPayload> RegionalNumbers { get; set; } = [];
 
   public void Validate() => new Validator().ValidateAndThrow(this);

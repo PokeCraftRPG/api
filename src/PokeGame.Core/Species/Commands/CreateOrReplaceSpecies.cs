@@ -11,7 +11,6 @@ internal record CreateOrReplaceSpeciesCommand(CreateOrReplaceSpeciesPayload Payl
 
 internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrReplaceSpeciesCommand, CreateOrReplaceSpeciesResult>
 {
-
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
   private readonly IRegionRepository _regionRepository;
@@ -43,12 +42,6 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
       species = await _speciesRepository.LoadAsync(command.Id.Value, cancellationToken);
     }
 
-    IReadOnlyDictionary<Region, int> regionalNumbers = await RegionalNumberResolver.ResolveAsync(
-      _regionRepository,
-      payload.RegionalNumbers,
-      nameof(payload.RegionalNumbers),
-      cancellationToken);
-
     bool created = false;
     if (species is null)
     {
@@ -70,8 +63,7 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
         payload.BaseFriendship,
         payload.GrowthRate,
         payload.EggGroups.Primary,
-        payload.EggGroups.Secondary,
-        regionalNumbers);
+        payload.EggGroups.Secondary);
       _speciesRepository.Add(species);
       created = true;
     }
@@ -98,7 +90,6 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
         payload.EggCycles,
         payload.EggGroups.Primary,
         payload.EggGroups.Secondary,
-        regionalNumbers,
         _context.UserId);
       _speciesRepository.Update(species, record);
     }

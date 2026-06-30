@@ -39,16 +39,6 @@ internal class UpdateSpeciesCommandHandler : ICommandHandler<UpdateSpeciesComman
     }
     await _permissionService.CheckAsync(Actions.Update, species, cancellationToken);
 
-    IReadOnlyDictionary<Region, int>? regionalNumbers = null;
-    if (payload.RegionalNumbers.Count > 0)
-    {
-      regionalNumbers = await RegionalNumberResolver.ResolveAsync(
-        _regionRepository,
-        payload.RegionalNumbers,
-        nameof(payload.RegionalNumbers),
-        cancellationToken);
-    }
-
     SpeciesUpdated record = species.Update(
       string.IsNullOrWhiteSpace(payload.Key) ? species.Key : payload.Key,
       payload.Name is null ? species.Name : payload.Name.Value,
@@ -59,7 +49,6 @@ internal class UpdateSpeciesCommandHandler : ICommandHandler<UpdateSpeciesComman
       payload.EggCycles ?? species.EggCycles,
       payload.EggGroups?.Primary ?? species.PrimaryEggGroup,
       payload.EggGroups?.Secondary ?? species.SecondaryEggGroup,
-      regionalNumbers,
       _context.UserId);
     _speciesRepository.Update(species, record);
 

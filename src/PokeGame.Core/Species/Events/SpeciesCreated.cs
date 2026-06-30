@@ -1,6 +1,4 @@
-﻿using PokeGame.Core.Regions;
-
-namespace PokeGame.Core.Species.Events;
+﻿namespace PokeGame.Core.Species.Events;
 
 public class SpeciesCreated : CreateEvent
 {
@@ -18,8 +16,6 @@ public class SpeciesCreated : CreateEvent
   public int EggCycles { get; set; }
   public EggGroup PrimaryEggGroup { get; set; }
   public EggGroup? SecondaryEggGroup { get; set; }
-
-  public List<RegionalNumberChange> RegionalNumbers { get; set; } = [];
 
   public SpeciesCreated() : base()
   {
@@ -41,11 +37,5 @@ public class SpeciesCreated : CreateEvent
     EggCycles = species.EggCycles;
     PrimaryEggGroup = species.PrimaryEggGroup;
     SecondaryEggGroup = species.SecondaryEggGroup;
-
-    foreach (RegionalNumber regionalNumber in species.RegionalNumbers)
-    {
-      Region region = regionalNumber.Region ?? throw new ArgumentException("The region is required.", nameof(species));
-      RegionalNumbers.Add(new RegionalNumberChange(region.Id, OldNumber: null, regionalNumber.Number));
-    }
   }
 }

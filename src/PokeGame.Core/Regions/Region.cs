@@ -25,9 +25,9 @@ public class Region : IAuditable, IResource, IVersioned
   public Guid UpdatedBy { get; private set; }
   public DateTime UpdatedOn { get; private set; }
 
-  public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
-
   public List<RegionalNumber> RegionalNumbers { get; private set; } = [];
+
+  public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
 
   public Region(World world, string key, Guid userId, Guid? id = null, string? name = null, string? description = null, DateTime? createdOn = null)
   {

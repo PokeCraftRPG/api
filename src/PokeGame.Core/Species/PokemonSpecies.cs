@@ -1,5 +1,4 @@
 ﻿using Logitar;
-using PokeGame.Core.Regions;
 using PokeGame.Core.Species.Events;
 using PokeGame.Core.Worlds;
 
@@ -30,13 +29,13 @@ public class PokemonSpecies : IAuditable, IResource, IVersioned
   public EggGroup PrimaryEggGroup { get; private set; }
   public EggGroup? SecondaryEggGroup { get; private set; }
 
-  public List<RegionalNumber> RegionalNumbers { get; private set; } = [];
-
   public long Version { get; private set; }
   public Guid CreatedBy { get; private set; }
   public DateTime CreatedOn { get; private set; }
   public Guid UpdatedBy { get; private set; }
   public DateTime UpdatedOn { get; private set; }
+
+  public List<RegionalNumber> RegionalNumbers { get; private set; } = [];
 
   public ResourceIdentifier Identifier => new(ResourceKind, Id, WorldId);
 
@@ -55,7 +54,6 @@ public class PokemonSpecies : IAuditable, IResource, IVersioned
     GrowthRate growthRate = GrowthRate.MediumFast,
     EggGroup primaryEggGroup = EggGroup.NoEggsDiscovered,
     EggGroup? secondaryEggGroup = null,
-    IReadOnlyDictionary<Region, int>? regionalNumbers = null,
     DateTime? createdOn = null)
   {
     createdOn = (createdOn ?? DateTime.Now).AsUniversalTime();
@@ -80,7 +78,6 @@ public class PokemonSpecies : IAuditable, IResource, IVersioned
       eggCycles,
       primaryEggGroup,
       secondaryEggGroup,
-      regionalNumbers,
       userId,
       createdOn);
   }
@@ -107,7 +104,6 @@ public class PokemonSpecies : IAuditable, IResource, IVersioned
     int eggCycles,
     EggGroup primaryEggGroup,
     EggGroup? secondaryEggGroup,
-    IReadOnlyDictionary<Region, int>? regionalNumbers,
     Guid userId,
     DateTime? updatedOn = null)
   {
@@ -174,17 +170,7 @@ public class PokemonSpecies : IAuditable, IResource, IVersioned
       SecondaryEggGroup = secondaryEggGroup;
     }
 
-    if (regionalNumbers is not null)
-    {
-      ApplyRegionalNumbers(regionalNumbers, record);
-    }
-
     return record;
-  }
-
-  private void ApplyRegionalNumbers(IReadOnlyDictionary<Region, int> regionalNumbers, SpeciesUpdated record)
-  {
-    // TODO(fpion): different behaviour if create, replace or update
   }
 
   public override bool Equals(object? obj) => obj is PokemonSpecies species && species.SpeciesId == SpeciesId;

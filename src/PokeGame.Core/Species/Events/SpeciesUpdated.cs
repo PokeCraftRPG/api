@@ -14,8 +14,6 @@ public class SpeciesUpdated : UpdateEvent
   public Change<EggGroup>? PrimaryEggGroup { get; set; }
   public Change<EggGroup?>? SecondaryEggGroup { get; set; }
 
-  public List<RegionalNumberChange> RegionalNumbers { get; set; } = [];
-
   public SpeciesUpdated() : base()
   {
   }
