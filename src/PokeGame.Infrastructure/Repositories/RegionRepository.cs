@@ -53,6 +53,11 @@ internal class RegionRepository : Repository, IRegionRepository
     }
   }
 
+  public async Task<IReadOnlyCollection<Region>> LoadAsync(CancellationToken cancellationToken)
+  {
+    List<Region> regions = await Database.Regions.Where(x => x.WorldId == _context.WorldId).ToListAsync(cancellationToken);
+    return regions.AsReadOnly();
+  }
   public async Task<Region?> LoadAsync(Guid id, CancellationToken cancellationToken)
   {
     return await Database.Regions.SingleOrDefaultAsync(x => x.Id == id && x.WorldId == _context.WorldId, cancellationToken);
