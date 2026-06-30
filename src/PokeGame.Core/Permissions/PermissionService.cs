@@ -70,6 +70,7 @@ internal class PermissionService : IPermissionService
       case Actions.CreateAbility:
       case Actions.CreateMove:
       case Actions.CreateRegion:
+      case Actions.CreateSpecies:
       case Actions.Update:
         return world.OwnerId == _context.TryGetUserId();
       default:

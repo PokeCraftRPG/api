@@ -8,6 +8,8 @@ using PokeGame.Core.Moves;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Regions.Models;
+using PokeGame.Core.Species;
+using PokeGame.Core.Species.Models;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Models;
 
@@ -74,6 +76,40 @@ internal class Mapper
       Name = source.Name,
       Description = source.Description
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public SpeciesModel ToSpecies(PokemonSpecies source)
+  {
+    SpeciesModel destination = new()
+    {
+      Id = source.Id,
+      Number = source.Number,
+      Category = source.Category,
+      Key = source.Key,
+      Name = source.Name,
+      Description = source.Description,
+      BaseFriendship = source.BaseFriendship,
+      CatchRate = source.CatchRate,
+      GrowthRate = source.GrowthRate,
+      EggCycles = source.EggCycles
+    };
+
+    destination.EggGroups.Primary = source.PrimaryEggGroup;
+    destination.EggGroups.Secondary = source.SecondaryEggGroup;
+
+    foreach (RegionalNumber regionalNumber in source.RegionalNumbers)
+    {
+      Region region = regionalNumber.Region ?? throw new ArgumentException("The region is required.", nameof(source));
+      destination.RegionalNumbers.Add(new RegionalNumberModel
+      {
+        Region = ToRegion(region),
+        Number = regionalNumber.Number
+      });
+    }
 
     MapAggregate(source, destination);
 
