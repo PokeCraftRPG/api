@@ -12,6 +12,7 @@ public interface IRegionRepository
 
   Task EnsureUnicityAsync(Region region, CancellationToken cancellationToken = default);
 
+  Task<IReadOnlyCollection<Region>> LoadAsync(CancellationToken cancellationToken = default);
   Task<Region?> LoadAsync(Guid id, CancellationToken cancellationToken = default);
 
   Task<RegionModel> ReadAsync(Region region, CancellationToken cancellationToken = default);

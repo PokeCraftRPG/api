@@ -2,6 +2,7 @@
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Species;
 using PokeGame.Core.Worlds.Events;
 
 namespace PokeGame.Core.Worlds;
@@ -30,6 +31,7 @@ public class World : IAuditable, IResource, IVersioned
   public List<Ability> Abilities { get; private set; } = [];
   public List<Move> Moves { get; private set; } = [];
   public List<Region> Regions { get; private set; } = [];
+  public List<PokemonSpecies> Species { get; private set; } = [];
 
   public World(Guid ownerId, string key, Guid? id = null, string? name = null, string? description = null, DateTime? createdOn = null)
   {
