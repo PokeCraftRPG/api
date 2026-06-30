@@ -26,7 +26,7 @@ internal class ExceptionHandler : IExceptionHandler
   public virtual async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
   {
     int? statusCode = null;
-    if (exception is ValidationException)
+    if (IsBadRequest(exception))
     {
       statusCode = StatusCodes.Status400BadRequest;
     }
@@ -60,6 +60,8 @@ internal class ExceptionHandler : IExceptionHandler
     };
     return await _problemDetailsService.TryWriteAsync(context);
   }
+
+  private static bool IsBadRequest(Exception exception) => exception is DomainException || exception is ValidationException;
 
   private static Error ToError(Exception exception)
   {

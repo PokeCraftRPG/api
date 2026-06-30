@@ -4,6 +4,8 @@ using Logitar;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
+using PokeGame.Core.Moves;
+using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Worlds;
@@ -36,6 +38,26 @@ internal class Mapper
       Key = source.Key,
       Name = source.Name,
       Description = source.Description
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public MoveModel ToMove(Move source)
+  {
+    MoveModel destination = new()
+    {
+      Id = source.Id,
+      Type = source.Type,
+      Category = source.Category,
+      Key = source.Key,
+      Name = source.Name,
+      Description = source.Description,
+      Accuracy = source.Accuracy,
+      Power = source.Power,
+      PowerPoints = source.PowerPoints
     };
 
     MapAggregate(source, destination);

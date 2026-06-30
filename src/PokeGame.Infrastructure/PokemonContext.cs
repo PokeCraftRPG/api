@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PokeGame.Core.Abilities;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Worlds;
 
@@ -13,6 +14,7 @@ public class PokemonContext : DbContext
 
   internal DbSet<Ability> Abilities => Set<Ability>();
   internal DbSet<HistoryRecord> History => Set<HistoryRecord>();
+  internal DbSet<Move> Moves => Set<Move>();
   internal DbSet<Region> Regions => Set<Region>();
   internal DbSet<World> Worlds => Set<World>();
 
