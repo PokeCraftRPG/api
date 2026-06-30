@@ -1,4 +1,4 @@
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Regions.Events;
 using PokeGame.Core.Regions.Models;
