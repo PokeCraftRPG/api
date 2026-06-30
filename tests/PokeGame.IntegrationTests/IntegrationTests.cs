@@ -81,6 +81,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     TableId[] tables =
     [
       Infrastructure.Db.Regions.Table,
+      Infrastructure.Db.Moves.Table,
       Infrastructure.Db.Abilities.Table,
       Infrastructure.Db.Worlds.Table,
       Infrastructure.Db.History.Table
