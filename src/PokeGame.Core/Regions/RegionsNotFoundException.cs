@@ -1,6 +1,5 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Logitar;
-using System.Text;
 
 namespace PokeGame.Core.Regions;
 

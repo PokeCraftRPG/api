@@ -20,4 +20,8 @@
     <PackageReference Include="Logitar.CQRS" Version="10.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="System.Text" />
+  </ItemGroup>
+
 </Project>
