@@ -1,5 +1,6 @@
 ﻿using Logitar;
 using PokeGame.Core.Abilities;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Worlds.Events;
 
@@ -27,6 +28,7 @@ public class World : IAuditable, IResource, IVersioned
   public ResourceIdentifier Identifier => new(ResourceKind, Id);
 
   public List<Ability> Abilities { get; private set; } = [];
+  public List<Move> Moves { get; private set; } = [];
   public List<Region> Regions { get; private set; } = [];
 
   public World(Guid ownerId, string key, Guid? id = null, string? name = null, string? description = null, DateTime? createdOn = null)

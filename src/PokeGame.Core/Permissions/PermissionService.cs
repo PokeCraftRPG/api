@@ -68,6 +68,7 @@ internal class PermissionService : IPermissionService
     switch (action)
     {
       case Actions.CreateAbility:
+      case Actions.CreateMove:
       case Actions.CreateRegion:
       case Actions.Update:
         return world.OwnerId == _context.TryGetUserId();

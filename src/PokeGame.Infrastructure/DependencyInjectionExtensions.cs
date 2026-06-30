@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure.Actors;
@@ -32,6 +33,7 @@ public static class DependencyInjectionExtensions
   {
     return services
       .AddScoped<IAbilityRepository, AbilityRepository>()
+      .AddScoped<IMoveRepository, MoveRepository>()
       .AddScoped<IRegionRepository, RegionRepository>()
       .AddScoped<IWorldRepository, WorldRepository>();
   }
