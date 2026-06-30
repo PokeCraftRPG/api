@@ -88,7 +88,7 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
         throw new ImmutablePropertyException<PokemonCategory>(species, species.Category, payload.Category, nameof(PokemonSpecies.Category));
       }
 
-      PokemonSpeciesUpdated record = species.Update(
+      SpeciesUpdated record = species.Update(
         payload.Key,
         payload.Name,
         payload.Description,

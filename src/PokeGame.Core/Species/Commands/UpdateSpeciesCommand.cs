@@ -49,7 +49,7 @@ internal class UpdateSpeciesCommandHandler : ICommandHandler<UpdateSpeciesComman
         cancellationToken);
     }
 
-    PokemonSpeciesUpdated record = species.Update(
+    SpeciesUpdated record = species.Update(
       string.IsNullOrWhiteSpace(payload.Key) ? species.Key : payload.Key,
       payload.Name is null ? species.Name : payload.Name.Value,
       payload.Description is null ? species.Description : payload.Description.Value,

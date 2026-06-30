@@ -28,15 +28,15 @@ internal class SpeciesRepository : Repository, ISpeciesRepository
     foreach (PokemonSpecies item in species)
     {
       Database.Species.Add(item);
-      base.RecordChange(new PokemonSpeciesCreated(item));
+      base.RecordChange(new SpeciesCreated(item));
     }
   }
   public void Remove(PokemonSpecies species)
   {
     Database.Species.Remove(species);
-    base.RecordChange(new PokemonSpeciesDeleted(species, _context.UserId));
+    base.RecordChange(new SpeciesDeleted(species, _context.UserId));
   }
-  public void Update(PokemonSpecies species, PokemonSpeciesUpdated record)
+  public void Update(PokemonSpecies species, SpeciesUpdated record)
   {
     Database.Species.Update(species);
     base.RecordChange(record);

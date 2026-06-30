@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using PokeGame.Core.Species.Events;
 using PokeGame.Core.Species.Models;
 
@@ -8,7 +8,7 @@ public interface ISpeciesRepository
 {
   void Add(params PokemonSpecies[] species);
   void Remove(PokemonSpecies species);
-  void Update(PokemonSpecies species, PokemonSpeciesUpdated record);
+  void Update(PokemonSpecies species, SpeciesUpdated record);
 
   Task EnsureUnicityAsync(PokemonSpecies species, CancellationToken cancellationToken = default);
 
