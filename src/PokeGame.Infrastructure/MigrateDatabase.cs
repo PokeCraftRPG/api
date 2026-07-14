@@ -9,9 +9,9 @@ internal class MigrateDatabaseCommandHandler : ICommandHandler<MigrateDatabaseCo
 {
   private readonly PokemonContext _pokemon;
 
-  public MigrateDatabaseCommandHandler(PokemonContext cooxboox)
+  public MigrateDatabaseCommandHandler(PokemonContext pokemon)
   {
-    _pokemon = cooxboox;
+    _pokemon = pokemon;
   }
 
   public async Task<Unit> HandleAsync(MigrateDatabaseCommand command, CancellationToken cancellationToken)

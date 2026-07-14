@@ -18,10 +18,14 @@
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="Krakenar.Contracts" Version="2.1.0" />
     <PackageReference Include="Logitar.CQRS" Version="10.1.0" />
+    <PackageReference Include="Logitar.Security" Version="10.0.2" />
+    <PackageReference Include="NodaTime" Version="3.3.3" />
   </ItemGroup>
 
   <ItemGroup>
+    <Using Include="System.Globalization" />
     <Using Include="System.Text" />
+    <Using Include="System.Text.Json.Serialization" />
   </ItemGroup>
 
 </Project>

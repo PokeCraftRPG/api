@@ -1,4 +1,5 @@
-﻿using Krakenar.Contracts.Users;
+﻿using Krakenar.Contracts;
+using Krakenar.Contracts.Users;
 using PokeGame.Core;
 using PokeGame.Core.Worlds.Models;
 using PokeGame.Extensions;
@@ -18,6 +19,8 @@ internal class HttpApplicationContext : IContext
 
   public Guid UserId => TryGetUserId() ?? throw new InvalidOperationException("An authenticated user is required.");
   public Guid WorldId => TryGetWorldId() ?? throw new InvalidOperationException("A world is required.");
+
+  public IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes() => Context.GetSessionCustomAttributes();
 
   public bool IsWorldOwner()
   {

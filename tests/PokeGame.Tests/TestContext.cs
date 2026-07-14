@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Krakenar.Contracts;
 using Krakenar.Contracts.Users;
 using PokeGame.Core;
 using PokeGame.Core.Worlds;
@@ -20,6 +21,14 @@ public class TestContext : IContext
 
   public World? World { get; set; }
   public Guid WorldId => TryGetWorldId() ?? throw new InvalidOperationException("A world is required.");
+
+  public IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes()
+  {
+    List<CustomAttribute> customAttributes = new(capacity: 2);
+    customAttributes.Add(new CustomAttribute("AdditionalInformation", $@"{{""User-Agent"":""{_faker.Internet.UserAgent()}""}}"));
+    customAttributes.Add(new CustomAttribute("IpAddress", _faker.Internet.Ip()));
+    return customAttributes.AsReadOnly();
+  }
 
   public bool IsWorldOwner() => User is not null && World is not null && World.OwnerId == User.Id;
 
