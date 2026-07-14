@@ -1,9 +1,13 @@
-﻿namespace PokeGame.Core;
+﻿using Krakenar.Contracts;
+
+namespace PokeGame.Core;
 
 public interface IContext
 {
   Guid UserId { get; }
   Guid WorldId { get; }
+
+  IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes();
 
   bool IsWorldOwner();
 

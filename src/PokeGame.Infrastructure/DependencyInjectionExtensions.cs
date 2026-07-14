@@ -1,4 +1,5 @@
 ﻿using Logitar.CQRS;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Identity;
@@ -22,12 +23,21 @@ public static class DependencyInjectionExtensions
     return services
       .AddIdentityGateways()
       .AddRepositories()
+      .AddSingleton(serviceProvider => ClientAppSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
+      .AddSingleton(serviceProvider => TokensSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
       .AddTransient<ICommandHandler<MigrateDatabaseCommand, Unit>, MigrateDatabaseCommandHandler>();
   }
 
   private static IServiceCollection AddIdentityGateways(this IServiceCollection services)
   {
-    return services.AddSingleton<IUserGateway, UserGateway>();
+    return services
+      .AddSingleton<IApiKeyGateway, ApiKeyGateway>()
+      .AddSingleton<IMessageGateway, MessageGateway>()
+      .AddSingleton<IOneTimePasswordGateway, OneTimePasswordGateway>()
+      .AddSingleton<IRealmGateway, RealmGateway>()
+      .AddSingleton<ISessionGateway, SessionGateway>()
+      .AddSingleton<ITokenGateway, TokenGateway>()
+      .AddSingleton<IUserGateway, UserGateway>();
   }
 
   private static IServiceCollection AddRepositories(this IServiceCollection services)
