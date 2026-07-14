@@ -1,0 +1,21 @@
+﻿{
+  "Id": "c93acbcf-c6af-4a24-95c5-2220189dc662",
+  "UniqueSlug": "pokegame",
+  "DisplayName": "PokéGame",
+  "Description": null,
+  "Url": null,
+  "UniqueNameSettings": {
+    "AllowedCharacters": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+"
+  },
+  "PasswordSettings": {
+    "RequiredLength": 8,
+    "RequiredUniqueChars": 8,
+    "RequireNonAlphanumeric": true,
+    "RequireLowercase": true,
+    "RequireUppercase": true,
+    "RequireDigit": true,
+    "HashingStrategy": "PBKDF2"
+  },
+  "RequireUniqueEmail": true,
+  "RequireConfirmedAccount": true
+}
