@@ -26,13 +26,6 @@ public class WorldController : ControllerBase
     return ToActionResult(result);
   }
 
-  [HttpDelete("{id}")]
-  public async Task<ActionResult<WorldModel>> DeleteAsync(Guid id, CancellationToken cancellationToken)
-  {
-    WorldModel? world = await _worldService.DeleteAsync(id, cancellationToken);
-    return world is null ? NotFound() : Ok(world);
-  }
-
   [HttpGet("{id}")]
   public async Task<ActionResult<WorldModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {

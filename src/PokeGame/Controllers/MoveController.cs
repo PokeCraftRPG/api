@@ -28,13 +28,6 @@ public class MoveController : ControllerBase
     return ToActionResult(result);
   }
 
-  [HttpDelete("{id}")]
-  public async Task<ActionResult<MoveModel>> DeleteAsync(Guid id, CancellationToken cancellationToken)
-  {
-    MoveModel? move = await _moveService.DeleteAsync(id, cancellationToken);
-    return move is null ? NotFound() : Ok(move);
-  }
-
   [HttpGet("{id}")]
   public async Task<ActionResult<MoveModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
