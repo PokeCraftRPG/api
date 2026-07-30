@@ -10,7 +10,6 @@ namespace PokeGame.Core.Moves;
 public interface IMoveService
 {
   Task<CreateOrReplaceMoveResult> CreateOrReplaceAsync(CreateOrReplaceMovePayload payload, Guid? id = null, CancellationToken cancellationToken = default);
-  Task<MoveModel?> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
   Task<MoveModel?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
   Task<SearchResults<MoveModel>> SearchAsync(SearchMovesPayload payload, CancellationToken cancellationToken = default);
   Task<MoveModel?> UpdateAsync(Guid id, UpdateMovePayload payload, CancellationToken cancellationToken = default);
@@ -39,12 +38,6 @@ internal class MoveService : IMoveService
   public async Task<CreateOrReplaceMoveResult> CreateOrReplaceAsync(CreateOrReplaceMovePayload payload, Guid? id, CancellationToken cancellationToken)
   {
     CreateOrReplaceMoveCommand command = new(payload, id);
-    return await _commandBus.ExecuteAsync(command, cancellationToken);
-  }
-
-  public async Task<MoveModel?> DeleteAsync(Guid id, CancellationToken cancellationToken)
-  {
-    DeleteMoveCommand command = new(id);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 

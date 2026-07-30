@@ -10,7 +10,6 @@ namespace PokeGame.Core.Worlds;
 public interface IWorldService
 {
   Task<CreateOrReplaceWorldResult> CreateOrReplaceAsync(CreateOrReplaceWorldPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
-  Task<WorldModel?> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
   Task<WorldModel?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
   Task<SearchResults<WorldModel>> SearchAsync(SearchWorldsPayload payload, CancellationToken cancellationToken = default);
   Task<WorldModel?> UpdateAsync(Guid id, UpdateWorldPayload payload, CancellationToken cancellationToken = default);
@@ -39,12 +38,6 @@ internal class WorldService : IWorldService
   public async Task<CreateOrReplaceWorldResult> CreateOrReplaceAsync(CreateOrReplaceWorldPayload payload, Guid? id, CancellationToken cancellationToken)
   {
     CreateOrReplaceWorldCommand command = new(payload, id);
-    return await _commandBus.ExecuteAsync(command, cancellationToken);
-  }
-
-  public async Task<WorldModel?> DeleteAsync(Guid id, CancellationToken cancellationToken)
-  {
-    DeleteWorldCommand command = new(id);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 

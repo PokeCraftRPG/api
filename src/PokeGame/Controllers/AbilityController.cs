@@ -28,13 +28,6 @@ public class AbilityController : ControllerBase
     return ToActionResult(result);
   }
 
-  [HttpDelete("{id}")]
-  public async Task<ActionResult<AbilityModel>> DeleteAsync(Guid id, CancellationToken cancellationToken)
-  {
-    AbilityModel? ability = await _abilityService.DeleteAsync(id, cancellationToken);
-    return ability is null ? NotFound() : Ok(ability);
-  }
-
   [HttpGet("{id}")]
   public async Task<ActionResult<AbilityModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {

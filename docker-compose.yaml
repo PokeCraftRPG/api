@@ -38,6 +38,24 @@ services:
     ports:
       - 8892:8080
 
+  pokecraft_api:
+    build:
+      context: ./
+      dockerfile: /src/PokeGame/Dockerfile
+    image: pokecraft_api
+    container_name: pokecraft_api
+    depends_on:
+      - pokecraft_api_mongo
+      - pokecraft_api_postgres
+      - pokecraft_api_cms
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_Environment: Development
+      MONGOCONNSTR_Krakenar: mongodb://pokecraft:VQf5kLvtyEcb8FR7@pokecraft_api_mongo:27017/
+      POSTGRESQLCONNSTR_Pokemon: User ID=postgres;Password=V4zf8BvAy6cX2bjD;Host=pokecraft_api_postgres;Port=5432;Database=pokecraft;
+    ports:
+      - 8092:8080
+
 volumes:
   mongodata:
   postgres_data:

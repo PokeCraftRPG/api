@@ -28,13 +28,6 @@ public class RegionController : ControllerBase
     return ToActionResult(result);
   }
 
-  [HttpDelete("{id}")]
-  public async Task<ActionResult<RegionModel>> DeleteAsync(Guid id, CancellationToken cancellationToken)
-  {
-    RegionModel? region = await _regionService.DeleteAsync(id, cancellationToken);
-    return region is null ? NotFound() : Ok(region);
-  }
-
   [HttpGet("{id}")]
   public async Task<ActionResult<RegionModel>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
