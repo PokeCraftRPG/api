@@ -13,6 +13,8 @@ public record UpdateProfilePayload
   public string? Locale { get; set; }
   public string? TimeZone { get; set; }
 
+  public UserExperience? DefaultExperience { get; set; }
+
   public void Validate() => new Validator().ValidateAndThrow(this);
 
   private class Validator : AbstractValidator<UpdateProfilePayload>
@@ -26,6 +28,8 @@ public record UpdateProfilePayload
       When(x => !string.IsNullOrWhiteSpace(x.Gender?.Value), () => RuleFor(x => x.Gender!.Value!).Gender());
       When(x => !string.IsNullOrWhiteSpace(x.Locale), () => RuleFor(x => x.Locale!).Locale());
       When(x => !string.IsNullOrWhiteSpace(x.TimeZone), () => RuleFor(x => x.TimeZone!).TimeZone());
+
+      When(x => x.DefaultExperience.HasValue, () => RuleFor(x => x.DefaultExperience!.Value).IsInEnum());
     }
   }
 }

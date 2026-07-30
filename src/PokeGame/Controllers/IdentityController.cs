@@ -1,6 +1,4 @@
 ﻿using Krakenar.Client;
-using Krakenar.Contracts.Sessions;
-using Krakenar.Contracts.Users;
 using Logitar;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -19,43 +17,21 @@ public class IdentityController : ControllerBase
   private readonly ErrorSettings _errorSettings;
   private readonly IIdentityService _identityService;
   private readonly ILogger<IdentityController> _logger;
-  private readonly ISessionGateway _sessionGateway;
   private readonly ITokenGateway _tokenGateway;
-  private readonly IUserGateway _userGateway;
 
-  public IdentityController(
-    ErrorSettings errorSettings,
-    IIdentityService identityService,
-    ILogger<IdentityController> logger,
-    ISessionGateway sessionGateway,
-    ITokenGateway tokenGateway,
-    IUserGateway userGateway)
+  public IdentityController(ErrorSettings errorSettings, IIdentityService identityService, ILogger<IdentityController> logger, ITokenGateway tokenGateway)
   {
     _errorSettings = errorSettings;
     _identityService = identityService;
     _logger = logger;
-    _sessionGateway = sessionGateway;
     _tokenGateway = tokenGateway;
-    _userGateway = userGateway;
   }
 
   [HttpGet("/profile")]
   [Authorize]
   public async Task<ActionResult<ProfileModel>> GetProfileAsync(CancellationToken cancellationToken)
   {
-    User? user = HttpContext.GetUser();
-    if (user is null)
-    {
-      _logger.LogError("{Error}", "An authenticated user is required.");
-      return InvalidCredentials();
-    }
-
-    if (user.Version < 1)
-    {
-      user = await _userGateway.FindAsync(user.Id, cancellationToken) ?? throw new InvalidOperationException($"The user 'Id={user.Id}' was not found.");
-    }
-
-    ProfileModel profile = new(user);
+    ProfileModel profile = await _identityService.ReadProfileAsync(cancellationToken);
     return Ok(profile);
   }
 
@@ -113,22 +89,20 @@ public class IdentityController : ControllerBase
   }
 
   [HttpPost("/sign/out")]
+  [Authorize]
+  [AllowAnonymous]
   public async Task<ActionResult> SignOutAsync(bool everywhere, CancellationToken cancellationToken)
   {
     if (everywhere)
     {
-      User? user = HttpContext.GetUser();
-      if (user is not null)
-      {
-        await _userGateway.SignOutAsync(user, cancellationToken);
-      }
+      await _identityService.SignOutAsync(sessionId: null, cancellationToken);
     }
     else
     {
-      Session? session = HttpContext.GetSession();
-      if (session is not null)
+      Guid? sessionId = HttpContext.GetSessionId();
+      if (sessionId.HasValue)
       {
-        await _sessionGateway.SignOutAsync(session, cancellationToken);
+        await _identityService.SignOutAsync(sessionId, cancellationToken);
       }
     }
     HttpContext.SignOut();
@@ -139,14 +113,7 @@ public class IdentityController : ControllerBase
   [Authorize]
   public async Task<ActionResult<ProfileModel>> UpdateProfileAsync([FromBody] UpdateProfilePayload payload, CancellationToken cancellationToken)
   {
-    User? user = HttpContext.GetUser();
-    if (user is null)
-    {
-      _logger.LogError("{Error}", "An authenticated user is required.");
-      return InvalidCredentials();
-    }
-
-    ProfileModel profile = await _identityService.UpdateProfileAsync(user.Id, payload, cancellationToken);
+    ProfileModel profile = await _identityService.UpdateProfileAsync(payload, cancellationToken);
     return Ok(profile);
   }
 

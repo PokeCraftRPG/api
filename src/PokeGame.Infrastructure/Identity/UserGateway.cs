@@ -44,6 +44,7 @@ internal class UserGateway : IUserGateway
       TimeZone = new Change<string>(profile.TimeZone)
     };
     payload.CustomAttributes.Add(new CustomAttribute(UserHelper.MultiFactorAuthenticationModeKey, profile.MultiFactorAuthenticationMode.ToString()));
+    payload.CustomAttributes.Add(new CustomAttribute(UserHelper.DefaultExperienceKey, profile.DefaultExperience.ToString()));
     payload.CustomAttributes.Add(new CustomAttribute(UserHelper.ProfileCompletedOnKey, DateTime.Now.ToISOString()));
 
     RequestContext context = new RequestContextBuilder(cancellationToken).WithUserId(id).Build();
@@ -79,10 +80,10 @@ internal class UserGateway : IUserGateway
     return await _userClient.ReadAsync(id: null, uniqueName, customIdentifier: null, cancellationToken);
   }
 
-  public async Task<User> SignOutAsync(User user, CancellationToken cancellationToken)
+  public async Task<User> SignOutAsync(Guid userId, CancellationToken cancellationToken)
   {
-    RequestContext context = new RequestContextBuilder(cancellationToken).WithUser(user).Build();
-    return await _userClient.SignOutAsync(user.Id, context) ?? throw new ArgumentException($"The signed-out user 'Id={user.Id}' was not found.", nameof(user));
+    RequestContext context = new RequestContextBuilder(cancellationToken).WithUserId(userId).Build();
+    return await _userClient.SignOutAsync(userId, context) ?? throw new ArgumentException($"The signed-out user 'Id={userId}' was not found.", nameof(userId));
   }
 
   public async Task<User> UpdateEmailAsync(User user, Email email, CancellationToken cancellationToken)
@@ -106,6 +107,10 @@ internal class UserGateway : IUserGateway
       Locale = string.IsNullOrWhiteSpace(profile.Locale) ? null : new Change<string>(profile.Locale),
       TimeZone = string.IsNullOrWhiteSpace(profile.TimeZone) ? null : new Change<string>(profile.TimeZone)
     };
+    if (profile.DefaultExperience.HasValue)
+    {
+      payload.CustomAttributes.Add(new CustomAttribute(UserHelper.DefaultExperienceKey, profile.DefaultExperience.Value.ToString()));
+    }
     RequestContext context = new RequestContextBuilder(cancellationToken).WithUserId(id).Build();
     return await _userClient.UpdateAsync(id, payload, context) ?? throw new ArgumentException($"The updated user 'Id={id}' was not found.", nameof(id));
   }

@@ -1,5 +1,7 @@
-﻿using Krakenar.Contracts.Sessions;
-using Krakenar.Contracts.Users;
+﻿using Krakenar.Contracts.Users;
+using PokeGame.Core.Identity;
+using PokeGame.Core.Identity.Models;
+using SessionDto = Krakenar.Contracts.Sessions.Session;
 
 namespace PokeGame.Models.Identity;
 
@@ -8,6 +10,8 @@ public record CurrentUser
   public string DisplayName { get; set; }
   public string? EmailAddress { get; set; }
   public string? PictureUrl { get; set; }
+
+  public UserExperience DefaultExperience { get; set; }
 
   public CurrentUser() : this(string.Empty)
   {
@@ -20,11 +24,12 @@ public record CurrentUser
     PictureUrl = pictureUrl;
   }
 
-  public CurrentUser(Session session) : this(session.User)
+  public CurrentUser(SessionDto session) : this(session.User)
   {
   }
 
   public CurrentUser(User user) : this(user.FullName ?? user.UniqueName, user.Email?.Address, user.Picture)
   {
+    DefaultExperience = user.GetDefaultExperience();
   }
 }

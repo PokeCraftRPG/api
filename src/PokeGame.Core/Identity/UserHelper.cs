@@ -2,6 +2,7 @@
 
 public static class UserHelper
 {
+  public const string DefaultExperienceKey = "DefaultExperience";
   public const string MultiFactorAuthenticationModeKey = "MultiFactorAuthenticationMode";
   public const string ProfileCompletedOnKey = "ProfileCompletedOn";
 

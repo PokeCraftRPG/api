@@ -4,14 +4,16 @@ using PokeGame.Core.Identity.Models;
 
 namespace PokeGame.Core.Identity.Commands;
 
-internal record UpdateAccountProfileCommand(Guid UserId, UpdateProfilePayload Payload) : ICommand<ProfileModel>;
+internal record UpdateAccountProfileCommand(UpdateProfilePayload Payload) : ICommand<ProfileModel>;
 
 internal class UpdateAccountProfileCommandHandler : ICommandHandler<UpdateAccountProfileCommand, ProfileModel>
 {
+  private readonly IContext _context;
   private readonly IUserGateway _userGateway;
 
-  public UpdateAccountProfileCommandHandler(IUserGateway userGateway)
+  public UpdateAccountProfileCommandHandler(IContext context, IUserGateway userGateway)
   {
+    _context = context;
     _userGateway = userGateway;
   }
 
@@ -20,7 +22,7 @@ internal class UpdateAccountProfileCommandHandler : ICommandHandler<UpdateAccoun
     UpdateProfilePayload payload = command.Payload;
     payload.Validate();
 
-    User user = await _userGateway.UpdateProfileAsync(command.UserId, payload, cancellationToken);
+    User user = await _userGateway.UpdateProfileAsync(_context.UserId, payload, cancellationToken);
     return new ProfileModel(user);
   }
 }

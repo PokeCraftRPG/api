@@ -29,6 +29,7 @@ internal class HttpApplicationContext : IContext
     return user is not null && world is not null && world.Owner.Id == user.Id;
   }
 
+  public Guid? TryGetSessionId() => Context.GetSession()?.Id;
   public Guid? TryGetUserId() => Context.GetUser()?.Id;
   public Guid? TryGetWorldId() => Context.GetWorld()?.Id;
 

@@ -19,6 +19,8 @@ public record CompleteProfilePayload
   public string Locale { get; set; }
   public string TimeZone { get; set; }
 
+  public UserExperience DefaultExperience { get; set; }
+
   public CompleteProfilePayload() : this(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty)
   {
   }
@@ -51,6 +53,8 @@ public record CompleteProfilePayload
       When(x => !string.IsNullOrWhiteSpace(x.Gender), () => RuleFor(x => x.Gender!).Gender());
       RuleFor(x => x.Locale).Locale();
       RuleFor(x => x.TimeZone).TimeZone();
+
+      RuleFor(x => x.DefaultExperience).IsInEnum();
     }
   }
 }

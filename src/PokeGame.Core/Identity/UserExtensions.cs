@@ -6,6 +6,20 @@ namespace PokeGame.Core.Identity;
 
 public static class UserExtensions
 {
+  public static UserExperience GetDefaultExperience(this User user)
+  {
+    CustomAttribute? customAttribute = user.GetCustomAttribute(UserHelper.DefaultExperienceKey);
+    if (customAttribute is null)
+    {
+      return UserExperience.Player;
+    }
+    else if (Enum.TryParse(customAttribute.Value, out UserExperience defaultExperience) && Enum.IsDefined(defaultExperience))
+    {
+      return defaultExperience;
+    }
+    throw new ArgumentException($"The user 'Id={user.Id}' default experience '{customAttribute.Value}' is not valid.", nameof(user));
+  }
+
   public static MultiFactorAuthenticationMode GetMultiFactorAuthenticationMode(this User user)
   {
     CustomAttribute? customAttribute = user.GetCustomAttribute(UserHelper.MultiFactorAuthenticationModeKey);

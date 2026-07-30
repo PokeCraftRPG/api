@@ -1,9 +1,11 @@
 ﻿using FluentValidation;
 using Krakenar.Contracts;
+using Logitar;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using PokeGame.Core;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Permissions;
 using PokeGame.Extensions;
 using PokeGame.Settings;
@@ -65,7 +67,7 @@ internal class ExceptionHandler : IExceptionHandler
     return await _problemDetailsService.TryWriteAsync(context);
   }
 
-  private static bool IsBadRequest(Exception exception) => exception is DomainException || exception is ValidationException;
+  private static bool IsBadRequest(Exception exception) => exception is DomainException || exception is IdentityException || exception is ValidationException;
 
   private static Error ToError(Exception exception)
   {
@@ -76,8 +78,8 @@ internal class ExceptionHandler : IExceptionHandler
     }
     else if (exception is ValidationException validation)
     {
-      error = new("Validation", "Validation failed.");
-      error.Data["Errors"] = validation.Errors;
+      error = new(exception.GetErrorCode(), "Validation failed.");
+      error.Data["Failures"] = validation.Errors;
     }
     else
     {

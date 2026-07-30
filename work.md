@@ -37,12 +37,12 @@ Les domaines métier (Abilities/Moves/Species vs Castes/Talents) sont **volontai
 
 | # | Changement | Pourquoi |
 |---|---|---|
-| 1 | **`IdentityService.Register`** dans `AddPokeGameCore` | SkillCraft l’enregistre ; PokéCraft a le code Identity mais ne le branche pas en DI Core |
-| 2 | **`SessionController`** (`GET /sessions`, `DELETE /sessions/{id}`) | Présent chez SkillCraft ; absent chez PokéCraft |
-| 3 | **Identity sessions** : `SessionModel`, `ListActiveSessions`, `SignOutAccountCommand`, `SessionMapper`, `DeviceType`, `UserExperience` | Fichiers présents côté SkillCraft, absents côté PokéCraft |
-| 4 | **`Queries/ReadAccountProfile`** (si le controller lit le profil via query dédiée) | SkillCraft a une query séparée ; vérifier l’alignement du flux profil |
+| 1 | ~~**`IdentityService.Register`** dans `AddPokeGameCore`~~ | **fait** |
+| 2 | ~~**`SessionController`** (`GET /sessions`, `DELETE /sessions/{id}`)~~ | **fait** |
+| 3 | ~~**Identity sessions** : `SessionModel`, `ListActiveSessions`, `SignOutAccountCommand`, `SessionMapper`, `DeviceType`, `UserExperience`~~ | **fait** |
+| 4 | ~~**`Queries/ReadAccountProfile`**~~ | **fait** — IdentityController délègue au service/query |
 | 5 | **`ResourceNotFoundException`** | SkillCraft l’utilise pour les FK manquantes (Talent requis, Script, etc.) ; utile dès que Species référence des Regions |
-| 6 | **`IdentityException` dans `IsBadRequest`** | SkillCraft mappe Identity → 400 ; PokéCraft ne le fait pas |
+| 6 | ~~**`IdentityException` dans `IsBadRequest`**~~ | **fait** |
 | 7 | **Régional numbers dans les commandes Species** | Schéma/mapper/unicité OK ; handlers ne les appliquent pas encore (`TODO.md`) — feature métier PokéCraft, mais « à finir » |
 
 ---
@@ -53,7 +53,7 @@ Les domaines métier (Abilities/Moves/Species vs Castes/Talents) sont **volontai
 |---|---|---|
 | 9 | **DbContext** : `PokemonContext` → `GameContext` (ou garder `Pokemon`) | SkillCraft : `GameContext` + schéma `Game`. PokéCraft : `PokemonContext` + schéma `Pokemon` — à trancher si on aligne le nom du contexte uniquement |
 | 11 | **Validation slug World** : règle `.Key()` → `.Slug()` (comme SkillCraft) | Même sémantique, nom de règle aligné |
-| 13 | **ExceptionHandler Validation** | SkillCraft construit une Error `"Validation failed."` ; PokéCraft passe l’exception brute — aligner le mapping |
+| 13 | ~~**ExceptionHandler Validation**~~ | **fait** — `GetErrorCode()` + `"Validation failed."` + `Failures` |
 
 **Hors convention (décidé de ne pas aligner) :**
 
@@ -88,7 +88,7 @@ Les domaines métier (Abilities/Moves/Species vs Castes/Talents) sont **volontai
 ## Ordre de travail suggéré
 
 1. ~~**Nettoyage surface API** — retirer DELETE + `Actions.Delete` (#14–16)~~ **fait**
-2. **Identity à parité** — Register DI, sessions, SignOut, ExceptionHandler (#1–4, #6, #13)
+2. ~~**Identity à parité** — Register DI, sessions, SignOut, ExceptionHandler (#1–4, #6, #13)~~ **fait**
 3. **Exceptions partagées** — `ResourceNotFoundException` (#5)
 4. **Convention validation** — `.Slug()` pour les clés World (#11) ; optionnellement renommer `PokemonContext` (#9)
 5. **Finir Species regional numbers** (#7) — feature PokéCraft, pas SkillCraft

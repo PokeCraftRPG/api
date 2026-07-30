@@ -11,6 +11,7 @@ public interface IContext
 
   bool IsWorldOwner();
 
+  Guid? TryGetSessionId();
   Guid? TryGetUserId();
   Guid? TryGetWorldId();
 
