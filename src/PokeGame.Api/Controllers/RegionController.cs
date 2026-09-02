@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Api.Extensions;
+using PokeGame.Api.Filters;
 using PokeGame.Api.Models.Region;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Regions.Models;
@@ -10,7 +11,7 @@ namespace PokeGame.Api.Controllers;
 
 [ApiController]
 [Authorize]
-// TODO(fpion): [RequireWorld]
+[RequireWorld]
 [Route("regions")]
 public class RegionController : ControllerBase
 {
