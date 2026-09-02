@@ -63,6 +63,7 @@ internal class PermissionService : IPermissionService
   {
     switch (action)
     {
+      case Actions.CreateAbility:
       case Actions.CreateRegion:
         return _context.IsWorldOwner;
       case Actions.CreateWorld:
