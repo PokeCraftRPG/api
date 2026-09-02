@@ -42,7 +42,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: /src/PokeCraft.Api/Dockerfile
+      dockerfile: /src/PokeGame.Api/Dockerfile
     image: pokecraft_api
     container_name: pokecraft_api
     depends_on:
