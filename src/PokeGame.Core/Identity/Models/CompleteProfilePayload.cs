@@ -1,6 +1,5 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Krakenar.Contracts.Settings;
-using PokeGame.Core.Validation;
 
 namespace PokeGame.Core.Identity.Models;
 

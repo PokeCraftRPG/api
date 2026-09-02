@@ -1,5 +1,4 @@
-using FluentValidation;
-using PokeGame.Core.Validation;
+﻿using FluentValidation;
 
 namespace PokeGame.Core.Identity.Models;
 
