@@ -1,9 +1,7 @@
-using Krakenar.Contracts.Localization;
-using Krakenar.Client;
+﻿using Krakenar.Contracts.Localization;
 using Krakenar.Contracts.Search;
 using Logitar.CQRS;
 using PokeGame.Seeding.Krakenar.Models;
-using PokeGame.Seeding;
 
 namespace PokeGame.Seeding.Krakenar.Tasks;
 

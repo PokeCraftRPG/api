@@ -1,4 +1,4 @@
-using Krakenar.Client;
+﻿using Krakenar.Client;
 using Logitar.CQRS;
 using PokeGame.Seeding.Krakenar.Tasks;
 

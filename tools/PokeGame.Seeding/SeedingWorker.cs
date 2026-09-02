@@ -1,4 +1,4 @@
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using PokeGame.Seeding.Krakenar.Tasks;
 
 namespace PokeGame.Seeding;

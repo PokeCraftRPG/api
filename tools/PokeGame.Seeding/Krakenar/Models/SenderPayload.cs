@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Senders;
+﻿using Krakenar.Contracts.Senders;
 
 namespace PokeGame.Seeding.Krakenar.Models;
 

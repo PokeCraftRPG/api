@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Dictionaries;
+﻿using Krakenar.Contracts.Dictionaries;
 
 namespace PokeGame.Seeding.Krakenar.Models;
 

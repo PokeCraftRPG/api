@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Localization;
+﻿using Krakenar.Contracts.Localization;
 
 namespace PokeGame.Seeding.Krakenar.Models;
 

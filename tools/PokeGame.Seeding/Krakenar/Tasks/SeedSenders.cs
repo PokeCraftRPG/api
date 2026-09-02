@@ -1,5 +1,4 @@
-using Krakenar.Contracts.Senders;
-using Krakenar.Client;
+﻿using Krakenar.Contracts.Senders;
 using Logitar.CQRS;
 using PokeGame.Seeding.Krakenar.Models;
 

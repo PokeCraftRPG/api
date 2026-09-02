@@ -1,9 +1,7 @@
-using Krakenar.Contracts.Realms;
-using Krakenar.Client;
+﻿using Krakenar.Contracts.Realms;
 using Logitar;
 using Logitar.CQRS;
 using PokeGame.Seeding.Krakenar.Models;
-using PokeGame.Seeding;
 
 namespace PokeGame.Seeding.Krakenar.Tasks;
 

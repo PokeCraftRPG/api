@@ -1,8 +1,6 @@
-using Krakenar.Contracts.Templates;
-using Krakenar.Client;
+﻿using Krakenar.Contracts.Templates;
 using Logitar.CQRS;
 using PokeGame.Seeding.Krakenar.Models;
-using PokeGame.Seeding;
 using MediaTypeNames = System.Net.Mime.MediaTypeNames;
 
 namespace PokeGame.Seeding.Krakenar.Tasks;

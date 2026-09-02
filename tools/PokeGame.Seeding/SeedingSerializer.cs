@@ -1,4 +1,4 @@
-namespace PokeGame.Seeding;
+﻿namespace PokeGame.Seeding;
 
 internal class SeedingSerializer : ISerializer
 {
