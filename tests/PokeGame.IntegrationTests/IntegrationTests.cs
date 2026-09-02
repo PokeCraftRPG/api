@@ -77,7 +77,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Regions"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Worlds"";");
     sql.AppendLine(@"DELETE FROM ""EventSourcing"".""Events"";");
-    sql.AppendLine(@"DELETE FROM ""EventSourcing"".""Stream"";");
+    sql.AppendLine(@"DELETE FROM ""EventSourcing"".""Streams"";");
     await pokemon.Database.ExecuteSqlRawAsync(sql.ToString());
   }
   protected virtual async Task InitializeDatabaseAsync()

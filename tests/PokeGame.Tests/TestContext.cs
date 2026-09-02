@@ -25,7 +25,7 @@ public class TestContext : IContext
 
   public World? World { get; set; }
   public WorldId WorldId => TryGetWorldId() ?? throw new InvalidOperationException("A world is required.");
-  public bool IsWorldOwner { get; }
+  public bool IsWorldOwner => World is not null && User is not null && World.OwnerId == UserId;
 
   public UserId? TryGetUserId() => User is null ? null : new UserId(new Actor(User).ToActorId());
   public WorldId? TryGetWorldId() => World?.Id;

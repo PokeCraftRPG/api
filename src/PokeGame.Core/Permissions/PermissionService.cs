@@ -31,7 +31,11 @@ internal class PermissionService : IPermissionService
     bool isAllowed = false;
 
     Entity? entity = null;
-    if (resource is IEntityProvider provider)
+    if (resource is null)
+    {
+      isAllowed = IsAllowed(action);
+    }
+    else if (resource is IEntityProvider provider)
     {
       entity = provider.GetEntity();
       isAllowed = IsAllowed(action, entity);
@@ -43,12 +47,23 @@ internal class PermissionService : IPermissionService
     }
   }
 
+  private bool IsAllowed(string action)
+  {
+    switch (action)
+    {
+      case Actions.CreateRegion:
+        return _context.IsWorldOwner;
+      default:
+        return false;
+    }
+  }
+
   private bool IsAllowed(string action, Entity entity)
   {
     switch (action)
     {
       case Actions.Update:
-        return entity.WorldId == _context.TryGetWorldId() && _context.IsWorldOwner;
+        return _context.IsWorldOwner && entity.WorldId == _context.TryGetWorldId();
       default:
         return false;
     }
