@@ -57,7 +57,14 @@ public static class DependencyInjectionExtensions
   private static IServiceCollection AddIdentityGateways(this IServiceCollection services)
   {
     return services
+      .AddSingleton(serviceProvider => ClientAppSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
+      .AddSingleton(serviceProvider => TokensSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
+      .AddSingleton<IApiKeyGateway, ApiKeyGateway>()
+      .AddSingleton<IMessageGateway, MessageGateway>()
+      .AddSingleton<IOneTimePasswordGateway, OneTimePasswordGateway>()
       .AddSingleton<IRealmGateway, RealmGateway>()
+      .AddSingleton<ISessionGateway, SessionGateway>()
+      .AddSingleton<ITokenGateway, TokenGateway>()
       .AddSingleton<IUserGateway, UserGateway>();
   }
 
