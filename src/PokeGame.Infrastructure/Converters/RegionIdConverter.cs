@@ -10,8 +10,8 @@ internal class RegionIdConverter : JsonConverter<RegionId>
     return string.IsNullOrWhiteSpace(value) ? new RegionId() : new(value);
   }
 
-  public override void Write(Utf8JsonWriter writer, RegionId id, JsonSerializerOptions options)
+  public override void Write(Utf8JsonWriter writer, RegionId regionId, JsonSerializerOptions options)
   {
-    writer.WriteStringValue(id.Value);
+    writer.WriteStringValue(regionId.Value);
   }
 }

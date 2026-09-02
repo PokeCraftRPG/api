@@ -2,6 +2,7 @@
 using Krakenar.Contracts.Users;
 using Logitar.EventSourcing;
 using Microsoft.Extensions.DependencyInjection;
+using PokeGame.Core.Actors;
 using PokeGame.Core.Identity;
 using PokeGame.Infrastructure.Caching;
 

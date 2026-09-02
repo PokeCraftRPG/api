@@ -49,6 +49,7 @@ public static class DependencyInjectionExtensions
   private static IServiceCollection AddEventHandlers(this IServiceCollection services)
   {
     RegionEvents.Register(services);
+    WorldEvents.Register(services);
     return services;
   }
 

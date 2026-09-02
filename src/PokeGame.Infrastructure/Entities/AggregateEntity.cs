@@ -28,7 +28,7 @@ internal abstract class AggregateEntity
     Update(@event);
   }
 
-  public IReadOnlyCollection<ActorId> GetActorIds()
+  public virtual IReadOnlyCollection<ActorId> GetActorIds()
   {
     HashSet<ActorId> actorIds = new(capacity: 2);
     if (CreatedBy is not null)

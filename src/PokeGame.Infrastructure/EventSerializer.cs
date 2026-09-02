@@ -13,6 +13,7 @@ internal class EventSerializer : Logitar.EventSourcing.Infrastructure.EventSeria
     SerializerOptions.Converters.Add(new NameConverter());
     SerializerOptions.Converters.Add(new RegionIdConverter());
     SerializerOptions.Converters.Add(new SummaryConverter());
+    SerializerOptions.Converters.Add(new UserIdConverter());
     SerializerOptions.Converters.Add(new WorldIdConverter());
   }
 }

@@ -4,7 +4,7 @@ using Logitar.EventSourcing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using PokeGame.Infrastructure.Actors;
+using PokeGame.Core.Actors;
 
 namespace PokeGame.Infrastructure.Caching;
 

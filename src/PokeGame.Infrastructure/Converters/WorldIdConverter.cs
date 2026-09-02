@@ -10,8 +10,8 @@ internal class WorldIdConverter : JsonConverter<WorldId>
     return string.IsNullOrWhiteSpace(value) ? new WorldId() : new(value);
   }
 
-  public override void Write(Utf8JsonWriter writer, WorldId id, JsonSerializerOptions options)
+  public override void Write(Utf8JsonWriter writer, WorldId worldId, JsonSerializerOptions options)
   {
-    writer.WriteStringValue(id.Value);
+    writer.WriteStringValue(worldId.Value);
   }
 }
