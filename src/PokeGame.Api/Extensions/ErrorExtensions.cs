@@ -4,6 +4,7 @@ using Logitar;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using PokeGame.Core;
 using PokeGame.Core.Permissions;
 
 namespace PokeGame.Api.Extensions;
@@ -39,10 +40,10 @@ internal static class ErrorExtensions
     //{
     //  return StatusCodes.Status404NotFound;
     //}
-    // TODO(fpion): if (exception is ConflictException || exception is ImmutablePropertyException)
-    //{
-    //  return StatusCodes.Status409Conflict;
-    //}
+    if (exception is ConflictException /*|| exception is ImmutablePropertyException*/)
+    {
+      return StatusCodes.Status409Conflict;
+    }
     // TODO(fpion): if (exception is MediaTypeNotSupportedException)
     //{
     //  return StatusCodes.Status415UnsupportedMediaType;
