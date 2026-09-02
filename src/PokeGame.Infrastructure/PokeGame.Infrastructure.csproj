@@ -15,14 +15,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="12.1.1" />
-    <PackageReference Include="Krakenar.Contracts" Version="2.2.0" />
-    <PackageReference Include="Logitar.CQRS" Version="10.1.1" />
-    <PackageReference Include="Logitar.EventSourcing" Version="10.1.3" />
+    <PackageReference Include="Krakenar.Client" Version="2.2.0" />
+    <PackageReference Include="Logitar.EventSourcing.EntityFrameworkCore.PostgreSQL" Version="10.1.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="System.Diagnostics.CodeAnalysis" />
+    <ProjectReference Include="..\PokeGame.Core\PokeGame.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="System.Linq.Expressions" />
+    <Using Include="System.Reflection" />
+    <Using Include="System.Text" />
+    <Using Include="System.Text.Json" />
+    <Using Include="System.Text.Json.Serialization" />
   </ItemGroup>
 
 </Project>

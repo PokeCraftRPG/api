@@ -7,5 +7,11 @@
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/PokeGame.IntegrationTests/PokeGame.IntegrationTests.csproj" />
+    <Project Path="tests/PokeGame.Tests/PokeGame.Tests.csproj" />
+  </Folder>
+  <Project Path="src/PokeGame.Api/PokeGame.Api.csproj" Id="a45a826b-4f97-4aac-9b0e-b5d6ef4cb0a1" />
   <Project Path="src/PokeGame.Core/PokeGame.Core.csproj" />
+  <Project Path="src/PokeGame.Infrastructure/PokeGame.Infrastructure.csproj" Id="7e13d459-2d7a-44db-beea-fa67b4ed19d7" />
 </Solution>
