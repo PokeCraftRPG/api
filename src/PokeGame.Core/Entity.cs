@@ -10,6 +10,7 @@ public interface IEntityProvider
 
 public sealed class Entity
 {
+  private const string AllowedCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
   private const char EntitySeparator = ':';
   private const char ScopeSeparator = '|';
 
@@ -22,6 +23,10 @@ public sealed class Entity
     if (string.IsNullOrEmpty(kind))
     {
       throw new ArgumentException("The kind is required.", nameof(kind));
+    }
+    else if (kind.Any(c => !AllowedCharacters.Contains(c)))
+    {
+      throw new ArgumentOutOfRangeException(nameof(kind), "The kind must contain ASCII letters only.");
     }
 
     WorldId = worldId;
