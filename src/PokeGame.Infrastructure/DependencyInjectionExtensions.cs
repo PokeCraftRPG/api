@@ -70,7 +70,9 @@ public static class DependencyInjectionExtensions
 
   private static IServiceCollection AddQueriers(this IServiceCollection services)
   {
-    return services.AddScoped<IRegionQuerier, RegionQuerier>();
+    return services
+      .AddScoped<IRegionQuerier, RegionQuerier>()
+      .AddScoped<IWorldQuerier, WorldQuerier>();
   }
 
   private static IServiceCollection AddRepositories(this IServiceCollection services)

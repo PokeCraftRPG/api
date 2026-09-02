@@ -3,6 +3,7 @@ using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
 using PokeGame.Core.Regions.Models;
+using PokeGame.Core.Worlds.Models;
 using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure;
@@ -29,6 +30,23 @@ internal class Mapper
     RegionDto destination = new()
     {
       Id = source.Id,
+      Key = source.Key,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public WorldDto ToWorld(WorldEntity source)
+  {
+    WorldDto destination = new()
+    {
+      Id = source.Id,
+      Owner = FindActor(source.OwnerId),
       Key = source.Key,
       Name = source.Name,
       Summary = source.Summary,
