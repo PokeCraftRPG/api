@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core;
 
@@ -25,6 +26,7 @@ public static class DependencyInjectionExtensions
     IdentityService.Register(services);
     PermissionService.Register(services);
     RegionService.Register(services);
+    WorldService.Register(services);
     return services;
   }
 }
