@@ -8,6 +8,7 @@ internal class EventSerializer : Logitar.EventSourcing.Infrastructure.EventSeria
   {
     base.RegisterConverters();
 
+    SerializerOptions.Converters.Add(new AbilityIdConverter());
     SerializerOptions.Converters.Add(new ContentConverter());
     SerializerOptions.Converters.Add(new KeyConverter());
     SerializerOptions.Converters.Add(new NameConverter());
