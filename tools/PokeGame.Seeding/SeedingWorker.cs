@@ -33,6 +33,7 @@ internal class SeedingWorker : BackgroundService
 
     try
     {
+      // NOTE(fpion): the order of these tasks matter.
       await ExecuteAsync(new SeedRealmTask(), cancellationToken);
       await ExecuteAsync(new SeedLanguagesTask(), cancellationToken);
       await ExecuteAsync(new SeedDictionariesTask(), cancellationToken);

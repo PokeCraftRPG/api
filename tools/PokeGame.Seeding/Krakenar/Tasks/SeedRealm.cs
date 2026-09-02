@@ -1,4 +1,6 @@
-﻿using Krakenar.Contracts.Realms;
+﻿using Krakenar.Client;
+using Krakenar.Client.Realms;
+using Krakenar.Contracts.Realms;
 using Logitar;
 using Logitar.CQRS;
 using PokeGame.Seeding.Krakenar.Models;
@@ -13,21 +15,26 @@ internal class SeedRealmTask : SeedingTask
 internal class SeedRealmTaskHandler : ICommandHandler<SeedRealmTask, Unit>
 {
   private readonly ILogger<SeedRealmTaskHandler> _logger;
-  private readonly IRealmService _realmService;
+  private readonly IKrakenarSettings _settings;
 
-  public SeedRealmTaskHandler(ILogger<SeedRealmTaskHandler> logger, IRealmService realmService)
+  public SeedRealmTaskHandler(ILogger<SeedRealmTaskHandler> logger, IKrakenarSettings settings)
   {
     _logger = logger;
-    _realmService = realmService;
+    _settings = settings;
   }
 
   public async Task<Unit> HandleAsync(SeedRealmTask _, CancellationToken cancellationToken)
   {
+    using HttpClient httpClient = new();
+    KrakenarSettings settings = JsonSerializer.Deserialize<KrakenarSettings>(JsonSerializer.Serialize(_settings)) ?? new();
+    settings.Realm = null;
+    RealmClient realmClient = new(httpClient, settings);
+
     string json = await File.ReadAllTextAsync("Krakenar/data/realm.json", Encoding.UTF8, cancellationToken);
     RealmPayload? payload = SeedingSerializer.Instance.Deserialize<RealmPayload>(json);
     if (payload is not null)
     {
-      CreateOrReplaceRealmResult result = await _realmService.CreateOrReplaceAsync(payload, payload.Id, version: null, cancellationToken);
+      CreateOrReplaceRealmResult result = await realmClient.CreateOrReplaceAsync(payload, payload.Id, version: null, cancellationToken);
       if (result.Realm is null)
       {
         _logger.LogError("The realm '{Realm}' was not created/replaced.", payload.DisplayName?.CleanTrim() ?? payload.UniqueSlug);
