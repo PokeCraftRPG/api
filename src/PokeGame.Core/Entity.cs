@@ -52,7 +52,7 @@ public sealed class Entity
     string kind = entity[0];
     if (expectedKind is not null && expectedKind != kind)
     {
-      throw new ArgumentException($"The entity kind '{kind}' was not expected ({expectedKind}).", nameof(value));
+      throw new ArgumentOutOfRangeException(nameof(value), $"The entity kind '{kind}' was not expected ({expectedKind}).");
     }
     Guid id = new(Convert.FromBase64String(entity[1].FromUriSafeBase64()));
 

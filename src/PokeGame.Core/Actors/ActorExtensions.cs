@@ -1,13 +1,12 @@
 ﻿using Krakenar.Contracts.Actors;
 using Logitar.EventSourcing;
-using PokeGame.Core;
 
-namespace PokeGame.Infrastructure.Actors;
+namespace PokeGame.Core.Actors;
 
-internal static class ActorExtensions
+public static class ActorExtensions
 {
-  private const string RealmKind = "Realm";
-  private const char Separator = '|';
+  public const string RealmKind = "Realm";
+  public const char Separator = '|';
 
   public static Actor ToActor(this ActorId id)
   {
