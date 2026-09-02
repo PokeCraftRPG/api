@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Caching;
 using PokeGame.Infrastructure.Handlers;
@@ -67,6 +68,8 @@ public static class DependencyInjectionExtensions
 
   private static IServiceCollection AddRepositories(this IServiceCollection services)
   {
-    return services.AddScoped<IRegionRepository, RegionRepository>();
+    return services
+      .AddScoped<IRegionRepository, RegionRepository>()
+      .AddScoped<IWorldRepository, WorldRepository>();
   }
 }
