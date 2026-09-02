@@ -44,6 +44,7 @@ internal class PermissionService : IPermissionService
     }
     else if (resource is World world)
     {
+      entity = world.GetEntity();
       isAllowed = IsAllowed(action, world);
     }
     else if (resource is IEntityProvider provider)
