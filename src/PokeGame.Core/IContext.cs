@@ -12,8 +12,9 @@ public interface IContext
   WorldId WorldId { get; }
   bool IsWorldOwner { get; }
 
+  IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes();
+
+  Guid? TryGetSessionId();
   UserId? TryGetUserId();
   WorldId? TryGetWorldId();
-
-  IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes();
 }

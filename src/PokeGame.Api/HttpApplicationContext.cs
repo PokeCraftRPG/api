@@ -53,6 +53,9 @@ internal class HttpApplicationContext : IContext
     }
   }
 
+  public IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes() => Context.GetSessionCustomAttributes();
+
+  public Guid? TryGetSessionId() => Context.GetSession()?.Id;
   public UserId? TryGetUserId()
   {
     User? user = Context.GetUser();
@@ -63,6 +66,4 @@ internal class HttpApplicationContext : IContext
     WorldDto? world = Context.GetWorld();
     return world is null ? null : new WorldId(world.Id);
   }
-
-  public IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes() => Context.GetSessionCustomAttributes();
 }

@@ -1,6 +1,10 @@
 ﻿using Krakenar.Client;
 using Krakenar.Contracts.Constants;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using PokeGame.Api.Authentication;
 using PokeGame.Api.Extensions;
+using PokeGame.Api.Middlewares;
 using PokeGame.Api.Settings;
 using PokeGame.Core;
 using PokeGame.Infrastructure;
@@ -40,18 +44,18 @@ internal class Startup : StartupBase
     services.AddSingleton(_corsSettings);
     services.AddCors();
 
-    // TODO(fpion): string[] authenticationSchemes = GetAuthenticationSchemes();
-    //AuthenticationBuilder authenticationBuilder = services
-    //  .AddAuthentication()
-    //  .AddScheme<ApiKeyAuthenticationOptions, ApiKeyAuthenticationHandler>(Schemes.ApiKey, options => { })
-    //  .AddScheme<BearerAuthenticationOptions, BearerAuthenticationHandler>(Schemes.Bearer, options => { })
-    //  .AddScheme<SessionAuthenticationOptions, SessionAuthenticationHandler>(Schemes.Session, options => { });
-    //if (_apiSettings.EnableBasicAuthentication)
-    //{
-    //  authenticationBuilder.AddScheme<BasicAuthenticationOptions, BasicAuthenticationHandler>(Schemes.Basic, options => { });
-    //}
+    string[] authenticationSchemes = GetAuthenticationSchemes();
+    AuthenticationBuilder authenticationBuilder = services
+      .AddAuthentication()
+      .AddScheme<ApiKeyAuthenticationOptions, ApiKeyAuthenticationHandler>(Schemes.ApiKey, options => { })
+      .AddScheme<BearerAuthenticationOptions, BearerAuthenticationHandler>(Schemes.Bearer, options => { })
+      .AddScheme<SessionAuthenticationOptions, SessionAuthenticationHandler>(Schemes.Session, options => { });
+    if (_apiSettings.EnableBasicAuthentication)
+    {
+      authenticationBuilder.AddScheme<BasicAuthenticationOptions, BasicAuthenticationHandler>(Schemes.Basic, options => { });
+    }
 
-    // TODO(fpion): services.AddAuthorizationBuilder().SetDefaultPolicy(new AuthorizationPolicyBuilder(authenticationSchemes).RequireAuthenticatedUser().Build());
+    services.AddAuthorizationBuilder().SetDefaultPolicy(new AuthorizationPolicyBuilder(authenticationSchemes).RequireAuthenticatedUser().Build());
 
     CookiesSettings cookiesSettings = CookiesSettings.Initialize(_configuration);
     services.AddSingleton(cookiesSettings);
@@ -110,7 +114,7 @@ internal class Startup : StartupBase
     application.UseCors(_corsSettings);
     application.UseStaticFiles();
     application.UseSession();
-    // TODO(fpion): application.UseMiddleware<RenewSession>();
+    application.UseMiddleware<RenewSession>();
     application.UseAuthentication();
     application.UseAuthorization();
 

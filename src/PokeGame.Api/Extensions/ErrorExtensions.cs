@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using PokeGame.Core;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Permissions;
 
 namespace PokeGame.Api.Extensions;
@@ -28,7 +29,7 @@ internal static class ErrorExtensions
 
   public static int GetStatusCode(this Exception exception)
   {
-    if (exception is ValidationException)
+    if (exception is IdentityException || exception is ValidationException)
     {
       return StatusCodes.Status400BadRequest;
     }
@@ -53,20 +54,20 @@ internal static class ErrorExtensions
 
   public static Error ToError(this Exception exception)
   {
-    Error error;
+    if (exception is IdentityException)
+    {
+      return new InvalidCredentialsError();
+    }
     if (exception is ErrorException errorException)
     {
-      error = errorException.Error;
+      return errorException.Error;
     }
-    else if (exception is ValidationException validation)
+    if (exception is ValidationException validation)
     {
-      error = new(exception.GetErrorCode(), "Validation failed.");
+      Error error = new(exception.GetErrorCode(), "Validation failed.");
       error.Data["Failures"] = validation.Errors;
+      return error;
     }
-    else
-    {
-      error = new(exception);
-    }
-    return error;
+    return new Error(exception);
   }
 }

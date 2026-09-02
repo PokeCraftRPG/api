@@ -2,6 +2,7 @@
 using Logitar.EventSourcing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Regions;
 
@@ -21,6 +22,7 @@ public static class DependencyInjectionExtensions
 
   private static IServiceCollection AddCoreServices(this IServiceCollection services)
   {
+    IdentityService.Register(services);
     PermissionService.Register(services);
     RegionService.Register(services);
     return services;

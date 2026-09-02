@@ -1,0 +1,1 @@
+﻿@(Model.Resource("MultiFactorAuthenticationPhone_Format").Replace("{OneTimePassword}", Model.Variable("OneTimePassword")))

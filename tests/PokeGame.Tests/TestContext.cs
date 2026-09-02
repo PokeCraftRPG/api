@@ -27,9 +27,6 @@ public class TestContext : IContext
   public WorldId WorldId => TryGetWorldId() ?? throw new InvalidOperationException("A world is required.");
   public bool IsWorldOwner => World is not null && User is not null && World.OwnerId == UserId;
 
-  public UserId? TryGetUserId() => User is null ? null : new UserId(new Actor(User).ToActorId());
-  public WorldId? TryGetWorldId() => World?.Id;
-
   public IReadOnlyCollection<CustomAttribute> GetSessionCustomAttributes()
   {
     List<CustomAttribute> customAttributes = new(capacity: 2);
@@ -37,4 +34,8 @@ public class TestContext : IContext
     customAttributes.Add(new CustomAttribute("IpAddress", _faker.Internet.Ip()));
     return customAttributes.AsReadOnly();
   }
+
+  public UserId? TryGetUserId() => User is null ? null : new UserId(new Actor(User).ToActorId());
+  public WorldId? TryGetWorldId() => World?.Id;
+  public Guid? TryGetSessionId() => null;
 }
