@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using PokeGame.Api.Extensions;
 using PokeGame.Core.Identity;
-using PokeGame.Infrastructure.Caching;
 
 namespace PokeGame.Api.Authentication;
 
@@ -14,17 +13,11 @@ internal class BearerAuthenticationOptions : AuthenticationSchemeOptions;
 
 internal class BearerAuthenticationHandler : AuthenticationHandler<BearerAuthenticationOptions>
 {
-  private readonly ICacheService _cacheService;
   private readonly ITokenGateway _tokenGateway;
 
-  public BearerAuthenticationHandler(
-    ICacheService cacheService,
-    ITokenGateway tokenGateway,
-    IOptionsMonitor<BearerAuthenticationOptions> options,
-    ILoggerFactory logger,
-    UrlEncoder encoder) : base(options, logger, encoder)
+  public BearerAuthenticationHandler(ITokenGateway tokenGateway, IOptionsMonitor<BearerAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+    : base(options, logger, encoder)
   {
-    _cacheService = cacheService;
     _tokenGateway = tokenGateway;
   }
 
@@ -51,7 +44,6 @@ internal class BearerAuthenticationHandler : AuthenticationHandler<BearerAuthent
           try
           {
             User user = await _tokenGateway.ValidateAccessAsync(values[1]);
-            user.Realm = _cacheService.Realm;
             Session? session = user.Sessions.Count == 1 ? user.Sessions.Single() : null;
 
             ClaimsPrincipal principal;

@@ -1,11 +1,12 @@
-using PokeGame.Core.Identity;
-using PokeGame.Core.Identity.Models;
 using Krakenar.Contracts.Constants;
 using Krakenar.Contracts.Roles;
 using Krakenar.Contracts.Sessions;
 using Krakenar.Contracts.Tokens;
 using Krakenar.Contracts.Users;
 using Logitar.Security.Claims;
+using PokeGame.Core.Identity;
+using PokeGame.Core.Identity.Models;
+using PokeGame.Infrastructure.Caching;
 using Claim = System.Security.Claims.Claim;
 using ClaimDto = Krakenar.Contracts.Tokens.Claim;
 
@@ -17,11 +18,13 @@ internal class TokenGateway : ITokenGateway
   private const string EmailVerificationType = "verify_email+jwt";
   private const string ProfileCompletionType = "profile+jwt";
 
+  private readonly ICacheService _cacheService;
   private readonly TokensSettings _settings;
   private readonly ITokenService _tokenService;
 
-  public TokenGateway(TokensSettings settings, ITokenService tokenService)
+  public TokenGateway(ICacheService cacheService, TokensSettings settings, ITokenService tokenService)
   {
+    _cacheService = cacheService;
     _settings = settings;
     _tokenService = tokenService;
   }
@@ -125,6 +128,8 @@ internal class TokenGateway : ITokenGateway
       }
       user.Sessions.Add(session);
     }
+
+    user.Realm = _cacheService.Realm;
 
     return user;
   }
