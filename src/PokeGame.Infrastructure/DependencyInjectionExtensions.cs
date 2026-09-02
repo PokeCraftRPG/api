@@ -55,7 +55,9 @@ public static class DependencyInjectionExtensions
 
   private static IServiceCollection AddIdentityGateways(this IServiceCollection services)
   {
-    return services.AddSingleton<IUserGateway, UserGateway>();
+    return services
+      .AddSingleton<IRealmGateway, RealmGateway>()
+      .AddSingleton<IUserGateway, UserGateway>();
   }
 
   private static IServiceCollection AddQueriers(this IServiceCollection services)
