@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using PokeGame.Core;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Permissions;
 
 namespace PokeGame.Api.Extensions;
@@ -28,7 +29,7 @@ internal static class ErrorExtensions
 
   public static int GetStatusCode(this Exception exception)
   {
-    if (exception is ValidationException)
+    if (exception is AuthenticationFlowNotAllowedException || exception is IdentityException || exception is ValidationException)
     {
       return StatusCodes.Status400BadRequest;
     }
