@@ -1,6 +1,6 @@
 ﻿namespace PokeGame.Core.Seo;
 
-internal static class SlugHelper
+public static class SlugHelper
 {
   public static string Format(string value) => value.Trim().ToLowerInvariant();
   public static bool IsValid(string? value) => value is null

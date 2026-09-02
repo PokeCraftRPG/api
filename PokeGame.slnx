@@ -8,4 +8,5 @@
     <File Path="README.md" />
   </Folder>
   <Project Path="src/PokeGame.Core/PokeGame.Core.csproj" />
+  <Project Path="src/PokeGame.Infrastructure/PokeGame.Infrastructure.csproj" Id="7e13d459-2d7a-44db-beea-fa67b4ed19d7" />
 </Solution>
