@@ -1,4 +1,5 @@
-﻿using Krakenar.Contracts;
+﻿using FluentValidation;
+using Krakenar.Contracts;
 using Logitar.CQRS;
 
 namespace PokeGame.Core;
@@ -9,5 +10,6 @@ internal class QueryBus : Logitar.CQRS.QueryBus
   {
   }
 
-  protected override bool ShouldRetry<TResult>(IQuery<TResult> query, Exception exception) => exception is not TooManyResultsException;
+  protected override bool ShouldRetry<TResult>(IQuery<TResult> query, Exception exception)
+    => exception is not TooManyResultsException || exception is not ValidationException;
 }

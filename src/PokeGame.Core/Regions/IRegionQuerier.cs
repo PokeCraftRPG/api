@@ -1,4 +1,5 @@
-﻿using PokeGame.Core.Regions.Models;
+﻿using Krakenar.Contracts.Search;
+using PokeGame.Core.Regions.Models;
 
 namespace PokeGame.Core.Regions;
 
@@ -10,4 +11,6 @@ public interface IRegionQuerier
   Task<RegionDto?> ReadAsync(RegionId id, CancellationToken cancellationToken = default);
   Task<RegionDto?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
   Task<RegionDto?> ReadAsync(string key, CancellationToken cancellationToken = default);
+
+  Task<SearchResults<RegionDto>> SearchAsync(SearchRegionsPayload payload, CancellationToken cancellationToken = default);
 }
