@@ -3,6 +3,7 @@ using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
 using PokeGame.Core.Abilities.Models;
+using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Worlds.Models;
 using PokeGame.Infrastructure.Entities;
@@ -35,6 +36,27 @@ internal class Mapper
       Name = source.Name,
       Summary = source.Summary,
       Content = source.Content
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public MoveDto ToMove(MoveEntity source)
+  {
+    MoveDto destination = new()
+    {
+      Id = source.Id,
+      Type = source.Type,
+      Category = source.Category,
+      Key = source.Key,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content,
+      Accuracy = source.Accuracy,
+      Power = source.Power,
+      PowerPoints = source.PowerPoints
     };
 
     MapAggregate(source, destination);
