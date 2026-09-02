@@ -1,4 +1,4 @@
-﻿using Krakenar.Contracts.Realms;
+using Krakenar.Contracts.Realms;
 
 namespace PokeGame.Core.Identity;
 
