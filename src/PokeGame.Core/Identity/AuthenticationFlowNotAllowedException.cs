@@ -1,10 +1,10 @@
-using PokeGame.Core.Identity.Models;
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Logitar;
+using PokeGame.Core.Identity.Models;
 
 namespace PokeGame.Core.Identity;
 
-public class AuthenticationFlowNotAllowedException : ErrorException
+public class AuthenticationFlowNotAllowedException : IdentityException
 {
   private const string ErrorMessage = "The specified authentication flow is not allowed.";
 

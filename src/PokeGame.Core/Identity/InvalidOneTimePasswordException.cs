@@ -1,3 +1,4 @@
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Passwords;
 using Logitar;
 
@@ -21,6 +22,18 @@ public class InvalidOneTimePasswordException : IdentityException
   {
     get => (string)Data[nameof(ExpectedPurpose)]!;
     private set => Data[nameof(ExpectedPurpose)] = value;
+  }
+
+  public override Error Error
+  {
+    get
+    {
+      Error error = new(this.GetErrorCode(), ErrorMessage);
+      error.Data[nameof(OneTimePasswordId)] = OneTimePasswordId;
+      error.Data[nameof(AttemptedPurpose)] = AttemptedPurpose;
+      error.Data[nameof(ExpectedPurpose)] = ExpectedPurpose;
+      return error;
+    }
   }
 
   public InvalidOneTimePasswordException(OneTimePassword oneTimePassword, string expectedPurpose) : base(BuildMessage(oneTimePassword, expectedPurpose))

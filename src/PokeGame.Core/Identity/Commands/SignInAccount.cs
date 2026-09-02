@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Passwords;
+﻿using Krakenar.Contracts.Passwords;
 using Krakenar.Contracts.Realms;
 using Krakenar.Contracts.Sessions;
 using Krakenar.Contracts.Tokens;
