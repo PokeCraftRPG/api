@@ -19,8 +19,6 @@ public sealed class Region : AggregateRoot, IEntityProvider
   public Summary? Summary { get; private set; }
   public Content? Content { get; private set; }
 
-  // TODO(fpion): Asset
-
   public Region() : base()
   {
   }
