@@ -6,7 +6,6 @@ public enum SpeciesSort
   CatchRate,
   CreatedOn,
   EggCycles,
-  GrowthRate,
   Key,
   Name,
   Number,
