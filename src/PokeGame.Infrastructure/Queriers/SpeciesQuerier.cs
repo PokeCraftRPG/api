@@ -122,6 +122,12 @@ internal class SpeciesQuerier : ISpeciesQuerier
     {
       query = query.Where(x => x.PrimaryEggGroup == payload.EggGroup.Value || x.SecondaryEggGroup == payload.EggGroup.Value);
     }
+    if (!string.IsNullOrWhiteSpace(payload.Region))
+    {
+      bool parsed = Guid.TryParse(payload.Region, out Guid regionId);
+      string key = payload.Region.Trim();
+      query = query.Where(x => x.RegionalNumbers.Any(y => parsed ? y.Region!.Id == regionId : y.Region!.Key == key));
+    }
 
     long total = await query.LongCountAsync(cancellationToken);
 

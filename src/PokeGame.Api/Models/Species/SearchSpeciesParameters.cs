@@ -16,12 +16,16 @@ public record SearchSpeciesParameters : SearchParameters
   [FromQuery(Name = "egg")]
   public EggGroup? EggGroup { get; set; }
 
+  [FromQuery(Name = "region")]
+  public string? Region { get; set; }
+
   public virtual SearchSpeciesPayload ToPayload()
   {
     SearchSpeciesPayload payload = new();
     payload.Category = Category;
     payload.GrowthRate = GrowthRate;
     payload.EggGroup = EggGroup;
+    payload.Region = Region;
     Fill(payload);
     return payload;
   }

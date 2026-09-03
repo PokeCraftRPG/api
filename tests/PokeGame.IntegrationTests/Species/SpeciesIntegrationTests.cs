@@ -218,6 +218,54 @@ public class SpeciesIntegrationTests : IntegrationTests
     Assert.Equal(charmander.EntityId, species.Id);
   }
 
+  [Theory(DisplayName = "It should filter search results by region.")]
+  [InlineData(false)]
+  [InlineData(true)]
+  public async Task Given_RegionFilter_When_Search_Then_Results(bool byId)
+  {
+    Region johto = RegionBuilder.Johto(Faker, Context.World);
+    await _regionRepository.SaveAsync(johto);
+
+    PokemonSpecies charmander = SpeciesBuilder.Charmander(Faker, Context.World);
+    PokemonSpecies squirtle = SpeciesBuilder.Squirtle(Faker, Context.World);
+    await _speciesRepository.SaveAsync([charmander, squirtle]);
+
+    await _speciesService.SetRegionalNumberAsync(_species.EntityId, _region.EntityId, new SetRegionalNumberPayload { Number = 1 });
+    await _speciesService.SetRegionalNumberAsync(charmander.EntityId, johto.EntityId, new SetRegionalNumberPayload { Number = 4 });
+
+    SearchSpeciesPayload payload = new()
+    {
+      Region = byId ? _region.EntityId.ToString() : _region.Key.Value,
+      Limit = 10
+    };
+    payload.Sort.Add(new SortOption<SpeciesSort>(SpeciesSort.Number));
+
+    SearchResults<SpeciesDto> results = await _speciesService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    SpeciesDto species = Assert.Single(results.Items);
+    Assert.Equal(_species.EntityId, species.Id);
+  }
+
+  [Fact(DisplayName = "It should return empty search results when no species matches the region filter.")]
+  public async Task Given_RegionFilter_When_Search_Then_EmptyResults()
+  {
+    Region johto = RegionBuilder.Johto(Faker, Context.World);
+    await _regionRepository.SaveAsync(johto);
+
+    await _speciesService.SetRegionalNumberAsync(_species.EntityId, _region.EntityId, new SetRegionalNumberPayload { Number = 1 });
+
+    SearchSpeciesPayload payload = new()
+    {
+      Region = johto.Key.Value,
+      Limit = 10
+    };
+
+    SearchResults<SpeciesDto> results = await _speciesService.SearchAsync(payload);
+    Assert.Equal(0, results.Total);
+    Assert.Empty(results.Items);
+  }
+
   [Fact(DisplayName = "It should set a regional number.")]
   public async Task Given_Exists_When_SetRegionalNumber_Then_Set()
   {
