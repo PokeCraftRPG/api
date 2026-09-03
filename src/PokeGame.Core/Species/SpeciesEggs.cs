@@ -9,7 +9,7 @@ public interface ISpeciesEggs
   EggGroup? SecondaryGroup { get; }
 }
 
-public record SpeciesEggs
+public record SpeciesEggs : ISpeciesEggs
 {
   public const int MaximumCycles = byte.MaxValue;
 
@@ -24,9 +24,11 @@ public record SpeciesEggs
     SecondaryGroup = secondaryGroup;
     new SpeciesEggsValidator().ValidateAndThrow(this);
   }
+
+  public static SpeciesEggs From(ISpeciesEggs eggs) => new(eggs.Cycles, eggs.PrimaryGroup, eggs.SecondaryGroup);
 }
 
-internal class SpeciesEggsValidator : AbstractValidator<SpeciesEggs>
+internal class SpeciesEggsValidator : AbstractValidator<ISpeciesEggs>
 {
   public SpeciesEggsValidator()
   {
