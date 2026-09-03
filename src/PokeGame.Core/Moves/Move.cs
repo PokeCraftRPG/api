@@ -22,6 +22,10 @@ public sealed class Move : AggregateRoot, IEntityProvider
   public Summary? Summary { get; private set; }
   public Content? Content { get; private set; }
 
+  public Accuracy? Accuracy { get; private set; }
+  public Power? Power { get; private set; }
+  public PowerPoints? PowerPoints { get; private set; }
+
   public Move() : base()
   {
   }
@@ -75,11 +79,12 @@ public sealed class Move : AggregateRoot, IEntityProvider
     _key = @event.Key;
   }
 
-  public void Update(Name? name, Summary? summary, Content? content, ActorId? actorId = null)
+  public void Update(Name? name, Summary? summary, Content? content, Accuracy? accuracy, Power? power, PowerPoints? powerPoints, ActorId? actorId = null)
   {
-    if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content))
+    if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content)
+      || !Equals(Accuracy, accuracy) || !Equals(Power, power) || !Equals(PowerPoints, powerPoints))
     {
-      Raise(new MoveUpdated(name, summary, content), actorId);
+      Raise(new MoveUpdated(name, summary, content, accuracy, power, powerPoints), actorId);
     }
   }
   private void Handle(MoveUpdated @event)
@@ -87,6 +92,10 @@ public sealed class Move : AggregateRoot, IEntityProvider
     Name = @event.Name;
     Summary = @event.Summary;
     Content = @event.Content;
+
+    Accuracy = @event.Accuracy;
+    Power = @event.Power;
+    PowerPoints = @event.PowerPoints;
   }
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";

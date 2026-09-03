@@ -55,10 +55,11 @@ internal class UpdateMoveCommandHandler : ICommandHandler<UpdateMoveCommand, Mov
         payload.Name is null ? move.Name : Name.TryCreate(payload.Name.Value),
         payload.Summary is null ? move.Summary : Summary.TryCreate(payload.Summary.Value),
         payload.Content is null ? move.Content : Content.TryCreate(payload.Content.Value),
+        payload.Accuracy is null ? move.Accuracy : Accuracy.TryCreate(payload.Accuracy.Value),
+        payload.Power is null ? move.Power : Power.TryCreate(payload.Power.Value),
+        payload.PowerPoints is null ? move.PowerPoints : PowerPoints.TryCreate(payload.PowerPoints.Value),
         actorId);
     }
-
-    // TODO(fpion): Accuracy, Power, PowerPoints
 
     await _moveManager.EnsureUnicityAsync(move, cancellationToken);
     await _moveRepository.SaveAsync(move, cancellationToken);

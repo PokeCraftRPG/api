@@ -54,6 +54,10 @@ internal class MoveEntity : AggregateEntity
     Name = @event.Name?.Value;
     Summary = @event.Summary?.Value;
     Content = @event.Content?.Value;
+
+    Accuracy = @event.Accuracy?.Value;
+    Power = @event.Power?.Value;
+    PowerPoints = @event.PowerPoints?.Value;
   }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
