@@ -75,6 +75,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     PokemonContext pokemon = ServiceProvider.GetRequiredService<PokemonContext>();
     StringBuilder sql = new();
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Regions"";");
+    sql.AppendLine(@"DELETE FROM ""Pokemon"".""Moves"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Abilities"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Worlds"";");
     sql.AppendLine(@"DELETE FROM ""EventSourcing"".""Events"";");

@@ -41,7 +41,7 @@ internal static class ErrorExtensions
     //{
     //  return StatusCodes.Status404NotFound;
     //}
-    if (exception is ConflictException /*|| exception is ImmutablePropertyException*/)
+    if (exception is ConflictException || exception is ImmutablePropertyException)
     {
       return StatusCodes.Status409Conflict;
     }
