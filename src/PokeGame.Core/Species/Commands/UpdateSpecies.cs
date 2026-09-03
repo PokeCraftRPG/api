@@ -64,8 +64,6 @@ internal class UpdateSpeciesCommandHandler : ICommandHandler<UpdateSpeciesComman
         actorId);
     }
 
-    // TODO(fpion): regional numbers
-
     await _speciesManager.EnsureUnicityAsync(species, cancellationToken);
     await _speciesRepository.SaveAsync(species, cancellationToken);
 

@@ -1,5 +1,6 @@
 ﻿using Krakenar.Contracts;
 using Logitar;
+using PokeGame.Core.Regions;
 
 namespace PokeGame.Core.Species;
 
@@ -22,6 +23,11 @@ public sealed class NumberAlreadyUsedException : ConflictException
     get => (Guid)Data[nameof(ConflictId)]!;
     private set => Data[nameof(ConflictId)] = value;
   }
+  public Guid? RegionId
+  {
+    get => (Guid?)Data[nameof(RegionId)];
+    private set => Data[nameof(RegionId)] = value;
+  }
   public int AttemptedNumber
   {
     get => (int)Data[nameof(AttemptedNumber)]!;
@@ -41,26 +47,29 @@ public sealed class NumberAlreadyUsedException : ConflictException
       error.Data[nameof(WorldId)] = WorldId;
       error.Data[nameof(SpeciesId)] = SpeciesId;
       error.Data[nameof(ConflictId)] = ConflictId;
+      error.Data[nameof(RegionId)] = RegionId;
       error.Data[nameof(AttemptedNumber)] = AttemptedNumber;
       error.Data[nameof(PropertyName)] = PropertyName;
       return error;
     }
   }
 
-  public NumberAlreadyUsedException(PokemonSpecies species, SpeciesId conflictId)
-    : base(BuildMessage(species, conflictId))
+  public NumberAlreadyUsedException(PokemonSpecies species, SpeciesId conflictId, RegionId? regionId = null)
+    : base(BuildMessage(species, conflictId, regionId))
   {
     WorldId = species.WorldId.EntityId;
     SpeciesId = species.EntityId;
     ConflictId = conflictId.EntityId;
+    RegionId = regionId?.EntityId;
     AttemptedNumber = species.Number.Value;
     PropertyName = nameof(species.Number);
   }
 
-  private static string BuildMessage(PokemonSpecies species, SpeciesId conflictId) => new ErrorMessageBuilder(ErrorMessage)
+  private static string BuildMessage(PokemonSpecies species, SpeciesId conflictId, RegionId? regionId) => new ErrorMessageBuilder(ErrorMessage)
     .AddData(nameof(WorldId), species.WorldId.EntityId)
     .AddData(nameof(SpeciesId), species.EntityId)
     .AddData(nameof(ConflictId), conflictId.EntityId)
+    .AddData(nameof(RegionId), regionId?.EntityId, "<null>")
     .AddData(nameof(AttemptedNumber), species.Number)
     .AddData(nameof(PropertyName), nameof(PokemonSpecies.Number))
     .Build();

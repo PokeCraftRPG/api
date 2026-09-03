@@ -18,5 +18,7 @@ public class SpeciesDto : Aggregate
   public GrowthRate GrowthRate { get; set; }
   public SpeciesEggsDto Eggs { get; set; } = new();
 
+  public List<RegionalNumberDto> RegionalNumbers { get; set; } = [];
+
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
 }

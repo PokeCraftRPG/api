@@ -3,4 +3,4 @@ using PokeGame.Core.Regions;
 
 namespace PokeGame.Core.Species.Events;
 
-public record RegionalNumberChanged(RegionId RegionId, Number Number) : DomainEvent;
+public record SpeciesRegionalNumberChanged(RegionId RegionId, Number Number) : DomainEvent;

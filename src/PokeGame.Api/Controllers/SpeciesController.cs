@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Api.Extensions;

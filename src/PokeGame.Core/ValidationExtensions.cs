@@ -53,6 +53,13 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(LocaleValidator<T>.MaximumLength).SetValidator(new LocaleValidator<T>());
   }
 
+  public static IRuleBuilderOptions<T, IEnumerable<TCollection>> MaximumCount<T, TCollection>(this IRuleBuilder<T, IEnumerable<TCollection>> ruleBuilder, int maximumCount = 10)
+  {
+    return ruleBuilder.Must(collection => collection.Count() <= maximumCount)
+      .WithErrorCode("MaximumCountValidator")
+      .WithMessage($"'{{PropertyName}}' may only include up to {maximumCount} items.");
+  }
+
   public static IRuleBuilderOptions<T, string> Name<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Core.Name.MaximumLength);

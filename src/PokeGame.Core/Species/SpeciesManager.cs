@@ -1,4 +1,5 @@
 ﻿using Logitar.EventSourcing;
+using PokeGame.Core.Regions;
 using PokeGame.Core.Species.Events;
 
 namespace PokeGame.Core.Species;
@@ -21,6 +22,7 @@ internal class SpeciesManager : ISpeciesManager
   {
     Key? key = null;
     Number? number = null;
+    Dictionary<RegionId, Number> regionalNumbers = [];
     foreach (IEvent change in species.Changes)
     {
       if (change is SpeciesCreated created)
@@ -31,6 +33,10 @@ internal class SpeciesManager : ISpeciesManager
       else if (change is SpeciesKeyChanged changed)
       {
         key = changed.Key;
+      }
+      else if (change is SpeciesRegionalNumberChanged regionalNumber)
+      {
+        regionalNumbers[regionalNumber.RegionId] = regionalNumber.Number;
       }
     }
 
@@ -49,6 +55,15 @@ internal class SpeciesManager : ISpeciesManager
       if (speciesId.HasValue && !speciesId.Value.Equals(species.Id))
       {
         throw new NumberAlreadyUsedException(species, speciesId.Value);
+      }
+    }
+
+    foreach (KeyValuePair<RegionId, Number> regionalNumber in regionalNumbers)
+    {
+      SpeciesId? speciesId = await _speciesQuerier.GetIdAsync(regionalNumber.Key, regionalNumber.Value, cancellationToken);
+      if (speciesId.HasValue && !speciesId.Value.Equals(species.Id))
+      {
+        throw new NumberAlreadyUsedException(species, speciesId.Value, regionalNumber.Key);
       }
     }
   }

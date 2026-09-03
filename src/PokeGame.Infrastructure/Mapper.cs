@@ -81,6 +81,20 @@ internal class Mapper
     return destination;
   }
 
+  public RegionalNumberDto ToRegionalNumber(RegionalNumberEntity source)
+  {
+    RegionEntity region = source.Region ?? throw new ArgumentException("The region is required.", nameof(source));
+    return new RegionalNumberDto
+    {
+      Region = ToRegion(region),
+      Number = source.Number,
+      CreatedBy = FindActor(source.CreatedBy),
+      CreatedOn = source.CreatedOn.AsUniversalTime(),
+      UpdatedBy = FindActor(source.UpdatedBy),
+      UpdatedOn = source.UpdatedOn.AsUniversalTime()
+    };
+  }
+
   public SpeciesDto ToSpecies(SpeciesEntity source)
   {
     SpeciesDto destination = new()
@@ -100,6 +114,11 @@ internal class Mapper
     destination.Eggs.Cycles = source.EggCycles;
     destination.Eggs.PrimaryGroup = source.PrimaryEggGroup;
     destination.Eggs.SecondaryGroup = source.SecondaryEggGroup;
+
+    foreach (RegionalNumberEntity regionalNumber in source.RegionalNumbers)
+    {
+      destination.RegionalNumbers.Add(ToRegionalNumber(regionalNumber));
+    }
 
     MapAggregate(source, destination);
 

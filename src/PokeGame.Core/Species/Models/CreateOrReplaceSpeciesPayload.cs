@@ -18,6 +18,8 @@ public record CreateOrReplaceSpeciesPayload
   public GrowthRate GrowthRate { get; set; }
   public SpeciesEggsDto Eggs { get; set; } = new();
 
+  public List<RegionalNumberPayload> RegionalNumbers { get; set; } = [];
+
   public void Validate() => new Validator().ValidateAndThrow(this);
 
   private class Validator : AbstractValidator<CreateOrReplaceSpeciesPayload>
@@ -37,6 +39,12 @@ public record CreateOrReplaceSpeciesPayload
       RuleFor(x => x.CatchRate).CatchRate();
       RuleFor(x => x.GrowthRate).IsInEnum();
       RuleFor(x => x.Eggs).SetValidator(new SpeciesEggsValidator());
+
+      RuleFor(x => x.RegionalNumbers).MaximumCount(20);
+      RuleFor(x => x.RegionalNumbers).Must(regionalNumbers => regionalNumbers.Select(x => x.RegionId).Distinct().Count() == regionalNumbers.Count)
+        .WithErrorCode("UniqueCollectionValidator")
+        .WithMessage("'{PropertyName}' may not include duplicate regions.");
+      RuleForEach(x => x.RegionalNumbers).SetValidator(new RegionalNumberValidator());
     }
   }
 }

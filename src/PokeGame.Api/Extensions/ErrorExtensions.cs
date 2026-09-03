@@ -37,18 +37,14 @@ internal static class ErrorExtensions
     {
       return StatusCodes.Status403Forbidden;
     }
-    // TODO(fpion): if (exception is NotFoundException)
-    //{
-    //  return StatusCodes.Status404NotFound;
-    //}
+    if (exception is NotFoundException)
+    {
+      return StatusCodes.Status404NotFound;
+    }
     if (exception is ConflictException || exception is ImmutablePropertyException)
     {
       return StatusCodes.Status409Conflict;
     }
-    // TODO(fpion): if (exception is MediaTypeNotSupportedException)
-    //{
-    //  return StatusCodes.Status415UnsupportedMediaType;
-    //}
     return StatusCodes.Status500InternalServerError;
   }
 

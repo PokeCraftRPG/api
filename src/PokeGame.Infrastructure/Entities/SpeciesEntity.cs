@@ -1,4 +1,6 @@
-﻿using PokeGame.Core;
+﻿using Logitar;
+using Logitar.EventSourcing;
+using PokeGame.Core;
 using PokeGame.Core.Species;
 using PokeGame.Core.Species.Events;
 
@@ -28,6 +30,8 @@ internal class SpeciesEntity : AggregateEntity
   public EggGroup PrimaryEggGroup { get; private set; }
   public EggGroup? SecondaryEggGroup { get; private set; }
 
+  public List<RegionalNumberEntity> RegionalNumbers { get; private set; } = [];
+
   public SpeciesEntity(int worldId, SpeciesCreated @event) : base(@event)
   {
     WorldId = worldId;
@@ -43,11 +47,40 @@ internal class SpeciesEntity : AggregateEntity
   {
   }
 
+  public override IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    foreach (RegionalNumberEntity regionalNumber in RegionalNumbers)
+    {
+      if (regionalNumber.Region is not null)
+      {
+        actorIds.AddRange(regionalNumber.Region.GetActorIds());
+      }
+    }
+    return actorIds;
+  }
+
   public void SetKey(SpeciesKeyChanged @event)
   {
     Update(@event);
 
     Key = @event.Key.Value;
+  }
+
+  public void SetRegionalNumber(int regionId, SpeciesRegionalNumberChanged @event)
+  {
+    Update(@event);
+
+    RegionalNumberEntity? regionalNumber = RegionalNumbers.SingleOrDefault(x => x.RegionId == regionId);
+    if (regionalNumber is null)
+    {
+      regionalNumber = new RegionalNumberEntity(this, regionId, @event);
+      RegionalNumbers.Add(regionalNumber);
+    }
+    else
+    {
+      regionalNumber.Update(@event);
+    }
   }
 
   public void Update(SpeciesUpdated @event)

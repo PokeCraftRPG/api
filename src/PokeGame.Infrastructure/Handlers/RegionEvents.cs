@@ -7,7 +7,8 @@ using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Handlers;
 
-internal class RegionEvents : IEventHandler<RegionCreated>,
+internal class RegionEvents :
+  IEventHandler<RegionCreated>,
   IEventHandler<RegionDeleted>,
   IEventHandler<RegionKeyChanged>,
   IEventHandler<RegionUpdated>

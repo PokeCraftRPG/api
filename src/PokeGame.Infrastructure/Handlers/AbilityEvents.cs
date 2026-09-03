@@ -1,4 +1,4 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Abilities;
@@ -7,7 +7,8 @@ using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Handlers;
 
-internal class AbilityEvents : IEventHandler<AbilityCreated>,
+internal class AbilityEvents :
+  IEventHandler<AbilityCreated>,
   IEventHandler<AbilityDeleted>,
   IEventHandler<AbilityKeyChanged>,
   IEventHandler<AbilityUpdated>

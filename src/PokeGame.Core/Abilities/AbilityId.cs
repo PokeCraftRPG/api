@@ -3,7 +3,7 @@ using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Abilities;
 
-public readonly struct AbilityId
+public readonly struct AbilityId : IEntityProvider
 {
   public StreamId StreamId { get; }
   public string Value => StreamId.Value;
@@ -34,6 +34,8 @@ public readonly struct AbilityId
   }
 
   public static AbilityId NewId(WorldId worldId) => new(worldId, Guid.NewGuid());
+
+  public Entity GetEntity() => new(Ability.EntityKind, EntityId, WorldId);
 
   public static bool operator ==(AbilityId left, AbilityId right) => left.Equals(right);
   public static bool operator !=(AbilityId left, AbilityId right) => !left.Equals(right);

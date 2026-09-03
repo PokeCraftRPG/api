@@ -3,6 +3,7 @@ using Krakenar.Contracts.Search;
 using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
+using PokeGame.Core.Regions;
 using PokeGame.Core.Search;
 using PokeGame.Core.Seo;
 using PokeGame.Core.Species;
@@ -41,6 +42,14 @@ internal class SpeciesQuerier : ISpeciesQuerier
       .SingleOrDefaultAsync(cancellationToken);
     return streamId is null ? null : new SpeciesId(streamId);
   }
+  public async Task<SpeciesId?> GetIdAsync(RegionId regionId, Number number, CancellationToken cancellationToken)
+  {
+    string? streamId = await _species
+      .Where(x => x.World!.StreamId == _context.WorldId.Value && x.RegionalNumbers.Any(y => y.Region!.StreamId == regionId.Value && y.Number == number.Value))
+      .Select(x => x.StreamId)
+      .SingleOrDefaultAsync(cancellationToken);
+    return streamId is null ? null : new SpeciesId(streamId);
+  }
 
   public async Task<SpeciesDto> ReadAsync(PokemonSpecies species, CancellationToken cancellationToken)
   {
@@ -51,6 +60,7 @@ internal class SpeciesQuerier : ISpeciesQuerier
   {
     SpeciesEntity? species = await _species.AsNoTracking()
       .Where(x => x.StreamId == id.Value)
+      .Include(x => x.RegionalNumbers).ThenInclude(x => x.Region)
       .SingleOrDefaultAsync(cancellationToken);
     return species is null ? null : await MapAsync(species, cancellationToken);
   }
@@ -58,6 +68,7 @@ internal class SpeciesQuerier : ISpeciesQuerier
   {
     SpeciesEntity? species = await _species.AsNoTracking()
       .Where(x => x.World!.StreamId == _context.WorldId.Value && x.Id == id)
+      .Include(x => x.RegionalNumbers).ThenInclude(x => x.Region)
       .SingleOrDefaultAsync(cancellationToken);
     return species is null ? null : await MapAsync(species, cancellationToken);
   }
@@ -65,6 +76,18 @@ internal class SpeciesQuerier : ISpeciesQuerier
   {
     SpeciesEntity? species = await _species.AsNoTracking()
       .Where(x => x.World!.StreamId == _context.WorldId.Value && x.Number == number)
+      .Include(x => x.RegionalNumbers).ThenInclude(x => x.Region)
+      .SingleOrDefaultAsync(cancellationToken);
+    return species is null ? null : await MapAsync(species, cancellationToken);
+  }
+  public async Task<SpeciesDto?> ReadAsync(string region, int number, CancellationToken cancellationToken)
+  {
+    bool parsed = Guid.TryParse(region, out Guid regionId);
+    string key = region.Trim();
+    SpeciesEntity? species = await _species.AsNoTracking()
+      .Where(x => x.World!.StreamId == _context.WorldId.Value
+        && x.RegionalNumbers.Any(y => (parsed ? y.Region!.Id == regionId : y.Region!.Key == key) && y.Number == number))
+      .Include(x => x.RegionalNumbers).ThenInclude(x => x.Region)
       .SingleOrDefaultAsync(cancellationToken);
     return species is null ? null : await MapAsync(species, cancellationToken);
   }
@@ -72,6 +95,7 @@ internal class SpeciesQuerier : ISpeciesQuerier
   {
     SpeciesEntity? species = await _species.AsNoTracking()
       .Where(x => x.World!.StreamId == _context.WorldId.Value && x.Key == SlugHelper.Format(key))
+      .Include(x => x.RegionalNumbers).ThenInclude(x => x.Region)
       .SingleOrDefaultAsync(cancellationToken);
     return species is null ? null : await MapAsync(species, cancellationToken);
   }
@@ -156,6 +180,8 @@ internal class SpeciesQuerier : ISpeciesQuerier
     query = ordered is null ? query.OrderBy(x => x.Number) : ordered.ThenBy(x => x.SpeciesId);
 
     query = query.Skip(payload.Offset).Take(payload.Limit);
+
+    query = query.Include(x => x.RegionalNumbers).ThenInclude(x => x.Region);
 
     SpeciesEntity[] entities = await query.ToArrayAsync(cancellationToken);
     IReadOnlyCollection<SpeciesDto> species = await MapAsync(entities, cancellationToken);

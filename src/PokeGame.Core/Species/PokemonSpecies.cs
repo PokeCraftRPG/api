@@ -123,10 +123,10 @@ public sealed class PokemonSpecies : AggregateRoot, IEntityProvider
   {
     if (HasRegionalNumber(regionId))
     {
-      Raise(new RegionalNumberRemoved(regionId), actorId);
+      Raise(new SpeciesRegionalNumberRemoved(regionId), actorId);
     }
   }
-  private void Handle(RegionalNumberRemoved @event)
+  private void Handle(SpeciesRegionalNumberRemoved @event)
   {
     _regionalNumbers.Remove(@event.RegionId);
   }
@@ -134,15 +134,15 @@ public sealed class PokemonSpecies : AggregateRoot, IEntityProvider
   public void SetRegionalNumber(Region region, Number number, ActorId? actorId = null) => SetRegionalNumber(region.Id, number, actorId);
   public void SetRegionalNumber(RegionId regionId, Number number, ActorId? actorId = null)
   {
-    // TODO(fpion): WorldMismatchException
+    WorldMismatchException.ThrowIfMismatch(this, regionId, nameof(regionId));
 
     Number? existingNumber = TryGetRegionalNumber(regionId);
     if (!Equals(existingNumber, number))
     {
-      Raise(new RegionalNumberChanged(regionId, number), actorId);
+      Raise(new SpeciesRegionalNumberChanged(regionId, number), actorId);
     }
   }
-  private void Handle(RegionalNumberChanged @event)
+  private void Handle(SpeciesRegionalNumberChanged @event)
   {
     _regionalNumbers[@event.RegionId] = @event.Number;
   }

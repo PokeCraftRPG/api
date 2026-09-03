@@ -6,7 +6,8 @@ using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Handlers;
 
-internal class WorldEvents : IEventHandler<WorldCreated>,
+internal class WorldEvents :
+  IEventHandler<WorldCreated>,
   IEventHandler<WorldDeleted>,
   IEventHandler<WorldKeyChanged>,
   IEventHandler<WorldUpdated>
