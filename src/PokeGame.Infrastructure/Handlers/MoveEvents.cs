@@ -1,4 +1,4 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Moves;
@@ -7,7 +7,8 @@ using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Handlers;
 
-internal class MoveEvents : IEventHandler<MoveCreated>,
+internal class MoveEvents :
+  IEventHandler<MoveCreated>,
   IEventHandler<MoveDeleted>,
   IEventHandler<MoveKeyChanged>,
   IEventHandler<MoveUpdated>

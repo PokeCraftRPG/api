@@ -12,6 +12,11 @@ internal static class ValidationExtensions
     return ruleBuilder.InclusiveBetween(1, 100);
   }
 
+  public static IRuleBuilderOptions<T, int> CatchRate<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.InclusiveBetween(1, Species.CatchRate.MaximumValue);
+  }
+
   public static IRuleBuilderOptions<T, string> Content<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty();
@@ -26,6 +31,11 @@ internal static class ValidationExtensions
   public static IRuleBuilderOptions<T, string> EmailAddressValue<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(byte.MaxValue).EmailAddress();
+  }
+
+  public static IRuleBuilderOptions<T, int> Friendship<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.InclusiveBetween(0, byte.MaxValue);
   }
 
   public static IRuleBuilderOptions<T, string> Gender<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -43,9 +53,21 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(LocaleValidator<T>.MaximumLength).SetValidator(new LocaleValidator<T>());
   }
 
+  public static IRuleBuilderOptions<T, IEnumerable<TCollection>> MaximumCount<T, TCollection>(this IRuleBuilder<T, IEnumerable<TCollection>> ruleBuilder, int maximumCount = 10)
+  {
+    return ruleBuilder.Must(collection => collection.Count() <= maximumCount)
+      .WithErrorCode("MaximumCountValidator")
+      .WithMessage($"'{{PropertyName}}' may only include up to {maximumCount} items.");
+  }
+
   public static IRuleBuilderOptions<T, string> Name<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Core.Name.MaximumLength);
+  }
+
+  public static IRuleBuilderOptions<T, int> Number<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.InclusiveBetween(1, 9999);
   }
 
   public static IRuleBuilderOptions<T, string> Password<T>(this IRuleBuilder<T, string> ruleBuilder, IPasswordSettings settings)
