@@ -93,7 +93,7 @@ internal class VarietyEvents :
     if (variety is not null && variety.Version == (@event.Version - 1))
     {
       int? moveId = null;
-      if (variety.Moves.Count < 1)
+      if (!variety.Moves.Any(x => x.Id == @event.VarietyMoveId))
       {
         moveId = await _pokemon.Moves
           .Where(x => x.StreamId == @event.Move.MoveId.Value)
