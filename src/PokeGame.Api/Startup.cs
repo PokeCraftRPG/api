@@ -128,6 +128,7 @@ internal class Startup : StartupBase
   private static void UseStaticFiles(WebApplication application)
   {
     StorageSettings storageSettings = application.Services.GetRequiredService<StorageSettings>();
+    Directory.CreateDirectory(storageSettings.RootPath);
     application.UseStaticFiles(new StaticFileOptions
     {
       FileProvider = new PhysicalFileProvider(storageSettings.RootPath),
