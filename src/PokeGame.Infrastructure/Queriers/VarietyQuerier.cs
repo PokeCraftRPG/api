@@ -78,9 +78,10 @@ internal class VarietyQuerier : IVarietyQuerier
 
     if (!string.IsNullOrWhiteSpace(payload.Species))
     {
-      bool parsed = Guid.TryParse(payload.Species, out Guid speciesId);
+      bool idParsed = Guid.TryParse(payload.Species, out Guid speciesId);
+      bool numberParsed = int.TryParse(payload.Species, out int number);
       string key = payload.Species.Trim();
-      query = query.Where(x => parsed ? x.Species!.Id == speciesId : x.Species!.Key == key);
+      query = query.Where(x => (idParsed && x.Species!.Id == speciesId) || (numberParsed && x.Species!.Number == number) || x.Species!.Key == key);
     }
     if (payload.IsDefault.HasValue)
     {
