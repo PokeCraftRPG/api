@@ -1,4 +1,4 @@
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Assets.Commands;
@@ -11,7 +11,7 @@ namespace PokeGame.Core.Assets;
 public interface IAssetService
 {
   Task<AssetDto?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
-  Task<AssetDto?> UploadAsync(Entity entity, UploadAssetPayload payload, CancellationToken cancellationToken = default);
+  Task<AssetDto?> UploadAsync(UploadAssetPayload payload, CancellationToken cancellationToken = default);
 }
 
 internal class AssetService : IAssetService
@@ -39,9 +39,9 @@ internal class AssetService : IAssetService
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 
-  public async Task<AssetDto?> UploadAsync(Entity entity, UploadAssetPayload payload, CancellationToken cancellationToken = default)
+  public async Task<AssetDto?> UploadAsync(UploadAssetPayload payload, CancellationToken cancellationToken = default)
   {
-    UploadAssetCommand command = new(entity, payload);
+    UploadAssetCommand command = new(payload);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 }

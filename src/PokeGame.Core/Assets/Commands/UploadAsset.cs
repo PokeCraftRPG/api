@@ -5,7 +5,7 @@ using PokeGame.Core.Permissions;
 
 namespace PokeGame.Core.Assets.Commands;
 
-internal record UploadAssetCommand(Entity Entity, UploadAssetPayload Payload) : ICommand<AssetDto?>;
+internal record UploadAssetCommand(UploadAssetPayload Payload) : ICommand<AssetDto?>;
 
 internal class UploadAssetCommandHandler : ICommandHandler<UploadAssetCommand, AssetDto?>
 {

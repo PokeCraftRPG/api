@@ -10,7 +10,7 @@ services:
     ports:
       - 27042:27017
     volumes:
-      - mongodata:/data/db
+      - mongo_data:/data/db
 
   postgres:
     image: postgres
@@ -55,7 +55,10 @@ services:
       POSTGRESQLCONNSTR_Pokemon: User ID=postgres;Password=YSDPert8wW5mgkf4;Host=postgres;Port=5432;Database=api;
     ports:
       - 8092:8080
+    volumes:
+      - api_data:/data
 
 volumes:
-  mongodata:
+  api_data:
+  mongo_data:
   postgres_data:
