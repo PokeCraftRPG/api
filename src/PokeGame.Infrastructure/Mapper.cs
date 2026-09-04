@@ -3,6 +3,7 @@ using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
 using PokeGame.Core.Abilities.Models;
+using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
@@ -27,6 +28,26 @@ internal class Mapper
     {
       _actors[actor.Key] = actor.Value;
     }
+  }
+
+  public AssetDto ToAsset(AssetEntity source)
+  {
+    AssetDto destination = new()
+    {
+      Id = source.Id,
+      Kind = source.Kind,
+      File = new FileDto(source.FileName, source.FileExtension, source.FileMimeType, source.FileSize),
+      Duration = source.Duration
+    };
+
+    if (source.Width.HasValue && source.Height.HasValue)
+    {
+      destination.Dimensions = new DimensionsDto(source.Width.Value, source.Height.Value);
+    }
+
+    MapAggregate(source, destination);
+
+    return destination;
   }
 
   public AbilityDto ToAbility(AbilityEntity source)

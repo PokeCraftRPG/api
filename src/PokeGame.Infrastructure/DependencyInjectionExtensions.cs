@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Abilities;
+using PokeGame.Core.Assets;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Regions;
@@ -14,6 +15,7 @@ using PokeGame.Core.Species;
 using PokeGame.Core.Varieties;
 using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure.Actors;
+using PokeGame.Infrastructure.Assets;
 using PokeGame.Infrastructure.Caching;
 using PokeGame.Infrastructure.Handlers;
 using PokeGame.Infrastructure.Identity;
@@ -46,6 +48,8 @@ public static class DependencyInjectionExtensions
       .AddLogitarEventSourcingWithEntityFrameworkCorePostgreSQL(connectionString)
       .AddQueriers()
       .AddRepositories()
+      .AddSingleton(serviceProvider => StorageSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
+      .AddSingleton<IAssetManager, AssetManager>()
       .AddSingleton<IEventSerializer, EventSerializer>()
       .AddScoped<ICommandHandler<MigrateDatabaseCommand, Unit>, MigrateDatabaseCommandHandler>()
       .AddScoped<IEventBus, EventBus>();
@@ -54,6 +58,7 @@ public static class DependencyInjectionExtensions
   private static IServiceCollection AddEventHandlers(this IServiceCollection services)
   {
     AbilityEvents.Register(services);
+    AssetEvents.Register(services);
     MoveEvents.Register(services);
     RegionEvents.Register(services);
     SpeciesEvents.Register(services);
@@ -80,6 +85,7 @@ public static class DependencyInjectionExtensions
   {
     return services
       .AddScoped<IAbilityQuerier, AbilityQuerier>()
+      .AddScoped<IAssetQuerier, AssetQuerier>()
       .AddScoped<IMoveQuerier, MoveQuerier>()
       .AddScoped<IRegionQuerier, RegionQuerier>()
       .AddScoped<ISpeciesQuerier, SpeciesQuerier>()
@@ -91,6 +97,7 @@ public static class DependencyInjectionExtensions
   {
     return services
       .AddScoped<IAbilityRepository, AbilityRepository>()
+      .AddScoped<IAssetRepository, AssetRepository>()
       .AddScoped<IMoveRepository, MoveRepository>()
       .AddScoped<IRegionRepository, RegionRepository>()
       .AddScoped<ISpeciesRepository, SpeciesRepository>()
