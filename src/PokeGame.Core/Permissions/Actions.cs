@@ -9,4 +9,5 @@ internal static class Actions
   public const string CreateVariety = "CreateVariety";
   public const string CreateWorld = "CreateWorld";
   public const string Update = "Update";
+  public const string Upload = "Upload";
 }
