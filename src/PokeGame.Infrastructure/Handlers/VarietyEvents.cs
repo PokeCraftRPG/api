@@ -115,9 +115,7 @@ internal class VarietyEvents :
       .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (variety is not null && variety.Version == (@event.Version - 1))
     {
-      variety.Update(@event);
-
-      _pokemon.VarietyMoves.RemoveRange(variety.Moves);
+      variety.RemoveMove(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

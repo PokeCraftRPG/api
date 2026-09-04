@@ -61,6 +61,13 @@ internal class SpeciesEntity : AggregateEntity
     return actorIds;
   }
 
+  public void RemoveRegionalNumbers(SpeciesRegionalNumberRemoved @event)
+  {
+    Update(@event);
+
+    RegionalNumbers.RemoveAll(x => x.Region?.StreamId == @event.RegionId.Value);
+  }
+
   public void SetKey(SpeciesKeyChanged @event)
   {
     Update(@event);

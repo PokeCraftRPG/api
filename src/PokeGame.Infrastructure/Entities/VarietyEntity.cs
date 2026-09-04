@@ -57,6 +57,13 @@ internal class VarietyEntity : AggregateEntity
     return actorIds;
   }
 
+  public void RemoveMove(VarietyMoveRemoved @event)
+  {
+    Update(@event);
+
+    Moves.RemoveAll(x => x.Id == @event.VarietyMoveId);
+  }
+
   public void SetDefault(VarietyDefaultChanged @event)
   {
     Update(@event);
