@@ -49,7 +49,7 @@ internal class HttpApplicationContext : IContext
     {
       User? user = Context.GetUser();
       WorldDto? world = Context.GetWorld();
-      return user is not null && world is not null && world.Owner.Equals(user);
+      return user is not null && world is not null && world.Owner.Equals(new Actor(user));
     }
   }
 

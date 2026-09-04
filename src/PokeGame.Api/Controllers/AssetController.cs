@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Api.Extensions;
+using PokeGame.Api.Filters;
 using PokeGame.Core.Assets;
 using PokeGame.Core.Assets.Models;
 
@@ -8,6 +9,7 @@ namespace PokeGame.Api.Controllers;
 
 [ApiController]
 [Authorize]
+[RequireWorld]
 [Route("assets")]
 public class AssetController : ControllerBase
 {
