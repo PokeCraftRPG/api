@@ -107,6 +107,7 @@ public sealed class Variety : AggregateRoot, IEntityProvider
 
     CanChangeForm = @event.CanChangeForm;
     GenderRatio = @event.GenderRatio;
+    Genus = @event.Genus;
   }
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";

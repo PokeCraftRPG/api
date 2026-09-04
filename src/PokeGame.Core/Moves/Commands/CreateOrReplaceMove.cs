@@ -38,7 +38,7 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
     Move? move = null;
     if (command.Id.HasValue)
     {
-      moveId = new(_context.WorldId, command.Id.Value);
+      moveId = new MoveId(_context.WorldId, command.Id.Value);
       move = await _moveRepository.LoadAsync(moveId.Value, cancellationToken);
     }
 

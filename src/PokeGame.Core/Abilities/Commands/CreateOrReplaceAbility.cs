@@ -38,7 +38,7 @@ internal class CreateOrReplaceAbilityCommandHandler : ICommandHandler<CreateOrRe
     Ability? ability = null;
     if (command.Id.HasValue)
     {
-      abilityId = new(_context.WorldId, command.Id.Value);
+      abilityId = new AbilityId(_context.WorldId, command.Id.Value);
       ability = await _abilityRepository.LoadAsync(abilityId.Value, cancellationToken);
     }
 

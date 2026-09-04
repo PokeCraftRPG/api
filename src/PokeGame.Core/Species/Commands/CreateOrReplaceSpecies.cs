@@ -43,7 +43,7 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
     PokemonSpecies? species = null;
     if (command.Id.HasValue)
     {
-      speciesId = new(_context.WorldId, command.Id.Value);
+      speciesId = new SpeciesId(_context.WorldId, command.Id.Value);
       species = await _speciesRepository.LoadAsync(speciesId.Value, cancellationToken);
     }
 

@@ -38,7 +38,7 @@ internal class CreateOrReplaceRegionCommandHandler : ICommandHandler<CreateOrRep
     Region? region = null;
     if (command.Id.HasValue)
     {
-      regionId = new(_context.WorldId, command.Id.Value);
+      regionId = new RegionId(_context.WorldId, command.Id.Value);
       region = await _regionRepository.LoadAsync(regionId.Value, cancellationToken);
     }
 
