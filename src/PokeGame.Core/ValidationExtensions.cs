@@ -43,14 +43,14 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(10).SetValidator(new GenderValidator<T>());
   }
 
-  public static IRuleBuilderOptions<T, string> Genus<T>(this IRuleBuilder<T, string> ruleBuilder)
-  {
-    return ruleBuilder.NotEmpty().MaximumLength(Varieties.Genus.MaximumLength);
-  }
-
   public static IRuleBuilderOptions<T, int> GenderRatio<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
     return ruleBuilder.InclusiveBetween(0, 8);
+  }
+
+  public static IRuleBuilderOptions<T, string> Genus<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty().MaximumLength(Varieties.Genus.MaximumLength);
   }
 
   public static IRuleBuilderOptions<T, string> Key<T>(this IRuleBuilder<T, string> ruleBuilder)
