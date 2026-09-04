@@ -12,6 +12,8 @@ public sealed class Level
     new Validator().ValidateAndThrow(this);
   }
 
+  public static Level? TryCreate(int? value) => value.HasValue ? new(value.Value) : null;
+
   public override bool Equals(object? obj) => obj is Level level && level.Value == Value;
   public override int GetHashCode() => Value.GetHashCode();
   public override string ToString() => Value.ToString();
