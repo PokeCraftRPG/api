@@ -39,12 +39,12 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
     CreateOrReplaceSpeciesPayload payload = command.Payload;
     payload.Validate();
 
-    SpeciesId? speciesId = null;
+    SpeciesId speciesId = SpeciesId.NewId(_context.WorldId);
     PokemonSpecies? species = null;
     if (command.Id.HasValue)
     {
-      speciesId = new(_context.WorldId, command.Id.Value);
-      species = await _speciesRepository.LoadAsync(speciesId.Value, cancellationToken);
+      speciesId = new SpeciesId(speciesId.WorldId, command.Id.Value);
+      species = await _speciesRepository.LoadAsync(speciesId, cancellationToken);
     }
 
     ActorId? actorId = _context.ActorId;
@@ -56,7 +56,7 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
     {
       await _permissionService.CheckAsync(Actions.CreateSpecies, cancellationToken);
 
-      species = new PokemonSpecies(speciesId ?? SpeciesId.NewId(_context.WorldId), number, payload.Category, key, actorId);
+      species = new PokemonSpecies(speciesId, number, payload.Category, key, actorId);
       created = true;
     }
     else

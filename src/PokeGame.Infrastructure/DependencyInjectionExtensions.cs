@@ -11,6 +11,7 @@ using PokeGame.Core.Identity;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
+using PokeGame.Core.Varieties;
 using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Caching;
@@ -56,6 +57,7 @@ public static class DependencyInjectionExtensions
     MoveEvents.Register(services);
     RegionEvents.Register(services);
     SpeciesEvents.Register(services);
+    VarietyEvents.Register(services);
     WorldEvents.Register(services);
     return services;
   }
@@ -81,6 +83,7 @@ public static class DependencyInjectionExtensions
       .AddScoped<IMoveQuerier, MoveQuerier>()
       .AddScoped<IRegionQuerier, RegionQuerier>()
       .AddScoped<ISpeciesQuerier, SpeciesQuerier>()
+      .AddScoped<IVarietyQuerier, VarietyQuerier>()
       .AddScoped<IWorldQuerier, WorldQuerier>();
   }
 
@@ -91,6 +94,7 @@ public static class DependencyInjectionExtensions
       .AddScoped<IMoveRepository, MoveRepository>()
       .AddScoped<IRegionRepository, RegionRepository>()
       .AddScoped<ISpeciesRepository, SpeciesRepository>()
+      .AddScoped<IVarietyRepository, VarietyRepository>()
       .AddScoped<IWorldRepository, WorldRepository>();
   }
 }

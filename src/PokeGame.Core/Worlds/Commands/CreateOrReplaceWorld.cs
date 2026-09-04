@@ -34,12 +34,12 @@ internal class CreateOrReplaceWorldCommandHandler : ICommandHandler<CreateOrRepl
     CreateOrReplaceWorldPayload payload = command.Payload;
     payload.Validate();
 
-    WorldId? worldId = null;
+    WorldId worldId = WorldId.NewId();
     World? world = null;
     if (command.Id.HasValue)
     {
       worldId = new WorldId(command.Id.Value);
-      world = await _worldRepository.LoadAsync(worldId.Value, cancellationToken);
+      world = await _worldRepository.LoadAsync(worldId, cancellationToken);
     }
 
     ActorId? actorId = _context.ActorId;

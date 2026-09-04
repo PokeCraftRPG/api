@@ -17,6 +17,7 @@ public class PokemonContext : DbContext
   internal DbSet<RegionalNumberEntity> RegionalNumbers => Set<RegionalNumberEntity>();
   internal DbSet<RegionEntity> Regions => Set<RegionEntity>();
   internal DbSet<SpeciesEntity> Species => Set<SpeciesEntity>();
+  internal DbSet<VarietyEntity> Varieties => Set<VarietyEntity>();
   internal DbSet<WorldEntity> Worlds => Set<WorldEntity>();
 
   internal async Task<int> FindWorldIdAsync(WorldId id, CancellationToken cancellationToken = default)
