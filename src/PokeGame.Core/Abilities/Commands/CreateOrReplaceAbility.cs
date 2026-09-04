@@ -34,12 +34,12 @@ internal class CreateOrReplaceAbilityCommandHandler : ICommandHandler<CreateOrRe
     CreateOrReplaceAbilityPayload payload = command.Payload;
     payload.Validate();
 
-    AbilityId? abilityId = null;
+    AbilityId abilityId = AbilityId.NewId(_context.WorldId);
     Ability? ability = null;
     if (command.Id.HasValue)
     {
-      abilityId = new AbilityId(_context.WorldId, command.Id.Value);
-      ability = await _abilityRepository.LoadAsync(abilityId.Value, cancellationToken);
+      abilityId = new AbilityId(abilityId.WorldId, command.Id.Value);
+      ability = await _abilityRepository.LoadAsync(abilityId, cancellationToken);
     }
 
     ActorId? actorId = _context.ActorId;
@@ -50,7 +50,7 @@ internal class CreateOrReplaceAbilityCommandHandler : ICommandHandler<CreateOrRe
     {
       await _permissionService.CheckAsync(Actions.CreateAbility, cancellationToken);
 
-      ability = new Ability(abilityId ?? AbilityId.NewId(_context.WorldId), key, actorId);
+      ability = new Ability(abilityId, key, actorId);
       created = true;
     }
     else

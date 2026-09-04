@@ -38,27 +38,27 @@ internal class CreateOrReplaceVarietyCommandHandler : ICommandHandler<CreateOrRe
     CreateOrReplaceVarietyPayload payload = command.Payload;
     payload.Validate();
 
-    VarietyId? varietyId = null;
+    VarietyId varietyId = VarietyId.NewId(_context.WorldId);
     Variety? variety = null;
     if (command.Id.HasValue)
     {
-      varietyId = new VarietyId(_context.WorldId, command.Id.Value);
-      variety = await _varietyRepository.LoadAsync(varietyId.Value, cancellationToken);
+      varietyId = new VarietyId(varietyId.WorldId, command.Id.Value);
+      variety = await _varietyRepository.LoadAsync(varietyId, cancellationToken);
     }
 
     ActorId? actorId = _context.ActorId;
     Key key = new(payload.Key);
-    SpeciesId speciesId = new(_context.WorldId, payload.SpeciesId);
 
     bool created = false;
     if (variety is null)
     {
       await _permissionService.CheckAsync(Actions.CreateVariety, cancellationToken);
 
+      SpeciesId speciesId = new(varietyId.WorldId, payload.SpeciesId);
       PokemonSpecies species = await _speciesRepository.LoadAsync(speciesId, cancellationToken)
         ?? throw new EntityNotFoundException(speciesId, nameof(payload.SpeciesId));
 
-      variety = new Variety(varietyId ?? VarietyId.NewId(_context.WorldId), species.Id, key, actorId);
+      variety = new Variety(varietyId, species.Id, key, actorId);
       created = true;
     }
     else

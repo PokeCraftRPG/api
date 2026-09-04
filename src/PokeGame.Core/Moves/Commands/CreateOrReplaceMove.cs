@@ -34,12 +34,12 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
     CreateOrReplaceMovePayload payload = command.Payload;
     payload.Validate();
 
-    MoveId? moveId = null;
+    MoveId moveId = MoveId.NewId(_context.WorldId);
     Move? move = null;
     if (command.Id.HasValue)
     {
-      moveId = new MoveId(_context.WorldId, command.Id.Value);
-      move = await _moveRepository.LoadAsync(moveId.Value, cancellationToken);
+      moveId = new MoveId(moveId.WorldId, command.Id.Value);
+      move = await _moveRepository.LoadAsync(moveId, cancellationToken);
     }
 
     ActorId? actorId = _context.ActorId;
@@ -50,7 +50,7 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
     {
       await _permissionService.CheckAsync(Actions.CreateMove, cancellationToken);
 
-      move = new Move(moveId ?? MoveId.NewId(_context.WorldId), payload.Type, payload.Category, key, actorId);
+      move = new Move(moveId, payload.Type, payload.Category, key, actorId);
       created = true;
     }
     else

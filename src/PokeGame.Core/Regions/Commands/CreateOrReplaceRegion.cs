@@ -34,12 +34,12 @@ internal class CreateOrReplaceRegionCommandHandler : ICommandHandler<CreateOrRep
     CreateOrReplaceRegionPayload payload = command.Payload;
     payload.Validate();
 
-    RegionId? regionId = null;
+    RegionId regionId = RegionId.NewId(_context.WorldId);
     Region? region = null;
     if (command.Id.HasValue)
     {
-      regionId = new RegionId(_context.WorldId, command.Id.Value);
-      region = await _regionRepository.LoadAsync(regionId.Value, cancellationToken);
+      regionId = new RegionId(regionId.WorldId, command.Id.Value);
+      region = await _regionRepository.LoadAsync(regionId, cancellationToken);
     }
 
     ActorId? actorId = _context.ActorId;
@@ -50,7 +50,7 @@ internal class CreateOrReplaceRegionCommandHandler : ICommandHandler<CreateOrRep
     {
       await _permissionService.CheckAsync(Actions.CreateRegion, cancellationToken);
 
-      region = new Region(regionId ?? RegionId.NewId(_context.WorldId), key, actorId);
+      region = new Region(regionId, key, actorId);
       created = true;
     }
     else
