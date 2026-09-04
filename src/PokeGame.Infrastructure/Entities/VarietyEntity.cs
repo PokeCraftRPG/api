@@ -27,6 +27,8 @@ internal class VarietyEntity : AggregateEntity
   public int? GenderRatio { get; private set; }
   public string? Genus { get; private set; }
 
+  public List<VarietyMoveEntity> Moves { get; private set; } = [];
+
   public VarietyEntity(int worldId, int speciesId, VarietyCreated @event) : base(@event)
   {
     WorldId = worldId;
@@ -48,7 +50,18 @@ internal class VarietyEntity : AggregateEntity
     {
       actorIds.AddRange(Species.GetActorIds());
     }
+    foreach (VarietyMoveEntity move in Moves)
+    {
+      actorIds.AddRange(move.GetActorIds());
+    }
     return actorIds;
+  }
+
+  public void RemoveMove(VarietyMoveRemoved @event)
+  {
+    Update(@event);
+
+    Moves.RemoveAll(x => x.Id == @event.VarietyMoveId);
   }
 
   public void SetDefault(VarietyDefaultChanged @event)
@@ -63,6 +76,26 @@ internal class VarietyEntity : AggregateEntity
     Update(@event);
 
     Key = @event.Key.Value;
+  }
+
+  public void SetMove(int? moveId, VarietyMoveChanged @event)
+  {
+    Update(@event);
+
+    VarietyMoveEntity? move = Moves.SingleOrDefault(x => x.Id == @event.VarietyMoveId);
+    if (move is null)
+    {
+      if (!moveId.HasValue)
+      {
+        throw new ArgumentNullException(nameof(moveId));
+      }
+      move = new VarietyMoveEntity(this, moveId.Value, @event);
+      Moves.Add(move);
+    }
+    else
+    {
+      move.Update(@event);
+    }
   }
 
   public void Update(VarietyUpdated @event)

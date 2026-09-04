@@ -2,4 +2,4 @@
 
 namespace PokeGame.Core.Varieties.Events;
 
-public sealed record VarietyDefaultChanged(bool IsDefault) : DomainEvent;
+public sealed record VarietyMoveRemoved(Guid VarietyMoveId) : DomainEvent;

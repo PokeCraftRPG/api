@@ -9,7 +9,7 @@ public interface ISpeciesEggs
   EggGroup? SecondaryGroup { get; }
 }
 
-public record SpeciesEggs : ISpeciesEggs
+public sealed record SpeciesEggs : ISpeciesEggs
 {
   public const int MaximumCycles = byte.MaxValue;
 

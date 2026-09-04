@@ -46,8 +46,6 @@ internal class SetRegionalNumberCommandHandler : ICommandHandler<SetRegionalNumb
     Region region = await _regionRepository.LoadAsync(regionId, cancellationToken)
       ?? throw new EntityNotFoundException(regionId, nameof(command.RegionId));
 
-    bool created = species.HasRegionalNumber(region);
-
     Number number = new(payload.Number);
     species.SetRegionalNumber(region, number, _context.ActorId);
 

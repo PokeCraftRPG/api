@@ -1,3 +1,3 @@
 ﻿namespace PokeGame.Core;
 
-public record Optional<T>(T? Value);
+public sealed record Optional<T>(T? Value);

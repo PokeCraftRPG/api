@@ -90,13 +90,11 @@ internal class SpeciesEvents :
   public async Task HandleAsync(SpeciesRegionalNumberRemoved @event, CancellationToken cancellationToken)
   {
     SpeciesEntity? species = await _pokemon.Species
-      .Include(x => x.RegionalNumbers.Where(y => y.Region!.StreamId == @event.RegionId.Value))
+      .Include(x => x.RegionalNumbers.Where(y => y.Region!.StreamId == @event.RegionId.Value)).ThenInclude(x => x.Region)
       .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (species is not null && species.Version == (@event.Version - 1))
     {
-      species.Update(@event);
-
-      _pokemon.RegionalNumbers.RemoveRange(species.RegionalNumbers);
+      species.RemoveRegionalNumbers(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

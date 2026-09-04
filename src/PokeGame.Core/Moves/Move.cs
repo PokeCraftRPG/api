@@ -6,6 +6,8 @@ namespace PokeGame.Core.Moves;
 
 public sealed class Move : AggregateRoot, IEntityProvider
 {
+  // TODO(fpion): Power should be null when Category == Status.
+
   public const string EntityKind = "Move";
 
   public new MoveId Id => new(base.Id);

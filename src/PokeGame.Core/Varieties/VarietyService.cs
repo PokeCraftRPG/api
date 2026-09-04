@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Logitar.CQRS;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Varieties.Commands;
@@ -11,7 +11,9 @@ public interface IVarietyService
 {
   Task<CreateOrReplaceVarietyResult> CreateOrReplaceAsync(CreateOrReplaceVarietyPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
   Task<VarietyDto?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
+  Task<VarietyDto?> RemoveMoveAsync(Guid varietyId, Guid id, CancellationToken cancellationToken = default);
   Task<SearchResults<VarietyDto>> SearchAsync(SearchVarietiesPayload payload, CancellationToken cancellationToken = default);
+  Task<VarietyDto> SetMoveAsync(Guid varietyId, SetVarietyMovePayload payload, Guid? id = null, CancellationToken cancellationToken = default);
   Task<VarietyDto?> UpdateAsync(Guid id, UpdateVarietyPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -22,6 +24,8 @@ internal class VarietyService : IVarietyService
     services.AddTransient<IVarietyService, VarietyService>();
     services.AddTransient<IVarietyManager, VarietyManager>();
     services.AddTransient<ICommandHandler<CreateOrReplaceVarietyCommand, CreateOrReplaceVarietyResult>, CreateOrReplaceVarietyCommandHandler>();
+    services.AddTransient<ICommandHandler<RemoveVarietyMoveCommand, VarietyDto?>, RemoveVarietyMoveCommandHandler>();
+    services.AddTransient<ICommandHandler<SetVarietyMoveCommand, VarietyDto>, SetVarietyMoveCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateVarietyCommand, VarietyDto?>, UpdateVarietyCommandHandler>();
     services.AddTransient<IQueryHandler<ReadVarietyQuery, VarietyDto?>, ReadVarietyQueryHandler>();
     services.AddTransient<IQueryHandler<SearchVarietiesQuery, SearchResults<VarietyDto>>, SearchVarietiesQueryHandler>();
@@ -48,10 +52,22 @@ internal class VarietyService : IVarietyService
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 
+  public async Task<VarietyDto?> RemoveMoveAsync(Guid varietyId, Guid id, CancellationToken cancellationToken)
+  {
+    RemoveVarietyMoveCommand command = new(varietyId, id);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
   public async Task<SearchResults<VarietyDto>> SearchAsync(SearchVarietiesPayload payload, CancellationToken cancellationToken)
   {
     SearchVarietiesQuery query = new(payload);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
+  }
+
+  public async Task<VarietyDto> SetMoveAsync(Guid varietyId, SetVarietyMovePayload payload, Guid? id, CancellationToken cancellationToken)
+  {
+    SetVarietyMoveCommand command = new(varietyId, id, payload);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
   public async Task<VarietyDto?> UpdateAsync(Guid id, UpdateVarietyPayload payload, CancellationToken cancellationToken)

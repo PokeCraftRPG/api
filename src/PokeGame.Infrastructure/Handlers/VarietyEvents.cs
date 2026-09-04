@@ -11,6 +11,8 @@ internal class VarietyEvents :
   IEventHandler<VarietyDeleted>,
   IEventHandler<VarietyDefaultChanged>,
   IEventHandler<VarietyKeyChanged>,
+  IEventHandler<VarietyMoveChanged>,
+  IEventHandler<VarietyMoveRemoved>,
   IEventHandler<VarietyUpdated>
 {
   public static void Register(IServiceCollection services)
@@ -19,6 +21,8 @@ internal class VarietyEvents :
     services.AddTransient<IEventHandler<VarietyDeleted>, VarietyEvents>();
     services.AddTransient<IEventHandler<VarietyDefaultChanged>, VarietyEvents>();
     services.AddTransient<IEventHandler<VarietyKeyChanged>, VarietyEvents>();
+    services.AddTransient<IEventHandler<VarietyMoveChanged>, VarietyEvents>();
+    services.AddTransient<IEventHandler<VarietyMoveRemoved>, VarietyEvents>();
     services.AddTransient<IEventHandler<VarietyUpdated>, VarietyEvents>();
   }
 
@@ -76,6 +80,42 @@ internal class VarietyEvents :
     if (variety is not null && variety.Version == (@event.Version - 1))
     {
       variety.SetKey(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(VarietyMoveChanged @event, CancellationToken cancellationToken)
+  {
+    VarietyEntity? variety = await _pokemon.Varieties
+      .Include(x => x.Moves.Where(y => y.Id == @event.VarietyMoveId))
+      .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (variety is not null && variety.Version == (@event.Version - 1))
+    {
+      int? moveId = null;
+      if (!variety.Moves.Any(x => x.Id == @event.VarietyMoveId))
+      {
+        moveId = await _pokemon.Moves
+          .Where(x => x.StreamId == @event.Move.MoveId.Value)
+          .Select(x => (int?)x.MoveId)
+          .SingleOrDefaultAsync(cancellationToken)
+          ?? throw new InvalidOperationException($"The move entity 'StreamId={@event.Move.MoveId}' was not found.");
+      }
+
+      variety.SetMove(moveId, @event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(VarietyMoveRemoved @event, CancellationToken cancellationToken)
+  {
+    VarietyEntity? variety = await _pokemon.Varieties
+      .Include(x => x.Moves.Where(y => y.Id == @event.VarietyMoveId))
+      .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (variety is not null && variety.Version == (@event.Version - 1))
+    {
+      variety.RemoveMove(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

@@ -25,6 +25,8 @@ internal class MoveEntity : AggregateEntity
   public int? Power { get; private set; }
   public int? PowerPoints { get; private set; }
 
+  public List<VarietyMoveEntity> Varieties { get; private set; } = [];
+
   public MoveEntity(int worldId, MoveCreated @event) : base(@event)
   {
     WorldId = worldId;
