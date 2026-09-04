@@ -3,4 +3,4 @@ using PokeGame.Core.Regions;
 
 namespace PokeGame.Core.Species.Events;
 
-public record SpeciesRegionalNumberRemoved(RegionId RegionId) : DomainEvent;
+public sealed record SpeciesRegionalNumberRemoved(RegionId RegionId) : DomainEvent;
