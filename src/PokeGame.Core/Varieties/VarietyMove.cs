@@ -24,7 +24,7 @@ public sealed record VarietyMove
     {
       RuleFor(x => x.LearningMethod).IsInEnum();
       When(x => x.LearningMethod == LearningMethod.LevelUp, () => RuleFor(x => x.Level).NotNull())
-        .Otherwise(() => RuleFor(x => x.Level).NotNull());
+        .Otherwise(() => RuleFor(x => x.Level).Null());
     }
   }
 }
