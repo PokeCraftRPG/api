@@ -6,6 +6,7 @@ using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
+using PokeGame.Core.Varieties.Models;
 using PokeGame.Core.Worlds.Models;
 using PokeGame.Infrastructure.Entities;
 
@@ -119,6 +120,28 @@ internal class Mapper
     {
       destination.RegionalNumbers.Add(ToRegionalNumber(regionalNumber));
     }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public VarietyDto ToVariety(VarietyEntity source)
+  {
+    SpeciesEntity species = source.Species ?? throw new ArgumentException("The species is required.", nameof(source));
+    VarietyDto destination = new()
+    {
+      Id = source.Id,
+      Species = ToSpecies(species),
+      IsDefault = source.IsDefault,
+      Key = source.Key,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content,
+      CanChangeForm = source.CanChangeForm,
+      GenderRatio = source.GenderRatio,
+      Genus = source.Genus
+    };
 
     MapAggregate(source, destination);
 

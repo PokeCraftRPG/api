@@ -6,7 +6,7 @@ internal class GenderRatioConverter : JsonConverter<GenderRatio>
 {
   public override GenderRatio? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
   {
-    return reader.TryGetInt32(out int femaleRate) ? null : new GenderRatio(femaleRate);
+    return reader.TryGetInt32(out int femaleRate) ? new GenderRatio(femaleRate) : null;
   }
 
   public override void Write(Utf8JsonWriter writer, GenderRatio genderRatio, JsonSerializerOptions options)
