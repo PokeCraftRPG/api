@@ -4,7 +4,7 @@ using Logitar;
 
 namespace PokeGame.Core.Identity;
 
-public class InvalidOneTimePasswordException : IdentityException
+public sealed class InvalidOneTimePasswordException : IdentityException
 {
   private const string ErrorMessage = "The specified One-Time Password (OTP) purpose was not expected.";
 

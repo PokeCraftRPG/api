@@ -4,7 +4,7 @@ using PokeGame.Core.Identity.Models;
 
 namespace PokeGame.Core.Identity;
 
-public class AuthenticationFlowNotAllowedException : IdentityException
+public sealed class AuthenticationFlowNotAllowedException : IdentityException
 {
   private const string ErrorMessage = "The specified authentication flow is not allowed.";
 

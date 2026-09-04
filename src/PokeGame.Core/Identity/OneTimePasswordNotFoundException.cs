@@ -3,7 +3,7 @@ using Logitar;
 
 namespace PokeGame.Core.Identity;
 
-public class OneTimePasswordNotFoundException : IdentityException
+public sealed class OneTimePasswordNotFoundException : IdentityException
 {
   private const string ErrorMessage = "The specified One-Time Password (OTP) was not found.";
 
