@@ -1,4 +1,5 @@
 ﻿using Logitar;
+using Logitar.EventSourcing;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Varieties.Events;
 
@@ -40,6 +41,24 @@ internal class VarietyMoveEntity
 
   private VarietyMoveEntity()
   {
+  }
+
+  public IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new();
+    if (Move is not null)
+    {
+      actorIds.AddRange(Move.GetActorIds());
+    }
+    if (CreatedBy is not null)
+    {
+      actorIds.Add(new ActorId(CreatedBy));
+    }
+    if (UpdatedBy is not null)
+    {
+      actorIds.Add(new ActorId(UpdatedBy));
+    }
+    return actorIds;
   }
 
   public void Update(VarietyMoveChanged @event)

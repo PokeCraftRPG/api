@@ -50,6 +50,10 @@ internal class VarietyEntity : AggregateEntity
     {
       actorIds.AddRange(Species.GetActorIds());
     }
+    foreach (VarietyMoveEntity move in Moves)
+    {
+      actorIds.AddRange(move.GetActorIds());
+    }
     return actorIds;
   }
 

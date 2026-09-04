@@ -143,9 +143,30 @@ internal class Mapper
       Genus = source.Genus
     };
 
+    foreach (VarietyMoveEntity varietyMove in source.Moves)
+    {
+      destination.Moves.Add(ToVarietyMove(varietyMove));
+    }
+
     MapAggregate(source, destination);
 
     return destination;
+  }
+
+  public VarietyMoveDto ToVarietyMove(VarietyMoveEntity source)
+  {
+    MoveEntity move = source.Move ?? throw new ArgumentException("The move is required.", nameof(source));
+    return new VarietyMoveDto
+    {
+      Id = source.Id,
+      Move = ToMove(move),
+      LearningMethod = source.LearningMethod,
+      Level = source.Level,
+      CreatedBy = FindActor(source.CreatedBy),
+      CreatedOn = source.CreatedOn.AsUniversalTime(),
+      UpdatedBy = FindActor(source.UpdatedBy),
+      UpdatedOn = source.UpdatedOn.AsUniversalTime()
+    };
   }
 
   public WorldDto ToWorld(WorldEntity source)

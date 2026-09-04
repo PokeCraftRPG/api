@@ -18,5 +18,7 @@ public class VarietyDto : Aggregate
   public int? GenderRatio { get; set; }
   public string? Genus { get; set; }
 
+  public List<VarietyMoveDto> Moves { get; set; } = [];
+
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
 }
