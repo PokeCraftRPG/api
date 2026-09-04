@@ -2,12 +2,14 @@
 using Krakenar.Contracts.Constants;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.FileProviders;
 using PokeGame.Api.Authentication;
 using PokeGame.Api.Extensions;
 using PokeGame.Api.Middlewares;
 using PokeGame.Api.Settings;
 using PokeGame.Core;
 using PokeGame.Infrastructure;
+using PokeGame.Infrastructure.Assets;
 
 namespace PokeGame.Api;
 
@@ -113,6 +115,7 @@ internal class Startup : StartupBase
     application.UseHttpsRedirection();
     application.UseCors(_corsSettings);
     application.UseStaticFiles();
+    UseStaticFiles(application);
     application.UseSession();
     application.UseMiddleware<RenewSession>();
     application.UseAuthentication();
@@ -121,5 +124,14 @@ internal class Startup : StartupBase
 
     application.MapControllers();
     application.MapHealthChecks("/health");
+  }
+  private static void UseStaticFiles(WebApplication application)
+  {
+    StorageSettings storageSettings = application.Services.GetRequiredService<StorageSettings>();
+    application.UseStaticFiles(new StaticFileOptions
+    {
+      FileProvider = new PhysicalFileProvider(storageSettings.RootPath),
+      RequestPath = "/assets"
+    });
   }
 }

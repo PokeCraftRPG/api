@@ -17,6 +17,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\sample.jpg" />
+    <None Remove="Assets\sample.mp4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\sample.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\sample.mp4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="10.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

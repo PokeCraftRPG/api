@@ -13,6 +13,7 @@ public class PokemonContext : DbContext
   }
 
   internal DbSet<AbilityEntity> Abilities => Set<AbilityEntity>();
+  internal DbSet<AssetEntity> Assets => Set<AssetEntity>();
   internal DbSet<MoveEntity> Moves => Set<MoveEntity>();
   internal DbSet<RegionalNumberEntity> RegionalNumbers => Set<RegionalNumberEntity>();
   internal DbSet<RegionEntity> Regions => Set<RegionEntity>();
@@ -23,6 +24,7 @@ public class PokemonContext : DbContext
 
   internal async Task<int> FindWorldIdAsync(WorldId id, CancellationToken cancellationToken = default)
   {
+    // TODO(fpion): change WorldId to entity provider.
     return await Worlds.Where(x => x.StreamId == id.Value)
       .Select(x => (int?)x.WorldId)
       .SingleOrDefaultAsync(cancellationToken)

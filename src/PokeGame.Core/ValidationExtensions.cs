@@ -33,6 +33,16 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(byte.MaxValue).EmailAddress();
   }
 
+  public static IRuleBuilderOptions<T, string> FileName<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty().MaximumLength(Assets.AssetFile.NameMaximumLength);
+  }
+
+  public static IRuleBuilderOptions<T, long> FileSize<T>(this IRuleBuilder<T, long> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThan(0);
+  }
+
   public static IRuleBuilderOptions<T, int> Friendship<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
     return ruleBuilder.InclusiveBetween(0, byte.MaxValue);

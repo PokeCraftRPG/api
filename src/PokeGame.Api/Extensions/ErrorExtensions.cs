@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using PokeGame.Core;
+using PokeGame.Core.Assets;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Permissions;
 
@@ -44,6 +45,10 @@ internal static class ErrorExtensions
     if (exception is ConflictException || exception is ImmutablePropertyException)
     {
       return StatusCodes.Status409Conflict;
+    }
+    if (exception is MediaTypeNotSupportedException)
+    {
+      return StatusCodes.Status415UnsupportedMediaType;
     }
     return StatusCodes.Status500InternalServerError;
   }

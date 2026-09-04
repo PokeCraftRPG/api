@@ -17,6 +17,7 @@
   <ItemGroup>
     <PackageReference Include="Krakenar.Client" Version="2.2.0" />
     <PackageReference Include="Logitar.EventSourcing.EntityFrameworkCore.PostgreSQL" Version="10.1.3" />
+    <PackageReference Include="MetadataExtractor" Version="2.9.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,11 +25,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Using Include="System.Globalization" />
     <Using Include="System.Linq.Expressions" />
+    <Using Include="System.Net.Mime" />
     <Using Include="System.Reflection" />
     <Using Include="System.Text" />
     <Using Include="System.Text.Json" />
     <Using Include="System.Text.Json.Serialization" />
+    <Using Include="System.Xml" />
   </ItemGroup>
 
 </Project>
