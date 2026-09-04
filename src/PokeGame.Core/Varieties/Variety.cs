@@ -7,6 +7,9 @@ namespace PokeGame.Core.Varieties;
 
 public sealed class Variety : AggregateRoot, IEntityProvider
 {
+  // TODO(fpion): VarietyMoves should not contain duplicate values.
+  // TODO(fpion): VarietyMove.MoveId should never change.
+
   public const string EntityKind = "Variety";
 
   public new VarietyId Id => new(base.Id);
@@ -26,6 +29,9 @@ public sealed class Variety : AggregateRoot, IEntityProvider
   public bool CanChangeForm { get; private set; }
   public GenderRatio? GenderRatio { get; private set; }
   public Genus? Genus { get; private set; }
+
+  private readonly Dictionary<Guid, VarietyMove> _moves = [];
+  public IReadOnlyDictionary<Guid, VarietyMove> Moves => _moves.AsReadOnly();
 
   public Variety() : base()
   {
@@ -109,6 +115,43 @@ public sealed class Variety : AggregateRoot, IEntityProvider
     GenderRatio = @event.GenderRatio;
     Genus = @event.Genus;
   }
+
+  #region Moves
+  public void AddMove(VarietyMove move, ActorId? actorId = null) => SetMove(Guid.NewGuid(), move, actorId);
+
+  public VarietyMove FindMove(Guid id) => TryGetMove(id) ?? throw new InvalidOperationException($"The move 'Id={id}' was not found in variety 'Id={Id}'.");
+
+  public bool HasMove(Guid id) => _moves.ContainsKey(id);
+
+  public void RemoveMove(Guid id, ActorId? actorId = null)
+  {
+    if (HasMove(id))
+    {
+      Raise(new VarietyMoveRemoved(id), actorId);
+    }
+  }
+  private void Handle(VarietyMoveRemoved @event)
+  {
+    _moves.Remove(@event.VarietyMoveId);
+  }
+
+  public void SetMove(Guid id, VarietyMove move, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(this, move.MoveId, nameof(move));
+
+    VarietyMove? existingMove = TryGetMove(id);
+    if (existingMove is null || existingMove != move)
+    {
+      Raise(new VarietyMoveChanged(id, move), actorId);
+    }
+  }
+  private void Handle(VarietyMoveChanged @event)
+  {
+    _moves[@event.VarietyMoveId] = @event.Move;
+  }
+
+  public VarietyMove? TryGetMove(Guid id) => _moves.GetValueOrDefault(id);
+  #endregion
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";
 }
