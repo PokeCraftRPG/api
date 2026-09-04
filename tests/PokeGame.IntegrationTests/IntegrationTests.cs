@@ -13,6 +13,7 @@ using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure;
+using PokeGame.Infrastructure.Assets;
 
 namespace PokeGame;
 
@@ -25,6 +26,8 @@ public abstract class IntegrationTests : IAsyncLifetime
 
   protected virtual IConfiguration Configuration { get; set; }
   protected virtual IServiceProvider ServiceProvider { get; set; }
+
+  protected virtual string StorageRootPath { get; set; } = null!;
 
   protected virtual Actor Actor => Context.User is null ? _system : new(Context.User);
   protected virtual Mock<IUserClient> UserClient { get; set; } = new();
@@ -48,11 +51,17 @@ public abstract class IntegrationTests : IAsyncLifetime
       ?? Configuration.GetConnectionString("PostgreSQL")
       ?? throw new InvalidOperationException("The PostgreSQL connection string was not found.");
 
+    StorageRootPath = Path.Combine(Path.GetTempPath(), "PokeGame", "IntegrationTests", GetType().Name);
+
     ServiceCollection services = new();
     services.AddSingleton(Configuration);
 
     services.AddPokeGameCore();
     services.AddPokeGameInfrastructure(connectionString.Replace("{Database}", GetType().Name));
+    services.AddSingleton(new StorageSettings
+    {
+      RootPath = Path.Combine(StorageRootPath, "assets")
+    });
     services.AddSingleton<IContext>(Context);
     services.AddSingleton(UserClient.Object);
 
@@ -64,6 +73,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     await MigrateDatabaseAsync();
     await ClearDatabaseAsync();
     await InitializeDatabaseAsync();
+    ClearStorage();
   }
   protected virtual async Task MigrateDatabaseAsync()
   {
@@ -74,6 +84,7 @@ public abstract class IntegrationTests : IAsyncLifetime
   {
     PokemonContext pokemon = ServiceProvider.GetRequiredService<PokemonContext>();
     StringBuilder sql = new();
+    sql.AppendLine(@"DELETE FROM ""Pokemon"".""Assets"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Varieties"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Species"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Regions"";");
@@ -94,6 +105,13 @@ public abstract class IntegrationTests : IAsyncLifetime
     IWorldRepository worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
     Context.World = new WorldBuilder(Faker).WithOwner(Context.User).Build();
     await worldRepository.SaveAsync(Context.World);
+  }
+  protected virtual void ClearStorage()
+  {
+    if (Directory.Exists(StorageRootPath))
+    {
+      Directory.Delete(StorageRootPath, recursive: true);
+    }
   }
 
   public virtual Task DisposeAsync() => Task.CompletedTask;
