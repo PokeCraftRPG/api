@@ -1,7 +1,6 @@
 ﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using PokeGame.Core.Regions;
 using PokeGame.Core.Regions.Events;
 using PokeGame.Infrastructure.Entities;
 
@@ -33,7 +32,7 @@ internal class RegionEvents :
     RegionEntity? region = await _pokemon.Regions.AsNoTracking().SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (region is null)
     {
-      int worldId = await _pokemon.FindWorldIdAsync(new RegionId(@event.StreamId).WorldId, cancellationToken);
+      int worldId = await _pokemon.FindWorldIdAsync(@event.StreamId, cancellationToken);
 
       region = new RegionEntity(worldId, @event);
 

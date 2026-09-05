@@ -1,7 +1,6 @@
 ﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using PokeGame.Core.Species;
 using PokeGame.Core.Species.Events;
 using PokeGame.Infrastructure.Entities;
 
@@ -37,7 +36,7 @@ internal class SpeciesEvents :
     SpeciesEntity? species = await _pokemon.Species.AsNoTracking().SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (species is null)
     {
-      int worldId = await _pokemon.FindWorldIdAsync(new SpeciesId(@event.StreamId).WorldId, cancellationToken);
+      int worldId = await _pokemon.FindWorldIdAsync(@event.StreamId, cancellationToken);
 
       species = new SpeciesEntity(worldId, @event);
 

@@ -1,7 +1,6 @@
 ﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using PokeGame.Core.Assets;
 using PokeGame.Core.Assets.Events;
 using PokeGame.Infrastructure.Entities;
 
@@ -26,7 +25,7 @@ internal class AssetEvents : IEventHandler<AssetUploaded>
     AssetEntity? asset = await _pokemon.Assets.AsNoTracking().SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (asset is null)
     {
-      int worldId = await _pokemon.FindWorldIdAsync(new AssetId(@event.StreamId).WorldId, cancellationToken);
+      int worldId = await _pokemon.FindWorldIdAsync(@event.StreamId, cancellationToken);
 
       asset = new AssetEntity(worldId, @event);
 

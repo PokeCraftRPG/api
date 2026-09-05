@@ -1,7 +1,6 @@
 ﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Events;
 using PokeGame.Infrastructure.Entities;
 
@@ -33,7 +32,7 @@ internal class AbilityEvents :
     AbilityEntity? ability = await _pokemon.Abilities.AsNoTracking().SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (ability is null)
     {
-      int worldId = await _pokemon.FindWorldIdAsync(new AbilityId(@event.StreamId).WorldId, cancellationToken);
+      int worldId = await _pokemon.FindWorldIdAsync(@event.StreamId, cancellationToken);
 
       ability = new AbilityEntity(worldId, @event);
 

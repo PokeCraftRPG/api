@@ -1,7 +1,6 @@
 ﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using PokeGame.Core.Moves;
 using PokeGame.Core.Moves.Events;
 using PokeGame.Infrastructure.Entities;
 
@@ -35,7 +34,7 @@ internal class MoveEvents :
     MoveEntity? move = await _pokemon.Moves.AsNoTracking().SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (move is null)
     {
-      int worldId = await _pokemon.FindWorldIdAsync(new MoveId(@event.StreamId).WorldId, cancellationToken);
+      int worldId = await _pokemon.FindWorldIdAsync(@event.StreamId, cancellationToken);
 
       move = new MoveEntity(worldId, @event);
 
