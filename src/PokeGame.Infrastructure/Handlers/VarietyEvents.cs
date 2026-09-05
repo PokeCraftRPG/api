@@ -13,7 +13,8 @@ internal class VarietyEvents :
   IEventHandler<VarietyDetailsChanged>,
   IEventHandler<VarietyKeyChanged>,
   IEventHandler<VarietyMoveChanged>,
-  IEventHandler<VarietyMoveRemoved>
+  IEventHandler<VarietyMoveRemoved>,
+  IEventHandler<VarietyTraitsChanged>
 {
   public static void Register(IServiceCollection services)
   {
@@ -24,6 +25,7 @@ internal class VarietyEvents :
     services.AddTransient<IEventHandler<VarietyKeyChanged>, VarietyEvents>();
     services.AddTransient<IEventHandler<VarietyMoveChanged>, VarietyEvents>();
     services.AddTransient<IEventHandler<VarietyMoveRemoved>, VarietyEvents>();
+    services.AddTransient<IEventHandler<VarietyTraitsChanged>, VarietyEvents>();
   }
 
   private readonly PokemonContext _pokemon;
@@ -127,6 +129,17 @@ internal class VarietyEvents :
     if (variety is not null && variety.Version == (@event.Version - 1))
     {
       variety.RemoveMove(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(VarietyTraitsChanged @event, CancellationToken cancellationToken)
+  {
+    VarietyEntity? variety = await _pokemon.Varieties.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (variety is not null && variety.Version == (@event.Version - 1))
+    {
+      variety.SetTraits(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

@@ -54,13 +54,18 @@ internal class UpdateVarietyCommandHandler : ICommandHandler<UpdateVarietyComman
       variety.SetKey(new Key(payload.Key), actorId);
     }
 
-    if (payload.Name is not null || payload.Summary is not null || payload.Content is not null
-      || payload.CanChangeForm is not null || payload.GenderRatio is not null || payload.Genus is not null)
+    if (payload.Name is not null || payload.Summary is not null || payload.Content is not null)
     {
       variety.SetDetails(
         payload.Name is null ? variety.Name : Name.TryCreate(payload.Name.Value),
         payload.Summary is null ? variety.Summary : Summary.TryCreate(payload.Summary.Value),
         payload.Content is null ? variety.Content : Content.TryCreate(payload.Content.Value),
+        actorId);
+    }
+
+    if (payload.CanChangeForm is not null || payload.GenderRatio is not null || payload.Genus is not null)
+    {
+      variety.SetTraits(
         payload.CanChangeForm is null ? variety.CanChangeForm : payload.CanChangeForm.Value,
         payload.GenderRatio is null ? variety.GenderRatio : GenderRatio.TryCreate(payload.GenderRatio.Value),
         payload.Genus is null ? variety.Genus : Genus.TryCreate(payload.Genus.Value),

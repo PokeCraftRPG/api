@@ -75,14 +75,8 @@ internal class CreateOrReplaceVarietyCommandHandler : ICommandHandler<CreateOrRe
 
     variety.SetDefault(payload.IsDefault, actorId);
 
-    variety.SetDetails(
-      Name.TryCreate(payload.Name),
-      Summary.TryCreate(payload.Summary),
-      Content.TryCreate(payload.Content),
-      payload.CanChangeForm,
-      GenderRatio.TryCreate(payload.GenderRatio),
-      Genus.TryCreate(payload.Genus),
-      actorId);
+    variety.SetDetails(Name.TryCreate(payload.Name), Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
+    variety.SetTraits(payload.CanChangeForm, GenderRatio.TryCreate(payload.GenderRatio), Genus.TryCreate(payload.Genus), actorId);
 
     await _varietyManager.EnsureUnicityAsync(variety, cancellationToken);
     await _varietyRepository.SaveAsync(variety, cancellationToken);

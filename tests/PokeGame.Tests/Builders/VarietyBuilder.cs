@@ -123,14 +123,8 @@ public class VarietyBuilder : IVarietyBuilder
       : new(species, key, actorId);
 
     variety.SetDefault(_isDefault, actorId);
-    variety.SetDetails(
-      Name.TryCreate(_name),
-      Summary.TryCreate(_summary),
-      Content.TryCreate(_content),
-      _canChangeForm,
-      GenderRatio.TryCreate(_genderRatio),
-      Genus.TryCreate(_genus),
-      actorId);
+    variety.SetDetails(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
+    variety.SetTraits(_canChangeForm, GenderRatio.TryCreate(_genderRatio), Genus.TryCreate(_genus), actorId);
 
     return variety;
   }
