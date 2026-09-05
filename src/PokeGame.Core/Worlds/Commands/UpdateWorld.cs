@@ -1,4 +1,4 @@
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using Logitar.EventSourcing;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Worlds.Models;
@@ -51,7 +51,7 @@ internal class UpdateWorldCommandHandler : ICommandHandler<UpdateWorldCommand, W
 
     if (payload.Name is not null || payload.Summary is not null || payload.Content is not null)
     {
-      world.Update(
+      world.SetDetails(
         payload.Name is null ? world.Name : Name.TryCreate(payload.Name.Value),
         payload.Summary is null ? world.Summary : Summary.TryCreate(payload.Summary.Value),
         payload.Content is null ? world.Content : Content.TryCreate(payload.Content.Value),

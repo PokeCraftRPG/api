@@ -71,6 +71,15 @@ internal class VarietyEntity : AggregateEntity
     IsDefault = @event.IsDefault;
   }
 
+  public void SetDetails(VarietyDetailsChanged @event)
+  {
+    Update(@event);
+
+    Name = @event.Name?.Value;
+    Summary = @event.Summary?.Value;
+    Content = @event.Content?.Value;
+  }
+
   public void SetKey(VarietyKeyChanged @event)
   {
     Update(@event);
@@ -98,13 +107,9 @@ internal class VarietyEntity : AggregateEntity
     }
   }
 
-  public void Update(VarietyUpdated @event)
+  public void SetTraits(VarietyTraitsChanged @event)
   {
-    base.Update(@event);
-
-    Name = @event.Name?.Value;
-    Summary = @event.Summary?.Value;
-    Content = @event.Content?.Value;
+    Update(@event);
 
     CanChangeForm = @event.CanChangeForm;
     GenderRatio = @event.GenderRatio?.FemaleRate;

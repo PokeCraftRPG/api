@@ -51,7 +51,7 @@ internal class UpdateRegionCommandHandler : ICommandHandler<UpdateRegionCommand,
 
     if (payload.Name is not null || payload.Summary is not null || payload.Content is not null)
     {
-      region.Update(
+      region.SetDetails(
         payload.Name is null ? region.Name : Name.TryCreate(payload.Name.Value),
         payload.Summary is null ? region.Summary : Summary.TryCreate(payload.Summary.Value),
         payload.Content is null ? region.Content : Content.TryCreate(payload.Content.Value),

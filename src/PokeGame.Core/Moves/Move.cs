@@ -1,4 +1,6 @@
-﻿using Logitar.EventSourcing;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using Logitar.EventSourcing;
 using PokeGame.Core.Moves.Events;
 using PokeGame.Core.Worlds;
 
@@ -6,8 +8,6 @@ namespace PokeGame.Core.Moves;
 
 public sealed class Move : AggregateRoot, IEntityProvider
 {
-  // TODO(fpion): Power should be null when Category == Status.
-
   public const string EntityKind = "Move";
 
   public new MoveId Id => new(base.Id);
@@ -69,6 +69,20 @@ public sealed class Move : AggregateRoot, IEntityProvider
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId);
 
+  public void SetDetails(Name? name, Summary? summary, Content? content, ActorId? actorId = null)
+  {
+    if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content))
+    {
+      Raise(new MoveDetailsChanged(name, summary, content), actorId);
+    }
+  }
+  private void Handle(MoveDetailsChanged @event)
+  {
+    Name = @event.Name;
+    Summary = @event.Summary;
+    Content = @event.Content;
+  }
+
   public void SetKey(Key key, ActorId? actorId = null)
   {
     if (!Equals(Key, key))
@@ -81,20 +95,24 @@ public sealed class Move : AggregateRoot, IEntityProvider
     _key = @event.Key;
   }
 
-  public void Update(Name? name, Summary? summary, Content? content, Accuracy? accuracy, Power? power, PowerPoints? powerPoints, ActorId? actorId = null)
+  public void SetMechanics(Accuracy? accuracy, Power? power, PowerPoints? powerPoints, ActorId? actorId = null)
   {
-    if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content)
-      || !Equals(Accuracy, accuracy) || !Equals(Power, power) || !Equals(PowerPoints, powerPoints))
+    if (Category == MoveCategory.Status && power is not null)
     {
-      Raise(new MoveUpdated(name, summary, content, accuracy, power, powerPoints), actorId);
+      ValidationFailure failure = new(nameof(Power), "A status move cannot have power.", power.Value)
+      {
+        ErrorCode = "InvalidMovePower"
+      };
+      throw new ValidationException([failure]);
+    }
+
+    if (!Equals(Accuracy, accuracy) || !Equals(Power, power) || !Equals(PowerPoints, powerPoints))
+    {
+      Raise(new MoveMechanicsChanged(accuracy, power, powerPoints), actorId);
     }
   }
-  private void Handle(MoveUpdated @event)
+  private void Handle(MoveMechanicsChanged @event)
   {
-    Name = @event.Name;
-    Summary = @event.Summary;
-    Content = @event.Content;
-
     Accuracy = @event.Accuracy;
     Power = @event.Power;
     PowerPoints = @event.PowerPoints;

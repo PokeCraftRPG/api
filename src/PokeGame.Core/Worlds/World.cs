@@ -46,6 +46,20 @@ public sealed class World : AggregateRoot, IEntityProvider
 
   public Entity GetEntity() => new(EntityKind, EntityId);
 
+  public void SetDetails(Name? name, Summary? summary, Content? content, ActorId? actorId = null)
+  {
+    if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content))
+    {
+      Raise(new WorldDetailsChanged(name, summary, content), actorId);
+    }
+  }
+  private void Handle(WorldDetailsChanged @event)
+  {
+    Name = @event.Name;
+    Summary = @event.Summary;
+    Content = @event.Content;
+  }
+
   public void SetKey(Key key, ActorId? actorId = null)
   {
     if (!Equals(Key, key))
@@ -56,20 +70,6 @@ public sealed class World : AggregateRoot, IEntityProvider
   private void Handle(WorldKeyChanged @event)
   {
     _key = @event.Key;
-  }
-
-  public void Update(Name? name, Summary? summary, Content? content, ActorId? actorId = null)
-  {
-    if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content))
-    {
-      Raise(new WorldUpdated(name, summary, content), actorId);
-    }
-  }
-  private void Handle(WorldUpdated @event)
-  {
-    Name = @event.Name;
-    Summary = @event.Summary;
-    Content = @event.Content;
   }
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";

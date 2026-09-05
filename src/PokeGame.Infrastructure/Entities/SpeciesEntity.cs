@@ -42,6 +42,14 @@ internal class SpeciesEntity : AggregateEntity
     Category = @event.Category;
 
     Key = @event.Key.Value;
+
+    BaseFriendship = @event.BaseFriendship.Value;
+    CatchRate = @event.CatchRate.Value;
+    GrowthRate = @event.GrowthRate;
+
+    EggCycles = @event.Eggs.Cycles;
+    PrimaryEggGroup = @event.Eggs.PrimaryGroup;
+    SecondaryEggGroup = @event.Eggs.SecondaryGroup;
   }
 
   private SpeciesEntity() : base()
@@ -68,11 +76,38 @@ internal class SpeciesEntity : AggregateEntity
     RegionalNumbers.RemoveAll(x => x.Region?.StreamId == @event.RegionId.Value);
   }
 
+  public void SetBreeding(SpeciesBreedingChanged @event)
+  {
+    Update(@event);
+
+    EggCycles = @event.Eggs.Cycles;
+    PrimaryEggGroup = @event.Eggs.PrimaryGroup;
+    SecondaryEggGroup = @event.Eggs.SecondaryGroup;
+  }
+
+  public void SetDetails(SpeciesDetailsChanged @event)
+  {
+    Update(@event);
+
+    Name = @event.Name?.Value;
+    Summary = @event.Summary?.Value;
+    Content = @event.Content?.Value;
+  }
+
   public void SetKey(SpeciesKeyChanged @event)
   {
     Update(@event);
 
     Key = @event.Key.Value;
+  }
+
+  public void SetProgression(SpeciesProgressionChanged @event)
+  {
+    Update(@event);
+
+    BaseFriendship = @event.BaseFriendship.Value;
+    CatchRate = @event.CatchRate.Value;
+    GrowthRate = @event.GrowthRate;
   }
 
   public void SetRegionalNumber(int regionId, SpeciesRegionalNumberChanged @event)
@@ -89,22 +124,6 @@ internal class SpeciesEntity : AggregateEntity
     {
       regionalNumber.Update(@event);
     }
-  }
-
-  public void Update(SpeciesUpdated @event)
-  {
-    base.Update(@event);
-
-    Name = @event.Name?.Value;
-    Summary = @event.Summary?.Value;
-    Content = @event.Content?.Value;
-
-    BaseFriendship = @event.BaseFriendship.Value;
-    CatchRate = @event.CatchRate.Value;
-    GrowthRate = @event.GrowthRate;
-    EggCycles = @event.Eggs.Cycles;
-    PrimaryEggGroup = @event.Eggs.PrimaryGroup;
-    SecondaryEggGroup = @event.Eggs.SecondaryGroup;
   }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";

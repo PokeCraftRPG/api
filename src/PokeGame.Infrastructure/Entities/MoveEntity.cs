@@ -49,13 +49,18 @@ internal class MoveEntity : AggregateEntity
     Key = @event.Key.Value;
   }
 
-  public void Update(MoveUpdated @event)
+  public void SetDetails(MoveDetailsChanged @event)
   {
-    base.Update(@event);
+    Update(@event);
 
     Name = @event.Name?.Value;
     Summary = @event.Summary?.Value;
     Content = @event.Content?.Value;
+  }
+
+  public void SetMechanics(MoveMechanicsChanged @event)
+  {
+    Update(@event);
 
     Accuracy = @event.Accuracy?.Value;
     Power = @event.Power?.Value;

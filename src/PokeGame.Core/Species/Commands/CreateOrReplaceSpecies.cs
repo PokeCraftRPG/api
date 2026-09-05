@@ -50,13 +50,16 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
     ActorId? actorId = _context.ActorId;
     Key key = new(payload.Key);
     Number number = new(payload.Number);
+    Friendship baseFriendship = new(payload.BaseFriendship);
+    CatchRate catchRate = new(payload.CatchRate);
+    SpeciesEggs eggs = SpeciesEggs.From(payload.Eggs);
 
     bool created = false;
     if (species is null)
     {
       await _permissionService.CheckAsync(Actions.CreateSpecies, cancellationToken);
 
-      species = new PokemonSpecies(speciesId, number, payload.Category, key, actorId);
+      species = new PokemonSpecies(speciesId, number, payload.Category, key, baseFriendship, catchRate, payload.GrowthRate, eggs, actorId);
       created = true;
     }
     else
@@ -73,17 +76,11 @@ internal class CreateOrReplaceSpeciesCommandHandler : ICommandHandler<CreateOrRe
       }
 
       species.SetKey(key, actorId);
+      species.SetProgression(baseFriendship, catchRate, payload.GrowthRate, actorId);
+      species.SetBreeding(eggs, actorId);
     }
 
-    species.Update(
-      Name.TryCreate(payload.Name),
-      Summary.TryCreate(payload.Summary),
-      Content.TryCreate(payload.Content),
-      new Friendship(payload.BaseFriendship),
-      new CatchRate(payload.CatchRate),
-      payload.GrowthRate,
-      SpeciesEggs.From(payload.Eggs),
-      actorId);
+    species.SetDetails(Name.TryCreate(payload.Name), Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
 
     await SetRegionalNumbersAsync(payload, species, actorId, cancellationToken);
 

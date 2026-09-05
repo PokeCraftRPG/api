@@ -60,7 +60,7 @@ internal class CreateOrReplaceRegionCommandHandler : ICommandHandler<CreateOrRep
       region.SetKey(key, actorId);
     }
 
-    region.Update(Name.TryCreate(payload.Name), Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
+    region.SetDetails(Name.TryCreate(payload.Name), Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
 
     await _regionManager.EnsureUnicityAsync(region, cancellationToken);
     await _regionRepository.SaveAsync(region, cancellationToken);

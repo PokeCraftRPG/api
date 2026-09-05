@@ -31,20 +31,20 @@ internal class RegionEntity : AggregateEntity
   {
   }
 
+  public void SetDetails(RegionDetailsChanged @event)
+  {
+    Update(@event);
+
+    Name = @event.Name?.Value;
+    Summary = @event.Summary?.Value;
+    Content = @event.Content?.Value;
+  }
+
   public void SetKey(RegionKeyChanged @event)
   {
     Update(@event);
 
     Key = @event.Key.Value;
-  }
-
-  public void Update(RegionUpdated @event)
-  {
-    base.Update(@event);
-
-    Name = @event.Name?.Value;
-    Summary = @event.Summary?.Value;
-    Content = @event.Content?.Value;
   }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";

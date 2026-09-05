@@ -51,10 +51,16 @@ internal class UpdateMoveCommandHandler : ICommandHandler<UpdateMoveCommand, Mov
 
     if (payload.Name is not null || payload.Summary is not null || payload.Content is not null)
     {
-      move.Update(
+      move.SetDetails(
         payload.Name is null ? move.Name : Name.TryCreate(payload.Name.Value),
         payload.Summary is null ? move.Summary : Summary.TryCreate(payload.Summary.Value),
         payload.Content is null ? move.Content : Content.TryCreate(payload.Content.Value),
+        actorId);
+    }
+
+    if (payload.Accuracy is not null || payload.Power is not null || payload.PowerPoints is not null)
+    {
+      move.SetMechanics(
         payload.Accuracy is null ? move.Accuracy : Accuracy.TryCreate(payload.Accuracy.Value),
         payload.Power is null ? move.Power : Power.TryCreate(payload.Power.Value),
         payload.PowerPoints is null ? move.PowerPoints : PowerPoints.TryCreate(payload.PowerPoints.Value),
