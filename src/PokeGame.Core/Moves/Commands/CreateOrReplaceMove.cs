@@ -69,14 +69,9 @@ internal class CreateOrReplaceMoveCommandHandler : ICommandHandler<CreateOrRepla
       move.SetKey(key, actorId);
     }
 
-    move.Update(
-      Name.TryCreate(payload.Name),
-      Summary.TryCreate(payload.Summary),
-      Content.TryCreate(payload.Content),
-      Accuracy.TryCreate(payload.Accuracy),
-      Power.TryCreate(payload.Power),
-      PowerPoints.TryCreate(payload.PowerPoints),
+    move.Update(Name.TryCreate(payload.Name), Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content),
       actorId);
+    move.SetMechanics(Accuracy.TryCreate(payload.Accuracy), Power.TryCreate(payload.Power), PowerPoints.TryCreate(payload.PowerPoints), actorId);
 
     await _moveManager.EnsureUnicityAsync(move, cancellationToken);
     await _moveRepository.SaveAsync(move, cancellationToken);

@@ -11,6 +11,7 @@ internal class MoveEvents :
   IEventHandler<MoveCreated>,
   IEventHandler<MoveDeleted>,
   IEventHandler<MoveKeyChanged>,
+  IEventHandler<MoveMechanicsChanged>,
   IEventHandler<MoveUpdated>
 {
   public static void Register(IServiceCollection services)
@@ -18,6 +19,7 @@ internal class MoveEvents :
     services.AddTransient<IEventHandler<MoveCreated>, MoveEvents>();
     services.AddTransient<IEventHandler<MoveDeleted>, MoveEvents>();
     services.AddTransient<IEventHandler<MoveKeyChanged>, MoveEvents>();
+    services.AddTransient<IEventHandler<MoveMechanicsChanged>, MoveEvents>();
     services.AddTransient<IEventHandler<MoveUpdated>, MoveEvents>();
   }
 
@@ -60,6 +62,17 @@ internal class MoveEvents :
     if (move is not null && move.Version == (@event.Version - 1))
     {
       move.SetKey(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(MoveMechanicsChanged @event, CancellationToken cancellationToken)
+  {
+    MoveEntity? move = await _pokemon.Moves.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (move is not null && move.Version == (@event.Version - 1))
+    {
+      move.SetMechanics(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

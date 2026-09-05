@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,7 +58,7 @@ public class MoveIntegrationTests : IntegrationTests
     {
       Assert.NotEqual(Guid.Empty, move.Id);
     }
-    Assert.Equal(2, move.Version);
+    Assert.Equal(3, move.Version);
     Assert.Equal(Actor, move.CreatedBy);
     Assert.Equal(DateTime.UtcNow, move.CreatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(move.CreatedBy, move.UpdatedBy);
@@ -96,7 +96,7 @@ public class MoveIntegrationTests : IntegrationTests
     Assert.NotNull(move);
 
     Assert.Equal(id, move.Id);
-    Assert.Equal(3, move.Version);
+    Assert.Equal(5, move.Version);
     Assert.Equal(_seeded.CreatedBy, move.CreatedBy);
     Assert.Equal(_seeded.CreatedOn, move.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, move.UpdatedBy);
@@ -328,7 +328,7 @@ public class MoveIntegrationTests : IntegrationTests
     Assert.NotNull(move);
 
     Assert.Equal(id, move.Id);
-    Assert.Equal(3, move.Version);
+    Assert.Equal(5, move.Version);
     Assert.Equal(_seeded.CreatedBy, move.CreatedBy);
     Assert.Equal(_seeded.CreatedOn, move.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, move.UpdatedBy);
