@@ -60,7 +60,7 @@ internal class SpeciesQuerier : ISpeciesQuerier
   {
     SpeciesEntity? species = await _species.AsNoTracking()
       .Where(x => x.StreamId == id.Value)
-      .Include(x => x.RegionalNumbers).ThenInclude(x => x.Region)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return species is null ? null : await MapAsync(species, cancellationToken);
   }
@@ -68,7 +68,7 @@ internal class SpeciesQuerier : ISpeciesQuerier
   {
     SpeciesEntity? species = await _species.AsNoTracking()
       .Where(x => x.World!.StreamId == _context.WorldId.Value && x.Id == id)
-      .Include(x => x.RegionalNumbers).ThenInclude(x => x.Region)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return species is null ? null : await MapAsync(species, cancellationToken);
   }
@@ -76,7 +76,7 @@ internal class SpeciesQuerier : ISpeciesQuerier
   {
     SpeciesEntity? species = await _species.AsNoTracking()
       .Where(x => x.World!.StreamId == _context.WorldId.Value && x.Number == number)
-      .Include(x => x.RegionalNumbers).ThenInclude(x => x.Region)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return species is null ? null : await MapAsync(species, cancellationToken);
   }
@@ -87,7 +87,7 @@ internal class SpeciesQuerier : ISpeciesQuerier
     SpeciesEntity? species = await _species.AsNoTracking()
       .Where(x => x.World!.StreamId == _context.WorldId.Value
         && x.RegionalNumbers.Any(y => (parsed ? y.Region!.Id == regionId : y.Region!.Key == key) && y.Number == number))
-      .Include(x => x.RegionalNumbers).ThenInclude(x => x.Region)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return species is null ? null : await MapAsync(species, cancellationToken);
   }

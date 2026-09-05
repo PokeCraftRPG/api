@@ -43,8 +43,7 @@ internal class VarietyQuerier : IVarietyQuerier
   {
     VarietyEntity? variety = await _varieties.AsNoTracking()
       .Where(x => x.StreamId == id.Value)
-      .Include(x => x.Moves).ThenInclude(x => x.Move)
-      .Include(x => x.Species).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return variety is null ? null : await MapAsync(variety, cancellationToken);
   }
@@ -52,8 +51,7 @@ internal class VarietyQuerier : IVarietyQuerier
   {
     VarietyEntity? variety = await _varieties.AsNoTracking()
       .Where(x => x.World!.StreamId == _context.WorldId.Value && x.Id == id)
-      .Include(x => x.Moves).ThenInclude(x => x.Move)
-      .Include(x => x.Species).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return variety is null ? null : await MapAsync(variety, cancellationToken);
   }
@@ -61,8 +59,7 @@ internal class VarietyQuerier : IVarietyQuerier
   {
     VarietyEntity? variety = await _varieties.AsNoTracking()
       .Where(x => x.World!.StreamId == _context.WorldId.Value && x.Key == SlugHelper.Format(key))
-      .Include(x => x.Moves).ThenInclude(x => x.Move)
-      .Include(x => x.Species).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return variety is null ? null : await MapAsync(variety, cancellationToken);
   }

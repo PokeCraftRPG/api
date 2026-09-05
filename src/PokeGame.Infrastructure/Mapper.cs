@@ -4,6 +4,7 @@ using Logitar;
 using Logitar.EventSourcing;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Assets.Models;
+using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
@@ -60,6 +61,73 @@ internal class Mapper
       Summary = source.Summary,
       Content = source.Content
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public FormDto ToForm(FormEntity source)
+  {
+    VarietyEntity variety = source.Variety ?? throw new ArgumentException("The variety is required.", nameof(source));
+    FormDto destination = new()
+    {
+      Id = source.Id,
+      Variety = ToVariety(variety),
+      Category = source.Category,
+      Key = source.Key,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content
+    };
+
+    destination.Types.Primary = source.PrimaryType;
+    destination.Types.Secondary = source.SecondaryType;
+
+    AbilityEntity primaryAbility = source.PrimaryAbility ?? throw new ArgumentException("The primary ability is required.", nameof(source));
+    destination.Abilities.Primary = ToAbility(primaryAbility);
+    if (source.SecondaryAbility is not null)
+    {
+      destination.Abilities.Secondary = ToAbility(source.SecondaryAbility);
+    }
+    else if (source.SecondaryAbilityId.HasValue)
+    {
+      throw new ArgumentException("The secondary ability is required.", nameof(source));
+    }
+    if (source.HiddenAbility is not null)
+    {
+      destination.Abilities.Hidden = ToAbility(source.HiddenAbility);
+    }
+    else if (source.HiddenAbilityId.HasValue)
+    {
+      throw new ArgumentException("The hidden ability is required.", nameof(source));
+    }
+
+    destination.BaseStatistics.HP = source.BaseHP;
+    destination.BaseStatistics.Attack = source.BaseAttack;
+    destination.BaseStatistics.Defense = source.BaseDefense;
+    destination.BaseStatistics.SpecialAttack = source.BaseSpecialAttack;
+    destination.BaseStatistics.SpecialDefense = source.BaseSpecialDefense;
+    destination.BaseStatistics.Speed = source.BaseSpeed;
+
+    destination.Yield.Experience = source.YieldExperience;
+    destination.Yield.HP = source.YieldHP;
+    destination.Yield.Attack = source.YieldAttack;
+    destination.Yield.Defense = source.YieldDefense;
+    destination.Yield.SpecialAttack = source.YieldSpecialAttack;
+    destination.Yield.SpecialDefense = source.YieldSpecialDefense;
+    destination.Yield.Speed = source.YieldSpeed;
+
+    if (source.Height.HasValue && source.Weight.HasValue)
+    {
+      destination.Size = new FormSizeDto
+      {
+        Height = source.Height.Value,
+        Weight = source.Weight.Value
+      };
+    }
+
+    // TODO(fpion): Sprites
 
     MapAggregate(source, destination);
 
