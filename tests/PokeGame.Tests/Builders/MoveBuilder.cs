@@ -1,4 +1,4 @@
-using Bogus;
+﻿using Bogus;
 using Logitar.EventSourcing;
 using PokeGame.Core;
 using PokeGame.Core.Moves;
@@ -120,14 +120,8 @@ public class MoveBuilder : IMoveBuilder
       ? new(_moveId.Value, _type, _category, key, actorId)
       : new(world, _type, _category, key, actorId);
 
-    move.Update(
-      Name.TryCreate(_name),
-      Summary.TryCreate(_summary),
-      Content.TryCreate(_content),
-      Accuracy.TryCreate(_accuracy),
-      Power.TryCreate(_power),
-      PowerPoints.TryCreate(_powerPoints),
-      actorId);
+    move.Update(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
+    move.SetMechanics(Accuracy.TryCreate(_accuracy), Power.TryCreate(_power), PowerPoints.TryCreate(_powerPoints), actorId);
 
     return move;
   }
