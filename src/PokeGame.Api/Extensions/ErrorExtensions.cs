@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using PokeGame.Core;
 using PokeGame.Core.Assets;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Membership;
 using PokeGame.Core.Permissions;
 
 namespace PokeGame.Api.Extensions;
@@ -42,9 +43,13 @@ internal static class ErrorExtensions
     {
       return StatusCodes.Status404NotFound;
     }
-    if (exception is ConflictException || exception is ImmutablePropertyException)
+    if (exception is ConflictException)
     {
       return StatusCodes.Status409Conflict;
+    }
+    if (exception is MemberInvitationExpiredException)
+    {
+      return StatusCodes.Status410Gone;
     }
     if (exception is MediaTypeNotSupportedException)
     {

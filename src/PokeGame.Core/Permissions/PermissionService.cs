@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PokeGame.Core.Membership;
 using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Permissions;
@@ -47,6 +48,11 @@ internal class PermissionService : IPermissionService
       entity = world.GetEntity();
       isAllowed = IsAllowed(action, world);
     }
+    else if (resource is MemberInvitation invitation)
+    {
+      entity = invitation.GetEntity();
+      isAllowed = IsAllowed(action, invitation);
+    }
     else if (resource is IEntityProvider provider)
     {
       entity = provider.GetEntity();
@@ -68,6 +74,7 @@ internal class PermissionService : IPermissionService
       case Actions.CreateRegion:
       case Actions.CreateSpecies:
       case Actions.CreateVariety:
+      case Actions.InviteMember:
       case Actions.Upload:
         return _context.IsWorldOwner;
       case Actions.CreateWorld:
@@ -84,6 +91,20 @@ internal class PermissionService : IPermissionService
     {
       case Actions.Update:
         return world.OwnerId == _context.TryGetUserId();
+      default:
+        return false;
+    }
+  }
+
+  private bool IsAllowed(string action, MemberInvitation invitation)
+  {
+    switch (action)
+    {
+      case Actions.Accept:
+      case Actions.Decline:
+        return invitation.UserId == _context.TryGetUserId();
+      case Actions.Cancel:
+        return _context.IsWorldOwner && invitation.WorldId == _context.TryGetWorldId();
       default:
         return false;
     }
