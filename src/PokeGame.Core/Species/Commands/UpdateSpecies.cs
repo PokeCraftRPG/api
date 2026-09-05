@@ -49,19 +49,27 @@ internal class UpdateSpeciesCommandHandler : ICommandHandler<UpdateSpeciesComman
       species.SetKey(new Key(payload.Key), actorId);
     }
 
-    if (payload.Name is not null || payload.Summary is not null || payload.Content is not null
-      || payload.BaseFriendship is not null || payload.CatchRate is not null || payload.GrowthRate is not null
-      || payload.Eggs is not null)
+    if (payload.Name is not null || payload.Summary is not null || payload.Content is not null)
     {
-      species.Update(
+      species.SetDetails(
         payload.Name is null ? species.Name : Name.TryCreate(payload.Name.Value),
         payload.Summary is null ? species.Summary : Summary.TryCreate(payload.Summary.Value),
         payload.Content is null ? species.Content : Content.TryCreate(payload.Content.Value),
+        actorId);
+    }
+
+    if (payload.BaseFriendship is not null || payload.CatchRate is not null || payload.GrowthRate is not null)
+    {
+      species.SetProgression(
         payload.BaseFriendship is null ? species.BaseFriendship : new Friendship(payload.BaseFriendship.Value),
         payload.CatchRate is null ? species.CatchRate : new CatchRate(payload.CatchRate.Value),
         payload.GrowthRate is null ? species.GrowthRate : payload.GrowthRate.Value,
-        payload.Eggs is null ? species.Eggs : SpeciesEggs.From(payload.Eggs),
         actorId);
+    }
+
+    if (payload.Eggs is not null)
+    {
+      species.SetBreeding(payload.Eggs is null ? species.Eggs : SpeciesEggs.From(payload.Eggs), actorId);
     }
 
     await _speciesManager.EnsureUnicityAsync(species, cancellationToken);

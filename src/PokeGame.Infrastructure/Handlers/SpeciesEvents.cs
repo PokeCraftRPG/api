@@ -7,21 +7,25 @@ using PokeGame.Infrastructure.Entities;
 namespace PokeGame.Infrastructure.Handlers;
 
 internal class SpeciesEvents :
+  IEventHandler<SpeciesBreedingChanged>,
   IEventHandler<SpeciesCreated>,
   IEventHandler<SpeciesDeleted>,
+  IEventHandler<SpeciesDetailsChanged>,
   IEventHandler<SpeciesKeyChanged>,
+  IEventHandler<SpeciesProgressionChanged>,
   IEventHandler<SpeciesRegionalNumberChanged>,
-  IEventHandler<SpeciesRegionalNumberRemoved>,
-  IEventHandler<SpeciesUpdated>
+  IEventHandler<SpeciesRegionalNumberRemoved>
 {
   public static void Register(IServiceCollection services)
   {
+    services.AddTransient<IEventHandler<SpeciesBreedingChanged>, SpeciesEvents>();
     services.AddTransient<IEventHandler<SpeciesCreated>, SpeciesEvents>();
     services.AddTransient<IEventHandler<SpeciesDeleted>, SpeciesEvents>();
+    services.AddTransient<IEventHandler<SpeciesDetailsChanged>, SpeciesEvents>();
     services.AddTransient<IEventHandler<SpeciesKeyChanged>, SpeciesEvents>();
+    services.AddTransient<IEventHandler<SpeciesProgressionChanged>, SpeciesEvents>();
     services.AddTransient<IEventHandler<SpeciesRegionalNumberChanged>, SpeciesEvents>();
     services.AddTransient<IEventHandler<SpeciesRegionalNumberRemoved>, SpeciesEvents>();
-    services.AddTransient<IEventHandler<SpeciesUpdated>, SpeciesEvents>();
   }
 
   private readonly PokemonContext _pokemon;
@@ -29,6 +33,17 @@ internal class SpeciesEvents :
   public SpeciesEvents(PokemonContext pokemon)
   {
     _pokemon = pokemon;
+  }
+
+  public async Task HandleAsync(SpeciesBreedingChanged @event, CancellationToken cancellationToken)
+  {
+    SpeciesEntity? species = await _pokemon.Species.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (species is not null && species.Version == (@event.Version - 1))
+    {
+      species.SetBreeding(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
   }
 
   public async Task HandleAsync(SpeciesCreated @event, CancellationToken cancellationToken)
@@ -57,12 +72,34 @@ internal class SpeciesEvents :
     }
   }
 
+  public async Task HandleAsync(SpeciesDetailsChanged @event, CancellationToken cancellationToken)
+  {
+    SpeciesEntity? species = await _pokemon.Species.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (species is not null && species.Version == (@event.Version - 1))
+    {
+      species.SetDetails(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
   public async Task HandleAsync(SpeciesKeyChanged @event, CancellationToken cancellationToken)
   {
     SpeciesEntity? species = await _pokemon.Species.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (species is not null && species.Version == (@event.Version - 1))
     {
       species.SetKey(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(SpeciesProgressionChanged @event, CancellationToken cancellationToken)
+  {
+    SpeciesEntity? species = await _pokemon.Species.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (species is not null && species.Version == (@event.Version - 1))
+    {
+      species.SetProgression(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
@@ -94,17 +131,6 @@ internal class SpeciesEvents :
     if (species is not null && species.Version == (@event.Version - 1))
     {
       species.RemoveRegionalNumbers(@event);
-
-      await _pokemon.SaveChangesAsync(cancellationToken);
-    }
-  }
-
-  public async Task HandleAsync(SpeciesUpdated @event, CancellationToken cancellationToken)
-  {
-    SpeciesEntity? species = await _pokemon.Species.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
-    if (species is not null && species.Version == (@event.Version - 1))
-    {
-      species.Update(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
