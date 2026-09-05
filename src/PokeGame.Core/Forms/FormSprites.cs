@@ -5,6 +5,8 @@ namespace PokeGame.Core.Forms;
 
 public sealed record FormSprites
 {
+  // TODO(fpion): all assets must be Image.
+
   public AssetId DefaultId { get; }
   public AssetId ShinyId { get; }
   public AssetId? FemaleId { get; }
