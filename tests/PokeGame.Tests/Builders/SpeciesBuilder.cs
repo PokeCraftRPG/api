@@ -1,4 +1,4 @@
-using Bogus;
+﻿using Bogus;
 using Logitar.EventSourcing;
 using PokeGame.Core;
 using PokeGame.Core.Species;
@@ -128,20 +128,15 @@ public class SpeciesBuilder : ISpeciesBuilder
     ActorId actorId = world.OwnerId.ActorId;
     Key key = new(_key);
     Number number = new(_number);
+    Friendship baseFriendship = new(_baseFriendship);
+    CatchRate catchRate = new(_catchRate);
+    SpeciesEggs eggs = new(_eggCycles, _primaryEggGroup, _secondaryEggGroup);
 
     PokemonSpecies species = _speciesId.HasValue
-      ? new(_speciesId.Value, number, _category, key, actorId)
-      : new(world, number, _category, key, actorId);
+      ? new(_speciesId.Value, number, _category, key, baseFriendship, catchRate, _growthRate, eggs, actorId)
+      : new(world, number, _category, key, baseFriendship, catchRate, _growthRate, eggs, actorId);
 
-    species.Update(
-      Name.TryCreate(_name),
-      Summary.TryCreate(_summary),
-      Content.TryCreate(_content),
-      new Friendship(_baseFriendship),
-      new CatchRate(_catchRate),
-      _growthRate,
-      new SpeciesEggs(_eggCycles, _primaryEggGroup, _secondaryEggGroup),
-      actorId);
+    species.SetDetails(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
 
     return species;
   }

@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
@@ -141,7 +141,7 @@ public class SpeciesIntegrationTests : IntegrationTests
     Assert.NotNull(species);
 
     Assert.Equal(id, species.Id);
-    Assert.Equal(3, species.Version);
+    Assert.Equal(5, species.Version);
     Assert.Equal(_seeded.CreatedBy, species.CreatedBy);
     Assert.Equal(_seeded.CreatedOn, species.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, species.UpdatedBy);
@@ -522,7 +522,7 @@ public class SpeciesIntegrationTests : IntegrationTests
     Assert.NotNull(species);
 
     Assert.Equal(id, species.Id);
-    Assert.Equal(3, species.Version);
+    Assert.Equal(5, species.Version);
     Assert.Equal(_seeded.CreatedBy, species.CreatedBy);
     Assert.Equal(_seeded.CreatedOn, species.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, species.UpdatedBy);

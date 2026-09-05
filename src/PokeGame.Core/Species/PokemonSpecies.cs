@@ -27,6 +27,7 @@ public sealed class PokemonSpecies : AggregateRoot, IEntityProvider
   public Friendship BaseFriendship { get; private set; } = new();
   public CatchRate CatchRate { get; private set; } = new();
   public GrowthRate GrowthRate { get; private set; }
+
   public SpeciesEggs Eggs { get; private set; } = new();
 
   private readonly Dictionary<RegionId, Number> _regionalNumbers = [];
@@ -36,20 +37,36 @@ public sealed class PokemonSpecies : AggregateRoot, IEntityProvider
   {
   }
 
-  public PokemonSpecies(World world, Number number, SpeciesCategory category, Key key, ActorId? actorId = null)
-    : this(SpeciesId.NewId(world.Id), number, category, key, actorId)
+  public PokemonSpecies(
+    World world,
+    Number number,
+    SpeciesCategory category,
+    Key key,
+    Friendship baseFriendship,
+    CatchRate catchRate,
+    GrowthRate growthRate,
+    SpeciesEggs eggs,
+    ActorId? actorId = null) : this(SpeciesId.NewId(world.Id), number, category, key, baseFriendship, catchRate, growthRate, eggs, actorId)
   {
   }
 
-  public PokemonSpecies(SpeciesId speciesId, Number number, SpeciesCategory category, Key key, ActorId? actorId = null)
-    : base(speciesId.StreamId)
+  public PokemonSpecies(
+    SpeciesId speciesId,
+    Number number,
+    SpeciesCategory category,
+    Key key,
+    Friendship baseFriendship,
+    CatchRate catchRate,
+    GrowthRate growthRate,
+    SpeciesEggs eggs,
+    ActorId? actorId = null) : base(speciesId.StreamId)
   {
     if (!Enum.IsDefined(category))
     {
       throw new ArgumentOutOfRangeException(nameof(category));
     }
 
-    Raise(new SpeciesCreated(number, category, key), actorId);
+    Raise(new SpeciesCreated(number, category, key, baseFriendship, catchRate, growthRate, eggs), actorId);
   }
   private void Handle(SpeciesCreated @event)
   {
@@ -57,6 +74,12 @@ public sealed class PokemonSpecies : AggregateRoot, IEntityProvider
     Category = @event.Category;
 
     _key = @event.Key;
+
+    BaseFriendship = @event.BaseFriendship;
+    CatchRate = @event.CatchRate;
+    GrowthRate = @event.GrowthRate;
+
+    Eggs = @event.Eggs;
   }
 
   public void Delete(ActorId? actorId = null)
@@ -68,6 +91,32 @@ public sealed class PokemonSpecies : AggregateRoot, IEntityProvider
   }
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId);
+
+  public void SetBreeding(SpeciesEggs eggs, ActorId? actorId = null)
+  {
+    if (!Equals(Eggs, eggs))
+    {
+      Raise(new SpeciesBreedingChanged(eggs), actorId);
+    }
+  }
+  private void Handle(SpeciesBreedingChanged @event)
+  {
+    Eggs = @event.Eggs;
+  }
+
+  public void SetDetails(Name? name, Summary? summary, Content? content, ActorId? actorId = null)
+  {
+    if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content))
+    {
+      Raise(new SpeciesDetailsChanged(name, summary, content), actorId);
+    }
+  }
+  private void Handle(SpeciesDetailsChanged @event)
+  {
+    Name = @event.Name;
+    Summary = @event.Summary;
+    Content = @event.Content;
+  }
 
   public void SetKey(Key key, ActorId? actorId = null)
   {
@@ -81,33 +130,18 @@ public sealed class PokemonSpecies : AggregateRoot, IEntityProvider
     _key = @event.Key;
   }
 
-  public void Update(
-    Name? name,
-    Summary? summary,
-    Content? content,
-    Friendship baseFriendship,
-    CatchRate catchRate,
-    GrowthRate growthRate,
-    SpeciesEggs eggs,
-    ActorId? actorId = null)
+  public void SetProgression(Friendship baseFriendship, CatchRate catchRate, GrowthRate growthRate, ActorId? actorId = null)
   {
-    if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content)
-      || !Equals(BaseFriendship, baseFriendship) || !Equals(CatchRate, catchRate) || !Equals(GrowthRate, growthRate)
-      || !Equals(Eggs, eggs))
+    if (!Equals(BaseFriendship, baseFriendship) || !Equals(CatchRate, catchRate) || !Equals(growthRate, growthRate))
     {
-      Raise(new SpeciesUpdated(name, summary, content, baseFriendship, catchRate, growthRate, eggs), actorId);
+      Raise(new SpeciesProgressionChanged(baseFriendship, catchRate, growthRate), actorId);
     }
   }
-  private void Handle(SpeciesUpdated @event)
+  private void Handle(SpeciesProgressionChanged @event)
   {
-    Name = @event.Name;
-    Summary = @event.Summary;
-    Content = @event.Content;
-
     BaseFriendship = @event.BaseFriendship;
     CatchRate = @event.CatchRate;
     GrowthRate = @event.GrowthRate;
-    Eggs = @event.Eggs;
   }
 
   #region Regional Numbers
