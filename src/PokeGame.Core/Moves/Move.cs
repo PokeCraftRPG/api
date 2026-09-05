@@ -1,4 +1,6 @@
-﻿using Logitar.EventSourcing;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using Logitar.EventSourcing;
 using PokeGame.Core.Moves.Events;
 using PokeGame.Core.Worlds;
 
@@ -6,8 +8,6 @@ namespace PokeGame.Core.Moves;
 
 public sealed class Move : AggregateRoot, IEntityProvider
 {
-  // TODO(fpion): Power should be null when Category == Status.
-
   public const string EntityKind = "Move";
 
   public new MoveId Id => new(base.Id);
@@ -83,6 +83,15 @@ public sealed class Move : AggregateRoot, IEntityProvider
 
   public void SetMechanics(Accuracy? accuracy, Power? power, PowerPoints? powerPoints, ActorId? actorId = null)
   {
+    if (Category == MoveCategory.Status && power is not null)
+    {
+      ValidationFailure failure = new(nameof(Power), "A status move cannot have power.", power.Value)
+      {
+        ErrorCode = "InvalidMovePower"
+      };
+      throw new ValidationException([failure]);
+    }
+
     if (!Equals(Accuracy, accuracy) || !Equals(Power, power) || !Equals(PowerPoints, powerPoints))
     {
       Raise(new MoveMechanicsChanged(accuracy, power, powerPoints), actorId);
