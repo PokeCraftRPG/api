@@ -72,7 +72,9 @@ internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, For
     {
       form.SetTraits(
         payload.Size is null ? form.Size : payload.Size.Value is null ? null : FormSize.From(payload.Size.Value),
-        payload.Sprites is null ? form.Sprites : null!, // TODO(fpion): implement
+        payload.Sprites is null
+          ? form.Sprites
+          : (payload.Sprites.Value is null ? null : await _formManager.ResolveSpritesAsync(payload.Sprites.Value, nameof(payload.Sprites), cancellationToken)),
         actorId);
     }
 

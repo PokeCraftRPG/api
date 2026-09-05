@@ -21,6 +21,8 @@ public sealed record FormSprites
     new Validator().ValidateAndThrow(this);
   }
 
+  public static FormSprites From(Asset @default, Asset shiny, Asset? female = null, Asset? femaleShiny = null) => new(@default.Id, shiny.Id, female?.Id, femaleShiny?.Id);
+
   private class Validator : AbstractValidator<FormSprites>
   {
     public Validator()

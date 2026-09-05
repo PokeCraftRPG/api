@@ -53,7 +53,7 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
     BaseStatistics baseStatistics = BaseStatistics.From(payload.BaseStatistics);
     FormYield yield = FormYield.From(payload.Yield);
     FormSize? size = payload.Size is null ? null : FormSize.From(payload.Size);
-    FormSprites? sprites = payload.Sprites is null ? null : null!; // TODO(fpion): implement
+    FormSprites? sprites = payload.Sprites is null ? null : await _formManager.ResolveSpritesAsync(payload.Sprites, nameof(payload.Sprites), cancellationToken);
 
     bool created = false;
     if (form is null)

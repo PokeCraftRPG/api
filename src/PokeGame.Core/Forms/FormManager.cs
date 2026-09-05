@@ -1,5 +1,6 @@
 ﻿using Logitar.EventSourcing;
 using PokeGame.Core.Abilities;
+using PokeGame.Core.Assets;
 using PokeGame.Core.Forms.Events;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Worlds;
@@ -10,17 +11,20 @@ public interface IFormManager
 {
   Task EnsureUnicityAsync(Form form, CancellationToken cancellationToken = default);
   Task<FormAbilities> ResolveAbilitiesAsync(FormAbilitiesPayload payload, string propertyName, CancellationToken cancellationToken = default);
+  Task<FormSprites> ResolveSpritesAsync(FormSpritesPayload payload, string propertyName, CancellationToken cancellationToken = default);
 }
 
 internal class FormManager : IFormManager
 {
   private readonly IAbilityRepository _abilityRepository;
+  private readonly IAssetRepository _assetRepository;
   private readonly IContext _context;
   private readonly IFormQuerier _formQuerier;
 
-  public FormManager(IAbilityRepository abilityRepository, IContext context, IFormQuerier formQuerier)
+  public FormManager(IAbilityRepository abilityRepository, IAssetRepository assetRepository, IContext context, IFormQuerier formQuerier)
   {
     _abilityRepository = abilityRepository;
+    _assetRepository = assetRepository;
     _context = context;
     _formQuerier = formQuerier;
   }
@@ -64,22 +68,58 @@ internal class FormManager : IFormManager
     {
       abilityIds.Add(new AbilityId(worldId, payload.HiddenId.Value));
     }
-    Dictionary<AbilityId, Ability> abilitiesById = (await _abilityRepository.LoadAsync(abilityIds, cancellationToken)).ToDictionary(x => x.Id, x => x);
+    Dictionary<AbilityId, Ability> abilities = (await _abilityRepository.LoadAsync(abilityIds, cancellationToken)).ToDictionary(x => x.Id, x => x);
 
     AbilityId abilityId = new(worldId, payload.PrimaryId);
-    Ability primary = abilitiesById.GetValueOrDefault(abilityId) ?? throw new EntityNotFoundException(abilityId, $"{propertyName}.{nameof(payload.PrimaryId)}");
+    Ability primary = abilities.GetValueOrDefault(abilityId) ?? throw new EntityNotFoundException(abilityId, $"{propertyName}.{nameof(payload.PrimaryId)}");
     Ability? secondary = null;
     Ability? hidden = null;
     if (payload.SecondaryId.HasValue)
     {
       abilityId = new AbilityId(worldId, payload.SecondaryId.Value);
-      secondary = abilitiesById.GetValueOrDefault(abilityId) ?? throw new EntityNotFoundException(abilityId, $"{propertyName}.{nameof(payload.SecondaryId)}");
+      secondary = abilities.GetValueOrDefault(abilityId) ?? throw new EntityNotFoundException(abilityId, $"{propertyName}.{nameof(payload.SecondaryId)}");
     }
     if (payload.HiddenId.HasValue)
     {
       abilityId = new AbilityId(worldId, payload.HiddenId.Value);
-      hidden = abilitiesById.GetValueOrDefault(abilityId) ?? throw new EntityNotFoundException(abilityId, $"{propertyName}.{nameof(payload.HiddenId)}");
+      hidden = abilities.GetValueOrDefault(abilityId) ?? throw new EntityNotFoundException(abilityId, $"{propertyName}.{nameof(payload.HiddenId)}");
     }
     return FormAbilities.From(primary, secondary, hidden);
+  }
+
+  public async Task<FormSprites> ResolveSpritesAsync(FormSpritesPayload payload, string propertyName, CancellationToken cancellationToken)
+  {
+    WorldId worldId = _context.WorldId;
+
+    HashSet<AssetId> assetIds = new(capacity: 4);
+    assetIds.Add(new AssetId(worldId, payload.DefaultId));
+    assetIds.Add(new AssetId(worldId, payload.ShinyId));
+    if (payload.FemaleId.HasValue)
+    {
+      assetIds.Add(new AssetId(worldId, payload.FemaleId.Value));
+    }
+    if (payload.FemaleShinyId.HasValue)
+    {
+      assetIds.Add(new AssetId(worldId, payload.FemaleShinyId.Value));
+    }
+    Dictionary<AssetId, Asset> assets = (await _assetRepository.LoadAsync(assetIds, cancellationToken)).ToDictionary(x => x.Id, x => x);
+
+    AssetId assetId = new(worldId, payload.DefaultId);
+    Asset @default = assets.GetValueOrDefault(assetId) ?? throw new EntityNotFoundException(assetId, $"{propertyName}.{nameof(payload.DefaultId)}");
+    assetId = new AssetId(worldId, payload.ShinyId);
+    Asset shiny = assets.GetValueOrDefault(assetId) ?? throw new EntityNotFoundException(assetId, $"{propertyName}.{nameof(payload.ShinyId)}");
+    Asset? female = null;
+    Asset? femaleShiny = null;
+    if (payload.FemaleId.HasValue)
+    {
+      assetId = new AssetId(worldId, payload.FemaleId.Value);
+      female = assets.GetValueOrDefault(assetId) ?? throw new EntityNotFoundException(assetId, $"{propertyName}.{nameof(payload.FemaleId)}");
+    }
+    if (payload.FemaleShinyId.HasValue)
+    {
+      assetId = new AssetId(worldId, payload.FemaleShinyId.Value);
+      femaleShiny = assets.GetValueOrDefault(assetId) ?? throw new EntityNotFoundException(assetId, $"{propertyName}.{nameof(payload.FemaleShinyId)}");
+    }
+    return FormSprites.From(@default, shiny, female, femaleShiny);
   }
 }
