@@ -51,7 +51,7 @@ internal class UpdateAbilityCommandHandler : ICommandHandler<UpdateAbilityComman
 
     if (payload.Name is not null || payload.Summary is not null || payload.Content is not null)
     {
-      ability.Update(
+      ability.SetDetails(
         payload.Name is null ? ability.Name : Name.TryCreate(payload.Name.Value),
         payload.Summary is null ? ability.Summary : Summary.TryCreate(payload.Summary.Value),
         payload.Content is null ? ability.Content : Content.TryCreate(payload.Content.Value),

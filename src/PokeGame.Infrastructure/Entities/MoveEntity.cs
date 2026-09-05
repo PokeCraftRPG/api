@@ -49,6 +49,15 @@ internal class MoveEntity : AggregateEntity
     Key = @event.Key.Value;
   }
 
+  public void SetDetails(MoveDetailsChanged @event)
+  {
+    Update(@event);
+
+    Name = @event.Name?.Value;
+    Summary = @event.Summary?.Value;
+    Content = @event.Content?.Value;
+  }
+
   public void SetMechanics(MoveMechanicsChanged @event)
   {
     Update(@event);
@@ -56,15 +65,6 @@ internal class MoveEntity : AggregateEntity
     Accuracy = @event.Accuracy?.Value;
     Power = @event.Power?.Value;
     PowerPoints = @event.PowerPoints?.Value;
-  }
-
-  public void Update(MoveUpdated @event)
-  {
-    base.Update(@event);
-
-    Name = @event.Name?.Value;
-    Summary = @event.Summary?.Value;
-    Content = @event.Content?.Value;
   }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";

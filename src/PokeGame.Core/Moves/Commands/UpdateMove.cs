@@ -51,7 +51,7 @@ internal class UpdateMoveCommandHandler : ICommandHandler<UpdateMoveCommand, Mov
 
     if (payload.Name is not null || payload.Summary is not null || payload.Content is not null)
     {
-      move.Update(
+      move.SetDetails(
         payload.Name is null ? move.Name : Name.TryCreate(payload.Name.Value),
         payload.Summary is null ? move.Summary : Summary.TryCreate(payload.Summary.Value),
         payload.Content is null ? move.Content : Content.TryCreate(payload.Content.Value),

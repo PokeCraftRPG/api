@@ -48,6 +48,20 @@ public sealed class Region : AggregateRoot, IEntityProvider
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId);
 
+  public void SetDetails(Name? name, Summary? summary, Content? content, ActorId? actorId = null)
+  {
+    if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content))
+    {
+      Raise(new RegionDetailsChanged(name, summary, content), actorId);
+    }
+  }
+  private void Handle(RegionDetailsChanged @event)
+  {
+    Name = @event.Name;
+    Summary = @event.Summary;
+    Content = @event.Content;
+  }
+
   public void SetKey(Key key, ActorId? actorId = null)
   {
     if (!Equals(Key, key))
@@ -58,20 +72,6 @@ public sealed class Region : AggregateRoot, IEntityProvider
   private void Handle(RegionKeyChanged @event)
   {
     _key = @event.Key;
-  }
-
-  public void Update(Name? name, Summary? summary, Content? content, ActorId? actorId = null)
-  {
-    if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content))
-    {
-      Raise(new RegionUpdated(name, summary, content), actorId);
-    }
-  }
-  private void Handle(RegionUpdated @event)
-  {
-    Name = @event.Name;
-    Summary = @event.Summary;
-    Content = @event.Content;
   }
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";

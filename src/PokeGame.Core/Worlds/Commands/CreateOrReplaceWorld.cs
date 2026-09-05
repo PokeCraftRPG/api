@@ -60,7 +60,7 @@ internal class CreateOrReplaceWorldCommandHandler : ICommandHandler<CreateOrRepl
       world.SetKey(key, actorId);
     }
 
-    world.Update(Name.TryCreate(payload.Name), Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
+    world.SetDetails(Name.TryCreate(payload.Name), Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
 
     await _worldManager.EnsureUnicityAsync(world, cancellationToken);
     await _worldRepository.SaveAsync(world, cancellationToken);

@@ -2,7 +2,7 @@
 
 namespace PokeGame.Core.Varieties.Events;
 
-public sealed record VarietyUpdated(
+public sealed record VarietyDetailsChanged(
   Name? Name,
   Summary? Summary,
   Content? Content,

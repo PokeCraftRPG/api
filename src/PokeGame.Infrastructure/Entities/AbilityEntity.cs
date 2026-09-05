@@ -1,4 +1,4 @@
-using PokeGame.Core;
+﻿using PokeGame.Core;
 using PokeGame.Core.Abilities.Events;
 
 namespace PokeGame.Infrastructure.Entities;
@@ -29,20 +29,20 @@ internal class AbilityEntity : AggregateEntity
   {
   }
 
+  public void SetDetails(AbilityDetailsChanged @event)
+  {
+    Update(@event);
+
+    Name = @event.Name?.Value;
+    Summary = @event.Summary?.Value;
+    Content = @event.Content?.Value;
+  }
+
   public void SetKey(AbilityKeyChanged @event)
   {
     Update(@event);
 
     Key = @event.Key.Value;
-  }
-
-  public void Update(AbilityUpdated @event)
-  {
-    base.Update(@event);
-
-    Name = @event.Name?.Value;
-    Summary = @event.Summary?.Value;
-    Content = @event.Content?.Value;
   }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";

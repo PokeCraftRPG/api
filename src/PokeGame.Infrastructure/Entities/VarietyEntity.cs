@@ -71,6 +71,19 @@ internal class VarietyEntity : AggregateEntity
     IsDefault = @event.IsDefault;
   }
 
+  public void SetDetails(VarietyDetailsChanged @event)
+  {
+    Update(@event);
+
+    Name = @event.Name?.Value;
+    Summary = @event.Summary?.Value;
+    Content = @event.Content?.Value;
+
+    CanChangeForm = @event.CanChangeForm;
+    GenderRatio = @event.GenderRatio?.FemaleRate;
+    Genus = @event.Genus?.Value;
+  }
+
   public void SetKey(VarietyKeyChanged @event)
   {
     Update(@event);
@@ -96,19 +109,6 @@ internal class VarietyEntity : AggregateEntity
     {
       move.Update(@event);
     }
-  }
-
-  public void Update(VarietyUpdated @event)
-  {
-    base.Update(@event);
-
-    Name = @event.Name?.Value;
-    Summary = @event.Summary?.Value;
-    Content = @event.Content?.Value;
-
-    CanChangeForm = @event.CanChangeForm;
-    GenderRatio = @event.GenderRatio?.FemaleRate;
-    Genus = @event.Genus?.Value;
   }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";

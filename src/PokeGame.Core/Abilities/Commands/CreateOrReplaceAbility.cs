@@ -60,7 +60,7 @@ internal class CreateOrReplaceAbilityCommandHandler : ICommandHandler<CreateOrRe
       ability.SetKey(key, actorId);
     }
 
-    ability.Update(Name.TryCreate(payload.Name), Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
+    ability.SetDetails(Name.TryCreate(payload.Name), Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
 
     await _abilityManager.EnsureUnicityAsync(ability, cancellationToken);
     await _abilityRepository.SaveAsync(ability, cancellationToken);

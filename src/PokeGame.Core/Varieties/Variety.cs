@@ -77,19 +77,7 @@ public sealed class Variety : AggregateRoot, IEntityProvider
     IsDefault = @event.IsDefault;
   }
 
-  public void SetKey(Key key, ActorId? actorId = null)
-  {
-    if (!Equals(Key, key))
-    {
-      Raise(new VarietyKeyChanged(key), actorId);
-    }
-  }
-  private void Handle(VarietyKeyChanged @event)
-  {
-    _key = @event.Key;
-  }
-
-  public void Update(
+  public void SetDetails(
     Name? name,
     Summary? summary,
     Content? content,
@@ -101,10 +89,10 @@ public sealed class Variety : AggregateRoot, IEntityProvider
     if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content)
       || !Equals(CanChangeForm, canChangeForm) || !Equals(GenderRatio, genderRatio) || !Equals(Genus, genus))
     {
-      Raise(new VarietyUpdated(name, summary, content, canChangeForm, genderRatio, genus), actorId);
+      Raise(new VarietyDetailsChanged(name, summary, content, canChangeForm, genderRatio, genus), actorId);
     }
   }
-  private void Handle(VarietyUpdated @event)
+  private void Handle(VarietyDetailsChanged @event)
   {
     Name = @event.Name;
     Summary = @event.Summary;
@@ -113,6 +101,18 @@ public sealed class Variety : AggregateRoot, IEntityProvider
     CanChangeForm = @event.CanChangeForm;
     GenderRatio = @event.GenderRatio;
     Genus = @event.Genus;
+  }
+
+  public void SetKey(Key key, ActorId? actorId = null)
+  {
+    if (!Equals(Key, key))
+    {
+      Raise(new VarietyKeyChanged(key), actorId);
+    }
+  }
+  private void Handle(VarietyKeyChanged @event)
+  {
+    _key = @event.Key;
   }
 
   #region Moves

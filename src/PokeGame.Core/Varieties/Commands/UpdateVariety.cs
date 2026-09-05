@@ -57,7 +57,7 @@ internal class UpdateVarietyCommandHandler : ICommandHandler<UpdateVarietyComman
     if (payload.Name is not null || payload.Summary is not null || payload.Content is not null
       || payload.CanChangeForm is not null || payload.GenderRatio is not null || payload.Genus is not null)
     {
-      variety.Update(
+      variety.SetDetails(
         payload.Name is null ? variety.Name : Name.TryCreate(payload.Name.Value),
         payload.Summary is null ? variety.Summary : Summary.TryCreate(payload.Summary.Value),
         payload.Content is null ? variety.Content : Content.TryCreate(payload.Content.Value),

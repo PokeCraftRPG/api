@@ -75,7 +75,7 @@ internal class CreateOrReplaceVarietyCommandHandler : ICommandHandler<CreateOrRe
 
     variety.SetDefault(payload.IsDefault, actorId);
 
-    variety.Update(
+    variety.SetDetails(
       Name.TryCreate(payload.Name),
       Summary.TryCreate(payload.Summary),
       Content.TryCreate(payload.Content),

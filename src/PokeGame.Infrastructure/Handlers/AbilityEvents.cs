@@ -9,15 +9,15 @@ namespace PokeGame.Infrastructure.Handlers;
 internal class AbilityEvents :
   IEventHandler<AbilityCreated>,
   IEventHandler<AbilityDeleted>,
-  IEventHandler<AbilityKeyChanged>,
-  IEventHandler<AbilityUpdated>
+  IEventHandler<AbilityDetailsChanged>,
+  IEventHandler<AbilityKeyChanged>
 {
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IEventHandler<AbilityCreated>, AbilityEvents>();
     services.AddTransient<IEventHandler<AbilityDeleted>, AbilityEvents>();
+    services.AddTransient<IEventHandler<AbilityDetailsChanged>, AbilityEvents>();
     services.AddTransient<IEventHandler<AbilityKeyChanged>, AbilityEvents>();
-    services.AddTransient<IEventHandler<AbilityUpdated>, AbilityEvents>();
   }
 
   private readonly PokemonContext _pokemon;
@@ -53,23 +53,23 @@ internal class AbilityEvents :
     }
   }
 
+  public async Task HandleAsync(AbilityDetailsChanged @event, CancellationToken cancellationToken)
+  {
+    AbilityEntity? ability = await _pokemon.Abilities.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (ability is not null && ability.Version == (@event.Version - 1))
+    {
+      ability.SetDetails(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
   public async Task HandleAsync(AbilityKeyChanged @event, CancellationToken cancellationToken)
   {
     AbilityEntity? ability = await _pokemon.Abilities.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (ability is not null && ability.Version == (@event.Version - 1))
     {
       ability.SetKey(@event);
-
-      await _pokemon.SaveChangesAsync(cancellationToken);
-    }
-  }
-
-  public async Task HandleAsync(AbilityUpdated @event, CancellationToken cancellationToken)
-  {
-    AbilityEntity? ability = await _pokemon.Abilities.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
-    if (ability is not null && ability.Version == (@event.Version - 1))
-    {
-      ability.Update(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

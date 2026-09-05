@@ -9,17 +9,17 @@ namespace PokeGame.Infrastructure.Handlers;
 internal class MoveEvents :
   IEventHandler<MoveCreated>,
   IEventHandler<MoveDeleted>,
+  IEventHandler<MoveDetailsChanged>,
   IEventHandler<MoveKeyChanged>,
-  IEventHandler<MoveMechanicsChanged>,
-  IEventHandler<MoveUpdated>
+  IEventHandler<MoveMechanicsChanged>
 {
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IEventHandler<MoveCreated>, MoveEvents>();
     services.AddTransient<IEventHandler<MoveDeleted>, MoveEvents>();
+    services.AddTransient<IEventHandler<MoveDetailsChanged>, MoveEvents>();
     services.AddTransient<IEventHandler<MoveKeyChanged>, MoveEvents>();
     services.AddTransient<IEventHandler<MoveMechanicsChanged>, MoveEvents>();
-    services.AddTransient<IEventHandler<MoveUpdated>, MoveEvents>();
   }
 
   private readonly PokemonContext _pokemon;
@@ -55,6 +55,17 @@ internal class MoveEvents :
     }
   }
 
+  public async Task HandleAsync(MoveDetailsChanged @event, CancellationToken cancellationToken)
+  {
+    MoveEntity? move = await _pokemon.Moves.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (move is not null && move.Version == (@event.Version - 1))
+    {
+      move.SetDetails(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
   public async Task HandleAsync(MoveKeyChanged @event, CancellationToken cancellationToken)
   {
     MoveEntity? move = await _pokemon.Moves.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
@@ -72,17 +83,6 @@ internal class MoveEvents :
     if (move is not null && move.Version == (@event.Version - 1))
     {
       move.SetMechanics(@event);
-
-      await _pokemon.SaveChangesAsync(cancellationToken);
-    }
-  }
-
-  public async Task HandleAsync(MoveUpdated @event, CancellationToken cancellationToken)
-  {
-    MoveEntity? move = await _pokemon.Moves.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
-    if (move is not null && move.Version == (@event.Version - 1))
-    {
-      move.Update(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
