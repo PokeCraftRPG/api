@@ -1,7 +1,5 @@
 ﻿using Logitar.CQRS;
 using Logitar.EventSourcing;
-using PokeGame.Core.Abilities;
-using PokeGame.Core.Assets;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Permissions;
 
@@ -11,8 +9,6 @@ internal record UpdateFormCommand(Guid Id, UpdateFormPayload Payload) : ICommand
 
 internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, FormDto?>
 {
-  private readonly IAbilityRepository _abilityRepository;
-  private readonly IAssetRepository _assetRepository;
   private readonly IContext _context;
   private readonly IFormManager _formManager;
   private readonly IFormQuerier _formQuerier;
@@ -20,16 +16,12 @@ internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, For
   private readonly IPermissionService _permissionService;
 
   public UpdateFormCommandHandler(
-    IAbilityRepository abilityRepository,
-    IAssetRepository assetRepository,
     IContext context,
     IFormManager formManager,
     IFormQuerier formQuerier,
     IFormRepository formRepository,
     IPermissionService permissionService)
   {
-    _abilityRepository = abilityRepository;
-    _assetRepository = assetRepository;
     _context = context;
     _formManager = formManager;
     _formQuerier = formQuerier;
@@ -70,7 +62,7 @@ internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, For
     {
       form.SetMechanics(
         payload.Types is null ? form.Types : FormTypes.From(payload.Types),
-        payload.Abilities is null ? form.Abilities : null!, // TODO(fpion): implement
+        payload.Abilities is null ? form.Abilities : await _formManager.ResolveAbilitiesAsync(payload.Abilities, nameof(payload.Abilities), cancellationToken),
         payload.BaseStatistics is null ? form.BaseStatistics : BaseStatistics.From(payload.BaseStatistics),
         payload.Yield is null ? form.Yield : FormYield.From(payload.Yield),
         actorId);

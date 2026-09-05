@@ -1,6 +1,5 @@
 ﻿using Logitar.CQRS;
 using Logitar.EventSourcing;
-using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Varieties;
@@ -11,7 +10,6 @@ internal record CreateOrReplaceFormCommand(CreateOrReplaceFormPayload Payload, G
 
 internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrReplaceFormCommand, CreateOrReplaceFormResult>
 {
-  private readonly IAbilityRepository _abilityRepository;
   private readonly IContext _context;
   private readonly IFormManager _formManager;
   private readonly IFormQuerier _formQuerier;
@@ -20,7 +18,6 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
   private readonly IVarietyRepository _varietyRepository;
 
   public CreateOrReplaceFormCommandHandler(
-    IAbilityRepository abilityRepository,
     IContext context,
     IFormManager formManager,
     IFormQuerier formQuerier,
@@ -28,7 +25,6 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
     IPermissionService permissionService,
     IVarietyRepository varietyRepository)
   {
-    _abilityRepository = abilityRepository;
     _context = context;
     _formManager = formManager;
     _formQuerier = formQuerier;
@@ -53,7 +49,7 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
     ActorId? actorId = _context.ActorId;
     Key key = new(payload.Key);
     FormTypes types = FormTypes.From(payload.Types);
-    FormAbilities abilities = null!; // TODO(fpion): implement
+    FormAbilities abilities = await _formManager.ResolveAbilitiesAsync(payload.Abilities, nameof(payload.Abilities), cancellationToken);
     BaseStatistics baseStatistics = BaseStatistics.From(payload.BaseStatistics);
     FormYield yield = FormYield.From(payload.Yield);
     FormSize? size = payload.Size is null ? null : FormSize.From(payload.Size);

@@ -17,6 +17,8 @@ public sealed record FormAbilities
     new Validator().ValidateAndThrow(this);
   }
 
+  public static FormAbilities From(Ability primary, Ability? secondary = null, Ability? hidden = null) => new(primary.Id, secondary?.Id, hidden?.Id);
+
   private class Validator : AbstractValidator<FormAbilities>
   {
     public Validator()
