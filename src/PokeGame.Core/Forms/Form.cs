@@ -62,6 +62,7 @@ public sealed class Form : AggregateRoot, IEntityProvider
     ActorId? actorId = null) : base(formId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(this, varietyId, nameof(varietyId));
+    EnsureSameWorld(abilities, nameof(abilities));
 
     if (!Enum.IsDefined(category))
     {
@@ -121,6 +122,8 @@ public sealed class Form : AggregateRoot, IEntityProvider
 
   public void SetMechanics(FormTypes types, FormAbilities abilities, BaseStatistics baseStatistics, FormYield yield, ActorId? actorId = null)
   {
+    EnsureSameWorld(abilities, nameof(abilities));
+
     if (!Equals(Types, types) || !Equals(Abilities, abilities) || !Equals(BaseStatistics, baseStatistics) || !Equals(Yield, yield))
     {
       Raise(new FormMechanicsChanged(types, abilities, baseStatistics, yield), actorId);
@@ -136,6 +139,11 @@ public sealed class Form : AggregateRoot, IEntityProvider
 
   public void SetTraits(FormSize? size, FormSprites? sprites, ActorId? actorId = null)
   {
+    if (sprites is not null)
+    {
+      EnsureSameWorld(sprites, nameof(sprites));
+    }
+
     if (!Equals(Size, size) || !Equals(Sprites, sprites))
     {
       Raise(new FormTraitsChanged(size, sprites), actorId);
@@ -148,4 +156,30 @@ public sealed class Form : AggregateRoot, IEntityProvider
   }
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";
+
+  private void EnsureSameWorld(FormAbilities abilities, string paramName)
+  {
+    WorldMismatchException.ThrowIfMismatch(this, abilities.PrimaryId, paramName);
+    if (abilities.SecondaryId.HasValue)
+    {
+      WorldMismatchException.ThrowIfMismatch(this, abilities.SecondaryId.Value, paramName);
+    }
+    if (abilities.HiddenId.HasValue)
+    {
+      WorldMismatchException.ThrowIfMismatch(this, abilities.HiddenId.Value, paramName);
+    }
+  }
+  private void EnsureSameWorld(FormSprites sprites, string paramName)
+  {
+    WorldMismatchException.ThrowIfMismatch(this, sprites.DefaultId, paramName);
+    WorldMismatchException.ThrowIfMismatch(this, sprites.ShinyId, paramName);
+    if (sprites.FemaleId.HasValue)
+    {
+      WorldMismatchException.ThrowIfMismatch(this, sprites.FemaleId.Value, paramName);
+    }
+    if (sprites.FemaleShinyId.HasValue)
+    {
+      WorldMismatchException.ThrowIfMismatch(this, sprites.FemaleShinyId.Value, paramName);
+    }
+  }
 }

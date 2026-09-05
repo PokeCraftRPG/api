@@ -16,6 +16,7 @@ public sealed record FormSprites
     ShinyId = shinyId;
     FemaleId = femaleId;
     FemaleShinyId = femaleShinyId;
+    new Validator().ValidateAndThrow(this);
   }
 
   private class Validator : AbstractValidator<FormSprites>
