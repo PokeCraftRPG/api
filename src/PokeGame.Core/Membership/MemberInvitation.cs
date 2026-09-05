@@ -6,7 +6,7 @@ using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Membership;
 
-public sealed class MemberInvitation : AggregateRoot
+public sealed class MemberInvitation : AggregateRoot, IEntityProvider
 {
   public const string EntityKind = "MemberInvitation";
 
@@ -120,6 +120,8 @@ public sealed class MemberInvitation : AggregateRoot
       Raise(new MemberInvitationDeleted(), actorId);
     }
   }
+
+  public Entity GetEntity() => new(EntityKind, EntityId, WorldId);
 
   public bool IsExpired(DateTime? moment = null) => ExpiresOn.HasValue && ExpiresOn.Value.AsUniversalTime() <= (moment?.AsUniversalTime() ?? DateTime.UtcNow);
 }
