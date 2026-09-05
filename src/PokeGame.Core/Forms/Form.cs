@@ -23,24 +23,43 @@ public sealed class Form : AggregateRoot, IEntityProvider
   public Summary? Summary { get; private set; }
   public Content? Content { get; private set; }
 
-  public FormTypes? Types { get; private set; }
-  public FormAbilities? Abilities { get; private set; }
+  public FormTypes Types { get; private set; } = new();
+  private FormAbilities? _abilities = null;
+  public FormAbilities Abilities => _abilities ?? throw new InvalidOperationException("The abilities were not initialized.");
+  private BaseStatistics? _baseStatistics = null;
+  public BaseStatistics BaseStatistics => _baseStatistics ?? throw new InvalidOperationException("The base statistics were not initialized.");
+  private FormYield? _yield = null;
+  public FormYield Yield => _yield ?? throw new InvalidOperationException("The yield was not initialized.");
+
   public FormSize? Size { get; private set; }
-  public BaseStatistics? BaseStatistics { get; private set; }
-  public Yield? Yield { get; private set; }
   public FormSprites? Sprites { get; private set; }
 
   public Form() : base()
   {
   }
 
-  public Form(Variety variety, FormCategory category, Key key, ActorId? actorId = null)
-    : this(FormId.NewId(variety.WorldId), category, variety.Id, key, actorId)
+  public Form(
+    Variety variety,
+    FormCategory category,
+    Key key,
+    FormTypes types,
+    FormAbilities abilities,
+    BaseStatistics statistics,
+    FormYield yield,
+    ActorId? actorId = null) : this(FormId.NewId(variety.WorldId), category, variety.Id, key, types, abilities, statistics, yield, actorId)
   {
   }
 
-  public Form(FormId formId, FormCategory category, VarietyId varietyId, Key key, ActorId? actorId = null)
-    : base(formId.StreamId)
+  public Form(
+    FormId formId,
+    FormCategory category,
+    VarietyId varietyId,
+    Key key,
+    FormTypes types,
+    FormAbilities abilities,
+    BaseStatistics statistics,
+    FormYield yield,
+    ActorId? actorId = null) : base(formId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(this, varietyId, nameof(varietyId));
 
@@ -49,7 +68,7 @@ public sealed class Form : AggregateRoot, IEntityProvider
       throw new ArgumentOutOfRangeException(nameof(category));
     }
 
-    Raise(new FormCreated(varietyId, category, key), actorId);
+    Raise(new FormCreated(varietyId, category, key, types, abilities, statistics, yield), actorId);
   }
   private void Handle(FormCreated @event)
   {
@@ -57,6 +76,11 @@ public sealed class Form : AggregateRoot, IEntityProvider
     Category = @event.Category;
 
     _key = @event.Key;
+
+    Types = @event.Types;
+    _abilities = @event.Abilities;
+    _baseStatistics = @event.Statistics;
+    _yield = @event.Yield;
   }
 
   public void Delete(ActorId? actorId = null)
@@ -93,6 +117,34 @@ public sealed class Form : AggregateRoot, IEntityProvider
   private void Handle(FormKeyChanged @event)
   {
     _key = @event.Key;
+  }
+
+  public void SetMechanics(FormTypes types, FormAbilities abilities, BaseStatistics baseStatistics, FormYield yield, ActorId? actorId = null)
+  {
+    if (!Equals(Types, types) || !Equals(Abilities, abilities) || !Equals(BaseStatistics, baseStatistics) || !Equals(Yield, yield))
+    {
+      Raise(new FormMechanicsChanged(types, abilities, baseStatistics, yield), actorId);
+    }
+  }
+  private void Handle(FormMechanicsChanged @event)
+  {
+    Types = @event.Types;
+    _abilities = @event.Abilities;
+    _baseStatistics = @event.BaseStatistics;
+    _yield = @event.Yield;
+  }
+
+  public void SetTraits(FormSize? size, FormSprites? sprites, ActorId? actorId = null)
+  {
+    if (!Equals(Size, size) || !Equals(Sprites, sprites))
+    {
+      Raise(new FormTraitsChanged(size, sprites), actorId);
+    }
+  }
+  private void Handle(FormTraitsChanged @event)
+  {
+    Size = @event.Size;
+    Sprites = @event.Sprites;
   }
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";

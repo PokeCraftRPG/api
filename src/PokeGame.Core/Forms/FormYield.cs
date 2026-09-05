@@ -2,7 +2,7 @@
 
 namespace PokeGame.Core.Forms;
 
-public interface IYield
+public interface IFormYield
 {
   int Experience { get; }
 
@@ -14,7 +14,7 @@ public interface IYield
   int Speed { get; }
 }
 
-public sealed record Yield : IYield
+public sealed record FormYield : IFormYield
 {
   public int Experience { get; }
 
@@ -25,7 +25,7 @@ public sealed record Yield : IYield
   public int SpecialDefense { get; }
   public int Speed { get; }
 
-  public Yield(int experience, int hp, int attack, int defense, int specialAttack, int specialDefense, int speed)
+  public FormYield(int experience, int hp, int attack, int defense, int specialAttack, int specialDefense, int speed)
   {
     Experience = experience;
 
@@ -36,15 +36,15 @@ public sealed record Yield : IYield
     SpecialDefense = specialDefense;
     Speed = speed;
 
-    new YieldValidator().ValidateAndThrow(this);
+    new FormYieldValidator().ValidateAndThrow(this);
   }
 
-  public static Yield From(IYield yield) => new(yield.Experience, yield.HP, yield.Attack, yield.Defense, yield.SpecialAttack, yield.SpecialDefense, yield.Speed);
+  public static FormYield From(IFormYield yield) => new(yield.Experience, yield.HP, yield.Attack, yield.Defense, yield.SpecialAttack, yield.SpecialDefense, yield.Speed);
 }
 
-internal class YieldValidator : AbstractValidator<IYield>
+internal class FormYieldValidator : AbstractValidator<IFormYield>
 {
-  public YieldValidator()
+  public FormYieldValidator()
   {
     RuleFor(x => x.Experience).InclusiveBetween(1, 999);
 
@@ -56,11 +56,11 @@ internal class YieldValidator : AbstractValidator<IYield>
     RuleFor(x => x.Speed).InclusiveBetween(0, 3);
 
     RuleFor(x => x).Must(HaveAValidTotal)
-      .WithErrorCode(nameof(YieldValidator))
+      .WithErrorCode(nameof(FormYieldValidator))
       .WithMessage("The total Effort Value yield must be comprised between 1 and 4.");
   }
 
-  private static bool HaveAValidTotal(IYield yield)
+  private static bool HaveAValidTotal(IFormYield yield)
   {
     int total = yield.HP + yield.Attack + yield.Defense + yield.SpecialAttack + yield.SpecialDefense + yield.Speed;
     return total >= 1 && total <= 4;
