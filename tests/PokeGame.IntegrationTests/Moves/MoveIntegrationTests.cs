@@ -264,6 +264,46 @@ public class MoveIntegrationTests : IntegrationTests
     await Assert.ThrowsAsync<ValidationException>(async () => await _moveService.UpdateAsync(_move.EntityId, payload));
   }
 
+  [Fact(DisplayName = "It should throw ValidationException when creating a status move with power.")]
+  public async Task Given_StatusMoveWithPower_When_Create_Then_InvalidMovePower()
+  {
+    CreateOrReplaceMovePayload payload = new()
+    {
+      Type = PokemonType.Normal,
+      Category = MoveCategory.Status,
+      Key = "growl",
+      Power = 40
+    };
+
+    ValidationException exception = await Assert.ThrowsAsync<ValidationException>(
+      async () => await _moveService.CreateOrReplaceAsync(payload));
+    Assert.Contains(exception.Errors, error => error.PropertyName == nameof(Move.Power) && error.ErrorCode == "InvalidMovePower");
+  }
+
+  [Fact(DisplayName = "It should throw ValidationException when updating a status move with power.")]
+  public async Task Given_StatusMoveWithPower_When_Update_Then_InvalidMovePower()
+  {
+    Move growl = new MoveBuilder(Faker)
+      .WithWorld(Context.World)
+      .WithType(PokemonType.Normal)
+      .WithCategory(MoveCategory.Status)
+      .WithKey("growl")
+      .WithName("Growl")
+      .WithPower(null)
+      .WithPowerPoints(40)
+      .Build();
+    await _moveRepository.SaveAsync(growl);
+
+    UpdateMovePayload payload = new()
+    {
+      Power = new Optional<int?>(40)
+    };
+
+    ValidationException exception = await Assert.ThrowsAsync<ValidationException>(
+      async () => await _moveService.UpdateAsync(growl.EntityId, payload));
+    Assert.Contains(exception.Errors, error => error.PropertyName == nameof(Move.Power) && error.ErrorCode == "InvalidMovePower");
+  }
+
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a move.")]
   public async Task Given_NotAllowed_When_Create_Then_PermissionDeniedException()
   {
