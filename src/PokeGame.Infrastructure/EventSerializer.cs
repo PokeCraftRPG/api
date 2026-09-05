@@ -13,11 +13,13 @@ internal class EventSerializer : Logitar.EventSourcing.Infrastructure.EventSeria
     SerializerOptions.Converters.Add(new AssetIdConverter());
     SerializerOptions.Converters.Add(new CatchRateConverter());
     SerializerOptions.Converters.Add(new ContentConverter());
+    SerializerOptions.Converters.Add(new EmailAddressConverter());
     SerializerOptions.Converters.Add(new FriendshipConverter());
     SerializerOptions.Converters.Add(new GenderRatioConverter());
     SerializerOptions.Converters.Add(new GenusConverter());
     SerializerOptions.Converters.Add(new KeyConverter());
     SerializerOptions.Converters.Add(new LevelConverter());
+    SerializerOptions.Converters.Add(new MemberInvitationIdConverter());
     SerializerOptions.Converters.Add(new MoveIdConverter());
     SerializerOptions.Converters.Add(new NameConverter());
     SerializerOptions.Converters.Add(new NumberConverter());
