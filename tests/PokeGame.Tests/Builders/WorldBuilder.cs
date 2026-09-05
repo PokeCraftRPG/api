@@ -79,7 +79,7 @@ public class WorldBuilder : IWorldBuilder
     Key key = new(_key);
 
     World world = new(ownerId, key, _worldId);
-    world.Update(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), ownerId.ActorId);
+    world.SetDetails(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), ownerId.ActorId);
     return world;
   }
 }

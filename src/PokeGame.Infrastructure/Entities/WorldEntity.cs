@@ -37,20 +37,20 @@ internal class WorldEntity : AggregateEntity
     return actorIds;
   }
 
+  public void SetDetails(WorldDetailsChanged @event)
+  {
+    Update(@event);
+
+    Name = @event.Name?.Value;
+    Summary = @event.Summary?.Value;
+    Content = @event.Content?.Value;
+  }
+
   public void SetKey(WorldKeyChanged @event)
   {
     Update(@event);
 
     Key = @event.Key.Value;
-  }
-
-  public void Update(WorldUpdated @event)
-  {
-    base.Update(@event);
-
-    Name = @event.Name?.Value;
-    Summary = @event.Summary?.Value;
-    Content = @event.Content?.Value;
   }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";

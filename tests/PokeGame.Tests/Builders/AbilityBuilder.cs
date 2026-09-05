@@ -1,4 +1,4 @@
-using Bogus;
+﻿using Bogus;
 using Logitar.EventSourcing;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
@@ -80,7 +80,7 @@ public class AbilityBuilder : IAbilityBuilder
       ? new(_abilityId.Value, key, actorId)
       : new(world, key, actorId);
 
-    ability.Update(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
+    ability.SetDetails(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
 
     return ability;
   }

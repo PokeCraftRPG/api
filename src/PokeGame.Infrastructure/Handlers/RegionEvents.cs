@@ -9,15 +9,15 @@ namespace PokeGame.Infrastructure.Handlers;
 internal class RegionEvents :
   IEventHandler<RegionCreated>,
   IEventHandler<RegionDeleted>,
-  IEventHandler<RegionKeyChanged>,
-  IEventHandler<RegionUpdated>
+  IEventHandler<RegionDetailsChanged>,
+  IEventHandler<RegionKeyChanged>
 {
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IEventHandler<RegionCreated>, RegionEvents>();
     services.AddTransient<IEventHandler<RegionDeleted>, RegionEvents>();
+    services.AddTransient<IEventHandler<RegionDetailsChanged>, RegionEvents>();
     services.AddTransient<IEventHandler<RegionKeyChanged>, RegionEvents>();
-    services.AddTransient<IEventHandler<RegionUpdated>, RegionEvents>();
   }
 
   private readonly PokemonContext _pokemon;
@@ -53,23 +53,23 @@ internal class RegionEvents :
     }
   }
 
+  public async Task HandleAsync(RegionDetailsChanged @event, CancellationToken cancellationToken)
+  {
+    RegionEntity? region = await _pokemon.Regions.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (region is not null && region.Version == (@event.Version - 1))
+    {
+      region.SetDetails(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
   public async Task HandleAsync(RegionKeyChanged @event, CancellationToken cancellationToken)
   {
     RegionEntity? region = await _pokemon.Regions.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (region is not null && region.Version == (@event.Version - 1))
     {
       region.SetKey(@event);
-
-      await _pokemon.SaveChangesAsync(cancellationToken);
-    }
-  }
-
-  public async Task HandleAsync(RegionUpdated @event, CancellationToken cancellationToken)
-  {
-    RegionEntity? region = await _pokemon.Regions.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
-    if (region is not null && region.Version == (@event.Version - 1))
-    {
-      region.Update(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

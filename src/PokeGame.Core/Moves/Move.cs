@@ -69,6 +69,20 @@ public sealed class Move : AggregateRoot, IEntityProvider
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId);
 
+  public void SetDetails(Name? name, Summary? summary, Content? content, ActorId? actorId = null)
+  {
+    if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content))
+    {
+      Raise(new MoveDetailsChanged(name, summary, content), actorId);
+    }
+  }
+  private void Handle(MoveDetailsChanged @event)
+  {
+    Name = @event.Name;
+    Summary = @event.Summary;
+    Content = @event.Content;
+  }
+
   public void SetKey(Key key, ActorId? actorId = null)
   {
     if (!Equals(Key, key))
@@ -102,20 +116,6 @@ public sealed class Move : AggregateRoot, IEntityProvider
     Accuracy = @event.Accuracy;
     Power = @event.Power;
     PowerPoints = @event.PowerPoints;
-  }
-
-  public void Update(Name? name, Summary? summary, Content? content, ActorId? actorId = null)
-  {
-    if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content))
-    {
-      Raise(new MoveUpdated(name, summary, content), actorId);
-    }
-  }
-  private void Handle(MoveUpdated @event)
-  {
-    Name = @event.Name;
-    Summary = @event.Summary;
-    Content = @event.Content;
   }
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";

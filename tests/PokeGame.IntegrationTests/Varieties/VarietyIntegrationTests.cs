@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,7 +68,7 @@ public class VarietyIntegrationTests : IntegrationTests
     {
       Assert.NotEqual(Guid.Empty, variety.Id);
     }
-    Assert.Equal(3, variety.Version);
+    Assert.Equal(4, variety.Version);
     Assert.Equal(Actor, variety.CreatedBy);
     Assert.Equal(DateTime.UtcNow, variety.CreatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(variety.CreatedBy, variety.UpdatedBy);
@@ -106,7 +106,7 @@ public class VarietyIntegrationTests : IntegrationTests
     Assert.NotNull(variety);
 
     Assert.Equal(id, variety.Id);
-    Assert.Equal(4, variety.Version);
+    Assert.Equal(6, variety.Version);
     Assert.Equal(_seeded.CreatedBy, variety.CreatedBy);
     Assert.Equal(_seeded.CreatedOn, variety.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, variety.UpdatedBy);
@@ -398,7 +398,7 @@ public class VarietyIntegrationTests : IntegrationTests
     Assert.NotNull(variety);
 
     Assert.Equal(id, variety.Id);
-    Assert.Equal(4, variety.Version);
+    Assert.Equal(6, variety.Version);
     Assert.Equal(_seeded.CreatedBy, variety.CreatedBy);
     Assert.Equal(_seeded.CreatedOn, variety.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, variety.UpdatedBy);

@@ -1,4 +1,4 @@
-using Bogus;
+﻿using Bogus;
 using Logitar.EventSourcing;
 using PokeGame.Core;
 using PokeGame.Core.Regions;
@@ -80,7 +80,7 @@ public class RegionBuilder : IRegionBuilder
       ? new(_regionId.Value, key, actorId)
       : new(world, key, actorId);
 
-    region.Update(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
+    region.SetDetails(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
 
     return region;
   }
