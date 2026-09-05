@@ -59,6 +59,7 @@ public static class DependencyInjectionExtensions
   {
     AbilityEvents.Register(services);
     AssetEvents.Register(services);
+    MemberInvitationEvents.Register(services);
     MoveEvents.Register(services);
     RegionEvents.Register(services);
     SpeciesEvents.Register(services);
