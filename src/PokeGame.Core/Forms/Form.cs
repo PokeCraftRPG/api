@@ -69,6 +69,20 @@ public sealed class Form : AggregateRoot, IEntityProvider
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId);
 
+  public void SetDetails(Name? name, Summary? summary, Content? content, ActorId? actorId = null)
+  {
+    if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content))
+    {
+      Raise(new FormDetailsChanged(name, summary, content), actorId);
+    }
+  }
+  private void Handle(FormDetailsChanged @event)
+  {
+    Name = @event.Name;
+    Summary = @event.Summary;
+    Content = @event.Content;
+  }
+
   public void SetKey(Key key, ActorId? actorId = null)
   {
     if (!Equals(Key, key))
@@ -79,20 +93,6 @@ public sealed class Form : AggregateRoot, IEntityProvider
   private void Handle(FormKeyChanged @event)
   {
     _key = @event.Key;
-  }
-
-  public void Update(Name? name, Summary? summary, Content? content, ActorId? actorId = null)
-  {
-    if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content))
-    {
-      Raise(new FormUpdated(name, summary, content), actorId);
-    }
-  }
-  private void Handle(FormUpdated @event)
-  {
-    Name = @event.Name;
-    Summary = @event.Summary;
-    Content = @event.Content;
   }
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";
