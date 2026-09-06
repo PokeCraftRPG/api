@@ -10,7 +10,7 @@ public sealed class EmailAddress
 
   public EmailAddress(string value)
   {
-    Value = value.Trim();
+    Value = value.Trim().ToLowerInvariant();
     new Validator().ValidateAndThrow(this);
   }
 

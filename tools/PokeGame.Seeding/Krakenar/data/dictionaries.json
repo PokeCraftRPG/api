@@ -32,6 +32,38 @@
         "Value": "Secure Sign-In"
       },
       {
+        "Key": "MemberInvitation_Access",
+        "Value": "By accepting the invitation, you will be able to view the world’s data and may be assigned characters, including trainers and Pokémon."
+      },
+      {
+        "Key": "MemberInvitation_ExistingUserInstructions",
+        "Value": "Sign in to the application to accept or decline this invitation."
+      },
+      {
+        "Key": "MemberInvitation_Expiration",
+        "Value": "This invitation expires 7 days after it is sent."
+      },
+      {
+        "Key": "MemberInvitation_Heading",
+        "Value": "You have been invited to join a world"
+      },
+      {
+        "Key": "MemberInvitation_Ignore",
+        "Value": "If you were not expecting this invitation, you can simply ignore this email."
+      },
+      {
+        "Key": "MemberInvitation_Intro",
+        "Value": "An invitation has been sent to you to become a member of a world."
+      },
+      {
+        "Key": "MemberInvitation_NewUserInstructions",
+        "Value": "Create an account using this email address. After registering, the invitation will be available in your account and you will be able to accept or decline it."
+      },
+      {
+        "Key": "MemberInvitation_Subject",
+        "Value": "Invitation to join a world"
+      },
+      {
         "Key": "MultiFactorAuthentication_Subject",
         "Value": "Your security code"
       },
@@ -92,6 +124,38 @@
       {
         "Key": "EmailVerification_Title",
         "Value": "Connexion sécurisée"
+      },
+      {
+        "Key": "MemberInvitation_Access",
+        "Value": "En acceptant l’invitation, vous pourrez consulter les données de ce monde et des personnages, notamment des entraîneurs et des Pokémon, pourront vous être assignés."
+      },
+      {
+        "Key": "MemberInvitation_ExistingUserInstructions",
+        "Value": "Connectez-vous à l’application pour accepter ou décliner cette invitation."
+      },
+      {
+        "Key": "MemberInvitation_Expiration",
+        "Value": "Cette invitation expire 7 jours après son envoi."
+      },
+      {
+        "Key": "MemberInvitation_Heading",
+        "Value": "Vous avez été invité à rejoindre un monde"
+      },
+      {
+        "Key": "MemberInvitation_Ignore",
+        "Value": "Si vous ne vous attendiez pas à recevoir cette invitation, vous pouvez simplement ignorer ce courriel."
+      },
+      {
+        "Key": "MemberInvitation_Intro",
+        "Value": "Une invitation vous a été envoyée pour devenir membre d’un monde."
+      },
+      {
+        "Key": "MemberInvitation_NewUserInstructions",
+        "Value": "Créez un compte avec cette adresse courriel. Après votre inscription, l’invitation sera disponible dans votre compte et vous pourrez l’accepter ou la décliner."
+      },
+      {
+        "Key": "MemberInvitation_Subject",
+        "Value": "Invitation à rejoindre un monde"
       },
       {
         "Key": "MultiFactorAuthentication_Subject",

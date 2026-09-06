@@ -8,10 +8,12 @@ using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Configurations;
 
-internal class MemberInvitationConfiguration : IEntityTypeConfiguration<MemberInvitationEntity>
+internal class MemberInvitationConfiguration : AggregateConfiguration<MemberInvitationEntity>, IEntityTypeConfiguration<MemberInvitationEntity>
 {
-  public void Configure(EntityTypeBuilder<MemberInvitationEntity> builder)
+  public override void Configure(EntityTypeBuilder<MemberInvitationEntity> builder)
   {
+    base.Configure(builder);
+
     builder.ToTable(nameof(PokemonContext.MemberInvitations), PokemonContext.Schema);
     builder.HasKey(x => x.MemberInvitationId);
 

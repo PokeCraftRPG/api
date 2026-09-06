@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PokeGame.Builders;
 using PokeGame.Core;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure;
 using PokeGame.Infrastructure.Assets;
@@ -31,6 +32,7 @@ public abstract class IntegrationTests : IAsyncLifetime
 
   protected virtual Actor Actor => Context.User is null ? _system : new(Context.User);
   protected virtual Mock<IUserClient> UserClient { get; set; } = new();
+  protected virtual Mock<IMessageGateway> MessageGateway { get; set; } = new();
 
   protected IntegrationTests()
   {
@@ -64,6 +66,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     });
     services.AddSingleton<IContext>(Context);
     services.AddSingleton(UserClient.Object);
+    services.AddSingleton(MessageGateway.Object);
 
     return services.BuildServiceProvider();
   }
@@ -90,6 +93,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Regions"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Moves"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Abilities"";");
+    sql.AppendLine(@"DELETE FROM ""Pokemon"".""MemberInvitations"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Assets"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Worlds"";");
     sql.AppendLine(@"DELETE FROM ""EventSourcing"".""Events"";");

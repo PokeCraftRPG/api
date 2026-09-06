@@ -1,4 +1,5 @@
 ﻿using Logitar;
+using Logitar.EventSourcing;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Membership.Events;
 
@@ -32,6 +33,20 @@ internal class MemberInvitationEntity : AggregateEntity
 
   private MemberInvitationEntity() : base()
   {
+  }
+
+  public override IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    if (World is not null)
+    {
+      actorIds.AddRange(World.GetActorIds());
+    }
+    if (UserId is not null)
+    {
+      actorIds.Add(new ActorId(UserId));
+    }
+    return actorIds;
   }
 
   public void Accept(MemberInvitationAccepted @event)

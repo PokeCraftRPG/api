@@ -6,6 +6,7 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Forms.Models;
+using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
@@ -160,6 +161,40 @@ internal class Mapper
     {
       destination.Sprites = sprites;
     }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public MemberInvitationDto ToMemberInvitation(MemberInvitationEntity source)
+  {
+    WorldEntity world = source.World ?? throw new ArgumentException("The world is required.", nameof(source));
+    MemberInvitationDto destination = new()
+    {
+      Id = source.Id,
+      World = ToWorld(world),
+      //Invitee = ResolveInvitee(source),
+      //private Actor ResolveInvitee(MemberInvitationEntity source)
+      //{
+      //  if (source.UserId is not null)
+      //  {
+      //    return FindActor(source.UserId);
+      //  }
+      //  if (string.IsNullOrWhiteSpace(source.EmailAddress))
+      //  {
+      //    throw new ArgumentException("The invitee is required.", nameof(source));
+      //  }
+      //  return new Actor
+      //  {
+      //    Type = ActorType.User,
+      //    DisplayName = source.EmailAddress,
+      //    EmailAddress = source.EmailAddress
+      //  };
+      //}
+      Status = source.Status,
+      ExpiresOn = source.ExpiresOn?.AsUniversalTime()
+    };
 
     MapAggregate(source, destination);
 

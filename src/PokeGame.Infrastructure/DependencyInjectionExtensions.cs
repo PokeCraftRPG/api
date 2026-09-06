@@ -10,6 +10,7 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Assets;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Membership;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
@@ -90,6 +91,7 @@ public static class DependencyInjectionExtensions
       .AddScoped<IAbilityQuerier, AbilityQuerier>()
       .AddScoped<IAssetQuerier, AssetQuerier>()
       .AddScoped<IFormQuerier, FormQuerier>()
+      .AddScoped<IMemberInvitationQuerier, MemberInvitationQuerier>()
       .AddScoped<IMoveQuerier, MoveQuerier>()
       .AddScoped<IRegionQuerier, RegionQuerier>()
       .AddScoped<ISpeciesQuerier, SpeciesQuerier>()
@@ -103,6 +105,7 @@ public static class DependencyInjectionExtensions
       .AddScoped<IAbilityRepository, AbilityRepository>()
       .AddScoped<IAssetRepository, AssetRepository>()
       .AddScoped<IFormRepository, FormRepository>()
+      .AddScoped<IMemberInvitationRepository, MemberInvitationRepository>()
       .AddScoped<IMoveRepository, MoveRepository>()
       .AddScoped<IRegionRepository, RegionRepository>()
       .AddScoped<ISpeciesRepository, SpeciesRepository>()

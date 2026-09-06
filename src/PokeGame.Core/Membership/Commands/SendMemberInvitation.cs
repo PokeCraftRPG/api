@@ -46,9 +46,30 @@ internal class SendMemberInvitationCommandHandler : ICommandHandler<SendMemberIn
 
     MemberInvitationId invitationId = MemberInvitationId.NewId(_context.WorldId);
     DateTime expiresOn = DateTime.Now.AddDays(MemberInvitationLifetimeDays);
-    MemberInvitation invitation = user is null
-      ? new(invitationId, new EmailAddress(payload.EmailAddress), expiresOn, _context.ActorId)
-      : new(invitationId, new UserId(user), expiresOn, _context.ActorId);
+    MemberInvitation invitation;
+
+    if (user is null)
+    {
+      EmailAddress emailAddress = new(payload.EmailAddress);
+      MemberInvitationId? existingId = await _memberInvitationQuerier.FindIdAsync(emailAddress, MemberInvitationStatus.Pending, cancellationToken);
+      if (existingId.HasValue)
+      {
+        throw new MemberInvitationAlreadyPendingException(existingId.Value);
+      }
+
+      invitation = new MemberInvitation(invitationId, emailAddress, expiresOn, _context.ActorId);
+    }
+    else
+    {
+      UserId userId = new(user);
+      MemberInvitationId? existingId = await _memberInvitationQuerier.FindIdAsync(userId, MemberInvitationStatus.Pending, cancellationToken);
+      if (existingId.HasValue)
+      {
+        throw new MemberInvitationAlreadyPendingException(existingId.Value);
+      }
+
+      invitation = new MemberInvitation(invitationId, userId, expiresOn, _context.ActorId);
+    }
 
     await _memberInvitationRepository.SaveAsync(invitation, cancellationToken);
     await _messageGateway.SendMemberInvitationAsync(invitation, payload.Locale, cancellationToken);
