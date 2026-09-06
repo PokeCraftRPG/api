@@ -55,7 +55,7 @@ public sealed class MemberInvitation : AggregateRoot, IEntityProvider
 
   public void Accept(ActorId? actorId = null)
   {
-    if (Status != MemberInvitationStatus.Pending || Status != MemberInvitationStatus.Accepted)
+    if (Status != MemberInvitationStatus.Pending && Status != MemberInvitationStatus.Accepted)
     {
       throw new InvalidMemberInvitationStatusException(this);
     }
@@ -75,7 +75,7 @@ public sealed class MemberInvitation : AggregateRoot, IEntityProvider
 
   public void Cancel(ActorId? actorId = null)
   {
-    if (Status != MemberInvitationStatus.Pending || Status != MemberInvitationStatus.Cancelled)
+    if (Status != MemberInvitationStatus.Pending && Status != MemberInvitationStatus.Cancelled)
     {
       throw new InvalidMemberInvitationStatusException(this);
     }
@@ -95,7 +95,7 @@ public sealed class MemberInvitation : AggregateRoot, IEntityProvider
 
   public void Decline(ActorId? actorId = null)
   {
-    if (Status != MemberInvitationStatus.Pending || Status != MemberInvitationStatus.Declined)
+    if (Status != MemberInvitationStatus.Pending && Status != MemberInvitationStatus.Declined)
     {
       throw new InvalidMemberInvitationStatusException(this);
     }

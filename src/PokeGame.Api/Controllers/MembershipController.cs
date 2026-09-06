@@ -18,6 +18,30 @@ public class MembershipController : ControllerBase
     _membershipService = membershipService;
   }
 
+  [HttpPost("/members/invitations/{id}/accept")]
+  [RequireWorld]
+  public async Task<ActionResult<MemberInvitationDto>> AcceptAsync(Guid id, CancellationToken cancellationToken)
+  {
+    MemberInvitationDto? invitation = await _membershipService.AcceptAsync(id, cancellationToken);
+    return invitation is null ? NotFound() : Ok(invitation);
+  }
+
+  [HttpPost("/members/invitations/{id}/cancel")]
+  [RequireWorld]
+  public async Task<ActionResult<MemberInvitationDto>> CancelAsync(Guid id, CancellationToken cancellationToken)
+  {
+    MemberInvitationDto? invitation = await _membershipService.CancelAsync(id, cancellationToken);
+    return invitation is null ? NotFound() : Ok(invitation);
+  }
+
+  [HttpPost("/members/invitations/{id}/decline")]
+  [RequireWorld]
+  public async Task<ActionResult<MemberInvitationDto>> DeclineAsync(Guid id, CancellationToken cancellationToken)
+  {
+    MemberInvitationDto? invitation = await _membershipService.DeclineAsync(id, cancellationToken);
+    return invitation is null ? NotFound() : Ok(invitation);
+  }
+
   [HttpPost("/members/invitations")]
   [RequireWorld]
   public async Task<ActionResult<MemberInvitationDto>> InviteAsync([FromBody] SendMemberInvitationPayload payload, CancellationToken cancellationToken)

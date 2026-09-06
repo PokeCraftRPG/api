@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Logitar.CQRS;
 using PokeGame.Core.Assets;
-using PokeGame.Core.Membership;
 using PokeGame.Core.Permissions;
 
 namespace PokeGame.Core;
@@ -14,7 +13,6 @@ internal class CommandBus : Logitar.CQRS.CommandBus
 
   protected override bool ShouldRetry<TResult>(ICommand<TResult> command, Exception exception)
     => exception is not ConflictException
-    && exception is not InvalidMemberInvitationStatusException
     && exception is not MediaTypeNotSupportedException
     && exception is not NotFoundException
     && exception is not PermissionDeniedException

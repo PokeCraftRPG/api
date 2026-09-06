@@ -3,7 +3,7 @@ using Logitar;
 
 namespace PokeGame.Core.Membership;
 
-public sealed class MemberInvitationExpiredException : ErrorException
+public sealed class MemberInvitationExpiredException : ConflictException
 {
   private const string ErrorMessage = "The specified member invitation is expired.";
 
