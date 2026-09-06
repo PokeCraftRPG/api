@@ -174,27 +174,26 @@ internal class Mapper
     {
       Id = source.Id,
       World = ToWorld(world),
-      //Invitee = ResolveInvitee(source),
-      //private Actor ResolveInvitee(MemberInvitationEntity source)
-      //{
-      //  if (source.UserId is not null)
-      //  {
-      //    return FindActor(source.UserId);
-      //  }
-      //  if (string.IsNullOrWhiteSpace(source.EmailAddress))
-      //  {
-      //    throw new ArgumentException("The invitee is required.", nameof(source));
-      //  }
-      //  return new Actor
-      //  {
-      //    Type = ActorType.User,
-      //    DisplayName = source.EmailAddress,
-      //    EmailAddress = source.EmailAddress
-      //  };
-      //}
       Status = source.Status,
       ExpiresOn = source.ExpiresOn?.AsUniversalTime()
     };
+
+    if (source.UserId is not null)
+    {
+      destination.Invitee = FindActor(source.UserId);
+    }
+    else if (source.EmailAddress is not null)
+    {
+      destination.Invitee = new Actor(source.EmailAddress)
+      {
+        Type = ActorType.User,
+        EmailAddress = source.EmailAddress
+      };
+    }
+    else
+    {
+      throw new ArgumentException("Either a user identifier or email address is required.", nameof(source));
+    }
 
     MapAggregate(source, destination);
 
