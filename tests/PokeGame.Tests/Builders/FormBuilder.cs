@@ -190,15 +190,8 @@ public class FormBuilder : IFormBuilder
     return form;
   }
 
-  public static Form Bulbasaur(Faker? faker = null, Variety? variety = null, World? world = null)
-  {
-    IFormBuilder builder = new FormBuilder(faker).WithWorld(world);
-    if (variety is not null)
-    {
-      builder = builder.WithVariety(variety);
-    }
-
-    return builder
+  public static Form Bulbasaur(Faker? faker = null, Variety? variety = null, Ability? primaryAbility = null, World? world = null)
+    => Create(faker, variety, primaryAbility, world)
       .WithCategory(FormCategory.Default)
       .WithKey("bulbasaur")
       .WithName("Bulbasaur")
@@ -209,5 +202,57 @@ public class FormBuilder : IFormBuilder
       .WithYield(64, 0, 0, 0, 1, 0, 0)
       .WithSize(7, 69)
       .Build();
+
+  public static Form Charmander(Faker? faker = null, Variety? variety = null, Ability? primaryAbility = null, World? world = null)
+    => Create(faker, variety, primaryAbility, world)
+      .WithCategory(FormCategory.Default)
+      .WithKey("charmander")
+      .WithName("Charmander")
+      .WithSummary("The default Charmander form.")
+      .WithContent("A Lizard Pokémon that prefers hot things.")
+      .WithTypes(PokemonType.Fire)
+      .WithBaseStatistics(39, 52, 43, 60, 50, 65)
+      .WithYield(62, 0, 1, 0, 0, 0, 0)
+      .WithSize(6, 85)
+      .Build();
+
+  public static Form Squirtle(Faker? faker = null, Variety? variety = null, Ability? primaryAbility = null, World? world = null)
+    => Create(faker, variety, primaryAbility, world)
+      .WithCategory(FormCategory.Default)
+      .WithKey("squirtle")
+      .WithName("Squirtle")
+      .WithSummary("The default Squirtle form.")
+      .WithContent("A Tiny Turtle Pokémon that squirts water.")
+      .WithTypes(PokemonType.Water)
+      .WithBaseStatistics(44, 48, 65, 50, 64, 43)
+      .WithYield(63, 0, 0, 1, 0, 0, 0)
+      .WithSize(5, 90)
+      .Build();
+
+  public static Form Pikachu(Faker? faker = null, Variety? variety = null, Ability? primaryAbility = null, World? world = null)
+    => Create(faker, variety, primaryAbility, world)
+      .WithCategory(FormCategory.Default)
+      .WithKey("pikachu")
+      .WithName("Pikachu")
+      .WithSummary("The default Pikachu form.")
+      .WithContent("A Mouse Pokémon that stores electricity in its cheeks.")
+      .WithTypes(PokemonType.Electric)
+      .WithBaseStatistics(35, 55, 40, 50, 50, 90)
+      .WithYield(82, 0, 0, 0, 0, 0, 2)
+      .WithSize(4, 60)
+      .Build();
+
+  private static IFormBuilder Create(Faker? faker, Variety? variety, Ability? primaryAbility, World? world)
+  {
+    IFormBuilder builder = new FormBuilder(faker).WithWorld(world);
+    if (variety is not null)
+    {
+      builder = builder.WithVariety(variety);
+    }
+    if (primaryAbility is not null)
+    {
+      builder = builder.WithAbilities(primaryAbility);
+    }
+    return builder;
   }
 }
