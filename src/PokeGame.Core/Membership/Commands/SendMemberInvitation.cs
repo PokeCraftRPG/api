@@ -1,0 +1,58 @@
+﻿using Krakenar.Contracts.Users;
+using Logitar.CQRS;
+using PokeGame.Core.Identity;
+using PokeGame.Core.Membership.Models;
+using PokeGame.Core.Permissions;
+
+namespace PokeGame.Core.Membership.Commands;
+
+internal record SendMemberInvitationCommand(SendMemberInvitationPayload Payload) : ICommand<MemberInvitationDto>;
+
+internal class SendMemberInvitationCommandHandler : ICommandHandler<SendMemberInvitationCommand, MemberInvitationDto>
+{
+  private const int MemberInvitationLifetimeDays = 7;
+
+  private readonly IContext _context;
+  private readonly IMemberInvitationQuerier _memberInvitationQuerier;
+  private readonly IMemberInvitationRepository _memberInvitationRepository;
+  private readonly IMessageGateway _messageGateway;
+  private readonly IPermissionService _permissionService;
+  private readonly IUserGateway _userGateway;
+
+  public SendMemberInvitationCommandHandler(
+    IContext context,
+    IMemberInvitationQuerier memberInvitationQuerier,
+    IMemberInvitationRepository memberInvitationRepository,
+    IMessageGateway messageGateway,
+    IPermissionService permissionService,
+    IUserGateway userGateway)
+  {
+    _context = context;
+    _memberInvitationQuerier = memberInvitationQuerier;
+    _memberInvitationRepository = memberInvitationRepository;
+    _messageGateway = messageGateway;
+    _permissionService = permissionService;
+    _userGateway = userGateway;
+  }
+
+  public async Task<MemberInvitationDto> HandleAsync(SendMemberInvitationCommand command, CancellationToken cancellationToken)
+  {
+    SendMemberInvitationPayload payload = command.Payload;
+    payload.Validate();
+
+    await _permissionService.CheckAsync(Actions.InviteMember, cancellationToken);
+
+    User? user = await _userGateway.FindAsync(payload.EmailAddress, cancellationToken);
+
+    MemberInvitationId invitationId = MemberInvitationId.NewId(_context.WorldId);
+    DateTime expiresOn = DateTime.Now.AddDays(MemberInvitationLifetimeDays);
+    MemberInvitation invitation = user is null
+      ? new(invitationId, new EmailAddress(payload.EmailAddress), expiresOn, _context.ActorId)
+      : new(invitationId, new UserId(user), expiresOn, _context.ActorId);
+
+    await _memberInvitationRepository.SaveAsync(invitation, cancellationToken);
+    await _messageGateway.SendMemberInvitationAsync(invitation, payload.Locale, cancellationToken);
+
+    return await _memberInvitationQuerier.ReadAsync(invitation, cancellationToken);
+  }
+}

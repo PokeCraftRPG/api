@@ -6,6 +6,7 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Assets;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Membership;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Regions;
@@ -33,6 +34,7 @@ public static class DependencyInjectionExtensions
     AssetService.Register(services);
     FormService.Register(services);
     IdentityService.Register(services);
+    MembershipService.Register(services);
     MoveService.Register(services);
     PermissionService.Register(services);
     RegionService.Register(services);

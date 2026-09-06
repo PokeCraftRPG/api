@@ -1,15 +1,17 @@
-using PokeGame.Core.Identity;
-using PokeGame.Core.Identity.Models;
-using Krakenar.Contracts.Messages;
+﻿using Krakenar.Contracts.Messages;
 using Krakenar.Contracts.Passwords;
 using Krakenar.Contracts.Senders;
 using Krakenar.Contracts.Users;
+using PokeGame.Core.Identity;
+using PokeGame.Core.Identity.Models;
+using PokeGame.Core.Membership;
 
 namespace PokeGame.Infrastructure.Identity;
 
 internal class MessageGateway : IMessageGateway
 {
   private const string EmailVerificationTemplate = "EmailVerification";
+  private const string MemberInvitationTemplate = "MemberInvitation";
   private const string MultiFactorAuthenticationTemplate = "MultiFactorAuthentication";
 
   private const string OneTimePasswordKey = "OneTimePassword";
@@ -80,4 +82,19 @@ internal class MessageGateway : IMessageGateway
   }
 
   private static string GetMultiFactorAuthenticationTemplate(SenderKind senderKind) => string.Concat(MultiFactorAuthenticationTemplate, senderKind);
+
+  public async Task SendMemberInvitationAsync(MemberInvitation invitation, string locale, CancellationToken cancellationToken)
+  {
+    RecipientPayload recipient;
+    if (invitation.UserId.HasValue)
+    {
+      recipient = new RecipientPayload(invitation.UserId.Value.EntityId);
+    }
+    else
+    {
+      EmailAddress emailAddress = invitation.EmailAddress ?? throw new ArgumentException("The email address is required.", nameof(invitation));
+      recipient = new RecipientPayload(new EmailPayload(emailAddress.Value));
+    }
+    await SendAsync(SenderKind.Email, MemberInvitationTemplate, [recipient], ignoreUserLocale: false, locale, variables: null, cancellationToken);
+  }
 }

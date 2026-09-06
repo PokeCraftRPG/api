@@ -35,7 +35,7 @@ public class TestContext : IContext
     return customAttributes.AsReadOnly();
   }
 
-  public UserId? TryGetUserId() => User is null ? null : new UserId(new Actor(User).ToActorId());
+  public UserId? TryGetUserId() => User is null ? null : new UserId(User);
   public WorldId? TryGetWorldId() => World?.Id;
   public Guid? TryGetSessionId() => null;
 }
