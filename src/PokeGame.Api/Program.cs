@@ -1,7 +1,7 @@
 ﻿using Logitar.CQRS;
+using PokeGame.Core.Caching;
 using PokeGame.Core.Identity;
 using PokeGame.Infrastructure;
-using PokeGame.Infrastructure.Caching;
 
 namespace PokeGame.Api;
 

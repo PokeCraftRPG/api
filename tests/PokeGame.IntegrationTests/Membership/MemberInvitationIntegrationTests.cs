@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Krakenar.Contracts.Users;
@@ -21,13 +21,13 @@ namespace PokeGame.Membership;
 [Trait(Traits.Category, Categories.Integration)]
 public class MemberInvitationIntegrationTests : IntegrationTests
 {
-  private readonly IMembershipService _membershipService;
+  private readonly IMemberInvitationService _memberInvitationService;
   private readonly IWorldRepository _worldRepository;
   private readonly IWorldService _worldService;
 
   public MemberInvitationIntegrationTests()
   {
-    _membershipService = ServiceProvider.GetRequiredService<IMembershipService>();
+    _memberInvitationService = ServiceProvider.GetRequiredService<IMemberInvitationService>();
     _worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
     _worldService = ServiceProvider.GetRequiredService<IWorldService>();
   }
@@ -37,7 +37,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   {
     SendMemberInvitationPayload payload = CreatePayload();
 
-    MemberInvitationDto invitation = await _membershipService.InviteAsync(payload);
+    MemberInvitationDto invitation = await _memberInvitationService.SendAsync(payload);
 
     AssertInvitation(invitation, payload);
     Assert.Equal(ActorType.User, invitation.Invitee.Type);
@@ -52,12 +52,12 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should invite an existing user.")]
   public async Task Given_ExistingUser_When_Invite_Then_Created()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     SetupInvitee(invitee);
 
     SendMemberInvitationPayload payload = CreatePayload(invitee.Email!.Address);
 
-    MemberInvitationDto invitation = await _membershipService.InviteAsync(payload);
+    MemberInvitationDto invitation = await _memberInvitationService.SendAsync(payload);
 
     AssertInvitation(invitation, payload);
     Assert.Equal(new Actor(invitee), invitation.Invitee);
@@ -71,13 +71,13 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   public async Task Given_OtherWorld_When_Invite_Then_Created()
   {
     SendMemberInvitationPayload payload = CreatePayload();
-    MemberInvitationDto first = await _membershipService.InviteAsync(payload);
+    MemberInvitationDto first = await _memberInvitationService.SendAsync(payload);
 
     World world = new WorldBuilder(Faker).WithOwner(Context.User).WithKey("other-world").Build();
     await _worldRepository.SaveAsync(world);
     Context.World = world;
 
-    MemberInvitationDto second = await _membershipService.InviteAsync(payload);
+    MemberInvitationDto second = await _memberInvitationService.SendAsync(payload);
     Assert.NotEqual(first.Id, second.Id);
     Assert.Equal(world.EntityId, second.World.Id);
   }
@@ -91,7 +91,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     SendMemberInvitationPayload payload = CreatePayload(member.Email!.Address);
 
     MemberAlreadyExistsException exception = await Assert.ThrowsAsync<MemberAlreadyExistsException>(
-      async () => await _membershipService.InviteAsync(payload));
+      async () => await _memberInvitationService.SendAsync(payload));
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     Assert.Equal(member.Id, exception.UserId);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
@@ -104,10 +104,10 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   public async Task Given_PendingEmail_When_Invite_Then_MemberInvitationAlreadyPendingException()
   {
     SendMemberInvitationPayload payload = CreatePayload();
-    MemberInvitationDto existing = await _membershipService.InviteAsync(payload);
+    MemberInvitationDto existing = await _memberInvitationService.SendAsync(payload);
 
     MemberInvitationAlreadyPendingException exception = await Assert.ThrowsAsync<MemberInvitationAlreadyPendingException>(
-      async () => await _membershipService.InviteAsync(payload));
+      async () => await _memberInvitationService.SendAsync(payload));
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     Assert.Equal(existing.Id, exception.InvitationId);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
@@ -119,14 +119,14 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw MemberInvitationAlreadyPendingException when the user is already invited.")]
   public async Task Given_PendingUser_When_Invite_Then_MemberInvitationAlreadyPendingException()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     SetupInvitee(invitee);
 
     SendMemberInvitationPayload payload = CreatePayload(invitee.Email!.Address);
-    MemberInvitationDto existing = await _membershipService.InviteAsync(payload);
+    MemberInvitationDto existing = await _memberInvitationService.SendAsync(payload);
 
     MemberInvitationAlreadyPendingException exception = await Assert.ThrowsAsync<MemberInvitationAlreadyPendingException>(
-      async () => await _membershipService.InviteAsync(payload));
+      async () => await _memberInvitationService.SendAsync(payload));
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     Assert.Equal(existing.Id, exception.InvitationId);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
@@ -140,7 +140,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   {
     SendMemberInvitationPayload payload = new();
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _membershipService.InviteAsync(payload));
+    await Assert.ThrowsAsync<ValidationException>(async () => await _memberInvitationService.SendAsync(payload));
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
       It.IsAny<MemberInvitation>(),
       It.IsAny<string>(),
@@ -150,12 +150,12 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when inviting a member.")]
   public async Task Given_NotAllowed_When_Invite_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     SendMemberInvitationPayload payload = CreatePayload();
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
-      async () => await _membershipService.InviteAsync(payload));
+      async () => await _memberInvitationService.SendAsync(payload));
     Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal("InviteMember", exception.Action);
     Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
@@ -169,9 +169,9 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should read a member invitation by ID.")]
   public async Task Given_Id_When_Read_Then_Read()
   {
-    MemberInvitationDto seeded = await _membershipService.InviteAsync(CreatePayload());
+    MemberInvitationDto seeded = await _memberInvitationService.SendAsync(CreatePayload());
 
-    MemberInvitationDto? invitation = await _membershipService.ReadAsync(seeded.Id);
+    MemberInvitationDto? invitation = await _memberInvitationService.ReadAsync(seeded.Id);
     Assert.NotNull(invitation);
     Assert.Equal(seeded.Id, invitation.Id);
   }
@@ -179,16 +179,16 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return null when no invitation was found.")]
   public async Task Given_NotFound_When_Read_Then_NullReturned()
   {
-    MemberInvitationDto seeded = await _membershipService.InviteAsync(CreatePayload());
+    MemberInvitationDto seeded = await _memberInvitationService.SendAsync(CreatePayload());
     Context.World = new WorldBuilder(Faker).Build();
 
-    Assert.Null(await _membershipService.ReadAsync(seeded.Id));
+    Assert.Null(await _memberInvitationService.ReadAsync(seeded.Id));
   }
 
   [Fact(DisplayName = "It should return empty search results.")]
   public async Task Given_NoMatch_When_Search_Then_EmptyResults()
   {
-    await _membershipService.InviteAsync(CreatePayload());
+    await _memberInvitationService.SendAsync(CreatePayload());
     Context.World = new WorldBuilder(Faker).Build();
 
     SearchMemberInvitationsPayload payload = new()
@@ -196,7 +196,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
       Limit = 10
     };
 
-    SearchResults<MemberInvitationDto> results = await _membershipService.SearchAsync(payload);
+    SearchResults<MemberInvitationDto> results = await _memberInvitationService.SearchAsync(payload);
     Assert.Equal(0, results.Total);
     Assert.Empty(results.Items);
   }
@@ -204,10 +204,10 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results.")]
   public async Task Given_Matches_When_Search_Then_Results()
   {
-    MemberInvitationDto ash = await _membershipService.InviteAsync(CreatePayload("ash.ketchum@example.com"));
-    MemberInvitationDto misty = await _membershipService.InviteAsync(CreatePayload("misty.waterflower@example.com"));
-    await _membershipService.InviteAsync(CreatePayload("brock.harrison@example.com"));
-    await _membershipService.CancelAsync(misty.Id);
+    MemberInvitationDto ash = await _memberInvitationService.SendAsync(CreatePayload("ash.ketchum@example.com"));
+    MemberInvitationDto misty = await _memberInvitationService.SendAsync(CreatePayload("misty.waterflower@example.com"));
+    await _memberInvitationService.SendAsync(CreatePayload("brock.harrison@example.com"));
+    await _memberInvitationService.CancelAsync(misty.Id);
 
     SearchMemberInvitationsPayload payload = new()
     {
@@ -220,7 +220,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     payload.Ids.AddRange([ash.Id, misty.Id]);
     payload.Sort.Add(new SortOption<MemberInvitationSort>(MemberInvitationSort.UpdatedOn, SortDirection.Descending));
 
-    SearchResults<MemberInvitationDto> results = await _membershipService.SearchAsync(payload);
+    SearchResults<MemberInvitationDto> results = await _memberInvitationService.SearchAsync(payload);
     Assert.Equal(2, results.Total);
 
     MemberInvitationDto invitation = Assert.Single(results.Items);
@@ -230,9 +230,9 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should filter search results by status.")]
   public async Task Given_StatusFilter_When_Search_Then_Results()
   {
-    await _membershipService.InviteAsync(CreatePayload("pending@example.com"));
-    MemberInvitationDto cancelled = await _membershipService.InviteAsync(CreatePayload("cancelled@example.com"));
-    await _membershipService.CancelAsync(cancelled.Id);
+    await _memberInvitationService.SendAsync(CreatePayload("pending@example.com"));
+    MemberInvitationDto cancelled = await _memberInvitationService.SendAsync(CreatePayload("cancelled@example.com"));
+    await _memberInvitationService.CancelAsync(cancelled.Id);
 
     SearchMemberInvitationsPayload payload = new()
     {
@@ -240,7 +240,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
       Limit = 10
     };
 
-    SearchResults<MemberInvitationDto> results = await _membershipService.SearchAsync(payload);
+    SearchResults<MemberInvitationDto> results = await _memberInvitationService.SearchAsync(payload);
     Assert.Equal(1, results.Total);
 
     MemberInvitationDto invitation = Assert.Single(results.Items);
@@ -253,8 +253,8 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [InlineData(true)]
   public async Task Given_ExpiredFilter_When_Search_Then_Results(bool isExpired)
   {
-    MemberInvitationDto active = await _membershipService.InviteAsync(CreatePayload("active@example.com"));
-    MemberInvitationDto expired = await _membershipService.InviteAsync(CreatePayload("expired@example.com"));
+    MemberInvitationDto active = await _memberInvitationService.SendAsync(CreatePayload("active@example.com"));
+    MemberInvitationDto expired = await _memberInvitationService.SendAsync(CreatePayload("expired@example.com"));
     await ExpireInvitationAsync(expired.Id);
 
     SearchMemberInvitationsPayload payload = new()
@@ -263,7 +263,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
       Limit = 10
     };
 
-    SearchResults<MemberInvitationDto> results = await _membershipService.SearchAsync(payload);
+    SearchResults<MemberInvitationDto> results = await _memberInvitationService.SearchAsync(payload);
     Assert.Equal(1, results.Total);
 
     MemberInvitationDto invitation = Assert.Single(results.Items);
@@ -274,11 +274,11 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   public async Task Given_Pending_When_Accept_Then_Accepted()
   {
     User owner = Context.User!;
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     Context.User = invitee;
-    MemberInvitationDto? invitation = await _membershipService.AcceptAsync(seeded.Id);
+    MemberInvitationDto? invitation = await _memberInvitationService.AcceptAsync(seeded.Id);
     Assert.NotNull(invitation);
 
     Assert.Equal(seeded.Id, invitation.Id);
@@ -306,11 +306,11 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   public async Task Given_Pending_When_Decline_Then_Declined()
   {
     User owner = Context.User!;
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     Context.User = invitee;
-    MemberInvitationDto? invitation = await _membershipService.DeclineAsync(seeded.Id);
+    MemberInvitationDto? invitation = await _memberInvitationService.DeclineAsync(seeded.Id);
     Assert.NotNull(invitation);
 
     Assert.Equal(seeded.Id, invitation.Id);
@@ -325,10 +325,10 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should cancel a member invitation.")]
   public async Task Given_Pending_When_Cancel_Then_Cancelled()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
-    MemberInvitationDto? invitation = await _membershipService.CancelAsync(seeded.Id);
+    MemberInvitationDto? invitation = await _memberInvitationService.CancelAsync(seeded.Id);
     Assert.NotNull(invitation);
 
     Assert.Equal(seeded.Id, invitation.Id);
@@ -343,29 +343,29 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return null when the invitation was not found.")]
   public async Task Given_NotFound_When_Accept_Then_NullReturned()
   {
-    Assert.Null(await _membershipService.AcceptAsync(Guid.Empty));
+    Assert.Null(await _memberInvitationService.AcceptAsync(Guid.Empty));
   }
 
   [Fact(DisplayName = "It should return null when declining a missing invitation.")]
   public async Task Given_NotFound_When_Decline_Then_NullReturned()
   {
-    Assert.Null(await _membershipService.DeclineAsync(Guid.Empty));
+    Assert.Null(await _memberInvitationService.DeclineAsync(Guid.Empty));
   }
 
   [Fact(DisplayName = "It should return null when cancelling a missing invitation.")]
   public async Task Given_NotFound_When_Cancel_Then_NullReturned()
   {
-    Assert.Null(await _membershipService.CancelAsync(Guid.Empty));
+    Assert.Null(await _memberInvitationService.CancelAsync(Guid.Empty));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when accepting an invitation.")]
   public async Task Given_NotAllowed_When_Accept_Then_PermissionDeniedException()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
-      async () => await _membershipService.AcceptAsync(seeded.Id));
+      async () => await _memberInvitationService.AcceptAsync(seeded.Id));
     Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal("Accept", exception.Action);
     Assert.Equal(new Entity(MemberInvitation.EntityKind, seeded.Id, Context.WorldId).ToString(), exception.Resource);
@@ -375,11 +375,11 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when declining an invitation.")]
   public async Task Given_NotAllowed_When_Decline_Then_PermissionDeniedException()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
-      async () => await _membershipService.DeclineAsync(seeded.Id));
+      async () => await _memberInvitationService.DeclineAsync(seeded.Id));
     Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal("Decline", exception.Action);
     Assert.Equal(new Entity(MemberInvitation.EntityKind, seeded.Id, Context.WorldId).ToString(), exception.Resource);
@@ -389,12 +389,12 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when cancelling an invitation.")]
   public async Task Given_NotAllowed_When_Cancel_Then_PermissionDeniedException()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     Context.User = invitee;
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
-      async () => await _membershipService.CancelAsync(seeded.Id));
+      async () => await _memberInvitationService.CancelAsync(seeded.Id));
     Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal("Cancel", exception.Action);
     Assert.Equal(new Entity(MemberInvitation.EntityKind, seeded.Id, Context.WorldId).ToString(), exception.Resource);
@@ -404,13 +404,13 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw InvalidMemberInvitationStatusException when accepting a cancelled invitation.")]
   public async Task Given_Cancelled_When_Accept_Then_InvalidMemberInvitationStatusException()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
-    await _membershipService.CancelAsync(seeded.Id);
+    await _memberInvitationService.CancelAsync(seeded.Id);
 
     Context.User = invitee;
     InvalidMemberInvitationStatusException exception = await Assert.ThrowsAsync<InvalidMemberInvitationStatusException>(
-      async () => await _membershipService.AcceptAsync(seeded.Id));
+      async () => await _memberInvitationService.AcceptAsync(seeded.Id));
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     Assert.Equal(seeded.Id, exception.MemberInvitationId);
     Assert.Equal(MemberInvitationStatus.Cancelled, exception.Status);
@@ -419,13 +419,13 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw InvalidMemberInvitationStatusException when declining a cancelled invitation.")]
   public async Task Given_Cancelled_When_Decline_Then_InvalidMemberInvitationStatusException()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
-    await _membershipService.CancelAsync(seeded.Id);
+    await _memberInvitationService.CancelAsync(seeded.Id);
 
     Context.User = invitee;
     InvalidMemberInvitationStatusException exception = await Assert.ThrowsAsync<InvalidMemberInvitationStatusException>(
-      async () => await _membershipService.DeclineAsync(seeded.Id));
+      async () => await _memberInvitationService.DeclineAsync(seeded.Id));
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     Assert.Equal(seeded.Id, exception.MemberInvitationId);
     Assert.Equal(MemberInvitationStatus.Cancelled, exception.Status);
@@ -435,15 +435,15 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   public async Task Given_Accepted_When_Cancel_Then_InvalidMemberInvitationStatusException()
   {
     User owner = Context.User!;
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     Context.User = invitee;
-    await _membershipService.AcceptAsync(seeded.Id);
+    await _memberInvitationService.AcceptAsync(seeded.Id);
 
     Context.User = owner;
     InvalidMemberInvitationStatusException exception = await Assert.ThrowsAsync<InvalidMemberInvitationStatusException>(
-      async () => await _membershipService.CancelAsync(seeded.Id));
+      async () => await _memberInvitationService.CancelAsync(seeded.Id));
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     Assert.Equal(seeded.Id, exception.MemberInvitationId);
     Assert.Equal(MemberInvitationStatus.Accepted, exception.Status);
@@ -452,14 +452,14 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should not change an already accepted invitation.")]
   public async Task Given_Accepted_When_Accept_Then_Unchanged()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     Context.User = invitee;
-    MemberInvitationDto? first = await _membershipService.AcceptAsync(seeded.Id);
+    MemberInvitationDto? first = await _memberInvitationService.AcceptAsync(seeded.Id);
     Assert.NotNull(first);
 
-    MemberInvitationDto? second = await _membershipService.AcceptAsync(seeded.Id);
+    MemberInvitationDto? second = await _memberInvitationService.AcceptAsync(seeded.Id);
     Assert.NotNull(second);
     Assert.Equal(first.Version, second.Version);
     Assert.Equal(MemberInvitationStatus.Accepted, second.Status);
@@ -468,14 +468,14 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should not change an already declined invitation.")]
   public async Task Given_Declined_When_Decline_Then_Unchanged()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     Context.User = invitee;
-    MemberInvitationDto? first = await _membershipService.DeclineAsync(seeded.Id);
+    MemberInvitationDto? first = await _memberInvitationService.DeclineAsync(seeded.Id);
     Assert.NotNull(first);
 
-    MemberInvitationDto? second = await _membershipService.DeclineAsync(seeded.Id);
+    MemberInvitationDto? second = await _memberInvitationService.DeclineAsync(seeded.Id);
     Assert.NotNull(second);
     Assert.Equal(first.Version, second.Version);
     Assert.Equal(MemberInvitationStatus.Declined, second.Status);
@@ -484,13 +484,13 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should not change an already cancelled invitation.")]
   public async Task Given_Cancelled_When_Cancel_Then_Unchanged()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
-    MemberInvitationDto? first = await _membershipService.CancelAsync(seeded.Id);
+    MemberInvitationDto? first = await _memberInvitationService.CancelAsync(seeded.Id);
     Assert.NotNull(first);
 
-    MemberInvitationDto? second = await _membershipService.CancelAsync(seeded.Id);
+    MemberInvitationDto? second = await _memberInvitationService.CancelAsync(seeded.Id);
     Assert.NotNull(second);
     Assert.Equal(first.Version, second.Version);
     Assert.Equal(MemberInvitationStatus.Cancelled, second.Status);
@@ -500,18 +500,18 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   public async Task Given_AcceptedMember_When_Invite_Then_MemberAlreadyExistsException()
   {
     User owner = Context.User!;
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     Context.User = invitee;
-    await _membershipService.AcceptAsync(seeded.Id);
+    await _memberInvitationService.AcceptAsync(seeded.Id);
 
     Context.User = owner;
     SetupInvitee(invitee);
     SendMemberInvitationPayload payload = CreatePayload(invitee.Email!.Address);
 
     MemberAlreadyExistsException exception = await Assert.ThrowsAsync<MemberAlreadyExistsException>(
-      async () => await _membershipService.InviteAsync(payload));
+      async () => await _memberInvitationService.SendAsync(payload));
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     Assert.Equal(invitee.Id, exception.UserId);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
@@ -531,7 +531,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   private async Task<MemberInvitationDto> InviteUserAsync(User invitee)
   {
     SetupInvitee(invitee);
-    return await _membershipService.InviteAsync(CreatePayload(invitee.Email!.Address));
+    return await _memberInvitationService.SendAsync(CreatePayload(invitee.Email!.Address));
   }
 
   private void SetupInvitee(User invitee)

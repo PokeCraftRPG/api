@@ -460,7 +460,7 @@ public class SpeciesIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a species.")]
   public async Task Given_NotAllowed_When_Create_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     CreateOrReplaceSpeciesPayload payload = CreateCharmanderPayload();
 
@@ -475,7 +475,7 @@ public class SpeciesIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a species.")]
   public async Task Given_NotAllowed_When_Replace_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     CreateOrReplaceSpeciesPayload payload = CreateUpdatedBulbasaurPayload();
 
@@ -490,7 +490,7 @@ public class SpeciesIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a species.")]
   public async Task Given_NotAllowed_When_Update_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     UpdateSpeciesPayload payload = new();
 

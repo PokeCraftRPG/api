@@ -5,17 +5,9 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Actors;
+using PokeGame.Core.Caching;
 
 namespace PokeGame.Infrastructure.Caching;
-
-public interface ICacheService
-{
-  Realm? Realm { get; set; }
-
-  Actor? GetActor(ActorId id);
-  void RemoveActor(ActorId id);
-  void SetActor(Actor actor);
-}
 
 internal class CacheService : ICacheService
 {

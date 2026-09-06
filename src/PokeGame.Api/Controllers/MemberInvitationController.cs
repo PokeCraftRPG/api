@@ -15,46 +15,38 @@ namespace PokeGame.Api.Controllers;
 [Route("members/invitations")]
 public class MemberInvitationController : ControllerBase
 {
-  private readonly IMembershipService _membershipService;
+  private readonly IMemberInvitationService _memberInvitationService;
 
-  public MemberInvitationController(IMembershipService membershipService)
+  public MemberInvitationController(IMemberInvitationService memberInvitationService)
   {
-    _membershipService = membershipService;
+    _memberInvitationService = memberInvitationService;
   }
 
   [HttpPost("{id}/accept")] // TODO(fpion): won’t work because of RequireWorld.
   public async Task<ActionResult<MemberInvitationDto>> AcceptAsync(Guid id, CancellationToken cancellationToken)
   {
-    MemberInvitationDto? invitation = await _membershipService.AcceptAsync(id, cancellationToken);
+    MemberInvitationDto? invitation = await _memberInvitationService.AcceptAsync(id, cancellationToken);
     return invitation is null ? NotFound() : Ok(invitation);
   }
 
   [HttpPost("{id}/cancel")]
   public async Task<ActionResult<MemberInvitationDto>> CancelAsync(Guid id, CancellationToken cancellationToken)
   {
-    MemberInvitationDto? invitation = await _membershipService.CancelAsync(id, cancellationToken);
+    MemberInvitationDto? invitation = await _memberInvitationService.CancelAsync(id, cancellationToken);
     return invitation is null ? NotFound() : Ok(invitation);
   }
 
   [HttpPost("{id}/decline")] // TODO(fpion): won’t work because of RequireWorld.
   public async Task<ActionResult<MemberInvitationDto>> DeclineAsync(Guid id, CancellationToken cancellationToken)
   {
-    MemberInvitationDto? invitation = await _membershipService.DeclineAsync(id, cancellationToken);
+    MemberInvitationDto? invitation = await _memberInvitationService.DeclineAsync(id, cancellationToken);
     return invitation is null ? NotFound() : Ok(invitation);
-  }
-
-  [HttpPost]
-  public async Task<ActionResult<MemberInvitationDto>> InviteAsync([FromBody] SendMemberInvitationPayload payload, CancellationToken cancellationToken)
-  {
-    MemberInvitationDto invitation = await _membershipService.InviteAsync(payload, cancellationToken);
-    Uri location = new($"{HttpContext.GetBaseUrl()}{invitation.Id}", UriKind.Absolute);
-    return Created(location, invitation);
   }
 
   [HttpGet("{id}")] // TODO(fpion): won’t work for the invitee because of RequireWorld.
   public async Task<ActionResult<MemberInvitationDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
-    MemberInvitationDto? invitation = await _membershipService.ReadAsync(id, cancellationToken);
+    MemberInvitationDto? invitation = await _memberInvitationService.ReadAsync(id, cancellationToken);
     return invitation is null ? NotFound() : Ok(invitation);
   }
 
@@ -62,7 +54,15 @@ public class MemberInvitationController : ControllerBase
   public async Task<ActionResult<SearchResults<MemberInvitationDto>>> SearchAsync([FromQuery] SearchMemberInvitationsParameters parameters, CancellationToken cancellationToken)
   {
     SearchMemberInvitationsPayload payload = parameters.ToPayload();
-    SearchResults<MemberInvitationDto> invitations = await _membershipService.SearchAsync(payload, cancellationToken);
+    SearchResults<MemberInvitationDto> invitations = await _memberInvitationService.SearchAsync(payload, cancellationToken);
     return Ok(invitations);
+  }
+
+  [HttpPost]
+  public async Task<ActionResult<MemberInvitationDto>> SendAsync([FromBody] SendMemberInvitationPayload payload, CancellationToken cancellationToken)
+  {
+    MemberInvitationDto invitation = await _memberInvitationService.SendAsync(payload, cancellationToken);
+    Uri location = new($"{HttpContext.GetBaseUrl()}{invitation.Id}", UriKind.Absolute);
+    return Created(location, invitation);
   }
 }

@@ -72,7 +72,7 @@ public class WorldBuilder : IWorldBuilder
 
   public World Build()
   {
-    User owner = _owner ?? new UserBuilder(_faker).Build();
+    User owner = _owner ?? KrakenarFactory.Instance.User;
     UserId ownerId = new(owner);
     Key key = new(_key);
 

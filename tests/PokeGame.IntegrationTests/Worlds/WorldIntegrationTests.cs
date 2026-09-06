@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
@@ -123,7 +123,7 @@ public class WorldIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return empty search results.")]
   public async Task Given_NoMatch_When_Search_Then_EmptyResults()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     SearchWorldsPayload payload = new()
     {
@@ -138,7 +138,7 @@ public class WorldIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return null when no world was found.")]
   public async Task Given_NotFound_When_Read_Then_NullReturned()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     Assert.Null(await _worldService.ReadAsync(_world.EntityId));
   }
@@ -289,7 +289,7 @@ public class WorldIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a world.")]
   public async Task Given_NotAllowed_When_Replace_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     CreateOrReplaceWorldPayload payload = CreateNewWorldPayload();
 
@@ -304,7 +304,7 @@ public class WorldIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a world.")]
   public async Task Given_NotAllowed_When_Update_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     UpdateWorldPayload payload = new();
 
@@ -361,7 +361,7 @@ public class WorldIntegrationTests : IntegrationTests
 
   private async Task GrantMembershipAsync()
   {
-    _member = new UserBuilder(Faker).Build();
+    _member = KrakenarFactory.Instance.NewUser(Faker);
     UserClient.Setup(x => x.SearchAsync(It.IsAny<SearchUsersPayload>(), It.IsAny<CancellationToken>()))
       .ReturnsAsync((SearchUsersPayload payload, CancellationToken _) =>
       {
