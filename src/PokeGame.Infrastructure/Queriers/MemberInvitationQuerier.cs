@@ -1,10 +1,12 @@
 ﻿using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Search;
 using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Membership.Models;
+using PokeGame.Core.Search;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Entities;
 
@@ -60,6 +62,72 @@ internal class MemberInvitationQuerier : IMemberInvitationQuerier
       .Include(x => x.World)
       .SingleOrDefaultAsync(cancellationToken);
     return invitation is null ? null : await MapAsync(invitation, cancellationToken);
+  }
+
+  public async Task<SearchResults<MemberInvitationDto>> SearchAsync(SearchMemberInvitationsPayload payload, CancellationToken cancellationToken)
+  {
+    IQueryable<MemberInvitationEntity> query = _invitations.AsNoTracking()
+      .Where(x => x.World!.StreamId == _context.WorldId.Value)
+      .ApplyIdFilter(payload.Ids, x => x.Id)
+      .ApplyTextSearch(payload.Search, pattern => invitation
+        => EF.Functions.ILike(invitation.EmailAddress!, pattern, @"\"));
+
+    if (payload.Status.HasValue)
+    {
+      query = query.Where(x => x.Status == payload.Status.Value);
+    }
+    if (payload.IsExpired.HasValue)
+    {
+      DateTime now = DateTime.UtcNow;
+      query = query.Where(x => payload.IsExpired.Value ? x.ExpiresOn <= now : x.ExpiresOn > now);
+    }
+
+    long total = await query.LongCountAsync(cancellationToken);
+
+    if (payload.Limit < 1)
+    {
+      return new SearchResults<MemberInvitationDto>(total);
+    }
+
+    IOrderedQueryable<MemberInvitationEntity>? ordered = null;
+    foreach (SortOption<MemberInvitationSort> sort in payload.Sort)
+    {
+      switch (sort.Field)
+      {
+        case MemberInvitationSort.CreatedOn:
+          ordered = (ordered is null)
+            ? (sort.Direction == SortDirection.Descending ? query.OrderByDescending(x => x.CreatedOn) : query.OrderBy(x => x.CreatedOn))
+            : (sort.Direction == SortDirection.Descending ? ordered.ThenByDescending(x => x.CreatedOn) : ordered.ThenBy(x => x.CreatedOn));
+          break;
+        case MemberInvitationSort.ExpiresOn:
+          ordered = ordered is null
+            ? (sort.Direction == SortDirection.Descending
+              ? query.OrderByDescending(x => x.ExpiresOn.HasValue).ThenByDescending(x => x.ExpiresOn)
+              : query.OrderByDescending(x => x.ExpiresOn.HasValue).ThenBy(x => x.ExpiresOn))
+            : (sort.Direction == SortDirection.Descending
+              ? ordered.ThenByDescending(x => x.ExpiresOn.HasValue).ThenByDescending(x => x.ExpiresOn)
+              : ordered.ThenByDescending(x => x.ExpiresOn.HasValue).ThenBy(x => x.ExpiresOn));
+          break;
+        case MemberInvitationSort.Status:
+          ordered = (ordered is null)
+            ? (sort.Direction == SortDirection.Descending ? query.OrderByDescending(x => x.Status) : query.OrderBy(x => x.Status))
+            : (sort.Direction == SortDirection.Descending ? ordered.ThenByDescending(x => x.Status) : ordered.ThenBy(x => x.Status));
+          break;
+        case MemberInvitationSort.UpdatedOn:
+          ordered = (ordered is null)
+            ? (sort.Direction == SortDirection.Descending ? query.OrderByDescending(x => x.UpdatedOn) : query.OrderBy(x => x.UpdatedOn))
+            : (sort.Direction == SortDirection.Descending ? ordered.ThenByDescending(x => x.UpdatedOn) : ordered.ThenBy(x => x.UpdatedOn));
+          break;
+      }
+    }
+    query = ordered is null ? query.OrderByDescending(x => x.CreatedOn) : ordered.ThenBy(x => x.MemberInvitationId);
+
+    query = query.Skip(payload.Offset).Take(payload.Limit).Include(x => x.World);
+
+    MemberInvitationEntity[] entities = await query.ToArrayAsync(cancellationToken);
+    IReadOnlyCollection<MemberInvitationDto> invitations = await MapAsync(entities, cancellationToken);
+
+    return new SearchResults<MemberInvitationDto>(invitations, total);
   }
 
   private async Task<MemberInvitationDto> MapAsync(MemberInvitationEntity invitation, CancellationToken cancellationToken)

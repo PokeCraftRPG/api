@@ -167,6 +167,13 @@ internal class Mapper
     return destination;
   }
 
+  public MemberDto ToMember(MemberEntity source) => new()
+  {
+    User = FindActor(source.UserId),
+    GrantedBy = FindActor(source.GrantedBy),
+    GrantedOn = source.GrantedOn.AsUniversalTime()
+  };
+
   public MemberInvitationDto ToMemberInvitation(MemberInvitationEntity source)
   {
     WorldEntity world = source.World ?? throw new ArgumentException("The world is required.", nameof(source));
@@ -329,12 +336,17 @@ internal class Mapper
     WorldDto destination = new()
     {
       Id = source.Id,
-      Owner = FindActor(source.OwnerId),
       Key = source.Key,
       Name = source.Name,
       Summary = source.Summary,
-      Content = source.Content
+      Content = source.Content,
+      Owner = FindActor(source.OwnerId)
     };
+
+    foreach (MemberEntity member in source.Members)
+    {
+      destination.Members.Add(ToMember(member));
+    }
 
     MapAggregate(source, destination);
 

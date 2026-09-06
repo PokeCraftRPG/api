@@ -2,6 +2,7 @@ using FluentValidation;
 using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Krakenar.Contracts.Users;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PokeGame.Builders;
@@ -10,7 +11,10 @@ using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Search;
 using PokeGame.Core.Worlds;
+using PokeGame.Core.Worlds.Models;
+using PokeGame.Infrastructure;
 
 namespace PokeGame.Membership;
 
@@ -19,11 +23,13 @@ public class MemberInvitationIntegrationTests : IntegrationTests
 {
   private readonly IMembershipService _membershipService;
   private readonly IWorldRepository _worldRepository;
+  private readonly IWorldService _worldService;
 
   public MemberInvitationIntegrationTests()
   {
     _membershipService = ServiceProvider.GetRequiredService<IMembershipService>();
     _worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
+    _worldService = ServiceProvider.GetRequiredService<IWorldService>();
   }
 
   [Fact(DisplayName = "It should invite a member by email address.")]
@@ -160,6 +166,110 @@ public class MemberInvitationIntegrationTests : IntegrationTests
       It.IsAny<CancellationToken>()), Times.Never);
   }
 
+  [Fact(DisplayName = "It should read a member invitation by ID.")]
+  public async Task Given_Id_When_Read_Then_Read()
+  {
+    MemberInvitationDto seeded = await _membershipService.InviteAsync(CreatePayload());
+
+    MemberInvitationDto? invitation = await _membershipService.ReadAsync(seeded.Id);
+    Assert.NotNull(invitation);
+    Assert.Equal(seeded.Id, invitation.Id);
+  }
+
+  [Fact(DisplayName = "It should return null when no invitation was found.")]
+  public async Task Given_NotFound_When_Read_Then_NullReturned()
+  {
+    MemberInvitationDto seeded = await _membershipService.InviteAsync(CreatePayload());
+    Context.World = new WorldBuilder(Faker).Build();
+
+    Assert.Null(await _membershipService.ReadAsync(seeded.Id));
+  }
+
+  [Fact(DisplayName = "It should return empty search results.")]
+  public async Task Given_NoMatch_When_Search_Then_EmptyResults()
+  {
+    await _membershipService.InviteAsync(CreatePayload());
+    Context.World = new WorldBuilder(Faker).Build();
+
+    SearchMemberInvitationsPayload payload = new()
+    {
+      Limit = 10
+    };
+
+    SearchResults<MemberInvitationDto> results = await _membershipService.SearchAsync(payload);
+    Assert.Equal(0, results.Total);
+    Assert.Empty(results.Items);
+  }
+
+  [Fact(DisplayName = "It should return the correct search results.")]
+  public async Task Given_Matches_When_Search_Then_Results()
+  {
+    MemberInvitationDto ash = await _membershipService.InviteAsync(CreatePayload("ash.ketchum@example.com"));
+    MemberInvitationDto misty = await _membershipService.InviteAsync(CreatePayload("misty.waterflower@example.com"));
+    await _membershipService.InviteAsync(CreatePayload("brock.harrison@example.com"));
+    await _membershipService.CancelAsync(misty.Id);
+
+    SearchMemberInvitationsPayload payload = new()
+    {
+      Offset = 1,
+      Limit = 1
+    };
+    payload.Search.Mode = SearchMode.Any;
+    payload.Search.Terms.Add("ash");
+    payload.Search.Terms.Add("misty");
+    payload.Ids.AddRange([ash.Id, misty.Id]);
+    payload.Sort.Add(new SortOption<MemberInvitationSort>(MemberInvitationSort.UpdatedOn, SortDirection.Descending));
+
+    SearchResults<MemberInvitationDto> results = await _membershipService.SearchAsync(payload);
+    Assert.Equal(2, results.Total);
+
+    MemberInvitationDto invitation = Assert.Single(results.Items);
+    Assert.Equal(ash.Id, invitation.Id);
+  }
+
+  [Fact(DisplayName = "It should filter search results by status.")]
+  public async Task Given_StatusFilter_When_Search_Then_Results()
+  {
+    await _membershipService.InviteAsync(CreatePayload("pending@example.com"));
+    MemberInvitationDto cancelled = await _membershipService.InviteAsync(CreatePayload("cancelled@example.com"));
+    await _membershipService.CancelAsync(cancelled.Id);
+
+    SearchMemberInvitationsPayload payload = new()
+    {
+      Status = MemberInvitationStatus.Cancelled,
+      Limit = 10
+    };
+
+    SearchResults<MemberInvitationDto> results = await _membershipService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    MemberInvitationDto invitation = Assert.Single(results.Items);
+    Assert.Equal(cancelled.Id, invitation.Id);
+    Assert.Equal(MemberInvitationStatus.Cancelled, invitation.Status);
+  }
+
+  [Theory(DisplayName = "It should filter search results by expiration.")]
+  [InlineData(false)]
+  [InlineData(true)]
+  public async Task Given_ExpiredFilter_When_Search_Then_Results(bool isExpired)
+  {
+    MemberInvitationDto active = await _membershipService.InviteAsync(CreatePayload("active@example.com"));
+    MemberInvitationDto expired = await _membershipService.InviteAsync(CreatePayload("expired@example.com"));
+    await ExpireInvitationAsync(expired.Id);
+
+    SearchMemberInvitationsPayload payload = new()
+    {
+      IsExpired = isExpired,
+      Limit = 10
+    };
+
+    SearchResults<MemberInvitationDto> results = await _membershipService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    MemberInvitationDto invitation = Assert.Single(results.Items);
+    Assert.Equal(isExpired ? expired.Id : active.Id, invitation.Id);
+  }
+
   [Fact(DisplayName = "It should accept a member invitation.")]
   public async Task Given_Pending_When_Accept_Then_Accepted()
   {
@@ -178,6 +288,18 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     Assert.Equal(Actor, invitation.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, invitation.UpdatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(MemberInvitationStatus.Accepted, invitation.Status);
+
+    World? world = await _worldRepository.LoadAsync(Context.WorldId);
+    Assert.NotNull(world);
+    Assert.True(world.IsMember(new UserId(invitee)));
+
+    Context.User = owner;
+    WorldDto? worldDto = await _worldService.ReadAsync(world.EntityId);
+    Assert.NotNull(worldDto);
+    MemberDto member = Assert.Single(worldDto.Members);
+    Assert.Equal(new Actor(invitee), member.User);
+    Assert.Equal(new Actor(owner), member.GrantedBy);
+    Assert.Equal(DateTime.UtcNow, member.GrantedOn, TimeSpan.FromSeconds(10));
   }
 
   [Fact(DisplayName = "It should decline a member invitation.")]
@@ -372,6 +494,38 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     Assert.NotNull(second);
     Assert.Equal(first.Version, second.Version);
     Assert.Equal(MemberInvitationStatus.Cancelled, second.Status);
+  }
+
+  [Fact(DisplayName = "It should throw MemberAlreadyExistsException when inviting an accepted member.")]
+  public async Task Given_AcceptedMember_When_Invite_Then_MemberAlreadyExistsException()
+  {
+    User owner = Context.User!;
+    User invitee = new UserBuilder(Faker).Build();
+    MemberInvitationDto seeded = await InviteUserAsync(invitee);
+
+    Context.User = invitee;
+    await _membershipService.AcceptAsync(seeded.Id);
+
+    Context.User = owner;
+    SetupInvitee(invitee);
+    SendMemberInvitationPayload payload = CreatePayload(invitee.Email!.Address);
+
+    MemberAlreadyExistsException exception = await Assert.ThrowsAsync<MemberAlreadyExistsException>(
+      async () => await _membershipService.InviteAsync(payload));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(invitee.Id, exception.UserId);
+    MessageGateway.Verify(x => x.SendMemberInvitationAsync(
+      It.IsAny<MemberInvitation>(),
+      It.IsAny<string>(),
+      It.IsAny<CancellationToken>()), Times.Once);
+  }
+
+  private async Task ExpireInvitationAsync(Guid invitationId)
+  {
+    PokemonContext pokemon = ServiceProvider.GetRequiredService<PokemonContext>();
+    DateTime expiresOn = DateTime.UtcNow.AddDays(-1);
+    await pokemon.Database.ExecuteSqlInterpolatedAsync(
+      $@"UPDATE ""Pokemon"".""MemberInvitations"" SET ""ExpiresOn"" = {expiresOn} WHERE ""Id"" = {invitationId}");
   }
 
   private async Task<MemberInvitationDto> InviteUserAsync(User invitee)

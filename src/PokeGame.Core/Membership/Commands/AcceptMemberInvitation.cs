@@ -1,4 +1,5 @@
 ﻿using Logitar.CQRS;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Worlds;
@@ -39,11 +40,15 @@ internal class AcceptMemberInvitationCommandHandler : ICommandHandler<AcceptMemb
     }
     await _permissionService.CheckAsync(Actions.Accept, invitation, cancellationToken);
 
-    invitation.Accept(_context.ActorId);
+    World world = await _worldRepository.LoadAsync(_context.WorldId, cancellationToken)
+      ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not loaded.");
+    UserId userId = invitation.UserId ?? throw new InvalidOperationException($"The member invitation 'Id={invitation.Id}' has no user identifier.");
 
-    // TODO(fpion): load world and add member
+    invitation.Accept(_context.ActorId);
+    world.GrantMembership(userId, invitation.CreatedBy);
 
     await _memberInvitationRepository.SaveAsync(invitation, cancellationToken);
+    await _worldRepository.SaveAsync(world, cancellationToken);
 
     return await _memberInvitationQuerier.ReadAsync(invitation, cancellationToken);
   }

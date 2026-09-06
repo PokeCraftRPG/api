@@ -74,6 +74,18 @@ public sealed class World : AggregateRoot, IEntityProvider
   }
 
   #region Membership
+  public void GrantMembership(UserId userId, ActorId? actorId = null)
+  {
+    if (userId != OwnerId && !IsMember(userId))
+    {
+      Raise(new WorldMembershipGranted(userId), actorId);
+    }
+  }
+  private void Handle(WorldMembershipGranted @event)
+  {
+    _memberIds.Add(@event.UserId);
+  }
+
   public bool IsMember(UserId userId) => _memberIds.Contains(userId);
   #endregion
 
