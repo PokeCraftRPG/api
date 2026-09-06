@@ -70,6 +70,7 @@ internal class PermissionService : IPermissionService
     switch (action)
     {
       case Actions.CreateAbility:
+      case Actions.CreateForm:
       case Actions.CreateMove:
       case Actions.CreateRegion:
       case Actions.CreateSpecies:

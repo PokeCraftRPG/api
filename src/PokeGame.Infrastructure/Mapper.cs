@@ -2,8 +2,10 @@
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Assets.Models;
+using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
@@ -60,6 +62,104 @@ internal class Mapper
       Summary = source.Summary,
       Content = source.Content
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public FormDto ToForm(FormEntity source)
+  {
+    VarietyEntity variety = source.Variety ?? throw new ArgumentException("The variety is required.", nameof(source));
+    FormDto destination = new()
+    {
+      Id = source.Id,
+      Variety = ToVariety(variety),
+      Category = source.Category,
+      Key = source.Key,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content
+    };
+
+    destination.Types.Primary = source.PrimaryType;
+    destination.Types.Secondary = source.SecondaryType;
+
+    bool primaryFound = false;
+    foreach (FormAbilityEntity entity in source.Abilities)
+    {
+      AbilityDto ability = ToAbility(entity.Ability ?? throw new ArgumentException("The ability is required.", nameof(source)));
+      switch (entity.Slot)
+      {
+        case AbilitySlot.Primary:
+          primaryFound = true;
+          destination.Abilities.Primary = ability;
+          break;
+        case AbilitySlot.Secondary:
+          destination.Abilities.Secondary = ability;
+          break;
+        case AbilitySlot.Hidden:
+          destination.Abilities.Hidden = ability;
+          break;
+      }
+    }
+    if (!primaryFound)
+    {
+      throw new ArgumentException("The primary ability is required.", nameof(source));
+    }
+
+    destination.BaseStatistics.HP = source.BaseHP;
+    destination.BaseStatistics.Attack = source.BaseAttack;
+    destination.BaseStatistics.Defense = source.BaseDefense;
+    destination.BaseStatistics.SpecialAttack = source.BaseSpecialAttack;
+    destination.BaseStatistics.SpecialDefense = source.BaseSpecialDefense;
+    destination.BaseStatistics.Speed = source.BaseSpeed;
+
+    destination.Yield.Experience = source.YieldExperience;
+    destination.Yield.HP = source.YieldHP;
+    destination.Yield.Attack = source.YieldAttack;
+    destination.Yield.Defense = source.YieldDefense;
+    destination.Yield.SpecialAttack = source.YieldSpecialAttack;
+    destination.Yield.SpecialDefense = source.YieldSpecialDefense;
+    destination.Yield.Speed = source.YieldSpeed;
+
+    if (source.Height.HasValue && source.Weight.HasValue)
+    {
+      destination.Size = new FormSizeDto
+      {
+        Height = source.Height.Value,
+        Weight = source.Weight.Value
+      };
+    }
+
+    bool defaultFound = false;
+    FormSpritesDto sprites = new();
+    foreach (FormSpriteEntity sprite in source.Sprites)
+    {
+      AssetDto asset = ToAsset(sprite.Asset ?? throw new ArgumentException("The asset is required.", nameof(source)));
+      switch (sprite.Kind)
+      {
+        case FormSpriteKind.Default:
+          defaultFound = true;
+          sprites.Default = asset;
+          break;
+        case FormSpriteKind.Shiny:
+          sprites.Shiny = asset;
+          break;
+        case FormSpriteKind.Female:
+          sprites.Female = asset;
+          break;
+        case FormSpriteKind.FemaleShiny:
+          sprites.FemaleShiny = asset;
+          break;
+        default:
+          throw new NotSupportedException($"The form sprite kind '{sprite.Kind}' is not supported.");
+      }
+    }
+    if (defaultFound)
+    {
+      destination.Sprites = sprites;
+    }
 
     MapAggregate(source, destination);
 
