@@ -17,7 +17,7 @@ public sealed record SpeciesEggs : ISpeciesEggs
   public EggGroup PrimaryGroup { get; }
   public EggGroup? SecondaryGroup { get; }
 
-  public SpeciesEggs(int cycles = MaximumCycles, EggGroup primaryGroup = default, EggGroup? secondaryGroup = null)
+  public SpeciesEggs(int cycles = MaximumCycles, EggGroup primaryGroup = EggGroup.NoEggsDiscovered, EggGroup? secondaryGroup = null)
   {
     Cycles = cycles;
     PrimaryGroup = primaryGroup;
