@@ -93,7 +93,10 @@ internal class FormManager : IFormManager
 
     HashSet<AssetId> assetIds = new(capacity: 4);
     assetIds.Add(new AssetId(worldId, payload.DefaultId));
-    assetIds.Add(new AssetId(worldId, payload.ShinyId));
+    if (payload.ShinyId.HasValue)
+    {
+      assetIds.Add(new AssetId(worldId, payload.ShinyId.Value));
+    }
     if (payload.FemaleId.HasValue)
     {
       assetIds.Add(new AssetId(worldId, payload.FemaleId.Value));
@@ -106,10 +109,14 @@ internal class FormManager : IFormManager
 
     AssetId assetId = new(worldId, payload.DefaultId);
     Asset @default = assets.GetValueOrDefault(assetId) ?? throw new EntityNotFoundException(assetId, $"{propertyName}.{nameof(payload.DefaultId)}");
-    assetId = new AssetId(worldId, payload.ShinyId);
-    Asset shiny = assets.GetValueOrDefault(assetId) ?? throw new EntityNotFoundException(assetId, $"{propertyName}.{nameof(payload.ShinyId)}");
+    Asset? shiny = null;
     Asset? female = null;
     Asset? femaleShiny = null;
+    if (payload.ShinyId.HasValue)
+    {
+      assetId = new AssetId(worldId, payload.ShinyId.Value);
+      shiny = assets.GetValueOrDefault(assetId) ?? throw new EntityNotFoundException(assetId, $"{propertyName}.{nameof(payload.ShinyId)}");
+    }
     if (payload.FemaleId.HasValue)
     {
       assetId = new AssetId(worldId, payload.FemaleId.Value);

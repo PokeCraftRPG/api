@@ -5,7 +5,7 @@ namespace PokeGame.Core.Forms.Models;
 public record FormSpritesPayload
 {
   public Guid DefaultId { get; set; }
-  public Guid ShinyId { get; set; }
+  public Guid? ShinyId { get; set; }
   public Guid? FemaleId { get; set; }
   public Guid? FemaleShinyId { get; set; }
 }
@@ -22,7 +22,7 @@ internal class FormSpritesPayloadValidator : AbstractValidator<FormSpritesPayloa
   private static bool HaveUniqueAssets(FormSpritesPayload sprites)
   {
     HashSet<Guid> assetIds = new([sprites.DefaultId]);
-    if (!assetIds.Add(sprites.ShinyId))
+    if (sprites.ShinyId.HasValue && !assetIds.Add(sprites.ShinyId.Value))
     {
       return false;
     }

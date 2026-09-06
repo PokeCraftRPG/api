@@ -8,11 +8,11 @@ public sealed record FormSprites
   // TODO(fpion): all assets must be Image.
 
   public AssetId DefaultId { get; }
-  public AssetId ShinyId { get; }
+  public AssetId? ShinyId { get; }
   public AssetId? FemaleId { get; }
   public AssetId? FemaleShinyId { get; }
 
-  public FormSprites(AssetId defaultId, AssetId shinyId, AssetId? femaleId = null, AssetId? femaleShinyId = null)
+  public FormSprites(AssetId defaultId, AssetId? shinyId = null, AssetId? femaleId = null, AssetId? femaleShinyId = null)
   {
     DefaultId = defaultId;
     ShinyId = shinyId;
@@ -21,7 +21,8 @@ public sealed record FormSprites
     new Validator().ValidateAndThrow(this);
   }
 
-  public static FormSprites From(Asset @default, Asset shiny, Asset? female = null, Asset? femaleShiny = null) => new(@default.Id, shiny.Id, female?.Id, femaleShiny?.Id);
+  public static FormSprites From(Asset @default, Asset? shiny = null, Asset? female = null, Asset? femaleShiny = null)
+    => new(@default.Id, shiny?.Id, female?.Id, femaleShiny?.Id);
 
   private class Validator : AbstractValidator<FormSprites>
   {
@@ -35,7 +36,7 @@ public sealed record FormSprites
     private static bool HaveUniqueAssets(FormSprites sprites)
     {
       HashSet<AssetId> assetIds = new([sprites.DefaultId]);
-      if (!assetIds.Add(sprites.ShinyId))
+      if (sprites.ShinyId.HasValue && !assetIds.Add(sprites.ShinyId.Value))
       {
         return false;
       }

@@ -172,7 +172,10 @@ public sealed class Form : AggregateRoot, IEntityProvider
   private void EnsureSameWorld(FormSprites sprites, string paramName)
   {
     WorldMismatchException.ThrowIfMismatch(this, sprites.DefaultId, paramName);
-    WorldMismatchException.ThrowIfMismatch(this, sprites.ShinyId, paramName);
+    if (sprites.ShinyId.HasValue)
+    {
+      WorldMismatchException.ThrowIfMismatch(this, sprites.ShinyId.Value, paramName);
+    }
     if (sprites.FemaleId.HasValue)
     {
       WorldMismatchException.ThrowIfMismatch(this, sprites.FemaleId.Value, paramName);
