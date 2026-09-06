@@ -13,7 +13,7 @@ internal class FormAbilityConfiguration : IEntityTypeConfiguration<FormAbilityEn
     builder.ToTable(nameof(PokemonContext.FormAbilities), PokemonContext.Schema);
     builder.HasKey(x => new { x.FormId, x.Slot });
 
-    builder.HasIndex(x => new { x.FormId, x.Ability }).IsUnique();
+    builder.HasIndex(x => new { x.FormId, x.AbilityId }).IsUnique();
 
     builder.Property(x => x.Slot).HasMaxLength(16).HasConversion(new EnumToStringConverter<AbilitySlot>());
 

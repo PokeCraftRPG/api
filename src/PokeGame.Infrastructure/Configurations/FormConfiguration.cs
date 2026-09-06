@@ -27,7 +27,6 @@ internal class FormConfiguration : AggregateConfiguration<FormEntity>, IEntityTy
     builder.HasIndex(x => new { x.WorldId, x.YieldExperience });
     builder.HasIndex(x => new { x.WorldId, x.Height });
     builder.HasIndex(x => new { x.WorldId, x.Weight });
-    builder.HasIndex(x => new { x.WorldId, x });
 
     builder.Property(x => x.Category).HasMaxLength(16).HasConversion(new EnumToStringConverter<FormCategory>());
     builder.Property(x => x.Key).HasMaxLength(Key.MaximumLength);
