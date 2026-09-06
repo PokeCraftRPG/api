@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
@@ -261,7 +261,7 @@ public class AbilityIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating an ability.")]
   public async Task Given_NotAllowed_When_Create_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     CreateOrReplaceAbilityPayload payload = CreateBlazePayload();
 
@@ -276,7 +276,7 @@ public class AbilityIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing an ability.")]
   public async Task Given_NotAllowed_When_Replace_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     CreateOrReplaceAbilityPayload payload = CreateBlazePayload();
 
@@ -291,7 +291,7 @@ public class AbilityIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating an ability.")]
   public async Task Given_NotAllowed_When_Update_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     UpdateAbilityPayload payload = new();
 

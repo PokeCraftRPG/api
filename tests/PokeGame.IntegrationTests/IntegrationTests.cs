@@ -103,7 +103,7 @@ public abstract class IntegrationTests : IAsyncLifetime
   }
   protected virtual async Task InitializeDatabaseAsync()
   {
-    User user = new UserBuilder(Faker).Build();
+    User user = KrakenarFactory.Instance.NewUser(Faker);
     Context.User = user;
     UserClient.Setup(x => x.SearchAsync(
       It.Is<SearchUsersPayload>(p => p.Ids.Single() == user.Id),

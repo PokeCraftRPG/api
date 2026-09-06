@@ -230,7 +230,7 @@ public class VarietyMoveIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when setting a variety move.")]
   public async Task Given_NotAllowed_When_SetMove_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     SetVarietyMovePayload payload = new()
     {
@@ -258,7 +258,7 @@ public class VarietyMoveIntegrationTests : IntegrationTests
     });
     VarietyMoveDto existing = Assert.Single(created.Moves);
 
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _varietyService.RemoveMoveAsync(_variety.EntityId, existing.Id));

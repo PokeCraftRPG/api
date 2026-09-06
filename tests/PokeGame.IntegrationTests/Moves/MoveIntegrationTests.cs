@@ -307,7 +307,7 @@ public class MoveIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a move.")]
   public async Task Given_NotAllowed_When_Create_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     CreateOrReplaceMovePayload payload = CreateEmberPayload();
 
@@ -322,7 +322,7 @@ public class MoveIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a move.")]
   public async Task Given_NotAllowed_When_Replace_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     CreateOrReplaceMovePayload payload = CreateUpdatedTacklePayload();
 
@@ -337,7 +337,7 @@ public class MoveIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a move.")]
   public async Task Given_NotAllowed_When_Update_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     UpdateMovePayload payload = new();
 

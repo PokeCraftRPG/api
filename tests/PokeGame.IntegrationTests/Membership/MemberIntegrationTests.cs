@@ -1,9 +1,9 @@
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Krakenar.Contracts.Users;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using PokeGame.Builders;
+using PokeGame.Core.Caching;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Permissions;
@@ -15,11 +15,13 @@ namespace PokeGame.Membership;
 [Trait(Traits.Category, Categories.Integration)]
 public class MemberIntegrationTests : IntegrationTests
 {
+  private readonly ICacheService _cacheService;
   private readonly IMembershipService _membershipService;
   private readonly IWorldRepository _worldRepository;
 
   public MemberIntegrationTests()
   {
+    _cacheService = ServiceProvider.GetRequiredService<ICacheService>();
     _membershipService = ServiceProvider.GetRequiredService<IMembershipService>();
     _worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
   }
@@ -27,8 +29,9 @@ public class MemberIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should revoke a world membership.")]
   public async Task Given_Member_When_Revoke_Then_Revoked()
   {
-    User member = await GrantMembershipAsync();
-    SetupUsers();
+    User member = KrakenarFactory.Instance.NewUser(Faker);
+    await GrantMembershipAsync(member);
+    SetupUsers(member);
 
     WorldDto? world = await _membershipService.RevokeAsync(member.Id);
     Assert.NotNull(world);
@@ -42,8 +45,8 @@ public class MemberIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should keep other members when revoking a membership.")]
   public async Task Given_OtherMembers_When_Revoke_Then_OtherMembersKept()
   {
-    User revoked = new UserBuilder(Faker).Build();
-    User remaining = new UserBuilder(Faker).Build();
+    User revoked = KrakenarFactory.Instance.NewUser(Faker);
+    User remaining = KrakenarFactory.Instance.NewUser(Faker);
     await GrantMembershipAsync(revoked, remaining);
     SetupUsers(remaining);
 
@@ -71,7 +74,7 @@ public class MemberIntegrationTests : IntegrationTests
   public async Task Given_NotAllowed_When_Revoke_Then_PermissionDeniedException()
   {
     User member = await GrantMembershipAsync();
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _membershipService.RevokeAsync(member.Id));
@@ -83,14 +86,16 @@ public class MemberIntegrationTests : IntegrationTests
 
   private async Task<User> GrantMembershipAsync(params User[] members)
   {
+    _cacheService.Realm = KrakenarFactory.Instance.Realm;
+
     if (members.Length == 0)
     {
-      members = [new UserBuilder(Faker).Build()];
+      members = [KrakenarFactory.Instance.NewUser(Faker)];
     }
 
     foreach (User member in members)
     {
-      Context.World!.GrantMembership(new UserId(member), Context.ActorId);
+      Context.World!.GrantMembership(new UserId(member.Id, _cacheService.Realm!.Id), Context.ActorId);
     }
     await _worldRepository.SaveAsync(Context.World!);
 

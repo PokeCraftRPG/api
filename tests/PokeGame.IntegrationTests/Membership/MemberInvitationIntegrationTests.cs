@@ -52,7 +52,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should invite an existing user.")]
   public async Task Given_ExistingUser_When_Invite_Then_Created()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     SetupInvitee(invitee);
 
     SendMemberInvitationPayload payload = CreatePayload(invitee.Email!.Address);
@@ -119,7 +119,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw MemberInvitationAlreadyPendingException when the user is already invited.")]
   public async Task Given_PendingUser_When_Invite_Then_MemberInvitationAlreadyPendingException()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     SetupInvitee(invitee);
 
     SendMemberInvitationPayload payload = CreatePayload(invitee.Email!.Address);
@@ -150,7 +150,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when inviting a member.")]
   public async Task Given_NotAllowed_When_Invite_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     SendMemberInvitationPayload payload = CreatePayload();
 
@@ -274,7 +274,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   public async Task Given_Pending_When_Accept_Then_Accepted()
   {
     User owner = Context.User!;
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     Context.User = invitee;
@@ -306,7 +306,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   public async Task Given_Pending_When_Decline_Then_Declined()
   {
     User owner = Context.User!;
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     Context.User = invitee;
@@ -325,7 +325,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should cancel a member invitation.")]
   public async Task Given_Pending_When_Cancel_Then_Cancelled()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     MemberInvitationDto? invitation = await _memberInvitationService.CancelAsync(seeded.Id);
@@ -361,7 +361,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when accepting an invitation.")]
   public async Task Given_NotAllowed_When_Accept_Then_PermissionDeniedException()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
@@ -375,7 +375,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when declining an invitation.")]
   public async Task Given_NotAllowed_When_Decline_Then_PermissionDeniedException()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
@@ -389,7 +389,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when cancelling an invitation.")]
   public async Task Given_NotAllowed_When_Cancel_Then_PermissionDeniedException()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     Context.User = invitee;
@@ -404,7 +404,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw InvalidMemberInvitationStatusException when accepting a cancelled invitation.")]
   public async Task Given_Cancelled_When_Accept_Then_InvalidMemberInvitationStatusException()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
     await _memberInvitationService.CancelAsync(seeded.Id);
 
@@ -419,7 +419,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw InvalidMemberInvitationStatusException when declining a cancelled invitation.")]
   public async Task Given_Cancelled_When_Decline_Then_InvalidMemberInvitationStatusException()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
     await _memberInvitationService.CancelAsync(seeded.Id);
 
@@ -435,7 +435,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   public async Task Given_Accepted_When_Cancel_Then_InvalidMemberInvitationStatusException()
   {
     User owner = Context.User!;
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     Context.User = invitee;
@@ -452,7 +452,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should not change an already accepted invitation.")]
   public async Task Given_Accepted_When_Accept_Then_Unchanged()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     Context.User = invitee;
@@ -468,7 +468,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should not change an already declined invitation.")]
   public async Task Given_Declined_When_Decline_Then_Unchanged()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     Context.User = invitee;
@@ -484,7 +484,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should not change an already cancelled invitation.")]
   public async Task Given_Cancelled_When_Cancel_Then_Unchanged()
   {
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     MemberInvitationDto? first = await _memberInvitationService.CancelAsync(seeded.Id);
@@ -500,7 +500,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   public async Task Given_AcceptedMember_When_Invite_Then_MemberAlreadyExistsException()
   {
     User owner = Context.User!;
-    User invitee = new UserBuilder(Faker).Build();
+    User invitee = KrakenarFactory.Instance.NewUser(Faker);
     MemberInvitationDto seeded = await InviteUserAsync(invitee);
 
     Context.User = invitee;

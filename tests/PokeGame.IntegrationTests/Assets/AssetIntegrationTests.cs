@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core.Assets;
@@ -48,7 +48,7 @@ public class AssetIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw PermissionDeniedException when uploading an asset.")]
   public async Task Given_NotAllowed_When_Upload_Then_PermissionDeniedException()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     await using MemoryStream stream = new(CreateBmp());
     UploadAssetPayload payload = new("denied.bmp", stream.Length, stream);
