@@ -10,7 +10,7 @@ internal class FormAbilityEntity
   public AbilitySlot Slot { get; private set; }
 
   public AbilityEntity? Ability { get; private set; }
-  public int AbilityId { get; private set; }
+  public int AbilityId { get; set; }
 
   public FormAbilityEntity(FormEntity form, AbilitySlot slot, int abilityId)
   {

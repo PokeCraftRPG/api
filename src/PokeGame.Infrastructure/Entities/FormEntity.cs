@@ -1,6 +1,7 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
 using PokeGame.Core;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Forms.Events;
 
@@ -48,7 +49,7 @@ internal class FormEntity : AggregateEntity
   public List<FormAbilityEntity> Abilities { get; private set; } = [];
   public List<FormSpriteEntity> Sprites { get; private set; } = [];
 
-  public FormEntity(int worldId, int varietyId, FormCreated @event) : base(@event)
+  public FormEntity(int worldId, int varietyId, IReadOnlyDictionary<AbilitySlot, int> abilityIds, FormCreated @event) : base(@event)
   {
     WorldId = worldId;
     Id = Entity.Parse(@event.StreamId.Value).Id;
@@ -59,7 +60,7 @@ internal class FormEntity : AggregateEntity
     Key = @event.Key.Value;
 
     SetTypes(@event.Types);
-    // TODO(fpion): SetAbilities(primaryAbilityId, secondaryAbilityId, hiddenAbilityId);
+    SetAbilities(abilityIds);
     SetStatistics(@event.Statistics);
     SetYield(@event.Yield);
   }
@@ -75,8 +76,20 @@ internal class FormEntity : AggregateEntity
     {
       actorIds.AddRange(Variety.GetActorIds());
     }
-    // TODO(fpion): Abilities
-    // TODO(fpion): Sprites
+    foreach (FormAbilityEntity entity in Abilities)
+    {
+      if (entity.Ability is not null)
+      {
+        actorIds.AddRange(entity.Ability.GetActorIds());
+      }
+    }
+    foreach (FormSpriteEntity entity in Sprites)
+    {
+      if (entity.Asset is not null)
+      {
+        actorIds.AddRange(entity.Asset.GetActorIds());
+      }
+    }
     return actorIds;
   }
 
@@ -96,24 +109,38 @@ internal class FormEntity : AggregateEntity
     Key = @event.Key.Value;
   }
 
-  public void SetMechanics(FormMechanicsChanged @event)
+  public void SetMechanics(IReadOnlyDictionary<AbilitySlot, int> abilityIds, FormMechanicsChanged @event)
   {
     Update(@event);
 
     SetTypes(@event.Types);
-    // TODO(fpion): SetAbilities(primaryAbilityId, secondaryAbilityId, hiddenAbilityId);
+    SetAbilities(abilityIds);
     SetStatistics(@event.BaseStatistics);
     SetYield(@event.Yield);
   }
 
-  public void SetTraits(FormTraitsChanged @event)
+  public void SetTraits(IReadOnlyDictionary<FormSpriteKind, int> assetIds, FormTraitsChanged @event)
   {
     Update(@event);
 
     Height = @event.Size?.Height;
     Weight = @event.Size?.Weight;
 
-    // TODO(fpion): Sprites
+    Sprites.RemoveAll(x => !assetIds.ContainsKey(x.Kind));
+
+    Dictionary<FormSpriteKind, FormSpriteEntity> sprites = Sprites.ToDictionary(x => x.Kind, x => x);
+    foreach (KeyValuePair<FormSpriteKind, int> assetId in assetIds)
+    {
+      if (sprites.TryGetValue(assetId.Key, out FormSpriteEntity? sprite))
+      {
+        sprite.AssetId = assetId.Value;
+      }
+      else
+      {
+        sprite = new FormSpriteEntity(this, assetId.Key, assetId.Value);
+        Sprites.Add(sprite);
+      }
+    }
   }
 
   private void SetStatistics(BaseStatistics statistics)
@@ -141,6 +168,25 @@ internal class FormEntity : AggregateEntity
     YieldSpecialAttack = yield.SpecialAttack;
     YieldSpecialDefense = yield.SpecialDefense;
     YieldSpeed = yield.Speed;
+  }
+
+  private void SetAbilities(IReadOnlyDictionary<AbilitySlot, int> abilityIds)
+  {
+    Abilities.RemoveAll(x => !abilityIds.ContainsKey(x.Slot));
+
+    Dictionary<AbilitySlot, FormAbilityEntity> abilities = Abilities.ToDictionary(x => x.Slot, x => x);
+    foreach (KeyValuePair<AbilitySlot, int> abilityId in abilityIds)
+    {
+      if (abilities.TryGetValue(abilityId.Key, out FormAbilityEntity? ability))
+      {
+        ability.AbilityId = abilityId.Value;
+      }
+      else
+      {
+        ability = new FormAbilityEntity(this, abilityId.Key, abilityId.Value);
+        Abilities.Add(ability);
+      }
+    }
   }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";

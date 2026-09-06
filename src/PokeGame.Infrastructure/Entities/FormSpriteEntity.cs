@@ -8,7 +8,7 @@ internal class FormSpriteEntity
   public FormSpriteKind Kind { get; private set; }
 
   public AssetEntity? Asset { get; private set; }
-  public int AssetId { get; private set; }
+  public int AssetId { get; set; }
 
   public FormSpriteEntity(FormEntity form, FormSpriteKind kind, int assetId)
   {
