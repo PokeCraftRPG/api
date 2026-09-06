@@ -75,7 +75,6 @@ internal class PermissionService : IPermissionService
       case Actions.CreateRegion:
       case Actions.CreateSpecies:
       case Actions.CreateVariety:
-      case Actions.InviteMember:
       case Actions.Upload:
         return _context.IsWorldOwner;
       case Actions.CreateWorld:
@@ -90,6 +89,7 @@ internal class PermissionService : IPermissionService
   {
     switch (action)
     {
+      case Actions.InviteMember:
       case Actions.Update:
         return world.OwnerId == _context.TryGetUserId();
       default:

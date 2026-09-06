@@ -12,6 +12,7 @@ public sealed class World : AggregateRoot, IEntityProvider
   public Guid EntityId => Id.EntityId;
 
   public UserId OwnerId { get; private set; }
+  private readonly HashSet<UserId> _memberIds = [];
 
   private Key? _key = null;
   public Key Key => _key ?? throw new InvalidOperationException("The key was not initialized.");
@@ -71,6 +72,10 @@ public sealed class World : AggregateRoot, IEntityProvider
   {
     _key = @event.Key;
   }
+
+  #region Membership
+  public bool IsMember(UserId userId) => _memberIds.Contains(userId);
+  #endregion
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";
 }

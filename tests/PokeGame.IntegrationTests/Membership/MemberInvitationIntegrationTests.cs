@@ -75,6 +75,24 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     Assert.Equal(world.EntityId, second.World.Id);
   }
 
+  [Fact(DisplayName = "It should throw MemberAlreadyExistsException when the user is already a member.")]
+  public async Task Given_ExistingMember_When_Invite_Then_MemberAlreadyExistsException()
+  {
+    User member = Context.User!;
+    SetupInvitee(member);
+
+    SendMemberInvitationPayload payload = CreatePayload(member.Email!.Address);
+
+    MemberAlreadyExistsException exception = await Assert.ThrowsAsync<MemberAlreadyExistsException>(
+      async () => await _membershipService.InviteAsync(payload));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(member.Id, exception.UserId);
+    MessageGateway.Verify(x => x.SendMemberInvitationAsync(
+      It.IsAny<MemberInvitation>(),
+      It.IsAny<string>(),
+      It.IsAny<CancellationToken>()), Times.Never);
+  }
+
   [Fact(DisplayName = "It should throw MemberInvitationAlreadyPendingException when the email is already invited.")]
   public async Task Given_PendingEmail_When_Invite_Then_MemberInvitationAlreadyPendingException()
   {
@@ -133,7 +151,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
       async () => await _membershipService.InviteAsync(payload));
     Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal("InviteMember", exception.Action);
-    Assert.Null(exception.Resource);
+    Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
       It.IsAny<MemberInvitation>(),
