@@ -14,6 +14,8 @@ namespace PokeGame.Infrastructure.Queriers;
 
 internal class WorldQuerier : IWorldQuerier
 {
+  // TODO(fpion): members should also be able to read a World.
+
   private readonly IActorService _actors;
   private readonly IContext _context;
   private readonly DbSet<WorldEntity> _worlds;

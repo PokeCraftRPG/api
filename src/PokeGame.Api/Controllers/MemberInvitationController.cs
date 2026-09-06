@@ -22,7 +22,7 @@ public class MemberInvitationController : ControllerBase
     _membershipService = membershipService;
   }
 
-  [HttpPost("{id}/accept")]
+  [HttpPost("{id}/accept")] // TODO(fpion): won’t work because of RequireWorld.
   public async Task<ActionResult<MemberInvitationDto>> AcceptAsync(Guid id, CancellationToken cancellationToken)
   {
     MemberInvitationDto? invitation = await _membershipService.AcceptAsync(id, cancellationToken);
@@ -36,7 +36,7 @@ public class MemberInvitationController : ControllerBase
     return invitation is null ? NotFound() : Ok(invitation);
   }
 
-  [HttpPost("{id}/decline")]
+  [HttpPost("{id}/decline")] // TODO(fpion): won’t work because of RequireWorld.
   public async Task<ActionResult<MemberInvitationDto>> DeclineAsync(Guid id, CancellationToken cancellationToken)
   {
     MemberInvitationDto? invitation = await _membershipService.DeclineAsync(id, cancellationToken);
@@ -51,14 +51,14 @@ public class MemberInvitationController : ControllerBase
     return Created(location, invitation);
   }
 
-  [HttpGet("{id}")]
+  [HttpGet("{id}")] // TODO(fpion): won’t work for the invitee because of RequireWorld.
   public async Task<ActionResult<MemberInvitationDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     MemberInvitationDto? invitation = await _membershipService.ReadAsync(id, cancellationToken);
     return invitation is null ? NotFound() : Ok(invitation);
   }
 
-  [HttpGet]
+  [HttpGet] // TODO(fpion): won’t work for the invitee because of RequireWorld.
   public async Task<ActionResult<SearchResults<MemberInvitationDto>>> SearchAsync([FromQuery] SearchMemberInvitationsParameters parameters, CancellationToken cancellationToken)
   {
     SearchMemberInvitationsPayload payload = parameters.ToPayload();
