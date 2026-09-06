@@ -56,6 +56,13 @@ internal class WorldEntity : AggregateEntity
     }
   }
 
+  public void RevokeMembership(WorldMembershipRevoked @event)
+  {
+    Update(@event);
+
+    Members.RemoveAll(member => member.UserId == @event.UserId.Value);
+  }
+
   public void SetDetails(WorldDetailsChanged @event)
   {
     Update(@event);

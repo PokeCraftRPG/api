@@ -34,6 +34,7 @@ public static class DependencyInjectionExtensions
     AssetService.Register(services);
     FormService.Register(services);
     IdentityService.Register(services);
+    MemberInvitationService.Register(services);
     MembershipService.Register(services);
     MoveService.Register(services);
     PermissionService.Register(services);

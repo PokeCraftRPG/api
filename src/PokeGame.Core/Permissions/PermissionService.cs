@@ -90,6 +90,7 @@ internal class PermissionService : IPermissionService
     switch (action)
     {
       case Actions.InviteMember:
+      case Actions.RevokeMember:
       case Actions.Update:
         return world.OwnerId == _context.TryGetUserId();
       default:

@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PokeGame.Builders;
 using PokeGame.Core;
+using PokeGame.Core.Caching;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure;
@@ -44,8 +45,8 @@ public abstract class IntegrationTests : IAsyncLifetime
   }
 
   protected virtual IConfiguration BuildConfiguration() => new ConfigurationBuilder()
-      .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-      .Build();
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+    .Build();
 
   protected virtual IServiceProvider BuildServiceProvider()
   {
@@ -102,14 +103,20 @@ public abstract class IntegrationTests : IAsyncLifetime
   }
   protected virtual async Task InitializeDatabaseAsync()
   {
-    Context.User = new UserBuilder(Faker).Build();
+    User user = new UserBuilder(Faker).Build();
+    Context.User = user;
     UserClient.Setup(x => x.SearchAsync(
-      It.Is<SearchUsersPayload>(p => p.Ids.Single() == Context.User.Id),
-      It.IsAny<CancellationToken>())).ReturnsAsync(new SearchResults<User>([Context.User]));
+      It.Is<SearchUsersPayload>(p => p.Ids.Single() == user.Id),
+      It.IsAny<CancellationToken>())).ReturnsAsync(new SearchResults<User>([user]));
+
+    ICacheService cacheService = ServiceProvider.GetRequiredService<ICacheService>();
+    cacheService.Realm = user.Realm;
+
+    World world = new WorldBuilder(Faker).WithOwner(user).Build();
+    Context.World = world;
 
     IWorldRepository worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
-    Context.World = new WorldBuilder(Faker).WithOwner(Context.User).Build();
-    await worldRepository.SaveAsync(Context.World);
+    await worldRepository.SaveAsync(world);
   }
   protected virtual void ClearStorage()
   {

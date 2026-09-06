@@ -1,12 +1,12 @@
-using Krakenar.Contracts.Constants;
+﻿using Krakenar.Contracts.Constants;
 using Krakenar.Contracts.Roles;
 using Krakenar.Contracts.Sessions;
 using Krakenar.Contracts.Tokens;
 using Krakenar.Contracts.Users;
 using Logitar.Security.Claims;
+using PokeGame.Core.Caching;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Identity.Models;
-using PokeGame.Infrastructure.Caching;
 using Claim = System.Security.Claims.Claim;
 using ClaimDto = Krakenar.Contracts.Tokens.Claim;
 

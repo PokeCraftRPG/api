@@ -87,6 +87,18 @@ public sealed class World : AggregateRoot, IEntityProvider
   }
 
   public bool IsMember(UserId userId) => _memberIds.Contains(userId);
+
+  public void RevokeMembership(UserId userId, ActorId? actorId = null)
+  {
+    if (IsMember(userId))
+    {
+      Raise(new WorldMembershipRevoked(userId), actorId);
+    }
+  }
+  private void Handle(WorldMembershipRevoked @event)
+  {
+    _memberIds.Remove(@event.UserId);
+  }
   #endregion
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";
