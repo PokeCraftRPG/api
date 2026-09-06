@@ -1,9 +1,13 @@
 using FluentValidation;
 using Krakenar.Contracts;
+using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
+using Krakenar.Contracts.Users;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using PokeGame.Builders;
 using PokeGame.Core;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Search;
 using PokeGame.Core.Seo;
@@ -20,6 +24,7 @@ public class WorldIntegrationTests : IntegrationTests
 
   private World _world = null!;
   private WorldDto _seeded = null!;
+  private User _member = null!;
 
   public WorldIntegrationTests()
   {
@@ -74,17 +79,23 @@ public class WorldIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should read a world by ID.")]
   public async Task Given_Id_When_Read_Then_Read()
   {
+    await GrantMembershipAsync();
+
     WorldDto? world = await _worldService.ReadAsync(_world.EntityId);
     Assert.NotNull(world);
     Assert.Equal(_world.EntityId, world.Id);
+    AssertMembers(world);
   }
 
   [Fact(DisplayName = "It should read a world by key.")]
   public async Task Given_Key_When_Read_Then_Read()
   {
+    await GrantMembershipAsync();
+
     WorldDto? world = await _worldService.ReadAsync(key: _seeded.Key);
     Assert.NotNull(world);
     Assert.Equal(_world.EntityId, world.Id);
+    AssertMembers(world);
   }
 
   [Fact(DisplayName = "It should replace an existing world.")]
@@ -346,5 +357,35 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Equal(payload.Name?.Trim(), world.Name);
     Assert.Equal(payload.Summary?.Trim(), world.Summary);
     Assert.Equal(payload.Content?.Trim(), world.Content);
+  }
+
+  private async Task GrantMembershipAsync()
+  {
+    _member = new UserBuilder(Faker).Build();
+    UserClient.Setup(x => x.SearchAsync(It.IsAny<SearchUsersPayload>(), It.IsAny<CancellationToken>()))
+      .ReturnsAsync((SearchUsersPayload payload, CancellationToken _) =>
+      {
+        Dictionary<Guid, User> users = [];
+        if (Context.User is not null && payload.Ids.Contains(Context.User.Id))
+        {
+          users[Context.User.Id] = Context.User;
+        }
+        if (payload.Ids.Contains(_member.Id))
+        {
+          users[_member.Id] = _member;
+        }
+        return new SearchResults<User>(users.Values);
+      });
+
+    _world.GrantMembership(new UserId(_member), Context.ActorId);
+    await _worldRepository.SaveAsync(_world);
+  }
+
+  private void AssertMembers(WorldDto world)
+  {
+    MemberDto member = Assert.Single(world.Members);
+    Assert.Equal(new Actor(_member), member.User);
+    Assert.Equal(Actor, member.GrantedBy);
+    Assert.Equal(DateTime.UtcNow, member.GrantedOn, TimeSpan.FromSeconds(10));
   }
 }

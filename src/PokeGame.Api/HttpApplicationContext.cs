@@ -59,7 +59,7 @@ internal class HttpApplicationContext : IContext
   public UserId? TryGetUserId()
   {
     User? user = Context.GetUser();
-    return user is null ? null : new UserId(new Actor(user).ToActorId());
+    return user is null ? null : new UserId(user);
   }
   public WorldId? TryGetWorldId()
   {

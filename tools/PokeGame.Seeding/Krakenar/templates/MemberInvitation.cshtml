@@ -1,0 +1,58 @@
+﻿<!doctype html>
+<html lang="@(Model.Locale?.Code)">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>@(Model.Resource("MemberInvitation_Subject"))</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f5f5f5; font-family:Arial, Helvetica, sans-serif; color:#222222;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f5f5f5;">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px; background-color:#ffffff; border-radius:8px;">
+          <tr>
+            <td style="padding:40px;">
+              <h1 style="margin:0 0 24px; font-size:24px; line-height:32px; font-weight:700; color:#111111;">
+                @(Model.Resource("MemberInvitation_Heading"))
+              </h1>
+
+              <p style="margin:0 0 16px; font-size:16px; line-height:24px;">
+                @(Model.Resource("MemberInvitation_Intro"))
+              </p>
+
+              <p style="margin:0 0 16px; font-size:16px; line-height:24px;">
+                @(Model.Resource("MemberInvitation_Access"))
+              </p>
+
+              @if (Model.UserExists)
+              {
+                <p style="margin:0 0 24px; font-size:16px; line-height:24px;">
+                  @(Model.Resource("MemberInvitation_ExistingUserInstructions"))
+                </p>
+              }
+              else
+              {
+                <p style="margin:0 0 24px; font-size:16px; line-height:24px;">
+                  @(Model.Resource("MemberInvitation_NewUserInstructions"))
+                </p>
+              }
+
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 24px;">
+                <tr>
+                  <td style="padding:16px; background-color:#f7f7f7; border-radius:6px; font-size:14px; line-height:21px; color:#555555;">
+                    @(Model.Resource("MemberInvitation_Expiration"))
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0; font-size:14px; line-height:21px; color:#666666;">
+                @(Model.Resource("MemberInvitation_Ignore"))
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

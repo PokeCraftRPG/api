@@ -3,7 +3,7 @@ using Logitar;
 
 namespace PokeGame.Core;
 
-public abstract class ImmutablePropertyException : DomainException
+public abstract class ImmutablePropertyException : ConflictException
 {
   protected ImmutablePropertyException(string? message, Exception? innerException = null)
     : base(message, innerException)

@@ -1,4 +1,5 @@
-﻿using Logitar.EventSourcing;
+﻿using Logitar;
+using Logitar.EventSourcing;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Events;
 
@@ -17,6 +18,8 @@ internal class WorldEntity : AggregateEntity
   public string? Summary { get; private set; }
   public string? Content { get; private set; }
 
+  public List<MemberEntity> Members { get; private set; } = [];
+
   public WorldEntity(WorldCreated @event) : base(@event)
   {
     Id = new WorldId(@event.StreamId).EntityId;
@@ -34,7 +37,23 @@ internal class WorldEntity : AggregateEntity
   {
     HashSet<ActorId> actorIds = new(base.GetActorIds());
     actorIds.Add(new ActorId(OwnerId));
+    foreach (MemberEntity member in Members)
+    {
+      actorIds.AddRange(member.GetActorIds());
+    }
     return actorIds;
+  }
+
+  public void GrantMembership(WorldMembershipGranted @event)
+  {
+    Update(@event);
+
+    MemberEntity? member = Members.SingleOrDefault(member => member.UserId == @event.UserId.Value);
+    if (member is null)
+    {
+      member = new MemberEntity(this, @event);
+      Members.Add(member);
+    }
   }
 
   public void SetDetails(WorldDetailsChanged @event)

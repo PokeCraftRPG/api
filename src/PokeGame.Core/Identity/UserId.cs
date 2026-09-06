@@ -1,4 +1,5 @@
 ﻿using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Users;
 using Logitar.EventSourcing;
 using PokeGame.Core.Actors;
 
@@ -41,6 +42,10 @@ public readonly struct UserId
 
     RealmId = realmId;
     EntityId = entityId;
+  }
+
+  public UserId(User user) : this(user.Id, user.Realm?.Id)
+  {
   }
 
   public static bool operator ==(UserId left, UserId right) => left.Equals(right);

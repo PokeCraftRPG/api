@@ -30,7 +30,7 @@ internal static class ValidationExtensions
 
   public static IRuleBuilderOptions<T, string> EmailAddressValue<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
-    return ruleBuilder.NotEmpty().MaximumLength(byte.MaxValue).EmailAddress();
+    return ruleBuilder.NotEmpty().MaximumLength(EmailAddress.MaximumLength).EmailAddress();
   }
 
   public static IRuleBuilderOptions<T, string> FileName<T>(this IRuleBuilder<T, string> ruleBuilder)

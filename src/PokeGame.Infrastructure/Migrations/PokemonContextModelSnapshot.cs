@@ -408,6 +408,114 @@ namespace PokeGame.Infrastructure.Migrations
                     b.ToTable("FormSprites", "Pokemon");
                 });
 
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.MemberEntity", b =>
+                {
+                    b.Property<int>("WorldId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("GrantedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("GrantedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("WorldId", "UserId");
+
+                    b.HasIndex("GrantedBy");
+
+                    b.HasIndex("GrantedOn");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Members", "Pokemon");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.MemberInvitationEntity", b =>
+                {
+                    b.Property<int>("MemberInvitationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MemberInvitationId"));
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EmailAddress")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime?>("ExpiresOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("StreamId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("UpdatedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("WorldId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("MemberInvitationId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("CreatedOn");
+
+                    b.HasIndex("EmailAddress");
+
+                    b.HasIndex("ExpiresOn");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("StreamId")
+                        .IsUnique();
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.HasIndex("UpdatedOn");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("Version");
+
+                    b.HasIndex("WorldId", "Id")
+                        .IsUnique();
+
+                    b.ToTable("MemberInvitations", "Pokemon");
+                });
+
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.MoveEntity", b =>
                 {
                     b.Property<int>("MoveId")
@@ -1098,6 +1206,28 @@ namespace PokeGame.Infrastructure.Migrations
                     b.Navigation("Form");
                 });
 
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.MemberEntity", b =>
+                {
+                    b.HasOne("PokeGame.Infrastructure.Entities.WorldEntity", "World")
+                        .WithMany("Members")
+                        .HasForeignKey("WorldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("World");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.MemberInvitationEntity", b =>
+                {
+                    b.HasOne("PokeGame.Infrastructure.Entities.WorldEntity", "World")
+                        .WithMany()
+                        .HasForeignKey("WorldId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("World");
+                });
+
             modelBuilder.Entity("PokeGame.Infrastructure.Entities.MoveEntity", b =>
                 {
                     b.HasOne("PokeGame.Infrastructure.Entities.WorldEntity", "World")
@@ -1217,6 +1347,11 @@ namespace PokeGame.Infrastructure.Migrations
                     b.Navigation("Forms");
 
                     b.Navigation("Moves");
+                });
+
+            modelBuilder.Entity("PokeGame.Infrastructure.Entities.WorldEntity", b =>
+                {
+                    b.Navigation("Members");
                 });
 #pragma warning restore 612, 618
         }

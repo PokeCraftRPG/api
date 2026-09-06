@@ -6,6 +6,7 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Forms.Models;
+using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
@@ -166,6 +167,46 @@ internal class Mapper
     return destination;
   }
 
+  public MemberDto ToMember(MemberEntity source) => new()
+  {
+    User = FindActor(source.UserId),
+    GrantedBy = FindActor(source.GrantedBy),
+    GrantedOn = source.GrantedOn.AsUniversalTime()
+  };
+
+  public MemberInvitationDto ToMemberInvitation(MemberInvitationEntity source)
+  {
+    WorldEntity world = source.World ?? throw new ArgumentException("The world is required.", nameof(source));
+    MemberInvitationDto destination = new()
+    {
+      Id = source.Id,
+      World = ToWorld(world),
+      Status = source.Status,
+      ExpiresOn = source.ExpiresOn?.AsUniversalTime()
+    };
+
+    if (source.UserId is not null)
+    {
+      destination.Invitee = FindActor(source.UserId);
+    }
+    else if (source.EmailAddress is not null)
+    {
+      destination.Invitee = new Actor(source.EmailAddress)
+      {
+        Type = ActorType.User,
+        EmailAddress = source.EmailAddress
+      };
+    }
+    else
+    {
+      throw new ArgumentException("Either a user identifier or email address is required.", nameof(source));
+    }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
   public MoveDto ToMove(MoveEntity source)
   {
     MoveDto destination = new()
@@ -295,12 +336,17 @@ internal class Mapper
     WorldDto destination = new()
     {
       Id = source.Id,
-      Owner = FindActor(source.OwnerId),
       Key = source.Key,
       Name = source.Name,
       Summary = source.Summary,
-      Content = source.Content
+      Content = source.Content,
+      Owner = FindActor(source.OwnerId)
     };
+
+    foreach (MemberEntity member in source.Members)
+    {
+      destination.Members.Add(ToMember(member));
+    }
 
     MapAggregate(source, destination);
 

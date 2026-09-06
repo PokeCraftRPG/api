@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +14,8 @@ namespace PokeGame.Infrastructure.Queriers;
 
 internal class WorldQuerier : IWorldQuerier
 {
+  // TODO(fpion): members should also be able to read a World.
+
   private readonly IActorService _actors;
   private readonly IContext _context;
   private readonly DbSet<WorldEntity> _worlds;
@@ -48,6 +50,7 @@ internal class WorldQuerier : IWorldQuerier
   {
     WorldEntity? world = await _worlds.AsNoTracking()
       .Where(x => x.StreamId == id.Value && x.OwnerId == _context.UserId.Value)
+      .Include(x => x.Members)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
@@ -55,6 +58,7 @@ internal class WorldQuerier : IWorldQuerier
   {
     WorldEntity? world = await _worlds.AsNoTracking()
       .Where(x => x.Id == id && x.OwnerId == _context.UserId.Value)
+      .Include(x => x.Members)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
@@ -62,6 +66,7 @@ internal class WorldQuerier : IWorldQuerier
   {
     WorldEntity? world = await _worlds.AsNoTracking()
       .Where(x => x.Key == SlugHelper.Format(key) && x.OwnerId == _context.UserId.Value)
+      .Include(x => x.Members)
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
