@@ -24,9 +24,6 @@ internal class FormConfiguration : AggregateConfiguration<FormEntity>, IEntityTy
     builder.HasIndex(x => new { x.WorldId, x.Summary });
     builder.HasIndex(x => new { x.WorldId, x.PrimaryType });
     builder.HasIndex(x => new { x.WorldId, x.SecondaryType });
-    builder.HasIndex(x => new { x.WorldId, x.PrimaryAbilityId });
-    builder.HasIndex(x => new { x.WorldId, x.SecondaryAbilityId });
-    builder.HasIndex(x => new { x.WorldId, x.HiddenAbilityId });
     builder.HasIndex(x => new { x.WorldId, x.YieldExperience });
     builder.HasIndex(x => new { x.WorldId, x.Height });
     builder.HasIndex(x => new { x.WorldId, x.Weight });
@@ -41,8 +38,5 @@ internal class FormConfiguration : AggregateConfiguration<FormEntity>, IEntityTy
 
     builder.HasOne(x => x.World).WithMany().OnDelete(DeleteBehavior.Restrict);
     builder.HasOne(x => x.Variety).WithMany(x => x.Forms).OnDelete(DeleteBehavior.Restrict);
-    builder.HasOne(x => x.PrimaryAbility).WithMany().HasForeignKey(x => x.PrimaryAbilityId).OnDelete(DeleteBehavior.Restrict);
-    builder.HasOne(x => x.SecondaryAbility).WithMany().HasForeignKey(x => x.SecondaryAbilityId).OnDelete(DeleteBehavior.Restrict);
-    builder.HasOne(x => x.HiddenAbility).WithMany().HasForeignKey(x => x.HiddenAbilityId).OnDelete(DeleteBehavior.Restrict);
   }
 }

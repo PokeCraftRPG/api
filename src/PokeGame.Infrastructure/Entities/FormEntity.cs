@@ -27,13 +27,6 @@ internal class FormEntity : AggregateEntity
   public PokemonType PrimaryType { get; private set; }
   public PokemonType? SecondaryType { get; private set; }
 
-  public AbilityEntity? PrimaryAbility { get; private set; }
-  public int PrimaryAbilityId { get; private set; }
-  public AbilityEntity? SecondaryAbility { get; private set; }
-  public int? SecondaryAbilityId { get; private set; }
-  public AbilityEntity? HiddenAbility { get; private set; }
-  public int? HiddenAbilityId { get; private set; }
-
   public int BaseHP { get; private set; }
   public int BaseAttack { get; private set; }
   public int BaseDefense { get; private set; }
@@ -51,6 +44,9 @@ internal class FormEntity : AggregateEntity
 
   public int? Height { get; private set; }
   public int? Weight { get; private set; }
+
+  public List<FormAbilityEntity> Abilities { get; private set; } = [];
+  public List<FormSpriteEntity> Sprites { get; private set; } = [];
 
   public FormEntity(int worldId, int varietyId, FormCreated @event) : base(@event)
   {
@@ -79,18 +75,7 @@ internal class FormEntity : AggregateEntity
     {
       actorIds.AddRange(Variety.GetActorIds());
     }
-    if (PrimaryAbility is not null)
-    {
-      actorIds.AddRange(PrimaryAbility.GetActorIds());
-    }
-    if (SecondaryAbility is not null)
-    {
-      actorIds.AddRange(SecondaryAbility.GetActorIds());
-    }
-    if (HiddenAbility is not null)
-    {
-      actorIds.AddRange(HiddenAbility.GetActorIds());
-    }
+    // TODO(fpion): Abilities
     // TODO(fpion): Sprites
     return actorIds;
   }

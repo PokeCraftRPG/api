@@ -2,6 +2,7 @@
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Forms.Models;
@@ -84,23 +85,27 @@ internal class Mapper
     destination.Types.Primary = source.PrimaryType;
     destination.Types.Secondary = source.SecondaryType;
 
-    AbilityEntity primaryAbility = source.PrimaryAbility ?? throw new ArgumentException("The primary ability is required.", nameof(source));
-    destination.Abilities.Primary = ToAbility(primaryAbility);
-    if (source.SecondaryAbility is not null)
+    bool primaryFound = false;
+    foreach (FormAbilityEntity entity in source.Abilities)
     {
-      destination.Abilities.Secondary = ToAbility(source.SecondaryAbility);
+      AbilityDto ability = ToAbility(entity.Ability ?? throw new ArgumentException("The ability is required.", nameof(source)));
+      switch (entity.Slot)
+      {
+        case AbilitySlot.Primary:
+          primaryFound = true;
+          destination.Abilities.Primary = ability;
+          break;
+        case AbilitySlot.Secondary:
+          destination.Abilities.Secondary = ability;
+          break;
+        case AbilitySlot.Hidden:
+          destination.Abilities.Hidden = ability;
+          break;
+      }
     }
-    else if (source.SecondaryAbilityId.HasValue)
+    if (!primaryFound)
     {
-      throw new ArgumentException("The secondary ability is required.", nameof(source));
-    }
-    if (source.HiddenAbility is not null)
-    {
-      destination.Abilities.Hidden = ToAbility(source.HiddenAbility);
-    }
-    else if (source.HiddenAbilityId.HasValue)
-    {
-      throw new ArgumentException("The hidden ability is required.", nameof(source));
+      throw new ArgumentException("The primary ability is required.", nameof(source));
     }
 
     destination.BaseStatistics.HP = source.BaseHP;
@@ -127,7 +132,34 @@ internal class Mapper
       };
     }
 
-    // TODO(fpion): Sprites
+    bool defaultFound = false;
+    FormSpritesDto sprites = new();
+    foreach (FormSpriteEntity sprite in source.Sprites)
+    {
+      AssetDto asset = ToAsset(sprite.Asset ?? throw new ArgumentException("The asset is required.", nameof(source)));
+      switch (sprite.Kind)
+      {
+        case FormSpriteKind.Default:
+          defaultFound = true;
+          sprites.Default = asset;
+          break;
+        case FormSpriteKind.Shiny:
+          sprites.Shiny = asset;
+          break;
+        case FormSpriteKind.Female:
+          sprites.Female = asset;
+          break;
+        case FormSpriteKind.FemaleShiny:
+          sprites.FemaleShiny = asset;
+          break;
+        default:
+          throw new NotSupportedException($"The form sprite kind '{sprite.Kind}' is not supported.");
+      }
+    }
+    if (defaultFound)
+    {
+      destination.Sprites = sprites;
+    }
 
     MapAggregate(source, destination);
 

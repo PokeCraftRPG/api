@@ -92,8 +92,7 @@ internal class FormQuerier : IFormQuerier
     {
       bool idParsed = Guid.TryParse(payload.Ability, out Guid abilityId);
       string key = payload.Ability.Trim();
-      query = query.Where(x => (idParsed && (x.PrimaryAbility!.Id == abilityId || x.SecondaryAbility!.Id == abilityId || x.HiddenAbility!.Id == abilityId))
-        || x.PrimaryAbility!.Key == key || x.SecondaryAbility!.Key == key || x.HiddenAbility!.Key == key);
+      query = query.Where(x => x.Abilities.Any(y => (idParsed && y.Ability!.Id == abilityId) || y.Ability!.Key == key));
     }
 
     long total = await query.LongCountAsync(cancellationToken);
@@ -157,10 +156,9 @@ internal class FormQuerier : IFormQuerier
 
     query = query.Skip(payload.Offset).Take(payload.Limit);
 
-    query = query
-      .Include(x => x.PrimaryAbility)
-      .Include(x => x.SecondaryAbility)
-      .Include(x => x.HiddenAbility)
+    query = query.AsSplitQuery()
+      .Include(x => x.Abilities).ThenInclude(x => x.Ability)
+      .Include(x => x.Sprites.Where(y => y.Kind == FormSpriteKind.Default)).ThenInclude(x => x.Asset)
       .Include(x => x.Variety).ThenInclude(x => x!.Species);
 
     FormEntity[] entities = await query.ToArrayAsync(cancellationToken);
