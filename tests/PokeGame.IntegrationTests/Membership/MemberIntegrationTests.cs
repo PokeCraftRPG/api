@@ -18,12 +18,14 @@ public class MemberIntegrationTests : IntegrationTests
   private readonly ICacheService _cacheService;
   private readonly IMembershipService _membershipService;
   private readonly IWorldRepository _worldRepository;
+  private readonly IWorldService _worldService;
 
   public MemberIntegrationTests()
   {
     _cacheService = ServiceProvider.GetRequiredService<ICacheService>();
     _membershipService = ServiceProvider.GetRequiredService<IMembershipService>();
     _worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
+    _worldService = ServiceProvider.GetRequiredService<IWorldService>();
   }
 
   [Fact(DisplayName = "It should revoke a world membership.")]
@@ -80,6 +82,62 @@ public class MemberIntegrationTests : IntegrationTests
       async () => await _membershipService.RevokeAsync(member.Id));
     Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal("RevokeMember", exception.Action);
+    Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+  }
+
+  [Fact(DisplayName = "It should leave a world membership.")]
+  public async Task Given_Member_When_Leave_Then_Left()
+  {
+    User owner = Context.User!;
+    User member = await GrantMembershipAsync();
+    Context.User = member;
+
+    await _membershipService.LeaveAsync();
+
+    World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
+    Assert.NotNull(loaded);
+    Assert.False(loaded.IsMember(new UserId(member)));
+
+    Context.User = owner;
+    SetupUsers(member);
+    WorldDto? world = await _worldService.ReadAsync(loaded.EntityId);
+    Assert.NotNull(world);
+    Assert.Empty(world.Members);
+  }
+
+  [Fact(DisplayName = "It should keep other members when leaving a membership.")]
+  public async Task Given_OtherMembers_When_Leave_Then_OtherMembersKept()
+  {
+    User owner = Context.User!;
+    User leaving = KrakenarFactory.Instance.NewUser(Faker);
+    User remaining = KrakenarFactory.Instance.NewUser(Faker);
+    await GrantMembershipAsync(leaving, remaining);
+    Context.User = leaving;
+
+    await _membershipService.LeaveAsync();
+
+    World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
+    Assert.NotNull(loaded);
+    Assert.False(loaded.IsMember(new UserId(leaving)));
+    Assert.True(loaded.IsMember(new UserId(remaining)));
+
+    Context.User = owner;
+    SetupUsers(remaining, leaving);
+    WorldDto? world = await _worldService.ReadAsync(loaded.EntityId);
+    Assert.NotNull(world);
+
+    MemberDto member = Assert.Single(world.Members);
+    Assert.Equal(new Actor(remaining), member.User);
+  }
+
+  [Fact(DisplayName = "It should throw PermissionDeniedException when leaving a membership.")]
+  public async Task Given_NotAllowed_When_Leave_Then_PermissionDeniedException()
+  {
+    PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
+      async () => await _membershipService.LeaveAsync());
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
+    Assert.Equal("Leave", exception.Action);
     Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
   }

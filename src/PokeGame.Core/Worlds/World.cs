@@ -88,6 +88,18 @@ public sealed class World : AggregateRoot, IEntityProvider
 
   public bool IsMember(UserId userId) => _memberIds.Contains(userId);
 
+  public void LeaveMembership(UserId userId, ActorId? actorId = null)
+  {
+    if (IsMember(userId))
+    {
+      Raise(new WorldMembershipLeft(userId), actorId);
+    }
+  }
+  private void Handle(WorldMembershipLeft @event)
+  {
+    _memberIds.Remove(@event.UserId);
+  }
+
   public void RevokeMembership(UserId userId, ActorId? actorId = null)
   {
     if (IsMember(userId))

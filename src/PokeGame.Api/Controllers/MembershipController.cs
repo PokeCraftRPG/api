@@ -18,6 +18,13 @@ public class MembershipController : ControllerBase
     _membershipService = membershipService;
   }
 
+  [HttpPost("/members/leave")]
+  public async Task<ActionResult> LeaveAsync(CancellationToken cancellationToken)
+  {
+    await _membershipService.LeaveAsync(cancellationToken);
+    return NoContent();
+  }
+
   [HttpPost("/members/{userId}/revoke")]
   public async Task<ActionResult<WorldDto>> RevokeAsync(Guid userId, CancellationToken cancellationToken)
   {

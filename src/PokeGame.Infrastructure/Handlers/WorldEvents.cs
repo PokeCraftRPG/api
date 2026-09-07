@@ -12,6 +12,7 @@ internal class WorldEvents :
   IEventHandler<WorldDetailsChanged>,
   IEventHandler<WorldKeyChanged>,
   IEventHandler<WorldMembershipGranted>,
+  IEventHandler<WorldMembershipLeft>,
   IEventHandler<WorldMembershipRevoked>
 {
   public static void Register(IServiceCollection services)
@@ -21,6 +22,7 @@ internal class WorldEvents :
     services.AddTransient<IEventHandler<WorldDetailsChanged>, WorldEvents>();
     services.AddTransient<IEventHandler<WorldKeyChanged>, WorldEvents>();
     services.AddTransient<IEventHandler<WorldMembershipGranted>, WorldEvents>();
+    services.AddTransient<IEventHandler<WorldMembershipLeft>, WorldEvents>();
     services.AddTransient<IEventHandler<WorldMembershipRevoked>, WorldEvents>();
   }
 
@@ -85,6 +87,19 @@ internal class WorldEvents :
     if (world is not null && world.Version == (@event.Version - 1))
     {
       world.GrantMembership(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(WorldMembershipLeft @event, CancellationToken cancellationToken)
+  {
+    WorldEntity? world = await _pokemon.Worlds
+      .Include(x => x.Members.Where(y => y.UserId == @event.UserId.Value))
+      .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (world is not null && world.Version == (@event.Version - 1))
+    {
+      world.LeaveMembership(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
