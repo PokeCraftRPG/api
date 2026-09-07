@@ -1,5 +1,6 @@
 ﻿using Krakenar.Contracts;
 using Logitar;
+using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Membership;
 
@@ -29,15 +30,15 @@ public sealed class MemberInvitationAlreadyPendingException : ConflictException
     }
   }
 
-  public MemberInvitationAlreadyPendingException(MemberInvitationId invitationId)
-    : base(BuildMessage(invitationId))
+  public MemberInvitationAlreadyPendingException(World world, MemberInvitationId invitationId)
+    : base(BuildMessage(world, invitationId))
   {
-    WorldId = invitationId.WorldId.EntityId;
+    WorldId = world.EntityId;
     InvitationId = invitationId.EntityId;
   }
 
-  private static string BuildMessage(MemberInvitationId invitationId) => new ErrorMessageBuilder(ErrorMessage)
-    .AddData(nameof(WorldId), invitationId.WorldId.EntityId)
+  private static string BuildMessage(World world, MemberInvitationId invitationId) => new ErrorMessageBuilder(ErrorMessage)
+    .AddData(nameof(WorldId), world.EntityId)
     .AddData(nameof(InvitationId), invitationId.EntityId)
     .Build();
 }

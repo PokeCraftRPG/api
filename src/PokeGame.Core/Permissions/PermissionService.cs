@@ -96,6 +96,7 @@ internal class PermissionService : IPermissionService
       case Actions.RevokeMember:
       case Actions.TransferOwnership:
       case Actions.Update:
+      case Actions.ViewInvitations:
         return world.OwnerId == _context.TryGetUserId();
       case Actions.LeaveMember:
         UserId? userId = _context.TryGetUserId();

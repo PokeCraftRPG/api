@@ -13,7 +13,8 @@ public interface IMemberInvitationService
   Task<MemberInvitationDto?> CancelAsync(Guid id, CancellationToken cancellationToken = default);
   Task<MemberInvitationDto?> DeclineAsync(Guid id, CancellationToken cancellationToken = default);
   Task<MemberInvitationDto?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
-  Task<SearchResults<MemberInvitationDto>> SearchAsync(SearchMemberInvitationsPayload payload, CancellationToken cancellationToken = default);
+  Task<SearchResults<MemberInvitationDto>> SearchReceivedAsync(SearchMemberInvitationsPayload payload, CancellationToken cancellationToken = default);
+  Task<SearchResults<MemberInvitationDto>?> SearchWorldAsync(Guid worldId, SearchMemberInvitationsPayload payload, CancellationToken cancellationToken = default);
   Task<MemberInvitationDto?> SendAsync(Guid worldId, SendMemberInvitationPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -27,7 +28,8 @@ internal class MemberInvitationService : IMemberInvitationService
     services.AddTransient<ICommandHandler<DeclineMemberInvitationCommand, MemberInvitationDto?>, DeclineMemberInvitationCommandHandler>();
     services.AddTransient<ICommandHandler<SendMemberInvitationCommand, MemberInvitationDto?>, SendMemberInvitationCommandHandler>();
     services.AddTransient<IQueryHandler<ReadMemberInvitationQuery, MemberInvitationDto?>, ReadMemberInvitationQueryHandler>();
-    services.AddTransient<IQueryHandler<SearchMemberInvitationsQuery, SearchResults<MemberInvitationDto>>, SearchMemberInvitationsQueryHandler>();
+    services.AddTransient<IQueryHandler<SearchReceivedMemberInvitationsQuery, SearchResults<MemberInvitationDto>>, SearchReceivedMemberInvitationsQueryHandler>();
+    services.AddTransient<IQueryHandler<SearchWorldMemberInvitationsQuery, SearchResults<MemberInvitationDto>?>, SearchWorldMemberInvitationsQueryHandler>();
   }
 
   private readonly ICommandBus _commandBus;
@@ -63,9 +65,15 @@ internal class MemberInvitationService : IMemberInvitationService
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 
-  public async Task<SearchResults<MemberInvitationDto>> SearchAsync(SearchMemberInvitationsPayload payload, CancellationToken cancellationToken)
+  public async Task<SearchResults<MemberInvitationDto>> SearchReceivedAsync(SearchMemberInvitationsPayload payload, CancellationToken cancellationToken)
   {
-    SearchMemberInvitationsQuery query = new(payload);
+    SearchReceivedMemberInvitationsQuery query = new(payload);
+    return await _queryBus.ExecuteAsync(query, cancellationToken);
+  }
+
+  public async Task<SearchResults<MemberInvitationDto>?> SearchWorldAsync(Guid worldId, SearchMemberInvitationsPayload payload, CancellationToken cancellationToken)
+  {
+    SearchWorldMemberInvitationsQuery query = new(worldId, payload);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 

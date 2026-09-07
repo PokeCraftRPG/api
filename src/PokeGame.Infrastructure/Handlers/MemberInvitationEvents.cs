@@ -78,7 +78,11 @@ internal class MemberInvitationEvents :
     MemberInvitationEntity? invitation = await _pokemon.MemberInvitations.AsNoTracking().SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (invitation is null)
     {
-      int worldId = await _pokemon.FindWorldIdAsync(@event.StreamId, cancellationToken);
+      int worldId = await _pokemon.Worlds
+        .Where(x => x.StreamId == @event.WorldId.Value)
+        .Select(x => (int?)x.WorldId)
+        .SingleOrDefaultAsync(cancellationToken)
+        ?? throw new InvalidOperationException($"The world entity 'StreamId={@event.WorldId}' was not found.");
 
       invitation = new MemberInvitationEntity(worldId, @event);
 

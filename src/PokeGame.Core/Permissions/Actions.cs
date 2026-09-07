@@ -18,4 +18,5 @@ internal static class Actions
   public const string TransferOwnership = "TransferOwnership";
   public const string Update = "Update";
   public const string Upload = "Upload";
+  public const string ViewInvitations = "ViewInvitations";
 }

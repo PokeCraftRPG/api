@@ -7,6 +7,7 @@ using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Search;
+using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Entities;
 
@@ -25,18 +26,18 @@ internal class MemberInvitationQuerier : IMemberInvitationQuerier
     _invitations = pokemon.MemberInvitations;
   }
 
-  public async Task<MemberInvitationId?> FindIdAsync(EmailAddress emailAddress, MemberInvitationStatus status, CancellationToken cancellationToken)
+  public async Task<MemberInvitationId?> GetIdAsync(World world, EmailAddress emailAddress, MemberInvitationStatus status, CancellationToken cancellationToken)
   {
     string? streamId = await _invitations
-      .Where(x => x.World!.StreamId == _context.WorldId.Value && x.EmailAddress == emailAddress.Value && x.Status == status)
+      .Where(x => x.World!.StreamId == world.Id.Value && x.EmailAddress == emailAddress.Value && x.Status == status)
       .Select(x => x.StreamId)
       .FirstOrDefaultAsync(cancellationToken);
     return streamId is null ? null : new MemberInvitationId(streamId);
   }
-  public async Task<MemberInvitationId?> FindIdAsync(UserId userId, MemberInvitationStatus status, CancellationToken cancellationToken)
+  public async Task<MemberInvitationId?> GetIdAsync(World world, UserId userId, MemberInvitationStatus status, CancellationToken cancellationToken)
   {
     string? streamId = await _invitations
-      .Where(x => x.World!.StreamId == _context.WorldId.Value && x.UserId == userId.Value && x.Status == status)
+      .Where(x => x.World!.StreamId == world.Id.Value && x.UserId == userId.Value && x.Status == status)
       .Select(x => x.StreamId)
       .FirstOrDefaultAsync(cancellationToken);
     return streamId is null ? null : new MemberInvitationId(streamId);
@@ -58,19 +59,26 @@ internal class MemberInvitationQuerier : IMemberInvitationQuerier
   public async Task<MemberInvitationDto?> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     MemberInvitationEntity? invitation = await _invitations.AsNoTracking()
-      .Where(x => x.World!.StreamId == _context.WorldId.Value && x.Id == id)
+      .Where(x => x.Id == id && (x.World!.OwnerId == _context.UserId.Value || x.UserId == _context.UserId.Value))
       .Include(x => x.World)
       .SingleOrDefaultAsync(cancellationToken);
     return invitation is null ? null : await MapAsync(invitation, cancellationToken);
   }
 
-  public async Task<SearchResults<MemberInvitationDto>> SearchAsync(SearchMemberInvitationsPayload payload, CancellationToken cancellationToken)
+  public async Task<SearchResults<MemberInvitationDto>> SearchReceivedAsync(SearchMemberInvitationsPayload payload, CancellationToken cancellationToken)
+  {
+    return await SearchAsync(payload, world: null, cancellationToken);
+  }
+  public async Task<SearchResults<MemberInvitationDto>> SearchWorldAsync(World world, SearchMemberInvitationsPayload payload, CancellationToken cancellationToken)
+  {
+    return await SearchAsync(payload, world, cancellationToken);
+  }
+  private async Task<SearchResults<MemberInvitationDto>> SearchAsync(SearchMemberInvitationsPayload payload, World? world, CancellationToken cancellationToken)
   {
     IQueryable<MemberInvitationEntity> query = _invitations.AsNoTracking()
-      .Where(x => x.World!.StreamId == _context.WorldId.Value)
-      .ApplyIdFilter(payload.Ids, x => x.Id)
-      .ApplyTextSearch(payload.Search, pattern => invitation
-        => EF.Functions.ILike(invitation.EmailAddress!, pattern, @"\"));
+      .ApplyIdFilter(payload.Ids, x => x.Id);
+
+    query = world is null ? query.Where(x => x.UserId == _context.UserId.Value) : query.Where(x => x.World!.StreamId == world.Id.Value);
 
     if (payload.Status.HasValue)
     {

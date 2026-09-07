@@ -27,7 +27,7 @@ internal class CancelMemberInvitationCommandHandler : ICommandHandler<CancelMemb
 
   public async Task<MemberInvitationDto?> HandleAsync(CancelMemberInvitationCommand command, CancellationToken cancellationToken)
   {
-    MemberInvitationId invitationId = new(_context.WorldId, command.Id);
+    MemberInvitationId invitationId = new(command.Id);
     MemberInvitation? invitation = await _memberInvitationRepository.LoadAsync(invitationId, cancellationToken);
     if (invitation is null)
     {
