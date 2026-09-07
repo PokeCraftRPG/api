@@ -73,9 +73,19 @@ internal static class ValidationExtensions
     return ruleBuilder.InclusiveBetween(1, 100);
   }
 
+  public static IRuleBuilderOptions<T, string> License<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty().MaximumLength(Trainers.License.MaximumLength).SetValidator(new SlugValidator<T>());
+  }
+
   public static IRuleBuilderOptions<T, string> Locale<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(LocaleValidator<T>.MaximumLength).SetValidator(new LocaleValidator<T>());
+  }
+
+  public static IRuleBuilderOptions<T, int> Money<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThanOrEqualTo(0);
   }
 
   public static IRuleBuilderOptions<T, IEnumerable<TCollection>> MaximumCount<T, TCollection>(this IRuleBuilder<T, IEnumerable<TCollection>> ruleBuilder, int maximumCount = 10)
