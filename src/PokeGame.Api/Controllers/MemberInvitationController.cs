@@ -21,8 +21,7 @@ public class MemberInvitationController : ControllerBase
     _memberInvitationService = memberInvitationService;
   }
 
-  [HttpPost("{id}/accept")] // TODO(fpion): won’t work because of RequireWorld.
-  [RequireWorld] // TODO(fpion): remove this (except for SendAsync)?
+  [HttpPost("{id}/accept")]
   public async Task<ActionResult<MemberInvitationDto>> AcceptAsync(Guid id, CancellationToken cancellationToken)
   {
     MemberInvitationDto? invitation = await _memberInvitationService.AcceptAsync(id, cancellationToken);
@@ -36,8 +35,7 @@ public class MemberInvitationController : ControllerBase
     return invitation is null ? NotFound() : Ok(invitation);
   }
 
-  [HttpPost("{id}/decline")] // TODO(fpion): won’t work because of RequireWorld.
-  [RequireWorld] // TODO(fpion): remove this (except for SendAsync)?
+  [HttpPost("{id}/decline")]
   public async Task<ActionResult<MemberInvitationDto>> DeclineAsync(Guid id, CancellationToken cancellationToken)
   {
     MemberInvitationDto? invitation = await _memberInvitationService.DeclineAsync(id, cancellationToken);
