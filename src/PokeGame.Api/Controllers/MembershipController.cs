@@ -28,7 +28,14 @@ public class MembershipController : ControllerBase
   [HttpPost("/members/{userId}/revoke")]
   public async Task<ActionResult<WorldDto>> RevokeAsync(Guid userId, CancellationToken cancellationToken)
   {
-    WorldDto? world = await _membershipService.RevokeAsync(userId, cancellationToken);
-    return world is null ? NotFound() : Ok(world);
+    WorldDto world = await _membershipService.RevokeAsync(userId, cancellationToken);
+    return Ok(world);
+  }
+
+  [HttpPost("/members/{userId}/transfer-ownership")]
+  public async Task<ActionResult> TransferOwnershipAsync(Guid userId, CancellationToken cancellationToken)
+  {
+    WorldDto world = await _membershipService.TransferOwnershipAsync(userId, cancellationToken);
+    return Ok(world);
   }
 }

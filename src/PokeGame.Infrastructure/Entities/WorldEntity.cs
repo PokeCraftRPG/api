@@ -70,6 +70,22 @@ internal class WorldEntity : AggregateEntity
     Members.RemoveAll(member => member.UserId == @event.UserId.Value);
   }
 
+  public void TransferOwnership(WorldOwnershipTransferred @event)
+  {
+    Update(@event);
+
+    MemberEntity? member = Members.SingleOrDefault(member => member.UserId == OwnerId);
+    if (member is null)
+    {
+      member = new MemberEntity(this, @event);
+      Members.Add(member);
+    }
+
+    Members.RemoveAll(member => member.UserId == @event.UserId.Value);
+
+    OwnerId = @event.UserId.Value;
+  }
+
   public void SetDetails(WorldDetailsChanged @event)
   {
     Update(@event);

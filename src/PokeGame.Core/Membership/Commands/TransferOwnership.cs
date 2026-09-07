@@ -7,9 +7,9 @@ using PokeGame.Core.Worlds.Models;
 
 namespace PokeGame.Core.Membership.Commands;
 
-internal record RevokeMembershipCommand(Guid UserId) : ICommand<WorldDto>;
+internal record TransferOwnershipCommand(Guid UserId) : ICommand<WorldDto>;
 
-internal class RevokeMembershipCommandHandler : ICommandHandler<RevokeMembershipCommand, WorldDto>
+internal class TransferOwnershipCommandHandler : ICommandHandler<TransferOwnershipCommand, WorldDto>
 {
   private readonly ICacheService _cacheService;
   private readonly IContext _context;
@@ -17,7 +17,7 @@ internal class RevokeMembershipCommandHandler : ICommandHandler<RevokeMembership
   private readonly IWorldQuerier _worldQuerier;
   private readonly IWorldRepository _worldRepository;
 
-  public RevokeMembershipCommandHandler(
+  public TransferOwnershipCommandHandler(
     ICacheService cacheService,
     IContext context,
     IPermissionService permissionService,
@@ -31,14 +31,14 @@ internal class RevokeMembershipCommandHandler : ICommandHandler<RevokeMembership
     _worldRepository = worldRepository;
   }
 
-  public async Task<WorldDto> HandleAsync(RevokeMembershipCommand command, CancellationToken cancellationToken)
+  public async Task<WorldDto> HandleAsync(TransferOwnershipCommand command, CancellationToken cancellationToken)
   {
     World world = await _worldRepository.LoadAsync(_context.WorldId, cancellationToken)
       ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not loaded.");
-    await _permissionService.CheckAsync(Actions.RevokeMember, world, cancellationToken);
+    await _permissionService.CheckAsync(Actions.TransferOwnership, world, cancellationToken);
 
     UserId userId = new(command.UserId, _cacheService.Realm?.Id);
-    world.RevokeMembership(userId, _context.ActorId);
+    world.TransferOwnership(userId, _context.ActorId);
 
     await _worldRepository.SaveAsync(world, cancellationToken);
 

@@ -8,7 +8,8 @@ namespace PokeGame.Core.Membership;
 public interface IMembershipService
 {
   Task LeaveAsync(CancellationToken cancellationToken = default);
-  Task<WorldDto?> RevokeAsync(Guid userId, CancellationToken cancellationToken = default);
+  Task<WorldDto> RevokeAsync(Guid userId, CancellationToken cancellationToken = default);
+  Task<WorldDto> TransferOwnershipAsync(Guid userId, CancellationToken cancellationToken = default);
 }
 
 internal class MembershipService : IMembershipService
@@ -17,7 +18,8 @@ internal class MembershipService : IMembershipService
   {
     services.AddTransient<IMembershipService, MembershipService>();
     services.AddTransient<ICommandHandler<LeaveMembershipCommand, Unit>, LeaveMembershipCommandHandler>();
-    services.AddTransient<ICommandHandler<RevokeMembershipCommand, WorldDto?>, RevokeMembershipCommandHandler>();
+    services.AddTransient<ICommandHandler<RevokeMembershipCommand, WorldDto>, RevokeMembershipCommandHandler>();
+    services.AddTransient<ICommandHandler<TransferOwnershipCommand, WorldDto>, TransferOwnershipCommandHandler>();
   }
 
   private readonly ICommandBus _commandBus;
@@ -33,9 +35,15 @@ internal class MembershipService : IMembershipService
     await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
-  public async Task<WorldDto?> RevokeAsync(Guid userId, CancellationToken cancellationToken)
+  public async Task<WorldDto> RevokeAsync(Guid userId, CancellationToken cancellationToken)
   {
     RevokeMembershipCommand command = new(userId);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<WorldDto> TransferOwnershipAsync(Guid userId, CancellationToken cancellationToken)
+  {
+    TransferOwnershipCommand command = new(userId);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 }

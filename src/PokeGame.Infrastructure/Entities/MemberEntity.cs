@@ -14,12 +14,20 @@ internal class MemberEntity
   public string? GrantedBy { get; private set; }
   public DateTime GrantedOn { get; private set; }
 
-  public MemberEntity(WorldEntity world, WorldMembershipGranted @event)
+  public MemberEntity(WorldEntity world, WorldMembershipGranted @event) : this(world, (DomainEvent)@event)
+  {
+    UserId = @event.UserId.Value;
+  }
+
+  public MemberEntity(WorldEntity world, WorldOwnershipTransferred @event) : this(world, (DomainEvent)@event)
+  {
+    UserId = world.OwnerId;
+  }
+
+  private MemberEntity(WorldEntity world, DomainEvent @event)
   {
     World = world;
     WorldId = world.WorldId;
-
-    UserId = @event.UserId.Value;
 
     GrantedBy = @event.ActorId?.Value;
     GrantedOn = @event.OccurredOn.AsUniversalTime();

@@ -137,7 +137,97 @@ public class MemberIntegrationTests : IntegrationTests
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _membershipService.LeaveAsync());
     Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Leave", exception.Action);
+    Assert.Equal("LeaveMember", exception.Action);
+    Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+  }
+
+  [Fact(DisplayName = "It should transfer world ownership to a member.")]
+  public async Task Given_Member_When_Transfer_Then_Transferred()
+  {
+    User owner = Context.User!;
+    User member = await GrantMembershipAsync();
+    SetupUsers(member);
+
+    WorldDto world = await _membershipService.TransferOwnershipAsync(member.Id);
+    Assert.Equal(new Actor(member), world.Owner);
+
+    MemberDto granted = Assert.Single(world.Members);
+    Assert.Equal(new Actor(owner), granted.User);
+    Assert.Equal(Actor, granted.GrantedBy);
+    Assert.Equal(DateTime.UtcNow, granted.GrantedOn, TimeSpan.FromSeconds(10));
+
+    World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
+    Assert.NotNull(loaded);
+    Assert.Equal(new UserId(member), loaded.OwnerId);
+    Assert.True(loaded.IsMember(new UserId(owner)));
+    Assert.False(loaded.IsMember(new UserId(member)));
+  }
+
+  [Fact(DisplayName = "It should keep other members when transferring ownership.")]
+  public async Task Given_OtherMembers_When_Transfer_Then_OtherMembersKept()
+  {
+    User owner = Context.User!;
+    User successor = KrakenarFactory.Instance.NewUser(Faker);
+    User remaining = KrakenarFactory.Instance.NewUser(Faker);
+    await GrantMembershipAsync(successor, remaining);
+    SetupUsers(successor, remaining);
+
+    WorldDto world = await _membershipService.TransferOwnershipAsync(successor.Id);
+    Assert.Equal(new Actor(successor), world.Owner);
+    Assert.Equal(2, world.Members.Count);
+    Assert.Contains(world.Members, member => member.User.Equals(new Actor(owner)));
+    Assert.Contains(world.Members, member => member.User.Equals(new Actor(remaining)));
+
+    World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
+    Assert.NotNull(loaded);
+    Assert.Equal(new UserId(successor), loaded.OwnerId);
+    Assert.True(loaded.IsMember(new UserId(owner)));
+    Assert.True(loaded.IsMember(new UserId(remaining)));
+    Assert.False(loaded.IsMember(new UserId(successor)));
+  }
+
+  [Fact(DisplayName = "It should not change the world when transferring ownership to the owner.")]
+  public async Task Given_Owner_When_Transfer_Then_Unchanged()
+  {
+    User owner = Context.User!;
+    User member = await GrantMembershipAsync();
+    SetupUsers(member);
+
+    WorldDto world = await _membershipService.TransferOwnershipAsync(owner.Id);
+    Assert.Equal(new Actor(owner), world.Owner);
+
+    MemberDto granted = Assert.Single(world.Members);
+    Assert.Equal(new Actor(member), granted.User);
+
+    World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
+    Assert.NotNull(loaded);
+    Assert.Equal(new UserId(owner), loaded.OwnerId);
+    Assert.False(loaded.IsMember(new UserId(owner)));
+    Assert.True(loaded.IsMember(new UserId(member)));
+  }
+
+  [Fact(DisplayName = "It should throw MemberNotFoundException when transferring ownership to a non-member.")]
+  public async Task Given_NotMember_When_Transfer_Then_MemberNotFoundException()
+  {
+    User user = KrakenarFactory.Instance.NewUser(Faker);
+
+    MemberNotFoundException exception = await Assert.ThrowsAsync<MemberNotFoundException>(
+      async () => await _membershipService.TransferOwnershipAsync(user.Id));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(user.Id, exception.UserId);
+  }
+
+  [Fact(DisplayName = "It should throw PermissionDeniedException when transferring ownership.")]
+  public async Task Given_NotAllowed_When_Transfer_Then_PermissionDeniedException()
+  {
+    User member = await GrantMembershipAsync();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
+
+    PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
+      async () => await _membershipService.TransferOwnershipAsync(member.Id));
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
+    Assert.Equal("TransferOwnership", exception.Action);
     Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
   }
