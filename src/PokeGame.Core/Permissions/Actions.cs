@@ -13,6 +13,7 @@ internal static class Actions
   public const string CreateWorld = "CreateWorld";
   public const string Decline = "Decline";
   public const string InviteMember = "InviteMember";
+  public const string LeaveMember = "Leave";
   public const string RevokeMember = "RevokeMember";
   public const string Update = "Update";
   public const string Upload = "Upload";

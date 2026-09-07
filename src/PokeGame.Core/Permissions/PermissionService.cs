@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Worlds;
 
@@ -93,6 +94,9 @@ internal class PermissionService : IPermissionService
       case Actions.RevokeMember:
       case Actions.Update:
         return world.OwnerId == _context.TryGetUserId();
+      case Actions.LeaveMember:
+        UserId? userId = _context.TryGetUserId();
+        return userId.HasValue && world.IsMember(userId.Value);
       default:
         return false;
     }
