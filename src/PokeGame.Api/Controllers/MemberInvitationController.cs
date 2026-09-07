@@ -30,7 +30,6 @@ public class MemberInvitationController : ControllerBase
   }
 
   [HttpPost("{id}/cancel")]
-  [RequireWorld] // TODO(fpion): remove this (except for SendAsync)?
   public async Task<ActionResult<MemberInvitationDto>> CancelAsync(Guid id, CancellationToken cancellationToken)
   {
     MemberInvitationDto? invitation = await _memberInvitationService.CancelAsync(id, cancellationToken);
