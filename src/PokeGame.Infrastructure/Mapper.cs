@@ -10,6 +10,7 @@ using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
+using PokeGame.Core.Trainers.Models;
 using PokeGame.Core.Varieties.Models;
 using PokeGame.Core.Worlds.Models;
 using PokeGame.Infrastructure.Entities;
@@ -256,6 +257,22 @@ internal class Mapper
       UpdatedBy = FindActor(source.UpdatedBy),
       UpdatedOn = source.UpdatedOn.AsUniversalTime()
     };
+  }
+
+  public TrainerDto ToTrainer(TrainerEntity source)
+  {
+    TrainerDto destination = new()
+    {
+      Id = source.Id,
+      Key = source.Key,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content
+    };
+
+    MapAggregate(source, destination);
+
+    return destination;
   }
 
   public SpeciesDto ToSpecies(SpeciesEntity source)
