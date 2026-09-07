@@ -11,7 +11,7 @@ namespace PokeGame.Api.Controllers;
 
 [ApiController]
 [Authorize]
-[RequireWorld]
+[RequireWorld] // TODO(fpion): remove this?
 [Route("members/invitations")]
 public class MemberInvitationController : ControllerBase
 {
