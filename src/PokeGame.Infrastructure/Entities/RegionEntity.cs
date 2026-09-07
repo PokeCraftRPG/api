@@ -1,4 +1,4 @@
-﻿using PokeGame.Core;
+﻿using PokeGame.Core.Regions;
 using PokeGame.Core.Regions.Events;
 
 namespace PokeGame.Infrastructure.Entities;
@@ -22,7 +22,7 @@ internal class RegionEntity : AggregateEntity
   public RegionEntity(int worldId, RegionCreated @event) : base(@event)
   {
     WorldId = worldId;
-    Id = Entity.Parse(@event.StreamId.Value).Id;
+    Id = new RegionId(@event.StreamId).EntityId;
 
     Key = @event.Key.Value;
   }

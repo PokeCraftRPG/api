@@ -1,6 +1,5 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
-using PokeGame.Core;
 using PokeGame.Core.Species;
 using PokeGame.Core.Species.Events;
 
@@ -36,7 +35,7 @@ internal class SpeciesEntity : AggregateEntity
   public SpeciesEntity(int worldId, SpeciesCreated @event) : base(@event)
   {
     WorldId = worldId;
-    Id = Entity.Parse(@event.StreamId.Value).Id;
+    Id = new SpeciesId(@event.StreamId).EntityId;
 
     Number = @event.Number.Value;
     Category = @event.Category;

@@ -30,7 +30,7 @@ internal class MoveEntity : AggregateEntity
   public MoveEntity(int worldId, MoveCreated @event) : base(@event)
   {
     WorldId = worldId;
-    Id = Entity.Parse(@event.StreamId.Value).Id;
+    Id = new MoveId(@event.StreamId).EntityId;
 
     Type = @event.Type;
     Category = @event.Category;
