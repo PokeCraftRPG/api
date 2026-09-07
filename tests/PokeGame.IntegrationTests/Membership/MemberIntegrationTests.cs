@@ -235,17 +235,6 @@ public class MemberIntegrationTests : IntegrationTests
     Assert.Null(world);
   }
 
-  [Fact(DisplayName = "It should throw MemberNotFoundException when transferring ownership to a non-member.")]
-  public async Task Given_NotMember_When_Transfer_Then_MemberNotFoundException()
-  {
-    User user = KrakenarFactory.Instance.NewUser(Faker);
-
-    MemberNotFoundException exception = await Assert.ThrowsAsync<MemberNotFoundException>(
-      async () => await _membershipService.TransferOwnershipAsync(Context.WorldId.EntityId, new TransferOwnershipPayload { UserId = user.Id }));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(user.Id, exception.UserId);
-  }
-
   [Fact(DisplayName = "It should throw PermissionDeniedException when transferring ownership.")]
   public async Task Given_NotAllowed_When_Transfer_Then_PermissionDeniedException()
   {
@@ -258,6 +247,17 @@ public class MemberIntegrationTests : IntegrationTests
     Assert.Equal("TransferOwnership", exception.Action);
     Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+  }
+
+  [Fact(DisplayName = "It should throw UserIsNotMemberException when transferring ownership to a non-member.")]
+  public async Task Given_NotMember_When_Transfer_Then_UserIsNotMemberException()
+  {
+    User user = KrakenarFactory.Instance.NewUser(Faker);
+
+    UserIsNotMemberException exception = await Assert.ThrowsAsync<UserIsNotMemberException>(
+      async () => await _membershipService.TransferOwnershipAsync(Context.WorldId.EntityId, new TransferOwnershipPayload { UserId = user.Id }));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(user.Id, exception.UserId);
   }
 
   private async Task<User> GrantMembershipAsync(params User[] members)

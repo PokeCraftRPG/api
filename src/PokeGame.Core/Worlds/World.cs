@@ -119,7 +119,7 @@ public sealed class World : AggregateRoot, IEntityProvider
     {
       if (!IsMember(userId))
       {
-        throw new MemberNotFoundException(this, userId);
+        throw new UserIsNotMemberException(this, userId);
       }
 
       Raise(new WorldOwnershipTransferred(userId), actorId);

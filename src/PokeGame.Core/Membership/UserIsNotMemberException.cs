@@ -5,7 +5,7 @@ using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Membership;
 
-public sealed class MemberNotFoundException : ConflictException // TODO(fpion): either rename this, or it inherits from NotFoundException.
+public sealed class UserIsNotMemberException : ConflictException
 {
   private const string ErrorMessage = "The specified user is not a member of this world.";
 
@@ -31,7 +31,7 @@ public sealed class MemberNotFoundException : ConflictException // TODO(fpion): 
     }
   }
 
-  public MemberNotFoundException(World world, UserId userId)
+  public UserIsNotMemberException(World world, UserId userId)
     : base(BuildMessage(world, userId))
   {
     WorldId = world.EntityId;
