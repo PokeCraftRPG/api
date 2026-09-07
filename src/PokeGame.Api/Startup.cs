@@ -120,7 +120,6 @@ internal class Startup : StartupBase
     application.UseMiddleware<RenewSession>();
     application.UseAuthentication();
     application.UseAuthorization();
-    application.UseMiddleware<ResolveWorld>();
 
     application.MapControllers();
     application.MapHealthChecks("/health");
