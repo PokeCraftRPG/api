@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Logitar.CQRS;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Trainers.Commands;
@@ -10,7 +10,7 @@ namespace PokeGame.Core.Trainers;
 public interface ITrainerService
 {
   Task<CreateOrReplaceTrainerResult> CreateOrReplaceAsync(CreateOrReplaceTrainerPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
-  Task<TrainerDto?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
+  Task<TrainerDto?> ReadAsync(Guid? id = null, string? key = null, string? license = null, CancellationToken cancellationToken = default);
   Task<SearchResults<TrainerDto>> SearchAsync(SearchTrainersPayload payload, CancellationToken cancellationToken = default);
   Task<TrainerDto?> UpdateAsync(Guid id, UpdateTrainerPayload payload, CancellationToken cancellationToken = default);
 }
@@ -42,9 +42,9 @@ internal class TrainerService : ITrainerService
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
-  public async Task<TrainerDto?> ReadAsync(Guid? id, string? key, CancellationToken cancellationToken)
+  public async Task<TrainerDto?> ReadAsync(Guid? id, string? key, string? license, CancellationToken cancellationToken)
   {
-    ReadTrainerQuery query = new(id, key);
+    ReadTrainerQuery query = new(id, key, license);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 

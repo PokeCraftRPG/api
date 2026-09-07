@@ -1,4 +1,6 @@
 ﻿using Logitar.EventSourcing;
+using PokeGame.Core.Assets;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Trainers.Events;
 using PokeGame.Core.Worlds;
 
@@ -19,11 +21,12 @@ public sealed class Trainer : AggregateRoot, IEntityProvider
   public Summary? Summary { get; private set; }
   public Content? Content { get; private set; }
 
-  // TODO(fpion): License
-  // TODO(fpion): Gender
-  // TODO(fpion): Money
-  // TODO(fpion): Sprite
-  // TODO(fpion): User/Member
+  public License? License { get; private set; }
+  public Gender? Gender { get; private set; }
+  public Money Money { get; private set; } = new();
+  public AssetId? SpriteId { get; private set; }
+
+  public UserId? MemberId { get; private set; }
 
   public Trainer() : base()
   {
@@ -68,6 +71,23 @@ public sealed class Trainer : AggregateRoot, IEntityProvider
     Content = @event.Content;
   }
 
+  public void SetGender(Gender? gender, ActorId? actorId = null)
+  {
+    if (gender.HasValue && !Enum.IsDefined(gender.Value))
+    {
+      throw new ArgumentOutOfRangeException(nameof(gender));
+    }
+
+    if (!Equals(Gender, gender))
+    {
+      Raise(new TrainerGenderChanged(gender), actorId);
+    }
+  }
+  private void Handle(TrainerGenderChanged @event)
+  {
+    Gender = @event.Gender;
+  }
+
   public void SetKey(Key key, ActorId? actorId = null)
   {
     if (!Equals(Key, key))
@@ -78,6 +98,60 @@ public sealed class Trainer : AggregateRoot, IEntityProvider
   private void Handle(TrainerKeyChanged @event)
   {
     _key = @event.Key;
+  }
+
+  public void SetLicense(License? license, ActorId? actorId = null)
+  {
+    if (!Equals(License, license))
+    {
+      Raise(new TrainerLicenseChanged(license), actorId);
+    }
+  }
+  private void Handle(TrainerLicenseChanged @event)
+  {
+    License = @event.License;
+  }
+
+  public void SetMember(UserId? memberId, ActorId? actorId = null)
+  {
+    if (!Equals(MemberId, memberId))
+    {
+      Raise(new TrainerMemberChanged(memberId), actorId);
+    }
+  }
+  private void Handle(TrainerMemberChanged @event)
+  {
+    MemberId = @event.MemberId;
+  }
+
+  public void SetMoney(Money money, ActorId? actorId = null)
+  {
+    if (!Equals(Money, money))
+    {
+      Raise(new TrainerMoneyChanged(money), actorId);
+    }
+  }
+  private void Handle(TrainerMoneyChanged @event)
+  {
+    Money = @event.Money;
+  }
+
+  public void SetSprite(Asset? sprite, ActorId? actorId = null)
+  {
+    if (sprite is not null && sprite.Kind != AssetKind.Image)
+    {
+      throw new NotImplementedException(); // TODO(fpion): implement
+    }
+
+    AssetId? spriteId = sprite?.Id;
+    if (!Equals(SpriteId, spriteId))
+    {
+      Raise(new TrainerSpriteChanged(spriteId), actorId);
+    }
+  }
+  private void Handle(TrainerSpriteChanged @event)
+  {
+    SpriteId = @event.SpriteId;
   }
 
   public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";

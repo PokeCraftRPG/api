@@ -10,11 +10,12 @@ public record CreateOrReplaceTrainerPayload
   public string? Summary { get; set; }
   public string? Content { get; set; }
 
-  // TODO(fpion): License
-  // TODO(fpion): Gender
-  // TODO(fpion): Money
-  // TODO(fpion): Sprite
-  // TODO(fpion): User/Member
+  public string? License { get; set; }
+  public Gender? Gender { get; set; }
+  public int Money { get; set; }
+  public Guid? SpriteId { get; set; }
+
+  public Guid? MemberId { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 
@@ -26,11 +27,9 @@ public record CreateOrReplaceTrainerPayload
       When(x => !string.IsNullOrWhiteSpace(x.Summary), () => RuleFor(x => x.Summary!).Summary());
       When(x => !string.IsNullOrWhiteSpace(x.Content), () => RuleFor(x => x.Content!).Content());
 
-      // TODO(fpion): License
-      // TODO(fpion): Gender
-      // TODO(fpion): Money
-      // TODO(fpion): Sprite
-      // TODO(fpion): User/Member
+      When(x => !string.IsNullOrWhiteSpace(x.License), () => RuleFor(x => x.License!).License());
+      RuleFor(x => x.Gender).IsInEnum();
+      RuleFor(x => x.Money).Money();
     }
   }
 }

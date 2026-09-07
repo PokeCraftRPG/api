@@ -267,8 +267,25 @@ internal class Mapper
       Key = source.Key,
       Name = source.Name,
       Summary = source.Summary,
-      Content = source.Content
+      Content = source.Content,
+      License = source.License,
+      Gender = source.Gender,
+      Money = source.Money
     };
+
+    if (source.Sprite is not null)
+    {
+      destination.Sprite = ToAsset(source.Sprite);
+    }
+    else if (source.SpriteId.HasValue)
+    {
+      throw new ArgumentException("The sprite is required.", nameof(source));
+    }
+
+    if (source.MemberId is not null)
+    {
+      destination.Member = FindActor(source.MemberId);
+    }
 
     MapAggregate(source, destination);
 

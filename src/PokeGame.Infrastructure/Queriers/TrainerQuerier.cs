@@ -3,6 +3,8 @@ using Krakenar.Contracts.Search;
 using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
+using PokeGame.Core.Caching;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Search;
 using PokeGame.Core.Seo;
 using PokeGame.Core.Trainers;
@@ -15,12 +17,14 @@ namespace PokeGame.Infrastructure.Queriers;
 internal class TrainerQuerier : ITrainerQuerier
 {
   private readonly IActorService _actors;
+  private readonly ICacheService _cacheService;
   private readonly IContext _context;
   private readonly DbSet<TrainerEntity> _trainers;
 
-  public TrainerQuerier(IActorService actors, IContext context, PokemonContext pokemon)
+  public TrainerQuerier(IActorService actors, ICacheService cacheService, IContext context, PokemonContext pokemon)
   {
     _actors = actors;
+    _cacheService = cacheService;
     _context = context;
     _trainers = pokemon.Trainers;
   }
@@ -29,6 +33,14 @@ internal class TrainerQuerier : ITrainerQuerier
   {
     string? streamId = await _trainers
       .Where(x => x.World!.StreamId == _context.WorldId.Value && x.Key == key.Value)
+      .Select(x => x.StreamId)
+      .SingleOrDefaultAsync(cancellationToken);
+    return streamId is null ? null : new TrainerId(streamId);
+  }
+  public async Task<TrainerId?> GetIdAsync(License license, CancellationToken cancellationToken)
+  {
+    string? streamId = await _trainers
+      .Where(x => x.World!.StreamId == _context.WorldId.Value && x.License == license.Value)
       .Select(x => x.StreamId)
       .SingleOrDefaultAsync(cancellationToken);
     return streamId is null ? null : new TrainerId(streamId);
@@ -56,7 +68,14 @@ internal class TrainerQuerier : ITrainerQuerier
   public async Task<TrainerDto?> ReadAsync(string key, CancellationToken cancellationToken)
   {
     TrainerEntity? trainer = await _trainers.AsNoTracking()
-      .Where(x => x.World!.StreamId == _context.WorldId.Value && x.Key == SynonymFormat(key))
+      .Where(x => x.World!.StreamId == _context.WorldId.Value && x.Key == SlugHelper.Format(key))
+      .SingleOrDefaultAsync(cancellationToken);
+    return trainer is null ? null : await MapAsync(trainer, cancellationToken);
+  }
+  public async Task<TrainerDto?> ReadByLicenseAsync(string license, CancellationToken cancellationToken)
+  {
+    TrainerEntity? trainer = await _trainers.AsNoTracking()
+      .Where(x => x.World!.StreamId == _context.WorldId.Value && x.License == License.Format(license))
       .SingleOrDefaultAsync(cancellationToken);
     return trainer is null ? null : await MapAsync(trainer, cancellationToken);
   }
@@ -69,7 +88,18 @@ internal class TrainerQuerier : ITrainerQuerier
       .ApplyTextSearch(payload.Search, pattern => trainer
         => EF.Functions.ILike(trainer.Key, pattern, @"\")
         || EF.Functions.ILike(trainer.Name!, pattern, @"\")
-        || EF.Functions.ILike(trainer.Summary!, pattern, @"\"));
+        || EF.Functions.ILike(trainer.Summary!, pattern, @"\")
+        || EF.Functions.ILike(trainer.License!, pattern, @"\"));
+
+    if (payload.Gender.HasValue)
+    {
+      query = query.Where(x => x.Gender == payload.Gender.Value);
+    }
+    if (payload.MemberId.HasValue)
+    {
+      UserId memberId = new(payload.MemberId.Value, _cacheService.Realm?.Id);
+      query = query.Where(x => x.MemberId == memberId.Value);
+    }
 
     long total = await query.LongCountAsync(cancellationToken);
 
@@ -114,8 +144,6 @@ internal class TrainerQuerier : ITrainerQuerier
 
     return new SearchResults<TrainerDto>(trainers, total);
   }
-
-  private static string SynonymFormat(string key) => SlugHelper.Format(key);
 
   private async Task<TrainerDto> MapAsync(TrainerEntity trainer, CancellationToken cancellationToken)
   {

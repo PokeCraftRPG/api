@@ -8,9 +8,9 @@ public sealed class NumberAlreadyUsedException : ConflictException
 {
   private const string ErrorMessage = "The specified number is already used.";
 
-  public Guid? WorldId
+  public Guid WorldId
   {
-    get => (Guid?)Data[nameof(WorldId)];
+    get => (Guid)Data[nameof(WorldId)]!;
     private set => Data[nameof(WorldId)] = value;
   }
   public Guid SpeciesId

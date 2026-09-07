@@ -20,6 +20,7 @@ internal class TrainerManager : ITrainerManager
   public async Task EnsureUnicityAsync(Trainer trainer, CancellationToken cancellationToken)
   {
     Key? key = null;
+    License? license = null;
     foreach (IEvent change in trainer.Changes)
     {
       if (change is TrainerCreated created)
@@ -30,8 +31,11 @@ internal class TrainerManager : ITrainerManager
       {
         key = changed.Key;
       }
+      else if (change is TrainerLicenseChanged licenseChanged)
+      {
+        license = licenseChanged.License;
+      }
     }
-    // TODO(fpipn): License
 
     if (key is not null)
     {
@@ -39,6 +43,15 @@ internal class TrainerManager : ITrainerManager
       if (trainerId.HasValue && !trainerId.Value.Equals(trainer.Id))
       {
         throw new KeyAlreadyUsedException(trainer, trainerId.Value.EntityId, trainer.Key, nameof(trainer.Key));
+      }
+    }
+
+    if (license is not null)
+    {
+      TrainerId? trainerId = await _trainerQuerier.GetIdAsync(license, cancellationToken);
+      if (trainerId.HasValue && !trainerId.Value.Equals(trainer.Id))
+      {
+        throw new LicenseAlreadyUsedException(trainer, trainerId.Value);
       }
     }
   }

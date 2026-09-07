@@ -4,7 +4,7 @@ using PokeGame.Core.Trainers.Models;
 
 namespace PokeGame.Core.Trainers.Queries;
 
-internal record ReadTrainerQuery(Guid? Id, string? Key) : IQuery<TrainerDto?>;
+internal record ReadTrainerQuery(Guid? Id, string? Key, string? License) : IQuery<TrainerDto?>;
 
 internal class ReadTrainerQueryHandler : IQueryHandler<ReadTrainerQuery, TrainerDto?>
 {
@@ -37,7 +37,14 @@ internal class ReadTrainerQueryHandler : IQueryHandler<ReadTrainerQuery, Trainer
       }
     }
 
-    // TODO(fpion): License
+    if (!string.IsNullOrWhiteSpace(query.License))
+    {
+      TrainerDto? trainer = await _trainerQuerier.ReadByLicenseAsync(query.License, cancellationToken);
+      if (trainer is not null)
+      {
+        trainers[trainer.Id] = trainer;
+      }
+    }
 
     if (trainers.Count > 1)
     {

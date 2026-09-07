@@ -1,5 +1,4 @@
-using FluentValidation;
-using PokeGame.Core.Seo;
+﻿using FluentValidation;
 
 namespace PokeGame.Core.Trainers;
 
@@ -11,9 +10,11 @@ public sealed class License
 
   public License(string value)
   {
-    Value = SlugHelper.Format(value);
+    Value = Format(value);
     new Validator().ValidateAndThrow(this);
   }
+
+  public static string Format(string value) => value.Trim().ToUpperInvariant();
 
   public override bool Equals(object? obj) => obj is License license && license.Value == Value;
   public override int GetHashCode() => Value.GetHashCode();

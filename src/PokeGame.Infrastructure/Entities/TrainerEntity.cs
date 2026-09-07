@@ -1,4 +1,5 @@
-﻿using Logitar.EventSourcing;
+﻿using Logitar;
+using Logitar.EventSourcing;
 using PokeGame.Core.Trainers;
 using PokeGame.Core.Trainers.Events;
 
@@ -18,11 +19,14 @@ internal class TrainerEntity : AggregateEntity
   public string? Summary { get; private set; }
   public string? Content { get; private set; }
 
-  // TODO(fpion): License
-  // TODO(fpion): Gender
-  // TODO(fpion): Money
-  // TODO(fpion): Sprite
-  // TODO(fpion): User/Member
+  public string? License { get; private set; }
+  public Gender? Gender { get; private set; }
+  public int Money { get; private set; }
+
+  public AssetEntity? Sprite { get; private set; }
+  public int? SpriteId { get; private set; }
+
+  public string? MemberId { get; private set; }
 
   public TrainerEntity(int worldId, TrainerCreated @event) : base(@event)
   {
@@ -39,6 +43,14 @@ internal class TrainerEntity : AggregateEntity
   public override IReadOnlyCollection<ActorId> GetActorIds()
   {
     HashSet<ActorId> actorIds = new(base.GetActorIds());
+    if (Sprite is not null)
+    {
+      actorIds.AddRange(Sprite.GetActorIds());
+    }
+    if (MemberId is not null)
+    {
+      actorIds.Add(new ActorId(MemberId));
+    }
     return actorIds;
   }
 
@@ -51,11 +63,46 @@ internal class TrainerEntity : AggregateEntity
     Content = @event.Content?.Value;
   }
 
+  public void SetGender(TrainerGenderChanged @event)
+  {
+    Update(@event);
+
+    Gender = @event.Gender;
+  }
+
   public void SetKey(TrainerKeyChanged @event)
   {
     Update(@event);
 
     Key = @event.Key.Value;
+  }
+
+  public void SetLicense(TrainerLicenseChanged @event)
+  {
+    Update(@event);
+
+    License = @event.License?.Value;
+  }
+
+  public void SetMember(TrainerMemberChanged @event)
+  {
+    Update(@event);
+
+    MemberId = @event.MemberId?.Value;
+  }
+
+  public void SetMoney(TrainerMoneyChanged @event)
+  {
+    Update(@event);
+
+    Money = @event.Money.Value;
+  }
+
+  public void SetSprite(int? spriteId, TrainerSpriteChanged @event)
+  {
+    Update(@event);
+
+    SpriteId = spriteId;
   }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";

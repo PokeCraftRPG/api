@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Api.Extensions;
@@ -32,14 +32,21 @@ public class TrainerController : ControllerBase
   [HttpGet("{id}")]
   public async Task<ActionResult<TrainerDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
-    TrainerDto? trainer = await _trainerService.ReadAsync(id, key: null, cancellationToken);
+    TrainerDto? trainer = await _trainerService.ReadAsync(id, key: null, license: null, cancellationToken);
     return trainer is null ? NotFound() : Ok(trainer);
   }
 
   [HttpGet("key:{key}")]
   public async Task<ActionResult<TrainerDto>> ReadAsync(string key, CancellationToken cancellationToken)
   {
-    TrainerDto? trainer = await _trainerService.ReadAsync(id: null, key, cancellationToken);
+    TrainerDto? trainer = await _trainerService.ReadAsync(id: null, key, license: null, cancellationToken);
+    return trainer is null ? NotFound() : Ok(trainer);
+  }
+
+  [HttpGet("license:{license}")]
+  public async Task<ActionResult<TrainerDto>> ReadByLicenseAsync(string license, CancellationToken cancellationToken)
+  {
+    TrainerDto? trainer = await _trainerService.ReadAsync(id: null, key: null, license, cancellationToken);
     return trainer is null ? NotFound() : Ok(trainer);
   }
 

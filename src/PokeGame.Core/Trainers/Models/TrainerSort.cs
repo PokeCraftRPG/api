@@ -4,11 +4,8 @@ public enum TrainerSort
 {
   CreatedOn,
   Key,
+  License,
+  Money,
   Name,
   UpdatedOn
-  // TODO(fpion): License
-  // TODO(fpion): Gender
-  // TODO(fpion): Money
-  // TODO(fpion): Sprite
-  // TODO(fpion): User/Member
 }
