@@ -15,6 +15,7 @@ public sealed class License
   }
 
   public static string Format(string value) => value.Trim().ToUpperInvariant();
+  public static License? TryCreate(string? value) => string.IsNullOrWhiteSpace(value) ? null : new(value);
 
   public override bool Equals(object? obj) => obj is License license && license.Value == Value;
   public override int GetHashCode() => Value.GetHashCode();

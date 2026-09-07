@@ -2,6 +2,7 @@
 using Logitar.EventSourcing;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Trainers.Models;
+using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Trainers.Commands;
 
@@ -20,7 +21,8 @@ internal class CreateOrReplaceTrainerCommandHandler : ICommandHandler<CreateOrRe
     IPermissionService permissionService,
     ITrainerManager trainerManager,
     ITrainerQuerier trainerQuerier,
-    ITrainerRepository trainerRepository)
+    ITrainerRepository trainerRepository,
+    IWorldRepository worldRepository)
   {
     _context = context;
     _permissionService = permissionService;
@@ -61,6 +63,11 @@ internal class CreateOrReplaceTrainerCommandHandler : ICommandHandler<CreateOrRe
     }
 
     trainer.SetDetails(Name.TryCreate(payload.Name), Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
+    trainer.SetLicense(License.TryCreate(payload.License));
+    trainer.SetGender(payload.Gender);
+    trainer.SetMoney(new Money(payload.Money));
+    await _trainerManager.SetSpriteAsync(trainer, payload.SpriteId, nameof(payload.SpriteId), cancellationToken);
+    await _trainerManager.SetMemberAsync(trainer, payload.MemberId, nameof(payload.MemberId), cancellationToken);
 
     await _trainerManager.EnsureUnicityAsync(trainer, cancellationToken);
     await _trainerRepository.SaveAsync(trainer, cancellationToken);
