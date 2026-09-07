@@ -1,5 +1,6 @@
 ﻿using Logitar.EventSourcing;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Membership;
 using PokeGame.Core.Worlds.Events;
 
 namespace PokeGame.Core.Worlds;
@@ -110,6 +111,25 @@ public sealed class World : AggregateRoot, IEntityProvider
   private void Handle(WorldMembershipRevoked @event)
   {
     _memberIds.Remove(@event.UserId);
+  }
+
+  public void TransferOwnership(UserId userId, ActorId? actorId = null)
+  {
+    if (userId != OwnerId)
+    {
+      if (!IsMember(userId))
+      {
+        throw new UserIsNotMemberException(this, userId);
+      }
+
+      Raise(new WorldOwnershipTransferred(userId), actorId);
+    }
+  }
+  private void Handle(WorldOwnershipTransferred @event)
+  {
+    _memberIds.Add(OwnerId);
+    _memberIds.Remove(@event.UserId);
+    OwnerId = @event.UserId;
   }
   #endregion
 

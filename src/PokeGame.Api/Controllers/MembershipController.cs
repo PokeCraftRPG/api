@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PokeGame.Api.Filters;
 using PokeGame.Core.Membership;
+using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Worlds.Models;
 
 namespace PokeGame.Api.Controllers;
 
 [ApiController]
 [Authorize]
-[RequireWorld]
+[Route("worlds/{worldId}")]
 public class MembershipController : ControllerBase
 {
   private readonly IMembershipService _membershipService;
@@ -18,17 +18,24 @@ public class MembershipController : ControllerBase
     _membershipService = membershipService;
   }
 
-  [HttpPost("/members/leave")]
-  public async Task<ActionResult> LeaveAsync(CancellationToken cancellationToken)
+  [HttpPost("leave")]
+  public async Task<ActionResult> LeaveAsync(Guid worldId, CancellationToken cancellationToken)
   {
-    await _membershipService.LeaveAsync(cancellationToken);
-    return NoContent();
+    bool found = await _membershipService.LeaveAsync(worldId, cancellationToken);
+    return found ? NoContent() : NotFound();
   }
 
-  [HttpPost("/members/{userId}/revoke")]
-  public async Task<ActionResult<WorldDto>> RevokeAsync(Guid userId, CancellationToken cancellationToken)
+  [HttpPost("revoke")]
+  public async Task<ActionResult<WorldDto>> RevokeAsync(Guid worldId, [FromBody] RevokeMembershipPayload payload, CancellationToken cancellationToken)
   {
-    WorldDto? world = await _membershipService.RevokeAsync(userId, cancellationToken);
+    WorldDto? world = await _membershipService.RevokeAsync(worldId, payload, cancellationToken);
+    return world is null ? NotFound() : Ok(world);
+  }
+
+  [HttpPost("ownership")]
+  public async Task<ActionResult> TransferOwnershipAsync(Guid worldId, [FromBody] TransferOwnershipPayload payload, CancellationToken cancellationToken)
+  {
+    WorldDto? world = await _membershipService.TransferOwnershipAsync(worldId, payload, cancellationToken);
     return world is null ? NotFound() : Ok(world);
   }
 }

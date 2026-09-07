@@ -13,7 +13,8 @@ internal class WorldEvents :
   IEventHandler<WorldKeyChanged>,
   IEventHandler<WorldMembershipGranted>,
   IEventHandler<WorldMembershipLeft>,
-  IEventHandler<WorldMembershipRevoked>
+  IEventHandler<WorldMembershipRevoked>,
+  IEventHandler<WorldOwnershipTransferred>
 {
   public static void Register(IServiceCollection services)
   {
@@ -24,6 +25,7 @@ internal class WorldEvents :
     services.AddTransient<IEventHandler<WorldMembershipGranted>, WorldEvents>();
     services.AddTransient<IEventHandler<WorldMembershipLeft>, WorldEvents>();
     services.AddTransient<IEventHandler<WorldMembershipRevoked>, WorldEvents>();
+    services.AddTransient<IEventHandler<WorldOwnershipTransferred>, WorldEvents>();
   }
 
   private readonly PokemonContext _pokemon;
@@ -113,6 +115,19 @@ internal class WorldEvents :
     if (world is not null && world.Version == (@event.Version - 1))
     {
       world.RevokeMembership(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(WorldOwnershipTransferred @event, CancellationToken cancellationToken)
+  {
+    WorldEntity? world = await _pokemon.Worlds
+      .Include(x => x.Members)
+      .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (world is not null && world.Version == (@event.Version - 1))
+    {
+      world.TransferOwnership(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

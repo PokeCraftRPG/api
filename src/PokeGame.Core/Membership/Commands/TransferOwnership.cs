@@ -8,9 +8,9 @@ using PokeGame.Core.Worlds.Models;
 
 namespace PokeGame.Core.Membership.Commands;
 
-internal record RevokeMembershipCommand(Guid WorldId, RevokeMembershipPayload Payload) : ICommand<WorldDto?>;
+internal record TransferOwnershipCommand(Guid WorldId, TransferOwnershipPayload Payload) : ICommand<WorldDto?>;
 
-internal class RevokeMembershipCommandHandler : ICommandHandler<RevokeMembershipCommand, WorldDto?>
+internal class TransferOwnershipCommandHandler : ICommandHandler<TransferOwnershipCommand, WorldDto?>
 {
   private readonly ICacheService _cacheService;
   private readonly IContext _context;
@@ -18,7 +18,7 @@ internal class RevokeMembershipCommandHandler : ICommandHandler<RevokeMembership
   private readonly IWorldQuerier _worldQuerier;
   private readonly IWorldRepository _worldRepository;
 
-  public RevokeMembershipCommandHandler(
+  public TransferOwnershipCommandHandler(
     ICacheService cacheService,
     IContext context,
     IPermissionService permissionService,
@@ -32,9 +32,9 @@ internal class RevokeMembershipCommandHandler : ICommandHandler<RevokeMembership
     _worldRepository = worldRepository;
   }
 
-  public async Task<WorldDto?> HandleAsync(RevokeMembershipCommand command, CancellationToken cancellationToken)
+  public async Task<WorldDto?> HandleAsync(TransferOwnershipCommand command, CancellationToken cancellationToken)
   {
-    RevokeMembershipPayload payload = command.Payload;
+    TransferOwnershipPayload payload = command.Payload;
 
     WorldId worldId = new(command.WorldId);
     World? world = await _worldRepository.LoadAsync(worldId, cancellationToken);
@@ -42,10 +42,10 @@ internal class RevokeMembershipCommandHandler : ICommandHandler<RevokeMembership
     {
       return null;
     }
-    await _permissionService.CheckAsync(Actions.RevokeMember, world, cancellationToken);
+    await _permissionService.CheckAsync(Actions.TransferOwnership, world, cancellationToken);
 
     UserId userId = new(payload.UserId, _cacheService.Realm?.Id);
-    world.RevokeMembership(userId, _context.ActorId);
+    world.TransferOwnership(userId, _context.ActorId);
 
     await _worldRepository.SaveAsync(world, cancellationToken);
 

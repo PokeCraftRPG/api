@@ -6,6 +6,7 @@ using Moq;
 using PokeGame.Core.Caching;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
+using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Models;
@@ -35,7 +36,7 @@ public class MemberIntegrationTests : IntegrationTests
     await GrantMembershipAsync(member);
     SetupUsers(member);
 
-    WorldDto? world = await _membershipService.RevokeAsync(member.Id);
+    WorldDto? world = await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = member.Id });
     Assert.NotNull(world);
     Assert.Empty(world.Members);
 
@@ -52,7 +53,7 @@ public class MemberIntegrationTests : IntegrationTests
     await GrantMembershipAsync(revoked, remaining);
     SetupUsers(remaining);
 
-    WorldDto? world = await _membershipService.RevokeAsync(revoked.Id);
+    WorldDto? world = await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = revoked.Id });
     Assert.NotNull(world);
 
     MemberDto member = Assert.Single(world.Members);
@@ -67,9 +68,16 @@ public class MemberIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should not change the world when the user is not a member.")]
   public async Task Given_NotMember_When_Revoke_Then_Unchanged()
   {
-    WorldDto? world = await _membershipService.RevokeAsync(Guid.Empty);
+    WorldDto? world = await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = Guid.Empty });
     Assert.NotNull(world);
     Assert.Empty(world.Members);
+  }
+
+  [Fact(DisplayName = "It should return null when revoking a membership from a missing world.")]
+  public async Task Given_MissingWorld_When_Revoke_Then_Null()
+  {
+    WorldDto? world = await _membershipService.RevokeAsync(Guid.NewGuid(), new RevokeMembershipPayload { UserId = Guid.Empty });
+    Assert.Null(world);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when revoking a membership.")]
@@ -79,7 +87,7 @@ public class MemberIntegrationTests : IntegrationTests
     Context.User = KrakenarFactory.Instance.NewUser(Faker);
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
-      async () => await _membershipService.RevokeAsync(member.Id));
+      async () => await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = member.Id }));
     Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal("RevokeMember", exception.Action);
     Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
@@ -93,7 +101,8 @@ public class MemberIntegrationTests : IntegrationTests
     User member = await GrantMembershipAsync();
     Context.User = member;
 
-    await _membershipService.LeaveAsync();
+    bool left = await _membershipService.LeaveAsync(Context.WorldId.EntityId);
+    Assert.True(left);
 
     World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
     Assert.NotNull(loaded);
@@ -115,7 +124,8 @@ public class MemberIntegrationTests : IntegrationTests
     await GrantMembershipAsync(leaving, remaining);
     Context.User = leaving;
 
-    await _membershipService.LeaveAsync();
+    bool left = await _membershipService.LeaveAsync(Context.WorldId.EntityId);
+    Assert.True(left);
 
     World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
     Assert.NotNull(loaded);
@@ -131,15 +141,123 @@ public class MemberIntegrationTests : IntegrationTests
     Assert.Equal(new Actor(remaining), member.User);
   }
 
+  [Fact(DisplayName = "It should return false when leaving a missing world.")]
+  public async Task Given_MissingWorld_When_Leave_Then_False()
+  {
+    User member = await GrantMembershipAsync();
+    Context.User = member;
+
+    bool left = await _membershipService.LeaveAsync(Guid.NewGuid());
+    Assert.False(left);
+  }
+
   [Fact(DisplayName = "It should throw PermissionDeniedException when leaving a membership.")]
   public async Task Given_NotAllowed_When_Leave_Then_PermissionDeniedException()
   {
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
-      async () => await _membershipService.LeaveAsync());
+      async () => await _membershipService.LeaveAsync(Context.WorldId.EntityId));
     Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Leave", exception.Action);
+    Assert.Equal("LeaveMember", exception.Action);
     Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+  }
+
+  [Fact(DisplayName = "It should transfer world ownership to a member.")]
+  public async Task Given_Member_When_Transfer_Then_Transferred()
+  {
+    User owner = Context.User!;
+    User member = await GrantMembershipAsync();
+    SetupUsers(member);
+
+    WorldDto world = await TransferOwnershipAsync(member, owner);
+    Assert.Equal(new Actor(member), world.Owner);
+
+    MemberDto granted = Assert.Single(world.Members);
+    Assert.Equal(new Actor(owner), granted.User);
+    Assert.Equal(new Actor(owner), granted.GrantedBy);
+    Assert.Equal(DateTime.UtcNow, granted.GrantedOn, TimeSpan.FromSeconds(10));
+
+    World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
+    Assert.NotNull(loaded);
+    Assert.Equal(new UserId(member), loaded.OwnerId);
+    Assert.True(loaded.IsMember(new UserId(owner)));
+    Assert.False(loaded.IsMember(new UserId(member)));
+  }
+
+  [Fact(DisplayName = "It should keep other members when transferring ownership.")]
+  public async Task Given_OtherMembers_When_Transfer_Then_OtherMembersKept()
+  {
+    User owner = Context.User!;
+    User successor = KrakenarFactory.Instance.NewUser(Faker);
+    User remaining = KrakenarFactory.Instance.NewUser(Faker);
+    await GrantMembershipAsync(successor, remaining);
+    SetupUsers(successor, remaining);
+
+    WorldDto world = await TransferOwnershipAsync(successor, owner, remaining);
+    Assert.Equal(new Actor(successor), world.Owner);
+    Assert.Equal(2, world.Members.Count);
+    Assert.Contains(world.Members, member => member.User.Equals(new Actor(owner)));
+    Assert.Contains(world.Members, member => member.User.Equals(new Actor(remaining)));
+
+    World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
+    Assert.NotNull(loaded);
+    Assert.Equal(new UserId(successor), loaded.OwnerId);
+    Assert.True(loaded.IsMember(new UserId(owner)));
+    Assert.True(loaded.IsMember(new UserId(remaining)));
+    Assert.False(loaded.IsMember(new UserId(successor)));
+  }
+
+  [Fact(DisplayName = "It should not change the world when transferring ownership to the owner.")]
+  public async Task Given_Owner_When_Transfer_Then_Unchanged()
+  {
+    User owner = Context.User!;
+    User member = await GrantMembershipAsync();
+    SetupUsers(member);
+
+    WorldDto? world = await _membershipService.TransferOwnershipAsync(Context.WorldId.EntityId, new TransferOwnershipPayload { UserId = owner.Id });
+    Assert.NotNull(world);
+    Assert.Equal(new Actor(owner), world.Owner);
+
+    MemberDto granted = Assert.Single(world.Members);
+    Assert.Equal(new Actor(member), granted.User);
+
+    World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
+    Assert.NotNull(loaded);
+    Assert.Equal(new UserId(owner), loaded.OwnerId);
+    Assert.False(loaded.IsMember(new UserId(owner)));
+    Assert.True(loaded.IsMember(new UserId(member)));
+  }
+
+  [Fact(DisplayName = "It should return null when transferring ownership of a missing world.")]
+  public async Task Given_MissingWorld_When_Transfer_Then_Null()
+  {
+    WorldDto? world = await _membershipService.TransferOwnershipAsync(Guid.NewGuid(), new TransferOwnershipPayload { UserId = Guid.Empty });
+    Assert.Null(world);
+  }
+
+  [Fact(DisplayName = "It should throw PermissionDeniedException when transferring ownership.")]
+  public async Task Given_NotAllowed_When_Transfer_Then_PermissionDeniedException()
+  {
+    User member = await GrantMembershipAsync();
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
+
+    PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
+      async () => await _membershipService.TransferOwnershipAsync(Context.WorldId.EntityId, new TransferOwnershipPayload { UserId = member.Id }));
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
+    Assert.Equal("TransferOwnership", exception.Action);
+    Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+  }
+
+  [Fact(DisplayName = "It should throw UserIsNotMemberException when transferring ownership to a non-member.")]
+  public async Task Given_NotMember_When_Transfer_Then_UserIsNotMemberException()
+  {
+    User user = KrakenarFactory.Instance.NewUser(Faker);
+
+    UserIsNotMemberException exception = await Assert.ThrowsAsync<UserIsNotMemberException>(
+      async () => await _membershipService.TransferOwnershipAsync(Context.WorldId.EntityId, new TransferOwnershipPayload { UserId = user.Id }));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(user.Id, exception.UserId);
   }
 
   private async Task<User> GrantMembershipAsync(params User[] members)
@@ -158,6 +276,30 @@ public class MemberIntegrationTests : IntegrationTests
     await _worldRepository.SaveAsync(Context.World!);
 
     return members[0];
+  }
+
+  private async Task<WorldDto> TransferOwnershipAsync(User successor, params User[] otherUsers)
+  {
+    WorldDto? world;
+    try
+    {
+      world = await _membershipService.TransferOwnershipAsync(Context.WorldId.EntityId, new TransferOwnershipPayload { UserId = successor.Id });
+    }
+    catch (InvalidOperationException)
+    {
+      world = null;
+    }
+
+    if (world is not null)
+    {
+      return world;
+    }
+
+    Context.User = successor;
+    SetupUsers(otherUsers);
+    world = await _worldService.ReadAsync(Context.WorldId.EntityId);
+    Assert.NotNull(world);
+    return world;
   }
 
   private void SetupUsers(params User[] users)
