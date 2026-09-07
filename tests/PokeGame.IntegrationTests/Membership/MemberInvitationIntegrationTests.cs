@@ -37,7 +37,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   {
     SendMemberInvitationPayload payload = CreatePayload();
 
-    MemberInvitationDto invitation = await _memberInvitationService.SendAsync(payload);
+    MemberInvitationDto invitation = await SendInvitationAsync(payload);
 
     AssertInvitation(invitation, payload);
     Assert.Equal(ActorType.User, invitation.Invitee.Type);
@@ -57,7 +57,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
 
     SendMemberInvitationPayload payload = CreatePayload(invitee.Email!.Address);
 
-    MemberInvitationDto invitation = await _memberInvitationService.SendAsync(payload);
+    MemberInvitationDto invitation = await SendInvitationAsync(payload);
 
     AssertInvitation(invitation, payload);
     Assert.Equal(new Actor(invitee), invitation.Invitee);
@@ -71,29 +71,45 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   public async Task Given_OtherWorld_When_Invite_Then_Created()
   {
     SendMemberInvitationPayload payload = CreatePayload();
-    MemberInvitationDto first = await _memberInvitationService.SendAsync(payload);
+    MemberInvitationDto first = await SendInvitationAsync(payload);
 
     World world = new WorldBuilder(Faker).WithOwner(Context.User).WithKey("other-world").Build();
     await _worldRepository.SaveAsync(world);
     Context.World = world;
 
-    MemberInvitationDto second = await _memberInvitationService.SendAsync(payload);
+    MemberInvitationDto second = await SendInvitationAsync(payload, world.EntityId);
     Assert.NotEqual(first.Id, second.Id);
     Assert.Equal(world.EntityId, second.World.Id);
   }
 
-  [Fact(DisplayName = "It should throw MemberAlreadyExistsException when the user is already a member.")]
-  public async Task Given_ExistingMember_When_Invite_Then_MemberAlreadyExistsException()
+  [Fact(DisplayName = "It should return null when the user is already a member.")]
+  public async Task Given_ExistingMember_When_Invite_Then_NullReturned()
   {
     User member = Context.User!;
     SetupInvitee(member);
 
     SendMemberInvitationPayload payload = CreatePayload(member.Email!.Address);
 
-    MemberAlreadyExistsException exception = await Assert.ThrowsAsync<MemberAlreadyExistsException>(
-      async () => await _memberInvitationService.SendAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(member.Id, exception.UserId);
+    MemberInvitationDto? invitation = await _memberInvitationService.SendAsync(Context.WorldId.EntityId, payload);
+    Assert.Null(invitation);
+    MessageGateway.Verify(x => x.SendMemberInvitationAsync(
+      It.IsAny<MemberInvitation>(),
+      It.IsAny<string>(),
+      It.IsAny<CancellationToken>()), Times.Never);
+  }
+
+  [Fact(DisplayName = "It should throw EntityNotFoundException when the world does not exist.")]
+  public async Task Given_MissingWorld_When_Invite_Then_EntityNotFoundException()
+  {
+    Guid missingWorldId = Guid.NewGuid();
+    SendMemberInvitationPayload payload = CreatePayload();
+
+    EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
+      async () => await _memberInvitationService.SendAsync(missingWorldId, payload));
+    Assert.Null(exception.WorldId);
+    Assert.Equal(World.EntityKind, exception.EntityKind);
+    Assert.Equal(missingWorldId, exception.EntityId);
+    Assert.Equal("WorldId", exception.PropertyName);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
       It.IsAny<MemberInvitation>(),
       It.IsAny<string>(),
@@ -104,10 +120,10 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   public async Task Given_PendingEmail_When_Invite_Then_MemberInvitationAlreadyPendingException()
   {
     SendMemberInvitationPayload payload = CreatePayload();
-    MemberInvitationDto existing = await _memberInvitationService.SendAsync(payload);
+    MemberInvitationDto existing = await SendInvitationAsync(payload);
 
     MemberInvitationAlreadyPendingException exception = await Assert.ThrowsAsync<MemberInvitationAlreadyPendingException>(
-      async () => await _memberInvitationService.SendAsync(payload));
+      async () => await _memberInvitationService.SendAsync(Context.WorldId.EntityId, payload));
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     Assert.Equal(existing.Id, exception.InvitationId);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
@@ -123,10 +139,10 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     SetupInvitee(invitee);
 
     SendMemberInvitationPayload payload = CreatePayload(invitee.Email!.Address);
-    MemberInvitationDto existing = await _memberInvitationService.SendAsync(payload);
+    MemberInvitationDto existing = await SendInvitationAsync(payload);
 
     MemberInvitationAlreadyPendingException exception = await Assert.ThrowsAsync<MemberInvitationAlreadyPendingException>(
-      async () => await _memberInvitationService.SendAsync(payload));
+      async () => await _memberInvitationService.SendAsync(Context.WorldId.EntityId, payload));
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     Assert.Equal(existing.Id, exception.InvitationId);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
@@ -140,7 +156,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   {
     SendMemberInvitationPayload payload = new();
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _memberInvitationService.SendAsync(payload));
+    await Assert.ThrowsAsync<ValidationException>(async () => await _memberInvitationService.SendAsync(Context.WorldId.EntityId, payload));
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
       It.IsAny<MemberInvitation>(),
       It.IsAny<string>(),
@@ -155,7 +171,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     SendMemberInvitationPayload payload = CreatePayload();
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
-      async () => await _memberInvitationService.SendAsync(payload));
+      async () => await _memberInvitationService.SendAsync(Context.WorldId.EntityId, payload));
     Assert.Equal(Context.ActorId?.Value, exception.Principal);
     Assert.Equal("InviteMember", exception.Action);
     Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
@@ -169,7 +185,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should read a member invitation by ID.")]
   public async Task Given_Id_When_Read_Then_Read()
   {
-    MemberInvitationDto seeded = await _memberInvitationService.SendAsync(CreatePayload());
+    MemberInvitationDto seeded = await SendInvitationAsync();
 
     MemberInvitationDto? invitation = await _memberInvitationService.ReadAsync(seeded.Id);
     Assert.NotNull(invitation);
@@ -179,7 +195,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return null when no invitation was found.")]
   public async Task Given_NotFound_When_Read_Then_NullReturned()
   {
-    MemberInvitationDto seeded = await _memberInvitationService.SendAsync(CreatePayload());
+    MemberInvitationDto seeded = await SendInvitationAsync();
     Context.World = new WorldBuilder(Faker).Build();
 
     Assert.Null(await _memberInvitationService.ReadAsync(seeded.Id));
@@ -188,7 +204,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return empty search results.")]
   public async Task Given_NoMatch_When_Search_Then_EmptyResults()
   {
-    await _memberInvitationService.SendAsync(CreatePayload());
+    await SendInvitationAsync();
     Context.World = new WorldBuilder(Faker).Build();
 
     SearchMemberInvitationsPayload payload = new()
@@ -204,9 +220,9 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should return the correct search results.")]
   public async Task Given_Matches_When_Search_Then_Results()
   {
-    MemberInvitationDto ash = await _memberInvitationService.SendAsync(CreatePayload("ash.ketchum@example.com"));
-    MemberInvitationDto misty = await _memberInvitationService.SendAsync(CreatePayload("misty.waterflower@example.com"));
-    await _memberInvitationService.SendAsync(CreatePayload("brock.harrison@example.com"));
+    MemberInvitationDto ash = await SendInvitationAsync(CreatePayload("ash.ketchum@example.com"));
+    MemberInvitationDto misty = await SendInvitationAsync(CreatePayload("misty.waterflower@example.com"));
+    await SendInvitationAsync(CreatePayload("brock.harrison@example.com"));
     await _memberInvitationService.CancelAsync(misty.Id);
 
     SearchMemberInvitationsPayload payload = new()
@@ -230,8 +246,8 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should filter search results by status.")]
   public async Task Given_StatusFilter_When_Search_Then_Results()
   {
-    await _memberInvitationService.SendAsync(CreatePayload("pending@example.com"));
-    MemberInvitationDto cancelled = await _memberInvitationService.SendAsync(CreatePayload("cancelled@example.com"));
+    await SendInvitationAsync(CreatePayload("pending@example.com"));
+    MemberInvitationDto cancelled = await SendInvitationAsync(CreatePayload("cancelled@example.com"));
     await _memberInvitationService.CancelAsync(cancelled.Id);
 
     SearchMemberInvitationsPayload payload = new()
@@ -253,8 +269,8 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [InlineData(true)]
   public async Task Given_ExpiredFilter_When_Search_Then_Results(bool isExpired)
   {
-    MemberInvitationDto active = await _memberInvitationService.SendAsync(CreatePayload("active@example.com"));
-    MemberInvitationDto expired = await _memberInvitationService.SendAsync(CreatePayload("expired@example.com"));
+    MemberInvitationDto active = await SendInvitationAsync(CreatePayload("active@example.com"));
+    MemberInvitationDto expired = await SendInvitationAsync(CreatePayload("expired@example.com"));
     await ExpireInvitationAsync(expired.Id);
 
     SearchMemberInvitationsPayload payload = new()
@@ -496,8 +512,8 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     Assert.Equal(MemberInvitationStatus.Cancelled, second.Status);
   }
 
-  [Fact(DisplayName = "It should throw MemberAlreadyExistsException when inviting an accepted member.")]
-  public async Task Given_AcceptedMember_When_Invite_Then_MemberAlreadyExistsException()
+  [Fact(DisplayName = "It should return null when inviting an accepted member.")]
+  public async Task Given_AcceptedMember_When_Invite_Then_NullReturned()
   {
     User owner = Context.User!;
     User invitee = KrakenarFactory.Instance.NewUser(Faker);
@@ -510,10 +526,8 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     SetupInvitee(invitee);
     SendMemberInvitationPayload payload = CreatePayload(invitee.Email!.Address);
 
-    MemberAlreadyExistsException exception = await Assert.ThrowsAsync<MemberAlreadyExistsException>(
-      async () => await _memberInvitationService.SendAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(invitee.Id, exception.UserId);
+    MemberInvitationDto? invitation = await _memberInvitationService.SendAsync(Context.WorldId.EntityId, payload);
+    Assert.Null(invitation);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
       It.IsAny<MemberInvitation>(),
       It.IsAny<string>(),
@@ -531,7 +545,14 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   private async Task<MemberInvitationDto> InviteUserAsync(User invitee)
   {
     SetupInvitee(invitee);
-    return await _memberInvitationService.SendAsync(CreatePayload(invitee.Email!.Address));
+    return await SendInvitationAsync(CreatePayload(invitee.Email!.Address));
+  }
+
+  private async Task<MemberInvitationDto> SendInvitationAsync(SendMemberInvitationPayload? payload = null, Guid? worldId = null)
+  {
+    MemberInvitationDto? invitation = await _memberInvitationService.SendAsync(worldId ?? Context.WorldId.EntityId, payload ?? CreatePayload());
+    Assert.NotNull(invitation);
+    return invitation;
   }
 
   private void SetupInvitee(User invitee)
