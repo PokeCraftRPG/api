@@ -143,6 +143,42 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Null(await _worldService.ReadAsync(_world.EntityId));
   }
 
+  [Fact(DisplayName = "It should allow a member to read a world.")]
+  public async Task Given_Member_When_Read_Then_Read()
+  {
+    User owner = Context.User!;
+    await GrantMembershipAsync();
+    Context.User = _member;
+
+    WorldDto? world = await _worldService.ReadAsync(_world.EntityId);
+    Assert.NotNull(world);
+    Assert.Equal(_world.EntityId, world.Id);
+
+    MemberDto member = Assert.Single(world.Members);
+    Assert.Equal(new Actor(_member), member.User);
+    Assert.Equal(new Actor(owner), member.GrantedBy);
+    Assert.Equal(DateTime.UtcNow, member.GrantedOn, TimeSpan.FromSeconds(10));
+  }
+
+  [Fact(DisplayName = "It should allow a member to search worlds.")]
+  public async Task Given_Member_When_Search_Then_Results()
+  {
+    await GrantMembershipAsync();
+    Context.User = _member;
+
+    SearchWorldsPayload payload = new()
+    {
+      Limit = 10
+    };
+    payload.Ids.Add(_world.EntityId);
+
+    SearchResults<WorldDto> results = await _worldService.SearchAsync(payload);
+    Assert.Equal(1, results.Total);
+
+    WorldDto world = Assert.Single(results.Items);
+    Assert.Equal(_world.EntityId, world.Id);
+  }
+
   [Fact(DisplayName = "It should throw TooManyResultsException when many worlds were read.")]
   public async Task Given_ManyFound_When_Read_Then_TooManyResultsException()
   {

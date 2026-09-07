@@ -1,6 +1,6 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
-using PokeGame.Core;
+using PokeGame.Core.Varieties;
 using PokeGame.Core.Varieties.Events;
 
 namespace PokeGame.Infrastructure.Entities;
@@ -33,7 +33,7 @@ internal class VarietyEntity : AggregateEntity
   public VarietyEntity(int worldId, int speciesId, VarietyCreated @event) : base(@event)
   {
     WorldId = worldId;
-    Id = Entity.Parse(@event.StreamId.Value).Id;
+    Id = new VarietyId(@event.StreamId).EntityId;
 
     SpeciesId = speciesId;
 

@@ -52,7 +52,7 @@ internal class FormEntity : AggregateEntity
   public FormEntity(int worldId, int varietyId, IReadOnlyDictionary<AbilitySlot, int> abilityIds, FormCreated @event) : base(@event)
   {
     WorldId = worldId;
-    Id = Entity.Parse(@event.StreamId.Value).Id;
+    Id = new FormId(@event.StreamId).EntityId;
 
     VarietyId = varietyId;
     Category = @event.Category;

@@ -7,9 +7,9 @@ using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Membership.Commands;
 
-internal record SendMemberInvitationCommand(SendMemberInvitationPayload Payload) : ICommand<MemberInvitationDto>;
+internal record SendMemberInvitationCommand(Guid WorldId, SendMemberInvitationPayload Payload) : ICommand<MemberInvitationDto?>;
 
-internal class SendMemberInvitationCommandHandler : ICommandHandler<SendMemberInvitationCommand, MemberInvitationDto>
+internal class SendMemberInvitationCommandHandler : ICommandHandler<SendMemberInvitationCommand, MemberInvitationDto?>
 {
   private const int MemberInvitationLifetimeDays = 7;
 
@@ -39,47 +39,50 @@ internal class SendMemberInvitationCommandHandler : ICommandHandler<SendMemberIn
     _worldRepository = worldRepository;
   }
 
-  public async Task<MemberInvitationDto> HandleAsync(SendMemberInvitationCommand command, CancellationToken cancellationToken)
+  public async Task<MemberInvitationDto?> HandleAsync(SendMemberInvitationCommand command, CancellationToken cancellationToken)
   {
     SendMemberInvitationPayload payload = command.Payload;
     payload.Validate();
 
-    World world = await _worldRepository.LoadAsync(_context.WorldId, cancellationToken)
-      ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not loaded.");
+    WorldId worldId = new(command.WorldId);
+    World? world = await _worldRepository.LoadAsync(worldId, cancellationToken);
+    if (world is null)
+    {
+      return null;
+    }
     await _permissionService.CheckAsync(Actions.InviteMember, world, cancellationToken);
 
     User? user = await _userGateway.FindAsync(payload.EmailAddress, cancellationToken);
     UserId? userId = user is null ? null : new(user);
     if (userId.HasValue && (world.OwnerId == userId.Value || world.IsMember(userId.Value)))
     {
-      throw new MemberAlreadyExistsException(world, userId.Value);
+      throw new UserIsAlreadyMemberException(world, userId.Value);
     }
 
-    MemberInvitationId invitationId = MemberInvitationId.NewId(world.Id);
     DateTime expiresOn = DateTime.Now.AddDays(MemberInvitationLifetimeDays);
     MemberInvitation invitation;
 
     if (user is null)
     {
       EmailAddress emailAddress = new(payload.EmailAddress);
-      MemberInvitationId? existingId = await _memberInvitationQuerier.FindIdAsync(emailAddress, MemberInvitationStatus.Pending, cancellationToken);
+      MemberInvitationId? existingId = await _memberInvitationQuerier.GetIdAsync(world, emailAddress, MemberInvitationStatus.Pending, cancellationToken);
       if (existingId.HasValue)
       {
-        throw new MemberInvitationAlreadyPendingException(existingId.Value);
+        throw new MemberInvitationAlreadyPendingException(world, existingId.Value);
       }
 
-      invitation = new MemberInvitation(invitationId, emailAddress, expiresOn, _context.ActorId);
+      invitation = new MemberInvitation(world, emailAddress, expiresOn, _context.ActorId);
     }
     else
     {
       userId ??= new UserId(user);
-      MemberInvitationId? existingId = await _memberInvitationQuerier.FindIdAsync(userId.Value, MemberInvitationStatus.Pending, cancellationToken);
+      MemberInvitationId? existingId = await _memberInvitationQuerier.GetIdAsync(world, userId.Value, MemberInvitationStatus.Pending, cancellationToken);
       if (existingId.HasValue)
       {
-        throw new MemberInvitationAlreadyPendingException(existingId.Value);
+        throw new MemberInvitationAlreadyPendingException(world, existingId.Value);
       }
 
-      invitation = new MemberInvitation(invitationId, userId.Value, expiresOn, _context.ActorId);
+      invitation = new MemberInvitation(world, userId.Value, expiresOn, _context.ActorId);
     }
 
     await _memberInvitationRepository.SaveAsync(invitation, cancellationToken);

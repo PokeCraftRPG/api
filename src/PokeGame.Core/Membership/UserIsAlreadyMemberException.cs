@@ -5,9 +5,9 @@ using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Membership;
 
-public sealed class MemberAlreadyExistsException : ConflictException
+public sealed class UserIsAlreadyMemberException : ConflictException
 {
-  private const string ErrorMessage = "The invited user is already a member of this world.";
+  private const string ErrorMessage = "The specified user is already a member of this world.";
 
   public Guid WorldId
   {
@@ -31,7 +31,7 @@ public sealed class MemberAlreadyExistsException : ConflictException
     }
   }
 
-  public MemberAlreadyExistsException(World world, UserId userId)
+  public UserIsAlreadyMemberException(World world, UserId userId)
     : base(BuildMessage(world, userId))
   {
     WorldId = world.EntityId;

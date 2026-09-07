@@ -169,7 +169,8 @@ public class MemberIntegrationTests : IntegrationTests
     User member = await GrantMembershipAsync();
     SetupUsers(member);
 
-    WorldDto world = await TransferOwnershipAsync(member, owner);
+    WorldDto? world = await _membershipService.TransferOwnershipAsync(Context.WorldId.EntityId, new TransferOwnershipPayload { UserId = member.Id });
+    Assert.NotNull(world);
     Assert.Equal(new Actor(member), world.Owner);
 
     MemberDto granted = Assert.Single(world.Members);
@@ -193,7 +194,8 @@ public class MemberIntegrationTests : IntegrationTests
     await GrantMembershipAsync(successor, remaining);
     SetupUsers(successor, remaining);
 
-    WorldDto world = await TransferOwnershipAsync(successor, owner, remaining);
+    WorldDto? world = await _membershipService.TransferOwnershipAsync(Context.WorldId.EntityId, new TransferOwnershipPayload { UserId = successor.Id });
+    Assert.NotNull(world);
     Assert.Equal(new Actor(successor), world.Owner);
     Assert.Equal(2, world.Members.Count);
     Assert.Contains(world.Members, member => member.User.Equals(new Actor(owner)));
@@ -276,30 +278,6 @@ public class MemberIntegrationTests : IntegrationTests
     await _worldRepository.SaveAsync(Context.World!);
 
     return members[0];
-  }
-
-  private async Task<WorldDto> TransferOwnershipAsync(User successor, params User[] otherUsers)
-  {
-    WorldDto? world;
-    try
-    {
-      world = await _membershipService.TransferOwnershipAsync(Context.WorldId.EntityId, new TransferOwnershipPayload { UserId = successor.Id });
-    }
-    catch (InvalidOperationException)
-    {
-      world = null;
-    }
-
-    if (world is not null)
-    {
-      return world;
-    }
-
-    Context.User = successor;
-    SetupUsers(otherUsers);
-    world = await _worldService.ReadAsync(Context.WorldId.EntityId);
-    Assert.NotNull(world);
-    return world;
   }
 
   private void SetupUsers(params User[] users)

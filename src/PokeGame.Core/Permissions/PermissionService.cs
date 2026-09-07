@@ -23,12 +23,14 @@ internal class PermissionService : IPermissionService
   private readonly IContext _context;
   private readonly PermissionSettings _settings;
   private readonly IWorldQuerier _worldQuerier;
+  private readonly IWorldRepository _worldRepository;
 
-  public PermissionService(IContext context, PermissionSettings settings, IWorldQuerier worldQuerier)
+  public PermissionService(IContext context, PermissionSettings settings, IWorldQuerier worldQuerier, IWorldRepository worldRepository)
   {
     _context = context;
     _settings = settings;
     _worldQuerier = worldQuerier;
+    _worldRepository = worldRepository;
   }
 
   public async Task CheckAsync(string action, CancellationToken cancellationToken)
@@ -52,7 +54,7 @@ internal class PermissionService : IPermissionService
     else if (resource is MemberInvitation invitation)
     {
       entity = invitation.GetEntity();
-      isAllowed = IsAllowed(action, invitation);
+      isAllowed = await IsAllowedAsync(action, invitation, cancellationToken);
     }
     else if (resource is IEntityProvider provider)
     {
@@ -94,6 +96,7 @@ internal class PermissionService : IPermissionService
       case Actions.RevokeMember:
       case Actions.TransferOwnership:
       case Actions.Update:
+      case Actions.ViewInvitations:
         return world.OwnerId == _context.TryGetUserId();
       case Actions.LeaveMember:
         UserId? userId = _context.TryGetUserId();
@@ -103,7 +106,7 @@ internal class PermissionService : IPermissionService
     }
   }
 
-  private bool IsAllowed(string action, MemberInvitation invitation)
+  private async Task<bool> IsAllowedAsync(string action, MemberInvitation invitation, CancellationToken cancellationToken)
   {
     switch (action)
     {
@@ -111,7 +114,8 @@ internal class PermissionService : IPermissionService
       case Actions.Decline:
         return invitation.UserId == _context.TryGetUserId();
       case Actions.Cancel:
-        return _context.IsWorldOwner && invitation.WorldId == _context.TryGetWorldId();
+        World? world = await _worldRepository.LoadAsync(invitation.WorldId, cancellationToken);
+        return world is not null && world.OwnerId == _context.TryGetUserId();
       default:
         return false;
     }

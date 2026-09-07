@@ -15,7 +15,7 @@ public readonly struct FormId : IEntityProvider
   {
     StreamId = streamId;
 
-    Entity entity = Entity.Parse(streamId.Value);
+    Entity entity = Entity.Parse(streamId.Value, Form.EntityKind);
     WorldId = entity.WorldId ?? throw new ArgumentException("A world identifier is required.", nameof(streamId));
     EntityId = entity.Id;
   }

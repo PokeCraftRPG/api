@@ -1,4 +1,4 @@
-﻿using PokeGame.Core;
+﻿using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Events;
 
 namespace PokeGame.Infrastructure.Entities;
@@ -20,7 +20,7 @@ internal class AbilityEntity : AggregateEntity
   public AbilityEntity(int worldId, AbilityCreated @event) : base(@event)
   {
     WorldId = worldId;
-    Id = Entity.Parse(@event.StreamId.Value).Id;
+    Id = new AbilityId(@event.StreamId).EntityId;
 
     Key = @event.Key.Value;
   }

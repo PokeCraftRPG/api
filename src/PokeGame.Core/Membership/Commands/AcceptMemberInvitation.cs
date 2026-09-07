@@ -32,7 +32,7 @@ internal class AcceptMemberInvitationCommandHandler : ICommandHandler<AcceptMemb
 
   public async Task<MemberInvitationDto?> HandleAsync(AcceptMemberInvitationCommand command, CancellationToken cancellationToken)
   {
-    MemberInvitationId invitationId = new(_context.WorldId, command.Id);
+    MemberInvitationId invitationId = new(command.Id);
     MemberInvitation? invitation = await _memberInvitationRepository.LoadAsync(invitationId, cancellationToken);
     if (invitation is null)
     {
@@ -40,8 +40,8 @@ internal class AcceptMemberInvitationCommandHandler : ICommandHandler<AcceptMemb
     }
     await _permissionService.CheckAsync(Actions.Accept, invitation, cancellationToken);
 
-    World world = await _worldRepository.LoadAsync(_context.WorldId, cancellationToken)
-      ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not loaded.");
+    World world = await _worldRepository.LoadAsync(invitation.WorldId, cancellationToken)
+      ?? throw new InvalidOperationException($"The world 'Id={invitation.WorldId}' was not loaded.");
     UserId userId = invitation.UserId ?? throw new InvalidOperationException($"The member invitation 'Id={invitation.Id}' has no user identifier.");
 
     invitation.Accept(_context.ActorId);
