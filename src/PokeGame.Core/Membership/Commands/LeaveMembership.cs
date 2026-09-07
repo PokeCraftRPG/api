@@ -4,9 +4,9 @@ using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Membership.Commands;
 
-internal record LeaveMembershipCommand : ICommand;
+internal record LeaveMembershipCommand(Guid WorldId) : ICommand<bool>;
 
-internal class LeaveMembershipCommandHandler : ICommandHandler<LeaveMembershipCommand, Unit>
+internal class LeaveMembershipCommandHandler : ICommandHandler<LeaveMembershipCommand, bool>
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
@@ -19,16 +19,20 @@ internal class LeaveMembershipCommandHandler : ICommandHandler<LeaveMembershipCo
     _worldRepository = worldRepository;
   }
 
-  public async Task<Unit> HandleAsync(LeaveMembershipCommand command, CancellationToken cancellationToken)
+  public async Task<bool> HandleAsync(LeaveMembershipCommand command, CancellationToken cancellationToken)
   {
-    World world = await _worldRepository.LoadAsync(_context.WorldId, cancellationToken)
-      ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not loaded.");
+    WorldId worldId = new(command.WorldId);
+    World? world = await _worldRepository.LoadAsync(worldId, cancellationToken);
+    if (world is null)
+    {
+      return false;
+    }
     await _permissionService.CheckAsync(Actions.LeaveMember, world, cancellationToken);
 
     world.LeaveMembership(_context.UserId, _context.ActorId);
 
     await _worldRepository.SaveAsync(world, cancellationToken);
 
-    return Unit.Value;
+    return true;
   }
 }

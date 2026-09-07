@@ -1,15 +1,16 @@
 ﻿using Logitar.CQRS;
 using PokeGame.Core.Caching;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Models;
 
 namespace PokeGame.Core.Membership.Commands;
 
-internal record TransferOwnershipCommand(Guid UserId) : ICommand<WorldDto>;
+internal record TransferOwnershipCommand(Guid WorldId, TransferOwnershipPayload Payload) : ICommand<WorldDto?>;
 
-internal class TransferOwnershipCommandHandler : ICommandHandler<TransferOwnershipCommand, WorldDto>
+internal class TransferOwnershipCommandHandler : ICommandHandler<TransferOwnershipCommand, WorldDto?>
 {
   private readonly ICacheService _cacheService;
   private readonly IContext _context;
@@ -31,13 +32,19 @@ internal class TransferOwnershipCommandHandler : ICommandHandler<TransferOwnersh
     _worldRepository = worldRepository;
   }
 
-  public async Task<WorldDto> HandleAsync(TransferOwnershipCommand command, CancellationToken cancellationToken)
+  public async Task<WorldDto?> HandleAsync(TransferOwnershipCommand command, CancellationToken cancellationToken)
   {
-    World world = await _worldRepository.LoadAsync(_context.WorldId, cancellationToken)
-      ?? throw new InvalidOperationException($"The world 'Id={_context.WorldId}' was not loaded.");
+    TransferOwnershipPayload payload = command.Payload;
+
+    WorldId worldId = new(command.WorldId);
+    World? world = await _worldRepository.LoadAsync(worldId, cancellationToken);
+    if (world is null)
+    {
+      return null;
+    }
     await _permissionService.CheckAsync(Actions.TransferOwnership, world, cancellationToken);
 
-    UserId userId = new(command.UserId, _cacheService.Realm?.Id);
+    UserId userId = new(payload.UserId, _cacheService.Realm?.Id);
     world.TransferOwnership(userId, _context.ActorId);
 
     await _worldRepository.SaveAsync(world, cancellationToken);

@@ -1,15 +1,16 @@
 ﻿using Logitar.CQRS;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Membership.Commands;
+using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Worlds.Models;
 
 namespace PokeGame.Core.Membership;
 
 public interface IMembershipService
 {
-  Task LeaveAsync(CancellationToken cancellationToken = default);
-  Task<WorldDto> RevokeAsync(Guid userId, CancellationToken cancellationToken = default);
-  Task<WorldDto> TransferOwnershipAsync(Guid userId, CancellationToken cancellationToken = default);
+  Task<bool> LeaveAsync(Guid worldId, CancellationToken cancellationToken = default);
+  Task<WorldDto?> RevokeAsync(Guid worldId, RevokeMembershipPayload payload, CancellationToken cancellationToken = default);
+  Task<WorldDto?> TransferOwnershipAsync(Guid worldId, TransferOwnershipPayload payload, CancellationToken cancellationToken = default);
 }
 
 internal class MembershipService : IMembershipService
@@ -17,9 +18,9 @@ internal class MembershipService : IMembershipService
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IMembershipService, MembershipService>();
-    services.AddTransient<ICommandHandler<LeaveMembershipCommand, Unit>, LeaveMembershipCommandHandler>();
-    services.AddTransient<ICommandHandler<RevokeMembershipCommand, WorldDto>, RevokeMembershipCommandHandler>();
-    services.AddTransient<ICommandHandler<TransferOwnershipCommand, WorldDto>, TransferOwnershipCommandHandler>();
+    services.AddTransient<ICommandHandler<LeaveMembershipCommand, bool>, LeaveMembershipCommandHandler>();
+    services.AddTransient<ICommandHandler<RevokeMembershipCommand, WorldDto?>, RevokeMembershipCommandHandler>();
+    services.AddTransient<ICommandHandler<TransferOwnershipCommand, WorldDto?>, TransferOwnershipCommandHandler>();
   }
 
   private readonly ICommandBus _commandBus;
@@ -29,21 +30,21 @@ internal class MembershipService : IMembershipService
     _commandBus = commandBus;
   }
 
-  public async Task LeaveAsync(CancellationToken cancellationToken)
+  public async Task<bool> LeaveAsync(Guid worldId, CancellationToken cancellationToken)
   {
-    LeaveMembershipCommand command = new();
-    await _commandBus.ExecuteAsync(command, cancellationToken);
-  }
-
-  public async Task<WorldDto> RevokeAsync(Guid userId, CancellationToken cancellationToken)
-  {
-    RevokeMembershipCommand command = new(userId);
+    LeaveMembershipCommand command = new(worldId);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
-  public async Task<WorldDto> TransferOwnershipAsync(Guid userId, CancellationToken cancellationToken)
+  public async Task<WorldDto?> RevokeAsync(Guid worldId, RevokeMembershipPayload payload, CancellationToken cancellationToken)
   {
-    TransferOwnershipCommand command = new(userId);
+    RevokeMembershipCommand command = new(worldId, payload);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<WorldDto?> TransferOwnershipAsync(Guid worldId, TransferOwnershipPayload payload, CancellationToken cancellationToken)
+  {
+    TransferOwnershipCommand command = new(worldId, payload);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 }
