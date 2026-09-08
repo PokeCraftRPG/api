@@ -1,4 +1,4 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using PokeGame.Core.Varieties.Models;
 
 namespace PokeGame.Core.Forms.Models;
@@ -18,8 +18,8 @@ public class FormDto : Aggregate
   public FormAbilitiesDto Abilities { get; set; } = new();
   public BaseStatisticsDto BaseStatistics { get; set; } = new();
   public FormYieldDto Yield { get; set; } = new();
+  public FormSizeDto Size { get; set; } = new();
 
-  public FormSizeDto? Size { get; set; }
   public FormSpritesDto? Sprites { get; set; }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";

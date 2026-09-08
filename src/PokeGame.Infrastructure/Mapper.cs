@@ -126,14 +126,8 @@ internal class Mapper
     destination.Yield.SpecialDefense = source.YieldSpecialDefense;
     destination.Yield.Speed = source.YieldSpeed;
 
-    if (source.Height.HasValue && source.Weight.HasValue)
-    {
-      destination.Size = new FormSizeDto
-      {
-        Height = source.Height.Value,
-        Weight = source.Weight.Value
-      };
-    }
+    destination.Size.Height = source.Height;
+    destination.Size.Weight = source.Weight;
 
     bool defaultFound = false;
     FormSpritesDto sprites = new();

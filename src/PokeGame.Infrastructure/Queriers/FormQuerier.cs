@@ -118,13 +118,9 @@ internal class FormQuerier : IFormQuerier
             : (sort.Direction == SortDirection.Descending ? ordered.ThenByDescending(x => x.YieldExperience) : ordered.ThenBy(x => x.YieldExperience));
           break;
         case FormSort.Height:
-          ordered = ordered is null
-            ? (sort.Direction == SortDirection.Descending
-              ? query.OrderByDescending(x => x.Height.HasValue).ThenByDescending(x => x.Height)
-              : query.OrderByDescending(x => x.Height.HasValue).ThenBy(x => x.Height))
-            : (sort.Direction == SortDirection.Descending
-              ? ordered.ThenByDescending(x => x.Height.HasValue).ThenByDescending(x => x.Height)
-              : ordered.ThenByDescending(x => x.Height.HasValue).ThenBy(x => x.Height));
+          ordered = (ordered is null)
+            ? (sort.Direction == SortDirection.Descending ? query.OrderByDescending(x => x.Height) : query.OrderBy(x => x.Height))
+            : (sort.Direction == SortDirection.Descending ? ordered.ThenByDescending(x => x.Height) : ordered.ThenBy(x => x.Height));
           break;
         case FormSort.Key:
           ordered = (ordered is null)
@@ -142,13 +138,9 @@ internal class FormQuerier : IFormQuerier
             : (sort.Direction == SortDirection.Descending ? ordered.ThenByDescending(x => x.UpdatedOn) : ordered.ThenBy(x => x.UpdatedOn));
           break;
         case FormSort.Weight:
-          ordered = ordered is null
-            ? (sort.Direction == SortDirection.Descending
-              ? query.OrderByDescending(x => x.Weight.HasValue).ThenByDescending(x => x.Weight)
-              : query.OrderByDescending(x => x.Weight.HasValue).ThenBy(x => x.Weight))
-            : (sort.Direction == SortDirection.Descending
-              ? ordered.ThenByDescending(x => x.Weight.HasValue).ThenByDescending(x => x.Weight)
-              : ordered.ThenByDescending(x => x.Weight.HasValue).ThenBy(x => x.Weight));
+          ordered = (ordered is null)
+            ? (sort.Direction == SortDirection.Descending ? query.OrderByDescending(x => x.Weight) : query.OrderBy(x => x.Weight))
+            : (sort.Direction == SortDirection.Descending ? ordered.ThenByDescending(x => x.Weight) : ordered.ThenBy(x => x.Weight));
           break;
       }
     }

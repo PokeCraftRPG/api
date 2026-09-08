@@ -39,7 +39,7 @@ public record CreateOrReplaceFormPayload
       RuleFor(x => x.Abilities).SetValidator(new FormAbilitiesPayloadValidator());
       RuleFor(x => x.BaseStatistics).SetValidator(new BaseStatisticsValidator());
       RuleFor(x => x.Yield).SetValidator(new FormYieldValidator());
-      RuleFor(x => x.Size!).SetValidator(new FormSizeValidator());
+      RuleFor(x => x.Size).SetValidator(new FormSizeValidator());
 
       When(x => x.Sprites is not null, () => RuleFor(x => x.Sprites!).SetValidator(new FormSpritesPayloadValidator()));
     }

@@ -43,8 +43,8 @@ internal class FormEntity : AggregateEntity
   public int YieldSpecialDefense { get; private set; }
   public int YieldSpeed { get; private set; }
 
-  public int? Height { get; private set; }
-  public int? Weight { get; private set; }
+  public int Height { get; private set; }
+  public int Weight { get; private set; }
 
   public List<FormAbilityEntity> Abilities { get; private set; } = [];
   public List<FormSpriteEntity> Sprites { get; private set; } = [];
