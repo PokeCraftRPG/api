@@ -95,7 +95,7 @@ internal class SpeciesQuerier : ISpeciesQuerier
   {
     SpeciesEntity? species = await _species.AsNoTracking()
       .Where(x => x.World!.StreamId == _context.WorldId.Value && x.Key == SlugHelper.Format(key))
-      .Include(x => x.RegionalNumbers).ThenInclude(x => x.Region)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return species is null ? null : await MapAsync(species, cancellationToken);
   }

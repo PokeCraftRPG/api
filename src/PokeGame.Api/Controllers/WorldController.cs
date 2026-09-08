@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Api.Extensions;
@@ -73,4 +73,6 @@ public class WorldController : ControllerBase
     }
     return Ok(world);
   }
+
+  // TODO(fpion): we should not build Location.
 }

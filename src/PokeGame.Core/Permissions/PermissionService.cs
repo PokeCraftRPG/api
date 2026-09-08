@@ -77,6 +77,7 @@ internal class PermissionService : IPermissionService
       case Actions.CreateMove:
       case Actions.CreateRegion:
       case Actions.CreateSpecies:
+      case Actions.CreateTrainer:
       case Actions.CreateVariety:
       case Actions.Upload:
         return _context.IsWorldOwner;

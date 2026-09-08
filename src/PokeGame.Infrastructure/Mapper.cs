@@ -6,10 +6,12 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Forms.Models;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
+using PokeGame.Core.Trainers.Models;
 using PokeGame.Core.Varieties.Models;
 using PokeGame.Core.Worlds.Models;
 using PokeGame.Infrastructure.Entities;
@@ -174,13 +176,13 @@ internal class Mapper
     GrantedOn = source.GrantedOn.AsUniversalTime()
   };
 
-  public MemberInvitationDto ToMemberInvitation(MemberInvitationEntity source)
+  public MemberInvitationDto ToMemberInvitation(MemberInvitationEntity source, UserId? userId)
   {
     WorldEntity world = source.World ?? throw new ArgumentException("The world is required.", nameof(source));
     MemberInvitationDto destination = new()
     {
       Id = source.Id,
-      World = ToWorld(world),
+      World = ToWorld(world, userId),
       Status = source.Status,
       ExpiresOn = source.ExpiresOn?.AsUniversalTime()
     };
@@ -258,6 +260,39 @@ internal class Mapper
     };
   }
 
+  public TrainerDto ToTrainer(TrainerEntity source)
+  {
+    TrainerDto destination = new()
+    {
+      Id = source.Id,
+      Key = source.Key,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content,
+      License = source.License,
+      Gender = source.Gender,
+      Money = source.Money
+    };
+
+    if (source.Sprite is not null)
+    {
+      destination.Sprite = ToAsset(source.Sprite);
+    }
+    else if (source.SpriteId.HasValue)
+    {
+      throw new ArgumentException("The sprite is required.", nameof(source));
+    }
+
+    if (source.MemberId is not null)
+    {
+      destination.Member = FindActor(source.MemberId);
+    }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
   public SpeciesDto ToSpecies(SpeciesEntity source)
   {
     SpeciesDto destination = new()
@@ -331,7 +366,7 @@ internal class Mapper
     };
   }
 
-  public WorldDto ToWorld(WorldEntity source)
+  public WorldDto ToWorld(WorldEntity source, UserId? userId)
   {
     WorldDto destination = new()
     {
@@ -343,9 +378,16 @@ internal class Mapper
       Owner = FindActor(source.OwnerId)
     };
 
-    foreach (MemberEntity member in source.Members)
+    if (userId.HasValue)
     {
-      destination.Members.Add(ToMember(member));
+      bool isOwner = source.OwnerId == userId.Value.Value;
+      foreach (MemberEntity member in source.Members)
+      {
+        if (isOwner || member.UserId == userId.Value.Value)
+        {
+          destination.Members.Add(ToMember(member));
+        }
+      }
     }
 
     MapAggregate(source, destination);

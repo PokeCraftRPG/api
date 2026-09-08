@@ -143,11 +143,12 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Null(await _worldService.ReadAsync(_world.EntityId));
   }
 
-  [Fact(DisplayName = "It should allow a member to read a world.")]
-  public async Task Given_Member_When_Read_Then_Read()
+  [Fact(DisplayName = "It should allow a member to read a world seeing only themselves.")]
+  public async Task Given_Member_When_Read_Then_ReadOnlySelf()
   {
     User owner = Context.User!;
-    await GrantMembershipAsync();
+    User other = KrakenarFactory.Instance.NewUser(Faker);
+    await GrantMembershipAsync(other);
     Context.User = _member;
 
     WorldDto? world = await _worldService.ReadAsync(_world.EntityId);
@@ -158,12 +159,14 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Equal(new Actor(_member), member.User);
     Assert.Equal(new Actor(owner), member.GrantedBy);
     Assert.Equal(DateTime.UtcNow, member.GrantedOn, TimeSpan.FromSeconds(10));
+    Assert.NotEqual(new Actor(other), member.User);
   }
 
-  [Fact(DisplayName = "It should allow a member to search worlds.")]
-  public async Task Given_Member_When_Search_Then_Results()
+  [Fact(DisplayName = "It should allow a member to search worlds without loading members.")]
+  public async Task Given_Member_When_Search_Then_ResultsWithoutMembers()
   {
-    await GrantMembershipAsync();
+    User other = KrakenarFactory.Instance.NewUser(Faker);
+    await GrantMembershipAsync(other);
     Context.User = _member;
 
     SearchWorldsPayload payload = new()
@@ -177,6 +180,7 @@ public class WorldIntegrationTests : IntegrationTests
 
     WorldDto world = Assert.Single(results.Items);
     Assert.Equal(_world.EntityId, world.Id);
+    Assert.Empty(world.Members);
   }
 
   [Fact(DisplayName = "It should throw TooManyResultsException when many worlds were read.")]
@@ -218,6 +222,7 @@ public class WorldIntegrationTests : IntegrationTests
 
     WorldDto world = Assert.Single(results.Items);
     Assert.Equal(newWorld.EntityId, world.Id);
+    Assert.Empty(world.Members);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when creating a world and the key conflicts.")]
@@ -395,9 +400,11 @@ public class WorldIntegrationTests : IntegrationTests
     Assert.Equal(payload.Content?.Trim(), world.Content);
   }
 
-  private async Task GrantMembershipAsync()
+  private async Task GrantMembershipAsync(params User[] others)
   {
     _member = KrakenarFactory.Instance.NewUser(Faker);
+    User[] allMembers = [_member, .. others];
+
     UserClient.Setup(x => x.SearchAsync(It.IsAny<SearchUsersPayload>(), It.IsAny<CancellationToken>()))
       .ReturnsAsync((SearchUsersPayload payload, CancellationToken _) =>
       {
@@ -406,14 +413,20 @@ public class WorldIntegrationTests : IntegrationTests
         {
           users[Context.User.Id] = Context.User;
         }
-        if (payload.Ids.Contains(_member.Id))
+        foreach (User member in allMembers)
         {
-          users[_member.Id] = _member;
+          if (payload.Ids.Contains(member.Id))
+          {
+            users[member.Id] = member;
+          }
         }
         return new SearchResults<User>(users.Values);
       });
 
-    _world.GrantMembership(new UserId(_member), Context.ActorId);
+    foreach (User member in allMembers)
+    {
+      _world.GrantMembership(new UserId(member), Context.ActorId);
+    }
     await _worldRepository.SaveAsync(_world);
   }
 

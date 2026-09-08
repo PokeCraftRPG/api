@@ -9,6 +9,7 @@ internal static class Actions
   public const string CreateMove = "CreateMove";
   public const string CreateRegion = "CreateRegion";
   public const string CreateSpecies = "CreateSpecies";
+  public const string CreateTrainer = "CreateTrainer";
   public const string CreateVariety = "CreateVariety";
   public const string CreateWorld = "CreateWorld";
   public const string Decline = "Decline";
