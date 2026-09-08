@@ -67,7 +67,9 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     AssertInvitation(invitation, payload);
     Assert.Equal(new Actor(invitee), invitation.Invitee);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
-      It.Is<MemberInvitation>(i => i.EntityId == invitation.Id && i.UserId == new UserId(invitee)),
+      It.Is<MemberInvitation>(i => i.EntityId == invitation.Id
+        && i.UserId == new UserId(invitee)
+        && i.EmailAddress.Value == EmailAddress.Format(invitee.Email.Address)),
       payload.Locale,
       It.IsAny<CancellationToken>()), Times.Once);
   }

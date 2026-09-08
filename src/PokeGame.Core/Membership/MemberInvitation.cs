@@ -15,7 +15,8 @@ public sealed class MemberInvitation : AggregateRoot, IEntityProvider
 
   public WorldId WorldId { get; private set; }
 
-  public EmailAddress? EmailAddress { get; private set; }
+  private EmailAddress? _emailAddress = null;
+  public EmailAddress EmailAddress => _emailAddress ?? throw new InvalidOperationException("The email address was not initialized.");
   public UserId? UserId { get; private set; }
 
   public MemberInvitationStatus Status { get; private set; }
@@ -25,31 +26,26 @@ public sealed class MemberInvitation : AggregateRoot, IEntityProvider
   {
   }
 
-  public MemberInvitation(World world, EmailAddress emailAddress, DateTime? expiresOn = null, ActorId? actorId = null, MemberInvitationId? memberInvitationId = null)
-    : base((memberInvitationId ?? MemberInvitationId.NewId()).StreamId)
+  public MemberInvitation(
+    World world,
+    EmailAddress emailAddress,
+    UserId? userId = null,
+    DateTime? expiresOn = null,
+    ActorId? actorId = null,
+    MemberInvitationId? memberInvitationId = null) : base((memberInvitationId ?? MemberInvitationId.NewId()).StreamId)
   {
     if (expiresOn.HasValue && expiresOn.Value.AsUniversalTime() <= DateTime.UtcNow)
     {
       throw new ArgumentOutOfRangeException(nameof(expiresOn), "The expiration must be a date and time set in the future.");
     }
 
-    Raise(new MemberInvitationSent(world.Id, emailAddress, UserId: null, expiresOn), actorId);
-  }
-  public MemberInvitation(World world, UserId userId, DateTime? expiresOn = null, ActorId? actorId = null, MemberInvitationId? memberInvitationId = null)
-    : base((memberInvitationId ?? MemberInvitationId.NewId()).StreamId)
-  {
-    if (expiresOn.HasValue && expiresOn.Value.AsUniversalTime() <= DateTime.UtcNow)
-    {
-      throw new ArgumentOutOfRangeException(nameof(expiresOn), "The expiration must be a date and time set in the future.");
-    }
-
-    Raise(new MemberInvitationSent(world.Id, EmailAddress: null, userId, expiresOn), actorId);
+    Raise(new MemberInvitationSent(world.Id, emailAddress, userId, expiresOn), actorId);
   }
   private void Handle(MemberInvitationSent @event)
   {
     WorldId = @event.WorldId;
 
-    EmailAddress = @event.EmailAddress;
+    _emailAddress = @event.EmailAddress;
     UserId = @event.UserId;
 
     Status = MemberInvitationStatus.Pending;

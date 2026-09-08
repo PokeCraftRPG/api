@@ -34,10 +34,12 @@ internal class MemberInvitationQuerier : IMemberInvitationQuerier
       .FirstOrDefaultAsync(cancellationToken);
     return streamId is null ? null : new MemberInvitationId(streamId);
   }
-  public async Task<MemberInvitationId?> GetIdAsync(World world, UserId userId, MemberInvitationStatus status, CancellationToken cancellationToken)
+  public async Task<MemberInvitationId?> GetIdAsync(MemberInvitation invitation, MemberInvitationStatus status, CancellationToken cancellationToken)
   {
     string? streamId = await _invitations
-      .Where(x => x.World!.StreamId == world.Id.Value && x.UserId == userId.Value && x.Status == status)
+      .Where(x => x.World!.StreamId == invitation.WorldId.Value
+        && (invitation.UserId.HasValue ? x.UserId == invitation.UserId.Value.Value : x.EmailAddress == invitation.EmailAddress.Value)
+        && x.Status == status)
       .Select(x => x.StreamId)
       .FirstOrDefaultAsync(cancellationToken);
     return streamId is null ? null : new MemberInvitationId(streamId);

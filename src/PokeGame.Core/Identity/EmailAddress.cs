@@ -14,6 +14,12 @@ public sealed class EmailAddress
     new Validator().ValidateAndThrow(this);
   }
 
+  public static string Format(string value) => value.Trim().ToLowerInvariant();
+
+  public override bool Equals(object? obj) => obj is EmailAddress emailAddress && emailAddress.Value == Value;
+  public override int GetHashCode() => Value.GetHashCode();
+  public override string ToString() => Value;
+
   private class Validator : AbstractValidator<EmailAddress>
   {
     public Validator()
