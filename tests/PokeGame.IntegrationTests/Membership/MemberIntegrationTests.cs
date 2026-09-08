@@ -3,11 +3,14 @@ using Krakenar.Contracts.Search;
 using Krakenar.Contracts.Users;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using PokeGame.Builders;
 using PokeGame.Core.Caching;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Trainers;
+using PokeGame.Core.Trainers.Models;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Models;
 
@@ -18,6 +21,8 @@ public class MemberIntegrationTests : IntegrationTests
 {
   private readonly ICacheService _cacheService;
   private readonly IMembershipService _membershipService;
+  private readonly ITrainerRepository _trainerRepository;
+  private readonly ITrainerService _trainerService;
   private readonly IWorldRepository _worldRepository;
   private readonly IWorldService _worldService;
 
@@ -25,6 +30,8 @@ public class MemberIntegrationTests : IntegrationTests
   {
     _cacheService = ServiceProvider.GetRequiredService<ICacheService>();
     _membershipService = ServiceProvider.GetRequiredService<IMembershipService>();
+    _trainerRepository = ServiceProvider.GetRequiredService<ITrainerRepository>();
+    _trainerService = ServiceProvider.GetRequiredService<ITrainerService>();
     _worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
     _worldService = ServiceProvider.GetRequiredService<IWorldService>();
   }
@@ -67,6 +74,56 @@ public class MemberIntegrationTests : IntegrationTests
     Assert.True(loaded.IsMember(new UserId(owner)));
     Assert.False(loaded.IsMember(new UserId(revoked)));
     Assert.True(loaded.IsMember(new UserId(remaining)));
+  }
+
+  [Fact(DisplayName = "It should unassign trainers when revoking a membership.")]
+  public async Task Given_AssignedTrainers_When_Revoke_Then_TrainersUnassigned()
+  {
+    User member = KrakenarFactory.Instance.NewUser(Faker);
+    User other = KrakenarFactory.Instance.NewUser(Faker);
+    await GrantMembershipAsync(member, other);
+    SetupUsers(member, other);
+
+    UserId memberId = new(member.Id, _cacheService.Realm?.Id);
+    UserId otherId = new(other.Id, _cacheService.Realm?.Id);
+
+    Trainer assigned1 = new TrainerBuilder(Faker)
+      .WithWorld(Context.World)
+      .WithKey("revoked-1")
+      .WithLicense("REVOKE-1")
+      .WithMember(memberId)
+      .Build();
+    Trainer assigned2 = new TrainerBuilder(Faker)
+      .WithWorld(Context.World)
+      .WithKey("revoked-2")
+      .WithLicense("REVOKE-2")
+      .WithMember(memberId)
+      .Build();
+    Trainer otherAssigned = new TrainerBuilder(Faker)
+      .WithWorld(Context.World)
+      .WithKey("other-kept")
+      .WithLicense("OTHER-KEPT")
+      .WithMember(otherId)
+      .Build();
+    await _trainerRepository.SaveAsync([assigned1, assigned2, otherAssigned]);
+
+    await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = member.Id });
+
+    Trainer? loaded1 = await _trainerRepository.LoadAsync(assigned1.Id);
+    Assert.NotNull(loaded1);
+    Assert.Null(loaded1.MemberId);
+
+    Trainer? loaded2 = await _trainerRepository.LoadAsync(assigned2.Id);
+    Assert.NotNull(loaded2);
+    Assert.Null(loaded2.MemberId);
+
+    Trainer? loadedOther = await _trainerRepository.LoadAsync(otherAssigned.Id);
+    Assert.NotNull(loadedOther);
+    Assert.Equal(otherId, loadedOther.MemberId);
+
+    TrainerDto? dto = await _trainerService.ReadAsync(assigned1.EntityId);
+    Assert.NotNull(dto);
+    Assert.Null(dto.Member);
   }
 
   [Fact(DisplayName = "It should not change the world when the user is not a member.")]
@@ -147,6 +204,45 @@ public class MemberIntegrationTests : IntegrationTests
     Assert.Equal(2, world.Members.Count);
     Assert.Contains(world.Members, member => member.User.Equals(new Actor(owner)));
     Assert.Contains(world.Members, member => member.User.Equals(new Actor(remaining)));
+  }
+
+  [Fact(DisplayName = "It should unassign trainers when leaving a membership.")]
+  public async Task Given_AssignedTrainers_When_Leave_Then_TrainersUnassigned()
+  {
+    User owner = Context.User!;
+    User member = await GrantMembershipAsync();
+    UserId memberId = new(member.Id, _cacheService.Realm?.Id);
+
+    Trainer assigned = new TrainerBuilder(Faker)
+      .WithWorld(Context.World)
+      .WithKey("leaved-assigned")
+      .WithLicense("LEAVE-ASSIGNED")
+      .WithMember(memberId)
+      .Build();
+    Trainer unassigned = new TrainerBuilder(Faker)
+      .WithWorld(Context.World)
+      .WithKey("leaved-unassigned")
+      .WithLicense("LEAVE-UNASSIGNED")
+      .Build();
+    await _trainerRepository.SaveAsync([assigned, unassigned]);
+
+    Context.User = member;
+    bool left = await _membershipService.LeaveAsync(Context.WorldId.EntityId);
+    Assert.True(left);
+
+    Trainer? loadedAssigned = await _trainerRepository.LoadAsync(assigned.Id);
+    Assert.NotNull(loadedAssigned);
+    Assert.Null(loadedAssigned.MemberId);
+
+    Trainer? loadedUnassigned = await _trainerRepository.LoadAsync(unassigned.Id);
+    Assert.NotNull(loadedUnassigned);
+    Assert.Null(loadedUnassigned.MemberId);
+
+    Context.User = owner;
+    SetupUsers(member);
+    TrainerDto? dto = await _trainerService.ReadAsync(assigned.EntityId);
+    Assert.NotNull(dto);
+    Assert.Null(dto.Member);
   }
 
   [Fact(DisplayName = "It should return false when leaving a missing world.")]

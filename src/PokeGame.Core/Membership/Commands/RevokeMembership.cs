@@ -3,6 +3,7 @@ using PokeGame.Core.Caching;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Trainers;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Models;
 
@@ -15,6 +16,7 @@ internal class RevokeMembershipCommandHandler : ICommandHandler<RevokeMembership
   private readonly ICacheService _cacheService;
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
+  private readonly ITrainerManager _trainerManager;
   private readonly IWorldQuerier _worldQuerier;
   private readonly IWorldRepository _worldRepository;
 
@@ -22,12 +24,14 @@ internal class RevokeMembershipCommandHandler : ICommandHandler<RevokeMembership
     ICacheService cacheService,
     IContext context,
     IPermissionService permissionService,
+    ITrainerManager trainerManager,
     IWorldQuerier worldQuerier,
     IWorldRepository worldRepository)
   {
     _cacheService = cacheService;
     _context = context;
     _permissionService = permissionService;
+    _trainerManager = trainerManager;
     _worldQuerier = worldQuerier;
     _worldRepository = worldRepository;
   }
@@ -44,13 +48,12 @@ internal class RevokeMembershipCommandHandler : ICommandHandler<RevokeMembership
     }
     await _permissionService.CheckAsync(Actions.RevokeMembership, world, cancellationToken);
 
-    UserId userId = new(payload.UserId, _cacheService.Realm?.Id);
-    world.RevokeMembership(userId, _context.ActorId);
+    UserId memberId = new(payload.UserId, _cacheService.Realm?.Id);
+    world.RevokeMembership(memberId, _context.ActorId);
 
+    await _trainerManager.UnassignMemberAsync(memberId, cancellationToken);
     await _worldRepository.SaveAsync(world, cancellationToken);
 
     return await _worldQuerier.ReadAsync(world, cancellationToken);
   }
-
-  // TODO(fpion): unassign trainers.
 }

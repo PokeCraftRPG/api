@@ -91,15 +91,15 @@ public sealed class World : AggregateRoot, IEntityProvider
 
   public bool IsMember(UserId userId) => _memberIds.Contains(userId);
 
-  public void LeaveMembership(UserId userId, ActorId? actorId = null)
+  public void LeaveMembership(UserId memberId, ActorId? actorId = null)
   {
-    if (userId == OwnerId)
+    if (memberId == OwnerId)
     {
       throw new OwnerCannotLeaveWorldException(this);
     }
-    else if (IsMember(userId))
+    else if (IsMember(memberId))
     {
-      Raise(new WorldMembershipLeft(userId), actorId);
+      Raise(new WorldMembershipLeft(memberId), actorId);
     }
   }
   private void Handle(WorldMembershipLeft @event)
@@ -107,15 +107,15 @@ public sealed class World : AggregateRoot, IEntityProvider
     _memberIds.Remove(@event.UserId);
   }
 
-  public void RevokeMembership(UserId userId, ActorId? actorId = null)
+  public void RevokeMembership(UserId memberId, ActorId? actorId = null)
   {
-    if (userId == OwnerId)
+    if (memberId == OwnerId)
     {
       throw new WorldOwnershipCannotBeRevokedException(this);
     }
-    else if (IsMember(userId))
+    else if (IsMember(memberId))
     {
-      Raise(new WorldMembershipRevoked(userId), actorId);
+      Raise(new WorldMembershipRevoked(memberId), actorId);
     }
   }
   private void Handle(WorldMembershipRevoked @event)
@@ -123,16 +123,16 @@ public sealed class World : AggregateRoot, IEntityProvider
     _memberIds.Remove(@event.UserId);
   }
 
-  public void TransferOwnership(UserId userId, ActorId? actorId = null)
+  public void TransferOwnership(UserId memberId, ActorId? actorId = null)
   {
-    if (OwnerId != userId)
+    if (OwnerId != memberId)
     {
-      if (!IsMember(userId))
+      if (!IsMember(memberId))
       {
-        throw new UserIsNotMemberException(this, userId);
+        throw new UserIsNotMemberException(this, memberId);
       }
 
-      Raise(new WorldOwnershipTransferred(userId), actorId);
+      Raise(new WorldOwnershipTransferred(memberId), actorId);
     }
   }
   private void Handle(WorldOwnershipTransferred @event)

@@ -13,6 +13,7 @@ public interface ITrainerManager
   Task EnsureUnicityAsync(Trainer trainer, CancellationToken cancellationToken = default);
   Task SetMemberAsync(Trainer trainer, Guid? memberId, string propertyName, CancellationToken cancellationToken = default);
   Task SetSpriteAsync(Trainer trainer, Guid? spriteId, string propertyName, CancellationToken cancellationToken = default);
+  Task UnassignMemberAsync(UserId memberId, CancellationToken cancellationToken = default);
 }
 
 internal class TrainerManager : ITrainerManager
@@ -21,6 +22,7 @@ internal class TrainerManager : ITrainerManager
   private readonly ICacheService _cacheService;
   private readonly IContext _context;
   private readonly ITrainerQuerier _trainerQuerier;
+  private readonly ITrainerRepository _trainerRepository;
   private readonly IWorldRepository _worldRepository;
 
   public TrainerManager(
@@ -28,12 +30,14 @@ internal class TrainerManager : ITrainerManager
     ICacheService cacheService,
     IContext context,
     ITrainerQuerier trainerQuerier,
+    ITrainerRepository trainerRepository,
     IWorldRepository worldRepository)
   {
     _assetRepository = assetRepository;
     _cacheService = cacheService;
     _context = context;
     _trainerQuerier = trainerQuerier;
+    _trainerRepository = trainerRepository;
     _worldRepository = worldRepository;
   }
 
@@ -102,5 +106,17 @@ internal class TrainerManager : ITrainerManager
       sprite = await _assetRepository.LoadAsync(spriteId, cancellationToken);
     }
     trainer.SetSprite(sprite, _context.ActorId);
+  }
+
+  public async Task UnassignMemberAsync(UserId memberId, CancellationToken cancellationToken)
+  {
+    IReadOnlyCollection<TrainerId> trainerIds = await _trainerQuerier.ListIdsAsync(memberId, cancellationToken);
+    IReadOnlyCollection<Trainer> trainers = await _trainerRepository.LoadAsync(trainerIds, cancellationToken);
+    ActorId? actorId = _context.ActorId;
+    foreach (Trainer trainer in trainers)
+    {
+      trainer.SetMember(memberId: null, actorId);
+    }
+    await _trainerRepository.SaveAsync(trainers, cancellationToken);
   }
 }

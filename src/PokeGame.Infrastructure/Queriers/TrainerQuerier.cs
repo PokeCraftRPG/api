@@ -46,6 +46,12 @@ internal class TrainerQuerier : ITrainerQuerier
     return streamId is null ? null : new TrainerId(streamId);
   }
 
+  public async Task<IReadOnlyCollection<TrainerId>> ListIdsAsync(UserId memberId, CancellationToken cancellationToken)
+  {
+    string[] streamIds = await _trainers.Where(x => x.MemberId == memberId.Value).Select(x => x.StreamId).ToArrayAsync(cancellationToken);
+    return streamIds.Select(streamId => new TrainerId(streamId)).ToList().AsReadOnly();
+  }
+
   public async Task<TrainerDto> ReadAsync(Trainer trainer, CancellationToken cancellationToken)
   {
     return await ReadAsync(trainer.Id, cancellationToken)
