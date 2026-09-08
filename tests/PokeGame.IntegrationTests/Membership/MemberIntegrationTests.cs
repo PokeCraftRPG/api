@@ -159,12 +159,26 @@ public class MemberIntegrationTests : IntegrationTests
     Assert.False(left);
   }
 
-  [Fact(DisplayName = "It should throw NotImplementedException when the owner leaves a membership.")]
-  public async Task Given_Owner_When_Leave_Then_NotImplementedException()
+  [Fact(DisplayName = "It should throw OwnerCannotLeaveWorldException when the owner leaves a membership.")]
+  public async Task Given_Owner_When_Leave_Then_OwnerCannotLeaveWorldException()
   {
-    InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+    User owner = Context.User!;
+
+    OwnerCannotLeaveWorldException exception = await Assert.ThrowsAsync<OwnerCannotLeaveWorldException>(
       async () => await _membershipService.LeaveAsync(Context.WorldId.EntityId));
-    Assert.IsType<NotImplementedException>(exception.InnerException);
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(owner.Id, exception.OwnerId);
+  }
+
+  [Fact(DisplayName = "It should throw WorldOwnershipCannotBeRevokedException when revoking the owner.")]
+  public async Task Given_Owner_When_Revoke_Then_WorldOwnershipCannotBeRevokedException()
+  {
+    User owner = Context.User!;
+
+    WorldOwnershipCannotBeRevokedException exception = await Assert.ThrowsAsync<WorldOwnershipCannotBeRevokedException>(
+      async () => await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = owner.Id }));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(owner.Id, exception.OwnerId);
   }
 
   [Fact(DisplayName = "It should transfer world ownership to a member.")]

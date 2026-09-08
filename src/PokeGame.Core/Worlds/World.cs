@@ -95,7 +95,7 @@ public sealed class World : AggregateRoot, IEntityProvider
   {
     if (userId == OwnerId)
     {
-      throw new NotImplementedException(); // TODO(fpion): 409 Conflict
+      throw new OwnerCannotLeaveWorldException(this);
     }
     else if (IsMember(userId))
     {
@@ -111,7 +111,7 @@ public sealed class World : AggregateRoot, IEntityProvider
   {
     if (userId == OwnerId)
     {
-      throw new NotImplementedException(); // TODO(fpion): 409 Conflict
+      throw new WorldOwnershipCannotBeRevokedException(this);
     }
     else if (IsMember(userId))
     {
