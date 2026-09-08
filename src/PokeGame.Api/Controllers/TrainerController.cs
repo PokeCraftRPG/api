@@ -1,7 +1,6 @@
 ﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PokeGame.Api.Extensions;
 using PokeGame.Api.Filters;
 using PokeGame.Api.Models.Trainer;
 using PokeGame.Core.Trainers;
@@ -30,14 +29,14 @@ public class TrainerController : ControllerBase
   }
 
   [HttpGet("{id}")]
-  public async Task<ActionResult<TrainerDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<ActionResult<TrainerDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
   {
     TrainerDto? trainer = await _trainerService.ReadAsync(id, key: null, license: null, cancellationToken);
     return trainer is null ? NotFound() : Ok(trainer);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<TrainerDto>> ReadAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<TrainerDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
   {
     TrainerDto? trainer = await _trainerService.ReadAsync(id: null, key, license: null, cancellationToken);
     return trainer is null ? NotFound() : Ok(trainer);
@@ -72,14 +71,7 @@ public class TrainerController : ControllerBase
     return trainer is null ? NotFound() : Ok(trainer);
   }
 
-  private ActionResult<TrainerDto> ToActionResult(CreateOrReplaceTrainerResult result)
-  {
-    TrainerDto trainer = result.Trainer;
-    if (result.Created)
-    {
-      Uri location = new($"{HttpContext.GetBaseUrl()}/trainers/{trainer.Id}", UriKind.Absolute);
-      return Created(location, trainer);
-    }
-    return Ok(trainer);
-  }
+  private ActionResult<TrainerDto> ToActionResult(CreateOrReplaceTrainerResult result) => result.Created
+    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Trainer.Id }, result.Trainer)
+    : Ok(result.Trainer);
 }

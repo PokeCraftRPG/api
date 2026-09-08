@@ -1,7 +1,6 @@
 using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PokeGame.Api.Extensions;
 using PokeGame.Api.Filters;
 using PokeGame.Api.Models.Move;
 using PokeGame.Core.Moves;
@@ -30,14 +29,14 @@ public class MoveController : ControllerBase
   }
 
   [HttpGet("{id}")]
-  public async Task<ActionResult<MoveDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<ActionResult<MoveDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
   {
     MoveDto? move = await _moveService.ReadAsync(id, key: null, cancellationToken);
     return move is null ? NotFound() : Ok(move);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<MoveDto>> ReadAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<MoveDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
   {
     MoveDto? move = await _moveService.ReadAsync(id: null, key, cancellationToken);
     return move is null ? NotFound() : Ok(move);
@@ -65,14 +64,7 @@ public class MoveController : ControllerBase
     return move is null ? NotFound() : Ok(move);
   }
 
-  private ActionResult<MoveDto> ToActionResult(CreateOrReplaceMoveResult result)
-  {
-    MoveDto move = result.Move;
-    if (result.Created)
-    {
-      Uri location = new($"{HttpContext.GetBaseUrl()}/moves/{move.Id}", UriKind.Absolute);
-      return Created(location, move);
-    }
-    return Ok(move);
-  }
+  private ActionResult<MoveDto> ToActionResult(CreateOrReplaceMoveResult result) => result.Created
+    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Move.Id }, result.Move)
+    : Ok(result.Move);
 }

@@ -1,7 +1,6 @@
 using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PokeGame.Api.Extensions;
 using PokeGame.Api.Filters;
 using PokeGame.Api.Models.Form;
 using PokeGame.Core.Forms;
@@ -30,14 +29,14 @@ public class FormController : ControllerBase
   }
 
   [HttpGet("{id}")]
-  public async Task<ActionResult<FormDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<ActionResult<FormDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
   {
     FormDto? form = await _formService.ReadAsync(id, key: null, cancellationToken);
     return form is null ? NotFound() : Ok(form);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<FormDto>> ReadAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<FormDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
   {
     FormDto? form = await _formService.ReadAsync(id: null, key, cancellationToken);
     return form is null ? NotFound() : Ok(form);
@@ -65,14 +64,7 @@ public class FormController : ControllerBase
     return form is null ? NotFound() : Ok(form);
   }
 
-  private ActionResult<FormDto> ToActionResult(CreateOrReplaceFormResult result)
-  {
-    FormDto form = result.Form;
-    if (result.Created)
-    {
-      Uri location = new($"{HttpContext.GetBaseUrl()}/forms/{form.Id}", UriKind.Absolute);
-      return Created(location, form);
-    }
-    return Ok(form);
-  }
+  private ActionResult<FormDto> ToActionResult(CreateOrReplaceFormResult result) => result.Created
+    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Form.Id }, result.Form)
+    : Ok(result.Form);
 }

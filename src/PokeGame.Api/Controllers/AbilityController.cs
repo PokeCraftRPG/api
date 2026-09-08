@@ -1,7 +1,6 @@
 using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PokeGame.Api.Extensions;
 using PokeGame.Api.Filters;
 using PokeGame.Api.Models.Ability;
 using PokeGame.Core.Abilities;
@@ -30,14 +29,14 @@ public class AbilityController : ControllerBase
   }
 
   [HttpGet("{id}")]
-  public async Task<ActionResult<AbilityDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<ActionResult<AbilityDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
   {
     AbilityDto? ability = await _abilityService.ReadAsync(id, key: null, cancellationToken);
     return ability is null ? NotFound() : Ok(ability);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<AbilityDto>> ReadAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<AbilityDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
   {
     AbilityDto? ability = await _abilityService.ReadAsync(id: null, key, cancellationToken);
     return ability is null ? NotFound() : Ok(ability);
@@ -65,14 +64,7 @@ public class AbilityController : ControllerBase
     return ability is null ? NotFound() : Ok(ability);
   }
 
-  private ActionResult<AbilityDto> ToActionResult(CreateOrReplaceAbilityResult result)
-  {
-    AbilityDto ability = result.Ability;
-    if (result.Created)
-    {
-      Uri location = new($"{HttpContext.GetBaseUrl()}/abilities/{ability.Id}", UriKind.Absolute);
-      return Created(location, ability);
-    }
-    return Ok(ability);
-  }
+  private ActionResult<AbilityDto> ToActionResult(CreateOrReplaceAbilityResult result) => result.Created
+    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Ability.Id }, result.Ability)
+    : Ok(result.Ability);
 }

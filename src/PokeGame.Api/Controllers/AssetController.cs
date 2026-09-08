@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PokeGame.Api.Extensions;
 using PokeGame.Api.Filters;
 using PokeGame.Core.Assets;
 using PokeGame.Core.Assets.Models;
@@ -38,12 +37,6 @@ public class AssetController : ControllerBase
     UploadAssetPayload payload = new(file.FileName, file.Length, stream);
 
     AssetDto? asset = await _assetService.UploadAsync(payload, cancellationToken);
-    if (asset is null)
-    {
-      return NotFound();
-    }
-
-    Uri location = new($"{HttpContext.GetBaseUrl()}/assets/{asset.Id}", UriKind.Absolute);
-    return Created(location, asset);
+    return asset is null ? NotFound() : CreatedAtAction(nameof(ReadAsync), new { id = asset.Id }, asset);
   }
 }
