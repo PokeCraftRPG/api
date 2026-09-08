@@ -55,6 +55,10 @@ internal static class ErrorExtensions
     {
       return StatusCodes.Status415UnsupportedMediaType;
     }
+    if (exception is DomainException)
+    {
+      return StatusCodes.Status422UnprocessableEntity;
+    }
     return StatusCodes.Status500InternalServerError;
   }
 
