@@ -7,8 +7,6 @@ namespace PokeGame.Core.Varieties;
 
 public sealed class Variety : AggregateRoot, IEntityProvider
 {
-  // TODO(fpion): VarietyMoves should not contain duplicate values.
-
   public const string EntityKind = "Variety";
 
   public new VarietyId Id => new(base.Id);
@@ -145,7 +143,11 @@ public sealed class Variety : AggregateRoot, IEntityProvider
     {
       if (existingMove is not null && existingMove.MoveId != move.MoveId)
       {
-        throw new ArgumentException($"The move 'Id={move.MoveId}' was not expected ({existingMove.MoveId}).", nameof(move));
+        throw new ImmutablePropertyException<Guid>(this, existingMove.MoveId.EntityId, move.MoveId.EntityId, nameof(VarietyMove.MoveId));
+      }
+      else if (_moves.Any(pair => pair.Key != id && pair.Value.Equals(move)))
+      {
+        throw new DuplicateVarietyMoveException(this, id, move);
       }
 
       Raise(new VarietyMoveChanged(id, move), actorId);

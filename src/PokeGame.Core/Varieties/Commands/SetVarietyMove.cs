@@ -47,13 +47,9 @@ internal class SetVarietyMoveCommandHandler : ICommandHandler<SetVarietyMoveComm
       {
         await AddMoveAsync(variety, payload, command.Id.Value, cancellationToken);
       }
-      else if (payload.MoveId != varietyMove.MoveId.EntityId)
-      {
-        throw new ImmutablePropertyException<Guid>(variety, varietyMove.MoveId.EntityId, payload.MoveId, nameof(payload.MoveId));
-      }
       else
       {
-        varietyMove = new VarietyMove(varietyMove.MoveId, payload.LearningMethod, Level.TryCreate(payload.Level));
+        varietyMove = new VarietyMove(new MoveId(variety.WorldId, payload.MoveId), payload.LearningMethod, Level.TryCreate(payload.Level));
         variety.SetMove(command.Id.Value, varietyMove, _context.ActorId);
       }
     }

@@ -176,6 +176,34 @@ public class VarietyMoveIntegrationTests : IntegrationTests
     Assert.Equal(nameof(payload.MoveId), exception.PropertyName);
   }
 
+  [Fact(DisplayName = "It should throw DuplicateVarietyMoveException when the move already exists.")]
+  public async Task Given_Duplicate_When_SetMove_Then_DuplicateVarietyMoveException()
+  {
+    await _varietyService.SetMoveAsync(_variety.EntityId, new SetVarietyMovePayload
+    {
+      MoveId = _tackle.EntityId,
+      LearningMethod = LearningMethod.LevelUp,
+      Level = 1
+    });
+
+    Guid duplicateId = Guid.NewGuid();
+    SetVarietyMovePayload payload = new()
+    {
+      MoveId = _tackle.EntityId,
+      LearningMethod = LearningMethod.LevelUp,
+      Level = 1
+    };
+
+    DuplicateVarietyMoveException exception = await Assert.ThrowsAsync<DuplicateVarietyMoveException>(
+      async () => await _varietyService.SetMoveAsync(_variety.EntityId, payload, duplicateId));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(_variety.EntityId, exception.VarietyId);
+    Assert.Equal(duplicateId, exception.VarietyMoveId);
+    Assert.Equal(payload.MoveId, exception.MoveId);
+    Assert.Equal(payload.LearningMethod, exception.LearningMethod);
+    Assert.Equal(payload.Level, exception.Level);
+  }
+
   [Fact(DisplayName = "It should throw EntityNotFoundException when the variety does not exist.")]
   public async Task Given_MissingVariety_When_SetMove_Then_EntityNotFoundException()
   {
