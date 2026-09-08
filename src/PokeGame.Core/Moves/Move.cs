@@ -1,6 +1,4 @@
-﻿using FluentValidation;
-using FluentValidation.Results;
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using PokeGame.Core.Moves.Events;
 using PokeGame.Core.Worlds;
 
@@ -99,14 +97,9 @@ public sealed class Move : AggregateRoot, IEntityProvider
   {
     if (Category == MoveCategory.Status && power is not null)
     {
-      ValidationFailure failure = new(nameof(Power), "A status move cannot have power.", power.Value)
-      {
-        ErrorCode = "InvalidMovePower"
-      };
-      throw new ValidationException([failure]);
+      throw new InvalidMovePowerException(this, power);
     }
-
-    if (!Equals(Accuracy, accuracy) || !Equals(Power, power) || !Equals(PowerPoints, powerPoints))
+    else if (!Equals(Accuracy, accuracy) || !Equals(Power, power) || !Equals(PowerPoints, powerPoints))
     {
       Raise(new MoveMechanicsChanged(accuracy, power, powerPoints), actorId);
     }

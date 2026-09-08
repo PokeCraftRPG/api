@@ -264,8 +264,8 @@ public class MoveIntegrationTests : IntegrationTests
     await Assert.ThrowsAsync<ValidationException>(async () => await _moveService.UpdateAsync(_move.EntityId, payload));
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when creating a status move with power.")]
-  public async Task Given_StatusMoveWithPower_When_Create_Then_InvalidMovePower()
+  [Fact(DisplayName = "It should throw InvalidMovePowerException when creating a status move with power.")]
+  public async Task Given_StatusMoveWithPower_When_Create_Then_InvalidMovePowerException()
   {
     CreateOrReplaceMovePayload payload = new()
     {
@@ -274,14 +274,18 @@ public class MoveIntegrationTests : IntegrationTests
       Key = "growl",
       Power = 40
     };
+    Guid id = Guid.NewGuid();
 
-    ValidationException exception = await Assert.ThrowsAsync<ValidationException>(
-      async () => await _moveService.CreateOrReplaceAsync(payload));
-    Assert.Contains(exception.Errors, error => error.PropertyName == nameof(Move.Power) && error.ErrorCode == "InvalidMovePower");
+    InvalidMovePowerException exception = await Assert.ThrowsAsync<InvalidMovePowerException>(
+      async () => await _moveService.CreateOrReplaceAsync(payload, id));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(id, exception.MoveId);
+    Assert.Equal(payload.Power, exception.AttemptedPower);
+    Assert.Equal(nameof(Move.Power), exception.PropertyName);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when updating a status move with power.")]
-  public async Task Given_StatusMoveWithPower_When_Update_Then_InvalidMovePower()
+  [Fact(DisplayName = "It should throw InvalidMovePowerException when updating a status move with power.")]
+  public async Task Given_StatusMoveWithPower_When_Update_Then_InvalidMovePowerException()
   {
     Move growl = new MoveBuilder(Faker)
       .WithWorld(Context.World)
@@ -299,9 +303,12 @@ public class MoveIntegrationTests : IntegrationTests
       Power = new Optional<int?>(40)
     };
 
-    ValidationException exception = await Assert.ThrowsAsync<ValidationException>(
+    InvalidMovePowerException exception = await Assert.ThrowsAsync<InvalidMovePowerException>(
       async () => await _moveService.UpdateAsync(growl.EntityId, payload));
-    Assert.Contains(exception.Errors, error => error.PropertyName == nameof(Move.Power) && error.ErrorCode == "InvalidMovePower");
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(growl.EntityId, exception.MoveId);
+    Assert.Equal(40, exception.AttemptedPower);
+    Assert.Equal(nameof(Move.Power), exception.PropertyName);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a move.")]
