@@ -58,24 +58,23 @@ internal class UpdateFormCommandHandler : ICommandHandler<UpdateFormCommand, For
         actorId);
     }
 
-    if (payload.Types is not null || payload.Abilities is not null || payload.BaseStatistics is not null || payload.Yield is not null)
+    if (payload.Types is not null || payload.Abilities is not null || payload.BaseStatistics is not null || payload.Yield is not null || payload.Size is not null)
     {
-      form.SetMechanics(
+      form.SetCharacteristics(
         payload.Types is null ? form.Types : FormTypes.From(payload.Types),
         payload.Abilities is null ? form.Abilities : await _formManager.ResolveAbilitiesAsync(payload.Abilities, nameof(payload.Abilities), cancellationToken),
         payload.BaseStatistics is null ? form.BaseStatistics : BaseStatistics.From(payload.BaseStatistics),
         payload.Yield is null ? form.Yield : FormYield.From(payload.Yield),
+        payload.Size is null ? form.Size : FormSize.From(payload.Size),
         actorId);
     }
 
-    if (payload.Size is not null || payload.Sprites is not null)
+    if (payload.Sprites is not null)
     {
-      form.SetTraits(
-        payload.Size is null ? form.Size : payload.Size.Value is null ? null : FormSize.From(payload.Size.Value),
-        payload.Sprites is null
-          ? form.Sprites
-          : (payload.Sprites.Value is null ? null : await _formManager.ResolveSpritesAsync(payload.Sprites.Value, nameof(payload.Sprites), cancellationToken)),
-        actorId);
+      FormSpriteAssets? sprites = payload.Sprites.Value is null
+        ? null
+        : await _formManager.ResolveSpritesAsync(payload.Sprites.Value, nameof(payload.Sprites), cancellationToken);
+      form.SetSprites(sprites, actorId);
     }
 
     await _formManager.EnsureUnicityAsync(form, cancellationToken);

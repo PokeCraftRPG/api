@@ -140,6 +140,7 @@ public sealed class Trainer : AggregateRoot, IEntityProvider
   {
     if (sprite is not null)
     {
+      WorldMismatchException.ThrowIfMismatch(this, sprite, nameof(sprite));
       InvalidAssetKindException.ThrowIfNotValid(sprite, AssetKind.Image, nameof(SpriteId));
     }
 

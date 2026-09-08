@@ -386,8 +386,8 @@ public class TrainerIntegrationTests : IntegrationTests
     await Assert.ThrowsAsync<ValidationException>(async () => await _trainerService.UpdateAsync(_trainer.EntityId, payload));
   }
 
-  [Fact(DisplayName = "It should throw AssetKindMismatchException when the sprite is not an image.")]
-  public async Task Given_VideoSprite_When_Create_Then_AssetKindMismatchException()
+  [Fact(DisplayName = "It should throw InvalidAssetKindException when the sprite is not an image.")]
+  public async Task Given_VideoSprite_When_Create_Then_InvalidAssetKindException()
   {
     AssetDto video = await UploadVideoAsync();
     CreateOrReplaceTrainerPayload payload = CreateMistyPayload();

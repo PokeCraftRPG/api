@@ -30,8 +30,9 @@ public sealed class Form : AggregateRoot, IEntityProvider
   public BaseStatistics BaseStatistics => _baseStatistics ?? throw new InvalidOperationException("The base statistics were not initialized.");
   private FormYield? _yield = null;
   public FormYield Yield => _yield ?? throw new InvalidOperationException("The yield was not initialized.");
+  private FormSize? _size = null;
+  public FormSize Size => _size ?? throw new InvalidOperationException("The size was not initialized.");
 
-  public FormSize? Size { get; private set; }
   public FormSprites? Sprites { get; private set; }
 
   public Form() : base()
@@ -46,7 +47,8 @@ public sealed class Form : AggregateRoot, IEntityProvider
     FormAbilities abilities,
     BaseStatistics statistics,
     FormYield yield,
-    ActorId? actorId = null) : this(FormId.NewId(variety.WorldId), category, variety.Id, key, types, abilities, statistics, yield, actorId)
+    FormSize size,
+    ActorId? actorId = null) : this(FormId.NewId(variety.WorldId), category, variety.Id, key, types, abilities, statistics, yield, size, actorId)
   {
   }
 
@@ -59,6 +61,7 @@ public sealed class Form : AggregateRoot, IEntityProvider
     FormAbilities abilities,
     BaseStatistics statistics,
     FormYield yield,
+    FormSize size,
     ActorId? actorId = null) : base(formId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(this, varietyId, nameof(varietyId));
@@ -69,7 +72,7 @@ public sealed class Form : AggregateRoot, IEntityProvider
       throw new ArgumentOutOfRangeException(nameof(category));
     }
 
-    Raise(new FormCreated(varietyId, category, key, types, abilities, statistics, yield), actorId);
+    Raise(new FormCreated(varietyId, category, key, types, abilities, statistics, yield, size), actorId);
   }
   private void Handle(FormCreated @event)
   {
@@ -82,6 +85,7 @@ public sealed class Form : AggregateRoot, IEntityProvider
     _abilities = @event.Abilities;
     _baseStatistics = @event.Statistics;
     _yield = @event.Yield;
+    _size = @event.Size;
   }
 
   public void Delete(ActorId? actorId = null)
@@ -108,6 +112,24 @@ public sealed class Form : AggregateRoot, IEntityProvider
     Content = @event.Content;
   }
 
+  public void SetCharacteristics(FormTypes types, FormAbilities abilities, BaseStatistics baseStatistics, FormYield yield, FormSize size, ActorId? actorId = null)
+  {
+    EnsureSameWorld(abilities, nameof(abilities));
+
+    if (!Equals(Types, types) || !Equals(Abilities, abilities) || !Equals(BaseStatistics, baseStatistics) || !Equals(Yield, yield) || !Equals(Size, size))
+    {
+      Raise(new FormCharacteristicsChanged(types, abilities, baseStatistics, yield, size), actorId);
+    }
+  }
+  private void Handle(FormCharacteristicsChanged @event)
+  {
+    Types = @event.Types;
+    _abilities = @event.Abilities;
+    _baseStatistics = @event.BaseStatistics;
+    _yield = @event.Yield;
+    _size = @event.Size;
+  }
+
   public void SetKey(Key key, ActorId? actorId = null)
   {
     if (!Equals(Key, key))
@@ -120,38 +142,16 @@ public sealed class Form : AggregateRoot, IEntityProvider
     _key = @event.Key;
   }
 
-  public void SetMechanics(FormTypes types, FormAbilities abilities, BaseStatistics baseStatistics, FormYield yield, ActorId? actorId = null)
+  public void SetSprites(FormSpriteAssets? assets, ActorId? actorId = null)
   {
-    EnsureSameWorld(abilities, nameof(abilities));
-
-    if (!Equals(Types, types) || !Equals(Abilities, abilities) || !Equals(BaseStatistics, baseStatistics) || !Equals(Yield, yield))
+    FormSprites? sprites = assets?.ToSprites(this);
+    if (!Equals(Sprites, sprites))
     {
-      Raise(new FormMechanicsChanged(types, abilities, baseStatistics, yield), actorId);
+      Raise(new FormSpritesChanged(sprites), actorId);
     }
   }
-  private void Handle(FormMechanicsChanged @event)
+  private void Handle(FormSpritesChanged @event)
   {
-    Types = @event.Types;
-    _abilities = @event.Abilities;
-    _baseStatistics = @event.BaseStatistics;
-    _yield = @event.Yield;
-  }
-
-  public void SetTraits(FormSize? size, FormSprites? sprites, ActorId? actorId = null)
-  {
-    if (sprites is not null)
-    {
-      EnsureSameWorld(sprites, nameof(sprites));
-    }
-
-    if (!Equals(Size, size) || !Equals(Sprites, sprites))
-    {
-      Raise(new FormTraitsChanged(size, sprites), actorId);
-    }
-  }
-  private void Handle(FormTraitsChanged @event)
-  {
-    Size = @event.Size;
     Sprites = @event.Sprites;
   }
 
@@ -167,22 +167,6 @@ public sealed class Form : AggregateRoot, IEntityProvider
     if (abilities.HiddenId.HasValue)
     {
       WorldMismatchException.ThrowIfMismatch(this, abilities.HiddenId.Value, paramName);
-    }
-  }
-  private void EnsureSameWorld(FormSprites sprites, string paramName)
-  {
-    WorldMismatchException.ThrowIfMismatch(this, sprites.DefaultId, paramName);
-    if (sprites.ShinyId.HasValue)
-    {
-      WorldMismatchException.ThrowIfMismatch(this, sprites.ShinyId.Value, paramName);
-    }
-    if (sprites.FemaleId.HasValue)
-    {
-      WorldMismatchException.ThrowIfMismatch(this, sprites.FemaleId.Value, paramName);
-    }
-    if (sprites.FemaleShinyId.HasValue)
-    {
-      WorldMismatchException.ThrowIfMismatch(this, sprites.FemaleShinyId.Value, paramName);
     }
   }
 }
