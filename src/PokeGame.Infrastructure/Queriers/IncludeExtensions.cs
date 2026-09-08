@@ -12,7 +12,7 @@ internal static class IncludeExtensions
     .Include(x => x.Variety).ThenInclude(x => x!.Species).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region);
 
   public static IQueryable<MemberInvitationEntity> IncludeRelated(this IQueryable<MemberInvitationEntity> query) => query
-    .Include(x => x.World);
+    .Include(x => x.World).ThenInclude(x => x!.Members);
 
   public static IQueryable<SpeciesEntity> IncludeRelated(this IQueryable<SpeciesEntity> query) => query
     .Include(x => x.RegionalNumbers).ThenInclude(x => x.Region);

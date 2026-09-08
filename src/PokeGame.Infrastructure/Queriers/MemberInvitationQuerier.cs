@@ -150,6 +150,6 @@ internal class MemberInvitationQuerier : IMemberInvitationQuerier
     IReadOnlyDictionary<ActorId, Actor> actors = await _actors.FindAsync(actorIds, cancellationToken);
     Mapper mapper = new(actors);
 
-    return invitations.Select(mapper.ToMemberInvitation).ToList().AsReadOnly();
+    return invitations.Select(invitation => mapper.ToMemberInvitation(invitation, _context.UserId)).ToList().AsReadOnly();
   }
 }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PokeGame.Builders;
 using PokeGame.Core;
+using PokeGame.Core.Caching;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Membership.Models;
@@ -21,12 +22,14 @@ namespace PokeGame.Membership;
 [Trait(Traits.Category, Categories.Integration)]
 public class MemberInvitationIntegrationTests : IntegrationTests
 {
+  private readonly ICacheService _cacheService;
   private readonly IMemberInvitationService _memberInvitationService;
   private readonly IWorldRepository _worldRepository;
   private readonly IWorldService _worldService;
 
   public MemberInvitationIntegrationTests()
   {
+    _cacheService = ServiceProvider.GetRequiredService<ICacheService>();
     _memberInvitationService = ServiceProvider.GetRequiredService<IMemberInvitationService>();
     _worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
     _worldService = ServiceProvider.GetRequiredService<IWorldService>();
@@ -35,6 +38,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should invite a member by email address.")]
   public async Task Given_UnknownEmail_When_Invite_Then_Created()
   {
+    User member = await GrantMembershipAsync();
     SendMemberInvitationPayload payload = CreatePayload();
 
     MemberInvitationDto invitation = await SendInvitationAsync(payload);
@@ -43,6 +47,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     Assert.Equal(ActorType.User, invitation.Invitee.Type);
     Assert.Equal(payload.EmailAddress, invitation.Invitee.EmailAddress);
     Assert.Equal(payload.EmailAddress, invitation.Invitee.DisplayName);
+    AssertWorldMembers(invitation, member);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
       It.Is<MemberInvitation>(i => i.EntityId == invitation.Id),
       payload.Locale,
@@ -183,23 +188,27 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should allow the world owner to read a member invitation by ID.")]
   public async Task Given_WorldOwner_When_Read_Then_Read()
   {
+    User member = await GrantMembershipAsync();
     MemberInvitationDto seeded = await SendInvitationAsync();
 
     MemberInvitationDto? invitation = await _memberInvitationService.ReadAsync(seeded.Id);
     Assert.NotNull(invitation);
     Assert.Equal(seeded.Id, invitation.Id);
+    AssertWorldMembers(invitation, member);
   }
 
   [Fact(DisplayName = "It should allow the invitee to read a member invitation by ID.")]
   public async Task Given_Invitee_When_Read_Then_Read()
   {
+    User member = await GrantMembershipAsync();
     User invitee = KrakenarFactory.Instance.NewUser(Faker);
-    MemberInvitationDto seeded = await InviteUserAsync(invitee);
+    MemberInvitationDto seeded = await InviteUserAsync(invitee, member);
 
     Context.User = invitee;
     MemberInvitationDto? invitation = await _memberInvitationService.ReadAsync(seeded.Id);
     Assert.NotNull(invitation);
     Assert.Equal(seeded.Id, invitation.Id);
+    Assert.Empty(invitation.World.Members);
   }
 
   [Fact(DisplayName = "It should return null when the current user cannot read the invitation.")]
@@ -396,8 +405,9 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   public async Task Given_Pending_When_Accept_Then_Accepted()
   {
     User owner = Context.User!;
+    User member = await GrantMembershipAsync();
     User invitee = KrakenarFactory.Instance.NewUser(Faker);
-    MemberInvitationDto seeded = await InviteUserAsync(invitee);
+    MemberInvitationDto seeded = await InviteUserAsync(invitee, member);
 
     Context.User = invitee;
     MemberInvitationDto? invitation = await _memberInvitationService.AcceptAsync(seeded.Id);
@@ -411,6 +421,11 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     Assert.Equal(DateTime.UtcNow, invitation.UpdatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(MemberInvitationStatus.Accepted, invitation.Status);
 
+    MemberDto current = Assert.Single(invitation.World.Members);
+    Assert.Equal(new Actor(invitee), current.User);
+    Assert.Equal(new Actor(owner), current.GrantedBy);
+    Assert.Equal(DateTime.UtcNow, current.GrantedOn, TimeSpan.FromSeconds(10));
+
     World? world = await _worldRepository.LoadAsync(Context.WorldId);
     Assert.NotNull(world);
     Assert.True(world.IsMember(new UserId(invitee)));
@@ -418,18 +433,16 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     Context.User = owner;
     WorldDto? worldDto = await _worldService.ReadAsync(world.EntityId);
     Assert.NotNull(worldDto);
-    MemberDto member = Assert.Single(worldDto.Members);
-    Assert.Equal(new Actor(invitee), member.User);
-    Assert.Equal(new Actor(owner), member.GrantedBy);
-    Assert.Equal(DateTime.UtcNow, member.GrantedOn, TimeSpan.FromSeconds(10));
+    Assert.Contains(worldDto.Members, member => member.User.Equals(new Actor(invitee)));
   }
 
   [Fact(DisplayName = "It should decline a member invitation.")]
   public async Task Given_Pending_When_Decline_Then_Declined()
   {
     User owner = Context.User!;
+    User member = await GrantMembershipAsync();
     User invitee = KrakenarFactory.Instance.NewUser(Faker);
-    MemberInvitationDto seeded = await InviteUserAsync(invitee);
+    MemberInvitationDto seeded = await InviteUserAsync(invitee, member);
 
     Context.User = invitee;
     MemberInvitationDto? invitation = await _memberInvitationService.DeclineAsync(seeded.Id);
@@ -442,13 +455,15 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     Assert.Equal(Actor, invitation.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, invitation.UpdatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(MemberInvitationStatus.Declined, invitation.Status);
+    Assert.Empty(invitation.World.Members);
   }
 
   [Fact(DisplayName = "It should cancel a member invitation.")]
   public async Task Given_Pending_When_Cancel_Then_Cancelled()
   {
+    User member = await GrantMembershipAsync();
     User invitee = KrakenarFactory.Instance.NewUser(Faker);
-    MemberInvitationDto seeded = await InviteUserAsync(invitee);
+    MemberInvitationDto seeded = await InviteUserAsync(invitee, member);
 
     MemberInvitationDto? invitation = await _memberInvitationService.CancelAsync(seeded.Id);
     Assert.NotNull(invitation);
@@ -460,6 +475,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     Assert.Equal(Actor, invitation.UpdatedBy);
     Assert.Equal(DateTime.UtcNow, invitation.UpdatedOn, TimeSpan.FromSeconds(10));
     Assert.Equal(MemberInvitationStatus.Cancelled, invitation.Status);
+    AssertWorldMembers(invitation, member);
   }
 
   [Fact(DisplayName = "It should return null when the invitation was not found.")]
@@ -642,6 +658,54 @@ public class MemberInvitationIntegrationTests : IntegrationTests
       It.IsAny<CancellationToken>()), Times.Once);
   }
 
+  private async Task<User> GrantMembershipAsync(params User[] members)
+  {
+    _cacheService.Realm = KrakenarFactory.Instance.Realm;
+
+    if (members.Length == 0)
+    {
+      members = [KrakenarFactory.Instance.NewUser(Faker)];
+    }
+
+    foreach (User member in members)
+    {
+      Context.World!.GrantMembership(new UserId(member.Id, _cacheService.Realm!.Id), Context.ActorId);
+    }
+    await _worldRepository.SaveAsync(Context.World!);
+
+    SetupUsers(members);
+    return members[0];
+  }
+
+  private void SetupUsers(params User[] users)
+  {
+    UserClient.Setup(x => x.SearchAsync(It.IsAny<SearchUsersPayload>(), It.IsAny<CancellationToken>()))
+      .ReturnsAsync((SearchUsersPayload payload, CancellationToken _) =>
+      {
+        Dictionary<Guid, User> found = [];
+        if (Context.User is not null && payload.Ids.Contains(Context.User.Id))
+        {
+          found[Context.User.Id] = Context.User;
+        }
+        foreach (User user in users)
+        {
+          if (payload.Ids.Contains(user.Id))
+          {
+            found[user.Id] = user;
+          }
+        }
+        return new SearchResults<User>(found.Values);
+      });
+  }
+
+  private void AssertWorldMembers(MemberInvitationDto invitation, User member)
+  {
+    MemberDto granted = Assert.Single(invitation.World.Members);
+    Assert.Equal(new Actor(member), granted.User);
+    Assert.Equal(Actor, granted.GrantedBy);
+    Assert.Equal(DateTime.UtcNow, granted.GrantedOn, TimeSpan.FromSeconds(10));
+  }
+
   private async Task ExpireInvitationAsync(Guid invitationId)
   {
     PokemonContext pokemon = ServiceProvider.GetRequiredService<PokemonContext>();
@@ -650,9 +714,9 @@ public class MemberInvitationIntegrationTests : IntegrationTests
       $@"UPDATE ""Pokemon"".""MemberInvitations"" SET ""ExpiresOn"" = {expiresOn} WHERE ""Id"" = {invitationId}");
   }
 
-  private async Task<MemberInvitationDto> InviteUserAsync(User invitee)
+  private async Task<MemberInvitationDto> InviteUserAsync(User invitee, params User[] knownUsers)
   {
-    SetupInvitee(invitee);
+    SetupInvitee(invitee, knownUsers);
     return await SendInvitationAsync(CreatePayload(invitee.Email!.Address));
   }
 
@@ -663,7 +727,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     return invitation;
   }
 
-  private void SetupInvitee(User invitee)
+  private void SetupInvitee(User invitee, params User[] knownUsers)
   {
     User? owner = Context.User;
     UserClient.Setup(x => x.ReadAsync(null, invitee.Email!.Address, null, It.IsAny<CancellationToken>()))
@@ -676,13 +740,16 @@ public class MemberInvitationIntegrationTests : IntegrationTests
         {
           users[owner.Id] = owner;
         }
-        if (payload.Ids.Contains(invitee.Id))
-        {
-          users[invitee.Id] = invitee;
-        }
         if (Context.User is not null && payload.Ids.Contains(Context.User.Id))
         {
           users[Context.User.Id] = Context.User;
+        }
+        foreach (User user in knownUsers.Prepend(invitee))
+        {
+          if (payload.Ids.Contains(user.Id))
+          {
+            users[user.Id] = user;
+          }
         }
         return new SearchResults<User>(users.Values);
       });

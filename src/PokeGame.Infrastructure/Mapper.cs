@@ -176,13 +176,13 @@ internal class Mapper
     GrantedOn = source.GrantedOn.AsUniversalTime()
   };
 
-  public MemberInvitationDto ToMemberInvitation(MemberInvitationEntity source)
+  public MemberInvitationDto ToMemberInvitation(MemberInvitationEntity source, UserId? userId)
   {
     WorldEntity world = source.World ?? throw new ArgumentException("The world is required.", nameof(source));
     MemberInvitationDto destination = new()
     {
       Id = source.Id,
-      World = ToWorld(world),
+      World = ToWorld(world, userId),
       Status = source.Status,
       ExpiresOn = source.ExpiresOn?.AsUniversalTime()
     };
@@ -366,7 +366,7 @@ internal class Mapper
     };
   }
 
-  public WorldDto ToWorld(WorldEntity source, UserId? userId = null)
+  public WorldDto ToWorld(WorldEntity source, UserId? userId)
   {
     WorldDto destination = new()
     {
