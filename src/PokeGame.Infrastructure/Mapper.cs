@@ -191,17 +191,13 @@ internal class Mapper
     {
       destination.Invitee = FindActor(source.UserId);
     }
-    else if (source.EmailAddress is not null)
+    else
     {
       destination.Invitee = new Actor(source.EmailAddress)
       {
         Type = ActorType.User,
         EmailAddress = source.EmailAddress
       };
-    }
-    else
-    {
-      throw new ArgumentException("Either a user identifier or email address is required.", nameof(source));
     }
 
     MapAggregate(source, destination);
