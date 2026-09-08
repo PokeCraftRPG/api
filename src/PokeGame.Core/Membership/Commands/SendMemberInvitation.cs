@@ -59,30 +59,14 @@ internal class SendMemberInvitationCommandHandler : ICommandHandler<SendMemberIn
       throw new UserIsAlreadyMemberException(world, userId.Value);
     }
 
+    EmailAddress emailAddress = new(payload.EmailAddress);
     DateTime expiresOn = DateTime.Now.AddDays(MemberInvitationLifetimeDays);
-    MemberInvitation invitation;
+    MemberInvitation invitation = new(world, emailAddress, userId, expiresOn, _context.ActorId);
 
-    if (user is null)
+    MemberInvitationId? existingId = await _memberInvitationQuerier.GetIdAsync(invitation, MemberInvitationStatus.Pending, cancellationToken);
+    if (existingId.HasValue)
     {
-      EmailAddress emailAddress = new(payload.EmailAddress);
-      MemberInvitationId? existingId = await _memberInvitationQuerier.GetIdAsync(world, emailAddress, MemberInvitationStatus.Pending, cancellationToken);
-      if (existingId.HasValue)
-      {
-        throw new MemberInvitationAlreadyPendingException(world, existingId.Value);
-      }
-
-      invitation = new MemberInvitation(world, emailAddress, expiresOn, _context.ActorId);
-    }
-    else
-    {
-      userId ??= new UserId(user);
-      MemberInvitationId? existingId = await _memberInvitationQuerier.GetIdAsync(world, userId.Value, MemberInvitationStatus.Pending, cancellationToken);
-      if (existingId.HasValue)
-      {
-        throw new MemberInvitationAlreadyPendingException(world, existingId.Value);
-      }
-
-      invitation = new MemberInvitation(world, userId.Value, expiresOn, _context.ActorId);
+      throw new MemberInvitationAlreadyPendingException(world, existingId.Value);
     }
 
     await _memberInvitationRepository.SaveAsync(invitation, cancellationToken);

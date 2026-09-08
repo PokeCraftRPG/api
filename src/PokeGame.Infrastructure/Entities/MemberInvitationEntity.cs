@@ -13,7 +13,7 @@ internal class MemberInvitationEntity : AggregateEntity
   public WorldEntity? World { get; private set; }
   public int WorldId { get; private set; }
 
-  public string? EmailAddress { get; private set; }
+  public string EmailAddress { get; private set; } = string.Empty;
   public string? UserId { get; private set; }
 
   public MemberInvitationStatus Status { get; private set; }
@@ -24,7 +24,7 @@ internal class MemberInvitationEntity : AggregateEntity
     WorldId = worldId;
     Id = new MemberInvitationId(@event.StreamId).EntityId;
 
-    EmailAddress = @event.EmailAddress?.Value;
+    EmailAddress = @event.EmailAddress.Value;
     UserId = @event.UserId?.Value;
 
     Status = MemberInvitationStatus.Pending;
