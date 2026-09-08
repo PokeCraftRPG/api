@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Krakenar.Client.Users;
 using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
@@ -386,6 +386,22 @@ public class TrainerIntegrationTests : IntegrationTests
     await Assert.ThrowsAsync<ValidationException>(async () => await _trainerService.UpdateAsync(_trainer.EntityId, payload));
   }
 
+  [Fact(DisplayName = "It should throw AssetKindMismatchException when the sprite is not an image.")]
+  public async Task Given_VideoSprite_When_Create_Then_AssetKindMismatchException()
+  {
+    AssetDto video = await UploadVideoAsync();
+    CreateOrReplaceTrainerPayload payload = CreateMistyPayload();
+    payload.SpriteId = video.Id;
+
+    InvalidAssetKindException exception = await Assert.ThrowsAsync<InvalidAssetKindException>(
+      async () => await _trainerService.CreateOrReplaceAsync(payload));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(video.Id, exception.AssetId);
+    Assert.Equal(AssetKind.Image, exception.ExpectedKind);
+    Assert.Equal(AssetKind.Video, exception.AttemptedKind);
+    Assert.Equal(nameof(Trainer.SpriteId), exception.PropertyName);
+  }
+
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a trainer.")]
   public async Task Given_NotAllowed_When_Create_Then_PermissionDeniedException()
   {
@@ -506,6 +522,19 @@ public class TrainerIntegrationTests : IntegrationTests
     UploadAssetPayload payload = new(Path.GetFileName(path), stream.Length, stream);
     AssetDto? asset = await _assetService.UploadAsync(payload);
     Assert.NotNull(asset);
+    return asset;
+  }
+
+  private async Task<AssetDto> UploadVideoAsync()
+  {
+    string path = Path.Combine(AppContext.BaseDirectory, "Assets", "sample.mp4");
+    Assert.True(File.Exists(path), $"Add an MP4 file at '{path}'.");
+
+    await using FileStream stream = File.OpenRead(path);
+    UploadAssetPayload payload = new(Path.GetFileName(path), stream.Length, stream);
+    AssetDto? asset = await _assetService.UploadAsync(payload);
+    Assert.NotNull(asset);
+    Assert.Equal(AssetKind.Video, asset.Kind);
     return asset;
   }
 

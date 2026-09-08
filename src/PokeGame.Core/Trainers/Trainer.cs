@@ -138,9 +138,9 @@ public sealed class Trainer : AggregateRoot, IEntityProvider
 
   public void SetSprite(Asset? sprite, ActorId? actorId = null)
   {
-    if (sprite is not null && sprite.Kind != AssetKind.Image)
+    if (sprite is not null)
     {
-      throw new NotImplementedException(); // TODO(fpion): sprite must be an Image.
+      InvalidAssetKindException.ThrowIfNotValid(sprite, AssetKind.Image, nameof(SpriteId));
     }
 
     AssetId? spriteId = sprite?.Id;
