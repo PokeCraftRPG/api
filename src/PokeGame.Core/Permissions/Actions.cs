@@ -15,7 +15,7 @@ internal static class Actions
   public const string Decline = "Decline";
   public const string InviteMember = "InviteMember";
   public const string LeaveMembership = "LeaveMembership";
-  public const string RevokeMembership = "RevokeMember";
+  public const string RevokeMembership = "RevokeMembership";
   public const string TransferOwnership = "TransferOwnership";
   public const string Update = "Update";
   public const string Upload = "Upload";

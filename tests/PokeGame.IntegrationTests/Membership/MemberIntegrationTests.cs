@@ -152,7 +152,7 @@ public class MemberIntegrationTests : IntegrationTests
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = member.Id }));
     Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("RevokeMember", exception.Action);
+    Assert.Equal("RevokeMembership", exception.Action);
     Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
   }
