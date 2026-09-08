@@ -17,7 +17,8 @@ internal class MemberInvitationConfiguration : AggregateConfiguration<MemberInvi
     builder.ToTable(nameof(PokemonContext.MemberInvitations), PokemonContext.Schema);
     builder.HasKey(x => x.MemberInvitationId);
 
-    builder.HasIndex(x => new { x.WorldId, x.Id }).IsUnique();
+    builder.HasIndex(x => x.Id).IsUnique();
+    builder.HasIndex(x => x.WorldId);
     builder.HasIndex(x => x.EmailAddress);
     builder.HasIndex(x => x.UserId);
     builder.HasIndex(x => x.Status);
