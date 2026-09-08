@@ -52,7 +52,7 @@ internal class MemberInvitationQuerier : IMemberInvitationQuerier
   {
     MemberInvitationEntity? invitation = await _invitations.AsNoTracking()
       .Where(x => x.StreamId == id.Value)
-      .Include(x => x.World)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return invitation is null ? null : await MapAsync(invitation, cancellationToken);
   }
@@ -60,7 +60,7 @@ internal class MemberInvitationQuerier : IMemberInvitationQuerier
   {
     MemberInvitationEntity? invitation = await _invitations.AsNoTracking()
       .Where(x => x.Id == id && (x.World!.OwnerId == _context.UserId.Value || x.UserId == _context.UserId.Value))
-      .Include(x => x.World)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return invitation is null ? null : await MapAsync(invitation, cancellationToken);
   }
@@ -130,7 +130,9 @@ internal class MemberInvitationQuerier : IMemberInvitationQuerier
     }
     query = ordered is null ? query.OrderByDescending(x => x.CreatedOn) : ordered.ThenBy(x => x.MemberInvitationId);
 
-    query = query.Skip(payload.Offset).Take(payload.Limit).Include(x => x.World);
+    query = query.Skip(payload.Offset).Take(payload.Limit);
+
+    query = query.Include(x => x.World);
 
     MemberInvitationEntity[] entities = await query.ToArrayAsync(cancellationToken);
     IReadOnlyCollection<MemberInvitationDto> invitations = await MapAsync(entities, cancellationToken);

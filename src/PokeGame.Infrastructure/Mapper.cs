@@ -6,6 +6,7 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Forms.Models;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
@@ -365,7 +366,7 @@ internal class Mapper
     };
   }
 
-  public WorldDto ToWorld(WorldEntity source)
+  public WorldDto ToWorld(WorldEntity source, UserId? userId = null)
   {
     WorldDto destination = new()
     {
@@ -377,9 +378,16 @@ internal class Mapper
       Owner = FindActor(source.OwnerId)
     };
 
-    foreach (MemberEntity member in source.Members)
+    if (userId.HasValue)
     {
-      destination.Members.Add(ToMember(member));
+      bool isOwner = source.OwnerId == userId.Value.Value;
+      foreach (MemberEntity member in source.Members)
+      {
+        if (isOwner || member.UserId == userId.Value.Value)
+        {
+          destination.Members.Add(ToMember(member));
+        }
+      }
     }
 
     MapAggregate(source, destination);

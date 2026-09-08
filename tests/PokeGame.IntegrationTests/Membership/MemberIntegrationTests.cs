@@ -197,9 +197,9 @@ public class MemberIntegrationTests : IntegrationTests
     WorldDto? world = await _membershipService.TransferOwnershipAsync(Context.WorldId.EntityId, new TransferOwnershipPayload { UserId = successor.Id });
     Assert.NotNull(world);
     Assert.Equal(new Actor(successor), world.Owner);
-    Assert.Equal(2, world.Members.Count);
-    Assert.Contains(world.Members, member => member.User.Equals(new Actor(owner)));
-    Assert.Contains(world.Members, member => member.User.Equals(new Actor(remaining)));
+
+    MemberDto formerOwner = Assert.Single(world.Members);
+    Assert.Equal(new Actor(owner), formerOwner.User);
 
     World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
     Assert.NotNull(loaded);

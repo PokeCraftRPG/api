@@ -55,6 +55,7 @@ internal class TrainerQuerier : ITrainerQuerier
   {
     TrainerEntity? trainer = await _trainers.AsNoTracking()
       .Where(x => x.StreamId == id.Value)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return trainer is null ? null : await MapAsync(trainer, cancellationToken);
   }
@@ -62,6 +63,7 @@ internal class TrainerQuerier : ITrainerQuerier
   {
     TrainerEntity? trainer = await _trainers.AsNoTracking()
       .Where(x => x.World!.StreamId == _context.WorldId.Value && x.Id == id)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return trainer is null ? null : await MapAsync(trainer, cancellationToken);
   }
@@ -69,6 +71,7 @@ internal class TrainerQuerier : ITrainerQuerier
   {
     TrainerEntity? trainer = await _trainers.AsNoTracking()
       .Where(x => x.World!.StreamId == _context.WorldId.Value && x.Key == SlugHelper.Format(key))
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return trainer is null ? null : await MapAsync(trainer, cancellationToken);
   }
@@ -76,6 +79,7 @@ internal class TrainerQuerier : ITrainerQuerier
   {
     TrainerEntity? trainer = await _trainers.AsNoTracking()
       .Where(x => x.World!.StreamId == _context.WorldId.Value && x.License == License.Format(license))
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return trainer is null ? null : await MapAsync(trainer, cancellationToken);
   }
@@ -123,6 +127,16 @@ internal class TrainerQuerier : ITrainerQuerier
             ? (sort.Direction == SortDirection.Descending ? query.OrderByDescending(x => x.Key) : query.OrderBy(x => x.Key))
             : (sort.Direction == SortDirection.Descending ? ordered.ThenByDescending(x => x.Key) : ordered.ThenBy(x => x.Key));
           break;
+        case TrainerSort.License:
+          ordered = (ordered is null)
+            ? (sort.Direction == SortDirection.Descending ? query.OrderByDescending(x => x.License) : query.OrderBy(x => x.License))
+            : (sort.Direction == SortDirection.Descending ? ordered.ThenByDescending(x => x.License) : ordered.ThenBy(x => x.License));
+          break;
+        case TrainerSort.Money:
+          ordered = (ordered is null)
+            ? (sort.Direction == SortDirection.Descending ? query.OrderByDescending(x => x.Money) : query.OrderBy(x => x.Money))
+            : (sort.Direction == SortDirection.Descending ? ordered.ThenByDescending(x => x.Money) : ordered.ThenBy(x => x.Money));
+          break;
         case TrainerSort.Name:
           ordered = (ordered is null)
             ? (sort.Direction == SortDirection.Descending ? query.OrderByDescending(x => x.Name ?? x.Key) : query.OrderBy(x => x.Name ?? x.Key))
@@ -138,6 +152,8 @@ internal class TrainerQuerier : ITrainerQuerier
     query = ordered is null ? query.OrderBy(x => x.Name ?? x.Key) : ordered.ThenBy(x => x.TrainerId);
 
     query = query.Skip(payload.Offset).Take(payload.Limit);
+
+    query = query.Include(x => x.Sprite);
 
     TrainerEntity[] entities = await query.ToArrayAsync(cancellationToken);
     IReadOnlyCollection<TrainerDto> trainers = await MapAsync(entities, cancellationToken);

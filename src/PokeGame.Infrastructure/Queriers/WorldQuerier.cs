@@ -48,7 +48,7 @@ internal class WorldQuerier : IWorldQuerier
   {
     WorldEntity? world = await _worlds.AsNoTracking()
       .Where(x => x.StreamId == id.Value)
-      .Include(x => x.Members)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
@@ -56,7 +56,7 @@ internal class WorldQuerier : IWorldQuerier
   {
     WorldEntity? world = await _worlds.AsNoTracking()
       .Where(x => x.Id == id && (x.OwnerId == _context.UserId.Value || x.Members.Any(y => y.UserId == _context.UserId.Value)))
-      .Include(x => x.Members)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
@@ -64,7 +64,7 @@ internal class WorldQuerier : IWorldQuerier
   {
     WorldEntity? world = await _worlds.AsNoTracking()
       .Where(x => x.Key == SlugHelper.Format(key) && (x.OwnerId == _context.UserId.Value || x.Members.Any(y => y.UserId == _context.UserId.Value)))
-      .Include(x => x.Members)
+      .IncludeRelated()
       .SingleOrDefaultAsync(cancellationToken);
     return world is null ? null : await MapAsync(world, cancellationToken);
   }
@@ -133,6 +133,6 @@ internal class WorldQuerier : IWorldQuerier
     IReadOnlyDictionary<ActorId, Actor> actors = await _actors.FindAsync(actorIds, cancellationToken);
     Mapper mapper = new(actors);
 
-    return worlds.Select(mapper.ToWorld).ToList().AsReadOnly();
+    return worlds.Select(world => mapper.ToWorld(world, _context.UserId)).ToList().AsReadOnly();
   }
 }

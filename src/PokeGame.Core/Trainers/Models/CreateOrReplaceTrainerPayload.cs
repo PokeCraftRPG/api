@@ -23,6 +23,8 @@ public record CreateOrReplaceTrainerPayload
   {
     public Validator()
     {
+      RuleFor(x => x.Key).Key();
+
       When(x => !string.IsNullOrWhiteSpace(x.Name), () => RuleFor(x => x.Name!).Name());
       When(x => !string.IsNullOrWhiteSpace(x.Summary), () => RuleFor(x => x.Summary!).Summary());
       When(x => !string.IsNullOrWhiteSpace(x.Content), () => RuleFor(x => x.Content!).Content());

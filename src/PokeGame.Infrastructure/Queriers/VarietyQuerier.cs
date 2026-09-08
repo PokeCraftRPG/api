@@ -67,7 +67,6 @@ internal class VarietyQuerier : IVarietyQuerier
   public async Task<SearchResults<VarietyDto>> SearchAsync(SearchVarietiesPayload payload, CancellationToken cancellationToken)
   {
     IQueryable<VarietyEntity> query = _varieties.AsNoTracking()
-      .Include(x => x.Species)
       .Where(x => x.World!.StreamId == _context.WorldId.Value)
       .ApplyIdFilter(payload.Ids, x => x.Id)
       .ApplyTextSearch(payload.Search, pattern => variety
