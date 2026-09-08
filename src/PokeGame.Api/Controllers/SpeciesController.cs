@@ -1,7 +1,6 @@
 ﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PokeGame.Api.Extensions;
 using PokeGame.Api.Filters;
 using PokeGame.Api.Models.Species;
 using PokeGame.Core.Species;
@@ -30,23 +29,23 @@ public class SpeciesController : ControllerBase
   }
 
   [HttpGet("{id}")]
-  public async Task<ActionResult<SpeciesDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<ActionResult<SpeciesDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
   {
     SpeciesDto? species = await _speciesService.ReadAsync(id, number: null, key: null, cancellationToken);
     return species is null ? NotFound() : Ok(species);
   }
 
-  [HttpGet("number:{number}")]
-  public async Task<ActionResult<SpeciesDto>> ReadAsync(int number, CancellationToken cancellationToken)
+  [HttpGet("key:{key}")]
+  public async Task<ActionResult<SpeciesDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
   {
-    SpeciesDto? species = await _speciesService.ReadAsync(id: null, number, key: null, cancellationToken);
+    SpeciesDto? species = await _speciesService.ReadAsync(id: null, number: null, key, cancellationToken);
     return species is null ? NotFound() : Ok(species);
   }
 
-  [HttpGet("key:{key}")]
-  public async Task<ActionResult<SpeciesDto>> ReadAsync(string key, CancellationToken cancellationToken)
+  [HttpGet("number:{number}")]
+  public async Task<ActionResult<SpeciesDto>> ReadByNumberAsync(int number, CancellationToken cancellationToken)
   {
-    SpeciesDto? species = await _speciesService.ReadAsync(id: null, number: null, key, cancellationToken);
+    SpeciesDto? species = await _speciesService.ReadAsync(id: null, number, key: null, cancellationToken);
     return species is null ? NotFound() : Ok(species);
   }
 
@@ -72,14 +71,7 @@ public class SpeciesController : ControllerBase
     return species is null ? NotFound() : Ok(species);
   }
 
-  private ActionResult<SpeciesDto> ToActionResult(CreateOrReplaceSpeciesResult result)
-  {
-    SpeciesDto species = result.Species;
-    if (result.Created)
-    {
-      Uri location = new($"{HttpContext.GetBaseUrl()}/species/{species.Id}", UriKind.Absolute);
-      return Created(location, species);
-    }
-    return Ok(species);
-  }
+  private ActionResult<SpeciesDto> ToActionResult(CreateOrReplaceSpeciesResult result) => result.Created
+    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Species.Id }, result.Species)
+    : Ok(result.Species);
 }

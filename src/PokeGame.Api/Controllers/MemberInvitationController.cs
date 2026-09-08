@@ -1,7 +1,6 @@
 ﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PokeGame.Api.Extensions;
 using PokeGame.Api.Models.Membership;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Membership.Models;
@@ -68,12 +67,6 @@ public class MemberInvitationController : ControllerBase
   public async Task<ActionResult<MemberInvitationDto>> SendAsync(Guid worldId, [FromBody] SendMemberInvitationPayload payload, CancellationToken cancellationToken)
   {
     MemberInvitationDto? invitation = await _memberInvitationService.SendAsync(worldId, payload, cancellationToken);
-    if (invitation is null)
-    {
-      return NotFound();
-    }
-
-    Uri location = new($"{HttpContext.GetBaseUrl()}/members/invitations/{invitation.Id}", UriKind.Absolute);
-    return Created(location, invitation);
+    return invitation is null ? NotFound() : CreatedAtAction(nameof(ReadAsync), new { id = invitation.Id }, invitation);
   }
 }

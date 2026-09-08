@@ -1,7 +1,6 @@
 ﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PokeGame.Api.Extensions;
 using PokeGame.Api.Models.World;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Models;
@@ -28,14 +27,14 @@ public class WorldController : ControllerBase
   }
 
   [HttpGet("{id}")]
-  public async Task<ActionResult<WorldDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<ActionResult<WorldDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
   {
     WorldDto? world = await _worldService.ReadAsync(id, key: null, cancellationToken);
     return world is null ? NotFound() : Ok(world);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<WorldDto>> ReadAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<WorldDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
   {
     WorldDto? world = await _worldService.ReadAsync(id: null, key, cancellationToken);
     return world is null ? NotFound() : Ok(world);
@@ -63,16 +62,7 @@ public class WorldController : ControllerBase
     return world is null ? NotFound() : Ok(world);
   }
 
-  private ActionResult<WorldDto> ToActionResult(CreateOrReplaceWorldResult result)
-  {
-    WorldDto world = result.World;
-    if (result.Created)
-    {
-      Uri location = new($"{HttpContext.GetBaseUrl()}/worlds/{world.Id}", UriKind.Absolute);
-      return Created(location, world);
-    }
-    return Ok(world);
-  }
-
-  // TODO(fpion): we should not build Location.
+  private ActionResult<WorldDto> ToActionResult(CreateOrReplaceWorldResult result) => result.Created
+    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.World.Id }, result.World)
+    : Ok(result.World);
 }

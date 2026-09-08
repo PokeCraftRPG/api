@@ -1,7 +1,6 @@
 using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PokeGame.Api.Extensions;
 using PokeGame.Api.Filters;
 using PokeGame.Api.Models.Variety;
 using PokeGame.Core.Varieties;
@@ -30,14 +29,14 @@ public class VarietyController : ControllerBase
   }
 
   [HttpGet("{id}")]
-  public async Task<ActionResult<VarietyDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<ActionResult<VarietyDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
   {
     VarietyDto? variety = await _varietyService.ReadAsync(id, key: null, cancellationToken);
     return variety is null ? NotFound() : Ok(variety);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<VarietyDto>> ReadAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<VarietyDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
   {
     VarietyDto? variety = await _varietyService.ReadAsync(id: null, key, cancellationToken);
     return variety is null ? NotFound() : Ok(variety);
@@ -65,14 +64,7 @@ public class VarietyController : ControllerBase
     return variety is null ? NotFound() : Ok(variety);
   }
 
-  private ActionResult<VarietyDto> ToActionResult(CreateOrReplaceVarietyResult result)
-  {
-    VarietyDto variety = result.Variety;
-    if (result.Created)
-    {
-      Uri location = new($"{HttpContext.GetBaseUrl()}/varieties/{variety.Id}", UriKind.Absolute);
-      return Created(location, variety);
-    }
-    return Ok(variety);
-  }
+  private ActionResult<VarietyDto> ToActionResult(CreateOrReplaceVarietyResult result) => result.Created
+    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Variety.Id }, result.Variety)
+    : Ok(result.Variety);
 }

@@ -1,7 +1,6 @@
 ﻿using Krakenar.Contracts.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PokeGame.Api.Extensions;
 using PokeGame.Api.Filters;
 using PokeGame.Api.Models.Region;
 using PokeGame.Core.Regions;
@@ -30,14 +29,14 @@ public class RegionController : ControllerBase
   }
 
   [HttpGet("{id}")]
-  public async Task<ActionResult<RegionDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
+  public async Task<ActionResult<RegionDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
   {
     RegionDto? region = await _regionService.ReadAsync(id, key: null, cancellationToken);
     return region is null ? NotFound() : Ok(region);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<RegionDto>> ReadAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<RegionDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
   {
     RegionDto? region = await _regionService.ReadAsync(id: null, key, cancellationToken);
     return region is null ? NotFound() : Ok(region);
@@ -65,14 +64,7 @@ public class RegionController : ControllerBase
     return region is null ? NotFound() : Ok(region);
   }
 
-  private ActionResult<RegionDto> ToActionResult(CreateOrReplaceRegionResult result)
-  {
-    RegionDto region = result.Region;
-    if (result.Created)
-    {
-      Uri location = new($"{HttpContext.GetBaseUrl()}/regions/{region.Id}", UriKind.Absolute);
-      return Created(location, region);
-    }
-    return Ok(region);
-  }
+  private ActionResult<RegionDto> ToActionResult(CreateOrReplaceRegionResult result) => result.Created
+    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Region.Id }, result.Region)
+    : Ok(result.Region);
 }
