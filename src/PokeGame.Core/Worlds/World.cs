@@ -12,7 +12,7 @@ public sealed class World : AggregateRoot, IEntityProvider
   public new WorldId Id => new(base.Id);
   public Guid EntityId => Id.EntityId;
 
-  public UserId OwnerId { get; private set; }
+  public UserId OwnerId { get; private set; } // TODO(fpion): the owner should be a member as well. Missing MemberIds.
   private readonly HashSet<UserId> _memberIds = [];
 
   private Key? _key = null;

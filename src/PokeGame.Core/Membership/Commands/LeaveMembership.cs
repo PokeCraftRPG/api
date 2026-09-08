@@ -35,4 +35,7 @@ internal class LeaveMembershipCommandHandler : ICommandHandler<LeaveMembershipCo
 
     return true;
   }
+
+  // TODO(fpion): should it return a boolean?
+  // TODO(fpion): unassign trainers.
 }

@@ -51,4 +51,6 @@ internal class RevokeMembershipCommandHandler : ICommandHandler<RevokeMembership
 
     return await _worldQuerier.ReadAsync(world, cancellationToken);
   }
+
+  // TODO(fpion): unassign trainers.
 }
