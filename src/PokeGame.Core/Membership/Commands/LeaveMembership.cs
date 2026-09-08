@@ -27,7 +27,7 @@ internal class LeaveMembershipCommandHandler : ICommandHandler<LeaveMembershipCo
     {
       return false;
     }
-    await _permissionService.CheckAsync(Actions.LeaveMember, world, cancellationToken);
+    await _permissionService.CheckAsync(Actions.LeaveMembership, world, cancellationToken);
 
     world.LeaveMembership(_context.UserId, _context.ActorId);
 
@@ -36,6 +36,5 @@ internal class LeaveMembershipCommandHandler : ICommandHandler<LeaveMembershipCo
     return true;
   }
 
-  // TODO(fpion): should it return a boolean?
   // TODO(fpion): unassign trainers.
 }

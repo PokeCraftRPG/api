@@ -42,7 +42,7 @@ internal class RevokeMembershipCommandHandler : ICommandHandler<RevokeMembership
     {
       return null;
     }
-    await _permissionService.CheckAsync(Actions.RevokeMember, world, cancellationToken);
+    await _permissionService.CheckAsync(Actions.RevokeMembership, world, cancellationToken);
 
     UserId userId = new(payload.UserId, _cacheService.Realm?.Id);
     world.RevokeMembership(userId, _context.ActorId);
