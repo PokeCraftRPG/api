@@ -432,9 +432,10 @@ public class WorldIntegrationTests : IntegrationTests
 
   private void AssertMembers(WorldDto world)
   {
-    MemberDto member = Assert.Single(world.Members);
-    Assert.Equal(new Actor(_member), member.User);
-    Assert.Equal(Actor, member.GrantedBy);
-    Assert.Equal(DateTime.UtcNow, member.GrantedOn, TimeSpan.FromSeconds(10));
+    Assert.Equal(2, world.Members.Count);
+    Assert.Contains(world.Members, member => member.User.Equals(Actor));
+    MemberDto granted = Assert.Single(world.Members, member => member.User.Equals(new Actor(_member)));
+    Assert.Equal(Actor, granted.GrantedBy);
+    Assert.Equal(DateTime.UtcNow, granted.GrantedOn, TimeSpan.FromSeconds(10));
   }
 }

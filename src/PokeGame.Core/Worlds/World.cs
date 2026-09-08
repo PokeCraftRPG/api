@@ -12,8 +12,9 @@ public sealed class World : AggregateRoot, IEntityProvider
   public new WorldId Id => new(base.Id);
   public Guid EntityId => Id.EntityId;
 
-  public UserId OwnerId { get; private set; } // TODO(fpion): the owner should be a member as well. Missing MemberIds.
+  public UserId OwnerId { get; private set; }
   private readonly HashSet<UserId> _memberIds = [];
+  public IReadOnlySet<UserId> MemberIds => _memberIds.AsReadOnly();
 
   private Key? _key = null;
   public Key Key => _key ?? throw new InvalidOperationException("The key was not initialized.");
@@ -30,6 +31,7 @@ public sealed class World : AggregateRoot, IEntityProvider
   private void Handle(WorldCreated @event)
   {
     OwnerId = @event.OwnerId;
+    _memberIds.Add(@event.OwnerId);
 
     _key = @event.Key;
   }
@@ -77,7 +79,7 @@ public sealed class World : AggregateRoot, IEntityProvider
   #region Membership
   public void GrantMembership(UserId userId, ActorId? actorId = null)
   {
-    if (userId != OwnerId && !IsMember(userId))
+    if (!IsMember(userId))
     {
       Raise(new WorldMembershipGranted(userId), actorId);
     }
@@ -89,11 +91,15 @@ public sealed class World : AggregateRoot, IEntityProvider
 
   public bool IsMember(UserId userId) => _memberIds.Contains(userId);
 
-  public void LeaveMembership(UserId userId, ActorId? actorId = null)
+  public void LeaveMembership(UserId memberId, ActorId? actorId = null)
   {
-    if (IsMember(userId))
+    if (memberId == OwnerId)
     {
-      Raise(new WorldMembershipLeft(userId), actorId);
+      throw new OwnerCannotLeaveWorldException(this);
+    }
+    else if (IsMember(memberId))
+    {
+      Raise(new WorldMembershipLeft(memberId), actorId);
     }
   }
   private void Handle(WorldMembershipLeft @event)
@@ -101,11 +107,15 @@ public sealed class World : AggregateRoot, IEntityProvider
     _memberIds.Remove(@event.UserId);
   }
 
-  public void RevokeMembership(UserId userId, ActorId? actorId = null)
+  public void RevokeMembership(UserId memberId, ActorId? actorId = null)
   {
-    if (IsMember(userId))
+    if (memberId == OwnerId)
     {
-      Raise(new WorldMembershipRevoked(userId), actorId);
+      throw new WorldOwnershipCannotBeRevokedException(this);
+    }
+    else if (IsMember(memberId))
+    {
+      Raise(new WorldMembershipRevoked(memberId), actorId);
     }
   }
   private void Handle(WorldMembershipRevoked @event)
@@ -113,22 +123,20 @@ public sealed class World : AggregateRoot, IEntityProvider
     _memberIds.Remove(@event.UserId);
   }
 
-  public void TransferOwnership(UserId userId, ActorId? actorId = null)
+  public void TransferOwnership(UserId memberId, ActorId? actorId = null)
   {
-    if (userId != OwnerId)
+    if (OwnerId != memberId)
     {
-      if (!IsMember(userId))
+      if (!IsMember(memberId))
       {
-        throw new UserIsNotMemberException(this, userId);
+        throw new UserIsNotMemberException(this, memberId);
       }
 
-      Raise(new WorldOwnershipTransferred(userId), actorId);
+      Raise(new WorldOwnershipTransferred(memberId), actorId);
     }
   }
   private void Handle(WorldOwnershipTransferred @event)
   {
-    _memberIds.Add(OwnerId);
-    _memberIds.Remove(@event.UserId);
     OwnerId = @event.UserId;
   }
   #endregion

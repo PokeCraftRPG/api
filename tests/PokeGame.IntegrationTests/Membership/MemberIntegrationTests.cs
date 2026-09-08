@@ -3,11 +3,14 @@ using Krakenar.Contracts.Search;
 using Krakenar.Contracts.Users;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using PokeGame.Builders;
 using PokeGame.Core.Caching;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Trainers;
+using PokeGame.Core.Trainers.Models;
 using PokeGame.Core.Worlds;
 using PokeGame.Core.Worlds.Models;
 
@@ -18,6 +21,8 @@ public class MemberIntegrationTests : IntegrationTests
 {
   private readonly ICacheService _cacheService;
   private readonly IMembershipService _membershipService;
+  private readonly ITrainerRepository _trainerRepository;
+  private readonly ITrainerService _trainerService;
   private readonly IWorldRepository _worldRepository;
   private readonly IWorldService _worldService;
 
@@ -25,6 +30,8 @@ public class MemberIntegrationTests : IntegrationTests
   {
     _cacheService = ServiceProvider.GetRequiredService<ICacheService>();
     _membershipService = ServiceProvider.GetRequiredService<IMembershipService>();
+    _trainerRepository = ServiceProvider.GetRequiredService<ITrainerRepository>();
+    _trainerService = ServiceProvider.GetRequiredService<ITrainerService>();
     _worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
     _worldService = ServiceProvider.GetRequiredService<IWorldService>();
   }
@@ -32,22 +39,25 @@ public class MemberIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should revoke a world membership.")]
   public async Task Given_Member_When_Revoke_Then_Revoked()
   {
+    User owner = Context.User!;
     User member = KrakenarFactory.Instance.NewUser(Faker);
     await GrantMembershipAsync(member);
     SetupUsers(member);
 
     WorldDto? world = await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = member.Id });
     Assert.NotNull(world);
-    Assert.Empty(world.Members);
+    AssertOwnerOnly(world, owner);
 
     World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
     Assert.NotNull(loaded);
+    Assert.True(loaded.IsMember(new UserId(owner)));
     Assert.False(loaded.IsMember(new UserId(member)));
   }
 
   [Fact(DisplayName = "It should keep other members when revoking a membership.")]
   public async Task Given_OtherMembers_When_Revoke_Then_OtherMembersKept()
   {
+    User owner = Context.User!;
     User revoked = KrakenarFactory.Instance.NewUser(Faker);
     User remaining = KrakenarFactory.Instance.NewUser(Faker);
     await GrantMembershipAsync(revoked, remaining);
@@ -55,22 +65,75 @@ public class MemberIntegrationTests : IntegrationTests
 
     WorldDto? world = await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = revoked.Id });
     Assert.NotNull(world);
-
-    MemberDto member = Assert.Single(world.Members);
-    Assert.Equal(new Actor(remaining), member.User);
+    Assert.Equal(2, world.Members.Count);
+    Assert.Contains(world.Members, member => member.User.Equals(new Actor(owner)));
+    Assert.Contains(world.Members, member => member.User.Equals(new Actor(remaining)));
 
     World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
     Assert.NotNull(loaded);
+    Assert.True(loaded.IsMember(new UserId(owner)));
     Assert.False(loaded.IsMember(new UserId(revoked)));
     Assert.True(loaded.IsMember(new UserId(remaining)));
+  }
+
+  [Fact(DisplayName = "It should unassign trainers when revoking a membership.")]
+  public async Task Given_AssignedTrainers_When_Revoke_Then_TrainersUnassigned()
+  {
+    User member = KrakenarFactory.Instance.NewUser(Faker);
+    User other = KrakenarFactory.Instance.NewUser(Faker);
+    await GrantMembershipAsync(member, other);
+    SetupUsers(member, other);
+
+    UserId memberId = new(member.Id, _cacheService.Realm?.Id);
+    UserId otherId = new(other.Id, _cacheService.Realm?.Id);
+
+    Trainer assigned1 = new TrainerBuilder(Faker)
+      .WithWorld(Context.World)
+      .WithKey("revoked-1")
+      .WithLicense("REVOKE-1")
+      .WithMember(memberId)
+      .Build();
+    Trainer assigned2 = new TrainerBuilder(Faker)
+      .WithWorld(Context.World)
+      .WithKey("revoked-2")
+      .WithLicense("REVOKE-2")
+      .WithMember(memberId)
+      .Build();
+    Trainer otherAssigned = new TrainerBuilder(Faker)
+      .WithWorld(Context.World)
+      .WithKey("other-kept")
+      .WithLicense("OTHER-KEPT")
+      .WithMember(otherId)
+      .Build();
+    await _trainerRepository.SaveAsync([assigned1, assigned2, otherAssigned]);
+
+    await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = member.Id });
+
+    Trainer? loaded1 = await _trainerRepository.LoadAsync(assigned1.Id);
+    Assert.NotNull(loaded1);
+    Assert.Null(loaded1.MemberId);
+
+    Trainer? loaded2 = await _trainerRepository.LoadAsync(assigned2.Id);
+    Assert.NotNull(loaded2);
+    Assert.Null(loaded2.MemberId);
+
+    Trainer? loadedOther = await _trainerRepository.LoadAsync(otherAssigned.Id);
+    Assert.NotNull(loadedOther);
+    Assert.Equal(otherId, loadedOther.MemberId);
+
+    TrainerDto? dto = await _trainerService.ReadAsync(assigned1.EntityId);
+    Assert.NotNull(dto);
+    Assert.Null(dto.Member);
   }
 
   [Fact(DisplayName = "It should not change the world when the user is not a member.")]
   public async Task Given_NotMember_When_Revoke_Then_Unchanged()
   {
+    User owner = Context.User!;
+
     WorldDto? world = await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = Guid.Empty });
     Assert.NotNull(world);
-    Assert.Empty(world.Members);
+    AssertOwnerOnly(world, owner);
   }
 
   [Fact(DisplayName = "It should return null when revoking a membership from a missing world.")]
@@ -89,7 +152,7 @@ public class MemberIntegrationTests : IntegrationTests
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = member.Id }));
     Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("RevokeMember", exception.Action);
+    Assert.Equal("RevokeMembership", exception.Action);
     Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
   }
@@ -106,13 +169,14 @@ public class MemberIntegrationTests : IntegrationTests
 
     World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
     Assert.NotNull(loaded);
+    Assert.True(loaded.IsMember(new UserId(owner)));
     Assert.False(loaded.IsMember(new UserId(member)));
 
     Context.User = owner;
     SetupUsers(member);
     WorldDto? world = await _worldService.ReadAsync(loaded.EntityId);
     Assert.NotNull(world);
-    Assert.Empty(world.Members);
+    AssertOwnerOnly(world, owner);
   }
 
   [Fact(DisplayName = "It should keep other members when leaving a membership.")]
@@ -129,6 +193,7 @@ public class MemberIntegrationTests : IntegrationTests
 
     World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
     Assert.NotNull(loaded);
+    Assert.True(loaded.IsMember(new UserId(owner)));
     Assert.False(loaded.IsMember(new UserId(leaving)));
     Assert.True(loaded.IsMember(new UserId(remaining)));
 
@@ -136,9 +201,48 @@ public class MemberIntegrationTests : IntegrationTests
     SetupUsers(remaining, leaving);
     WorldDto? world = await _worldService.ReadAsync(loaded.EntityId);
     Assert.NotNull(world);
+    Assert.Equal(2, world.Members.Count);
+    Assert.Contains(world.Members, member => member.User.Equals(new Actor(owner)));
+    Assert.Contains(world.Members, member => member.User.Equals(new Actor(remaining)));
+  }
 
-    MemberDto member = Assert.Single(world.Members);
-    Assert.Equal(new Actor(remaining), member.User);
+  [Fact(DisplayName = "It should unassign trainers when leaving a membership.")]
+  public async Task Given_AssignedTrainers_When_Leave_Then_TrainersUnassigned()
+  {
+    User owner = Context.User!;
+    User member = await GrantMembershipAsync();
+    UserId memberId = new(member.Id, _cacheService.Realm?.Id);
+
+    Trainer assigned = new TrainerBuilder(Faker)
+      .WithWorld(Context.World)
+      .WithKey("leaved-assigned")
+      .WithLicense("LEAVE-ASSIGNED")
+      .WithMember(memberId)
+      .Build();
+    Trainer unassigned = new TrainerBuilder(Faker)
+      .WithWorld(Context.World)
+      .WithKey("leaved-unassigned")
+      .WithLicense("LEAVE-UNASSIGNED")
+      .Build();
+    await _trainerRepository.SaveAsync([assigned, unassigned]);
+
+    Context.User = member;
+    bool left = await _membershipService.LeaveAsync(Context.WorldId.EntityId);
+    Assert.True(left);
+
+    Trainer? loadedAssigned = await _trainerRepository.LoadAsync(assigned.Id);
+    Assert.NotNull(loadedAssigned);
+    Assert.Null(loadedAssigned.MemberId);
+
+    Trainer? loadedUnassigned = await _trainerRepository.LoadAsync(unassigned.Id);
+    Assert.NotNull(loadedUnassigned);
+    Assert.Null(loadedUnassigned.MemberId);
+
+    Context.User = owner;
+    SetupUsers(member);
+    TrainerDto? dto = await _trainerService.ReadAsync(assigned.EntityId);
+    Assert.NotNull(dto);
+    Assert.Null(dto.Member);
   }
 
   [Fact(DisplayName = "It should return false when leaving a missing world.")]
@@ -151,15 +255,26 @@ public class MemberIntegrationTests : IntegrationTests
     Assert.False(left);
   }
 
-  [Fact(DisplayName = "It should throw PermissionDeniedException when leaving a membership.")]
-  public async Task Given_NotAllowed_When_Leave_Then_PermissionDeniedException()
+  [Fact(DisplayName = "It should throw OwnerCannotLeaveWorldException when the owner leaves a membership.")]
+  public async Task Given_Owner_When_Leave_Then_OwnerCannotLeaveWorldException()
   {
-    PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
+    User owner = Context.User!;
+
+    OwnerCannotLeaveWorldException exception = await Assert.ThrowsAsync<OwnerCannotLeaveWorldException>(
       async () => await _membershipService.LeaveAsync(Context.WorldId.EntityId));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("LeaveMember", exception.Action);
-    Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(owner.Id, exception.OwnerId);
+  }
+
+  [Fact(DisplayName = "It should throw WorldOwnershipCannotBeRevokedException when revoking the owner.")]
+  public async Task Given_Owner_When_Revoke_Then_WorldOwnershipCannotBeRevokedException()
+  {
+    User owner = Context.User!;
+
+    WorldOwnershipCannotBeRevokedException exception = await Assert.ThrowsAsync<WorldOwnershipCannotBeRevokedException>(
+      async () => await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = owner.Id }));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(owner.Id, exception.OwnerId);
   }
 
   [Fact(DisplayName = "It should transfer world ownership to a member.")]
@@ -173,16 +288,14 @@ public class MemberIntegrationTests : IntegrationTests
     Assert.NotNull(world);
     Assert.Equal(new Actor(member), world.Owner);
 
-    MemberDto granted = Assert.Single(world.Members);
-    Assert.Equal(new Actor(owner), granted.User);
-    Assert.Equal(new Actor(owner), granted.GrantedBy);
-    Assert.Equal(DateTime.UtcNow, granted.GrantedOn, TimeSpan.FromSeconds(10));
+    MemberDto formerOwner = Assert.Single(world.Members);
+    Assert.Equal(new Actor(owner), formerOwner.User);
 
     World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
     Assert.NotNull(loaded);
     Assert.Equal(new UserId(member), loaded.OwnerId);
     Assert.True(loaded.IsMember(new UserId(owner)));
-    Assert.False(loaded.IsMember(new UserId(member)));
+    Assert.True(loaded.IsMember(new UserId(member)));
   }
 
   [Fact(DisplayName = "It should keep other members when transferring ownership.")]
@@ -206,7 +319,7 @@ public class MemberIntegrationTests : IntegrationTests
     Assert.Equal(new UserId(successor), loaded.OwnerId);
     Assert.True(loaded.IsMember(new UserId(owner)));
     Assert.True(loaded.IsMember(new UserId(remaining)));
-    Assert.False(loaded.IsMember(new UserId(successor)));
+    Assert.True(loaded.IsMember(new UserId(successor)));
   }
 
   [Fact(DisplayName = "It should not change the world when transferring ownership to the owner.")]
@@ -219,14 +332,14 @@ public class MemberIntegrationTests : IntegrationTests
     WorldDto? world = await _membershipService.TransferOwnershipAsync(Context.WorldId.EntityId, new TransferOwnershipPayload { UserId = owner.Id });
     Assert.NotNull(world);
     Assert.Equal(new Actor(owner), world.Owner);
-
-    MemberDto granted = Assert.Single(world.Members);
-    Assert.Equal(new Actor(member), granted.User);
+    Assert.Equal(2, world.Members.Count);
+    Assert.Contains(world.Members, m => m.User.Equals(new Actor(owner)));
+    Assert.Contains(world.Members, m => m.User.Equals(new Actor(member)));
 
     World? loaded = await _worldRepository.LoadAsync(Context.WorldId);
     Assert.NotNull(loaded);
     Assert.Equal(new UserId(owner), loaded.OwnerId);
-    Assert.False(loaded.IsMember(new UserId(owner)));
+    Assert.True(loaded.IsMember(new UserId(owner)));
     Assert.True(loaded.IsMember(new UserId(member)));
   }
 
@@ -260,6 +373,12 @@ public class MemberIntegrationTests : IntegrationTests
       async () => await _membershipService.TransferOwnershipAsync(Context.WorldId.EntityId, new TransferOwnershipPayload { UserId = user.Id }));
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     Assert.Equal(user.Id, exception.UserId);
+  }
+
+  private static void AssertOwnerOnly(WorldDto world, User owner)
+  {
+    MemberDto member = Assert.Single(world.Members);
+    Assert.Equal(new Actor(owner), member.User);
   }
 
   private async Task<User> GrantMembershipAsync(params User[] members)

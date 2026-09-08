@@ -122,9 +122,7 @@ internal class WorldEvents :
 
   public async Task HandleAsync(WorldOwnershipTransferred @event, CancellationToken cancellationToken)
   {
-    WorldEntity? world = await _pokemon.Worlds
-      .Include(x => x.Members)
-      .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    WorldEntity? world = await _pokemon.Worlds.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (world is not null && world.Version == (@event.Version - 1))
     {
       world.TransferOwnership(@event);

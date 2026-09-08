@@ -94,12 +94,12 @@ internal class PermissionService : IPermissionService
     switch (action)
     {
       case Actions.InviteMember:
-      case Actions.RevokeMember:
+      case Actions.RevokeMembership:
       case Actions.TransferOwnership:
       case Actions.Update:
       case Actions.ViewInvitations:
         return world.OwnerId == _context.TryGetUserId();
-      case Actions.LeaveMember:
+      case Actions.LeaveMembership:
         UserId? userId = _context.TryGetUserId();
         return userId.HasValue && world.IsMember(userId.Value);
       default:

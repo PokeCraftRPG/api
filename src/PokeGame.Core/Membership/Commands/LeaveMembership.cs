@@ -1,5 +1,7 @@
 ﻿using Logitar.CQRS;
+using PokeGame.Core.Identity;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Trainers;
 using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Membership.Commands;
@@ -10,12 +12,18 @@ internal class LeaveMembershipCommandHandler : ICommandHandler<LeaveMembershipCo
 {
   private readonly IContext _context;
   private readonly IPermissionService _permissionService;
+  private readonly ITrainerManager _trainerManager;
   private readonly IWorldRepository _worldRepository;
 
-  public LeaveMembershipCommandHandler(IContext context, IPermissionService permissionService, IWorldRepository worldRepository)
+  public LeaveMembershipCommandHandler(
+    IContext context,
+    IPermissionService permissionService,
+    ITrainerManager trainerManager,
+    IWorldRepository worldRepository)
   {
     _context = context;
     _permissionService = permissionService;
+    _trainerManager = trainerManager;
     _worldRepository = worldRepository;
   }
 
@@ -27,15 +35,14 @@ internal class LeaveMembershipCommandHandler : ICommandHandler<LeaveMembershipCo
     {
       return false;
     }
-    await _permissionService.CheckAsync(Actions.LeaveMember, world, cancellationToken);
+    await _permissionService.CheckAsync(Actions.LeaveMembership, world, cancellationToken);
 
-    world.LeaveMembership(_context.UserId, _context.ActorId);
+    UserId memberId = _context.UserId;
+    world.LeaveMembership(memberId, _context.ActorId);
 
+    await _trainerManager.UnassignMemberAsync(memberId, cancellationToken);
     await _worldRepository.SaveAsync(world, cancellationToken);
 
     return true;
   }
-
-  // TODO(fpion): should it return a boolean?
-  // TODO(fpion): unassign trainers.
 }

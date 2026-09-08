@@ -26,6 +26,7 @@ internal class TrainerEntity : AggregateEntity
   public AssetEntity? Sprite { get; private set; }
   public int? SpriteId { get; private set; }
 
+  public MemberEntity? Member { get; private set; }
   public string? MemberId { get; private set; }
 
   public TrainerEntity(int worldId, TrainerCreated @event) : base(@event)
