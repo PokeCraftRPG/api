@@ -85,7 +85,7 @@ internal class TrainerManager : ITrainerManager
         ?? throw new InvalidOperationException($"The world 'Id={trainer.WorldId}' was not loaded.");
 
       memberId = new UserId(entityId.Value, _cacheService.Realm?.Id);
-      if (world.OwnerId != memberId && !world.IsMember(memberId.Value))
+      if (!world.IsMember(memberId.Value))
       {
         throw new UserIsNotMemberException(world, memberId.Value);
       }

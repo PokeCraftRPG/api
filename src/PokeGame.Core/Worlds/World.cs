@@ -12,8 +12,9 @@ public sealed class World : AggregateRoot, IEntityProvider
   public new WorldId Id => new(base.Id);
   public Guid EntityId => Id.EntityId;
 
-  public UserId OwnerId { get; private set; } // TODO(fpion): the owner should be a member as well. Missing MemberIds.
+  public UserId OwnerId { get; private set; }
   private readonly HashSet<UserId> _memberIds = [];
+  public IReadOnlySet<UserId> MemberIds => _memberIds.AsReadOnly();
 
   private Key? _key = null;
   public Key Key => _key ?? throw new InvalidOperationException("The key was not initialized.");
@@ -30,6 +31,7 @@ public sealed class World : AggregateRoot, IEntityProvider
   private void Handle(WorldCreated @event)
   {
     OwnerId = @event.OwnerId;
+    _memberIds.Add(@event.OwnerId);
 
     _key = @event.Key;
   }
@@ -77,7 +79,7 @@ public sealed class World : AggregateRoot, IEntityProvider
   #region Membership
   public void GrantMembership(UserId userId, ActorId? actorId = null)
   {
-    if (userId != OwnerId && !IsMember(userId))
+    if (!IsMember(userId))
     {
       Raise(new WorldMembershipGranted(userId), actorId);
     }
@@ -91,7 +93,11 @@ public sealed class World : AggregateRoot, IEntityProvider
 
   public void LeaveMembership(UserId userId, ActorId? actorId = null)
   {
-    if (IsMember(userId))
+    if (userId == OwnerId)
+    {
+      throw new NotImplementedException(); // TODO(fpion): 409 Conflict
+    }
+    else if (IsMember(userId))
     {
       Raise(new WorldMembershipLeft(userId), actorId);
     }
@@ -103,7 +109,11 @@ public sealed class World : AggregateRoot, IEntityProvider
 
   public void RevokeMembership(UserId userId, ActorId? actorId = null)
   {
-    if (IsMember(userId))
+    if (userId == OwnerId)
+    {
+      throw new NotImplementedException(); // TODO(fpion): 409 Conflict
+    }
+    else if (IsMember(userId))
     {
       Raise(new WorldMembershipRevoked(userId), actorId);
     }
@@ -115,7 +125,7 @@ public sealed class World : AggregateRoot, IEntityProvider
 
   public void TransferOwnership(UserId userId, ActorId? actorId = null)
   {
-    if (userId != OwnerId)
+    if (OwnerId != userId)
     {
       if (!IsMember(userId))
       {
@@ -127,8 +137,6 @@ public sealed class World : AggregateRoot, IEntityProvider
   }
   private void Handle(WorldOwnershipTransferred @event)
   {
-    _memberIds.Add(OwnerId);
-    _memberIds.Remove(@event.UserId);
     OwnerId = @event.UserId;
   }
   #endregion

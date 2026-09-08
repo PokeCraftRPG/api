@@ -700,8 +700,9 @@ public class MemberInvitationIntegrationTests : IntegrationTests
 
   private void AssertWorldMembers(MemberInvitationDto invitation, User member)
   {
-    MemberDto granted = Assert.Single(invitation.World.Members);
-    Assert.Equal(new Actor(member), granted.User);
+    Assert.Equal(2, invitation.World.Members.Count);
+    Assert.Contains(invitation.World.Members, m => m.User.Equals(Actor));
+    MemberDto granted = Assert.Single(invitation.World.Members, m => m.User.Equals(new Actor(member)));
     Assert.Equal(Actor, granted.GrantedBy);
     Assert.Equal(DateTime.UtcNow, granted.GrantedOn, TimeSpan.FromSeconds(10));
   }

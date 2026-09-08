@@ -54,7 +54,7 @@ internal class SendMemberInvitationCommandHandler : ICommandHandler<SendMemberIn
 
     User? user = await _userGateway.FindAsync(payload.EmailAddress, cancellationToken);
     UserId? userId = user is null ? null : new(user);
-    if (userId.HasValue && (world.OwnerId == userId.Value || world.IsMember(userId.Value)))
+    if (userId.HasValue && world.IsMember(userId.Value))
     {
       throw new UserIsAlreadyMemberException(world, userId.Value);
     }

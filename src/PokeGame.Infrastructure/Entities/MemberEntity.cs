@@ -14,6 +14,11 @@ internal class MemberEntity
   public string? GrantedBy { get; private set; }
   public DateTime GrantedOn { get; private set; }
 
+  public MemberEntity(WorldEntity world, WorldCreated @event) : this(world, (DomainEvent)@event)
+  {
+    UserId = @event.OwnerId.Value;
+  }
+
   public MemberEntity(WorldEntity world, WorldMembershipGranted @event) : this(world, (DomainEvent)@event)
   {
     UserId = @event.UserId.Value;

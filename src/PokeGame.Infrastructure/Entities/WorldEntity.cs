@@ -27,6 +27,8 @@ internal class WorldEntity : AggregateEntity
     OwnerId = @event.OwnerId.Value;
 
     Key = @event.Key.Value;
+
+    Members.Add(new MemberEntity(this, @event));
   }
 
   private WorldEntity() : base()
@@ -73,15 +75,6 @@ internal class WorldEntity : AggregateEntity
   public void TransferOwnership(WorldOwnershipTransferred @event)
   {
     Update(@event);
-
-    MemberEntity? member = Members.SingleOrDefault(member => member.UserId == OwnerId);
-    if (member is null)
-    {
-      member = new MemberEntity(this, @event);
-      Members.Add(member);
-    }
-
-    Members.RemoveAll(member => member.UserId == @event.UserId.Value);
 
     OwnerId = @event.UserId.Value;
   }

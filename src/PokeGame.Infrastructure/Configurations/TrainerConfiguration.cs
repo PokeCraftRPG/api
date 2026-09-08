@@ -36,5 +36,9 @@ internal class TrainerConfiguration : AggregateConfiguration<TrainerEntity>, IEn
 
     builder.HasOne(x => x.World).WithMany().OnDelete(DeleteBehavior.Restrict);
     builder.HasOne(x => x.Sprite).WithMany().OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.Member).WithMany()
+      .HasForeignKey(x => new { x.WorldId, x.MemberId })
+      .HasPrincipalKey(x => new { x.WorldId, MemberId = x.UserId })
+      .OnDelete(DeleteBehavior.Restrict);
   }
 }
