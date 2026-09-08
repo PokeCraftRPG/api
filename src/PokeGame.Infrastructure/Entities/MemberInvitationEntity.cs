@@ -8,10 +8,10 @@ namespace PokeGame.Infrastructure.Entities;
 internal class MemberInvitationEntity : AggregateEntity
 {
   public int MemberInvitationId { get; private set; }
+  public Guid Id { get; private set; }
 
   public WorldEntity? World { get; private set; }
   public int WorldId { get; private set; }
-  public Guid Id { get; private set; }
 
   public string? EmailAddress { get; private set; }
   public string? UserId { get; private set; }
