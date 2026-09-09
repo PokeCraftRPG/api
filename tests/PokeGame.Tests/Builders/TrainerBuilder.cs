@@ -1,4 +1,4 @@
-using Bogus;
+﻿using Bogus;
 using Logitar.EventSourcing;
 using PokeGame.Core;
 using PokeGame.Core.Assets;

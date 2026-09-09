@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Krakenar.Client.Users;
 using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;

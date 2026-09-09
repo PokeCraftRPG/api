@@ -1,4 +1,4 @@
-namespace PokeGame.Core.Trainers;
+﻿namespace PokeGame.Core;
 
 public enum Gender
 {
