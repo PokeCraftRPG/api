@@ -6,26 +6,26 @@ public interface IFormYield
 {
   int Experience { get; }
 
-  int HP { get; }
-  int Attack { get; }
-  int Defense { get; }
-  int SpecialAttack { get; }
-  int SpecialDefense { get; }
-  int Speed { get; }
+  byte HP { get; }
+  byte Attack { get; }
+  byte Defense { get; }
+  byte SpecialAttack { get; }
+  byte SpecialDefense { get; }
+  byte Speed { get; }
 }
 
 public sealed record FormYield : IFormYield
 {
   public int Experience { get; }
 
-  public int HP { get; }
-  public int Attack { get; }
-  public int Defense { get; }
-  public int SpecialAttack { get; }
-  public int SpecialDefense { get; }
-  public int Speed { get; }
+  public byte HP { get; }
+  public byte Attack { get; }
+  public byte Defense { get; }
+  public byte SpecialAttack { get; }
+  public byte SpecialDefense { get; }
+  public byte Speed { get; }
 
-  public FormYield(int experience, int hp, int attack, int defense, int specialAttack, int specialDefense, int speed)
+  public FormYield(int experience, byte hp, byte attack, byte defense, byte specialAttack, byte specialDefense, byte speed)
   {
     Experience = experience;
 
@@ -48,12 +48,12 @@ internal class FormYieldValidator : AbstractValidator<IFormYield>
   {
     RuleFor(x => x.Experience).InclusiveBetween(1, 999);
 
-    RuleFor(x => x.HP).InclusiveBetween(0, 3);
-    RuleFor(x => x.Attack).InclusiveBetween(0, 3);
-    RuleFor(x => x.Defense).InclusiveBetween(0, 3);
-    RuleFor(x => x.SpecialAttack).InclusiveBetween(0, 3);
-    RuleFor(x => x.SpecialDefense).InclusiveBetween(0, 3);
-    RuleFor(x => x.Speed).InclusiveBetween(0, 3);
+    RuleFor(x => x.HP).InclusiveBetween((byte)0, (byte)3);
+    RuleFor(x => x.Attack).InclusiveBetween((byte)0, (byte)3);
+    RuleFor(x => x.Defense).InclusiveBetween((byte)0, (byte)3);
+    RuleFor(x => x.SpecialAttack).InclusiveBetween((byte)0, (byte)3);
+    RuleFor(x => x.SpecialDefense).InclusiveBetween((byte)0, (byte)3);
+    RuleFor(x => x.Speed).InclusiveBetween((byte)0, (byte)3);
 
     RuleFor(x => x).Must(HaveAValidTotal)
       .WithErrorCode(nameof(FormYieldValidator))

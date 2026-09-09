@@ -16,10 +16,10 @@ public interface ISpeciesBuilder
   ISpeciesBuilder WithName(string? name);
   ISpeciesBuilder WithSummary(string? summary);
   ISpeciesBuilder WithContent(string? content);
-  ISpeciesBuilder WithBaseFriendship(int baseFriendship);
-  ISpeciesBuilder WithCatchRate(int catchRate);
+  ISpeciesBuilder WithBaseFriendship(byte baseFriendship);
+  ISpeciesBuilder WithCatchRate(byte catchRate);
   ISpeciesBuilder WithGrowthRate(GrowthRate growthRate);
-  ISpeciesBuilder WithEggs(int cycles, EggGroup primaryGroup, EggGroup? secondaryGroup = null);
+  ISpeciesBuilder WithEggs(byte cycles, EggGroup primaryGroup, EggGroup? secondaryGroup = null);
 
   PokemonSpecies Build();
 }
@@ -28,11 +28,11 @@ public class SpeciesBuilder : ISpeciesBuilder
 {
   private readonly Faker _faker;
 
-  private int _baseFriendship = 70;
-  private int _catchRate = 45;
+  private byte _baseFriendship = 70;
+  private byte _catchRate = 45;
   private SpeciesCategory _category = SpeciesCategory.Standard;
   private string? _content;
-  private int _eggCycles = 20;
+  private byte _eggCycles = 20;
   private EggGroup _primaryEggGroup = EggGroup.Monster;
   private EggGroup? _secondaryEggGroup = EggGroup.Grass;
   private GrowthRate _growthRate = GrowthRate.MediumSlow;
@@ -96,13 +96,13 @@ public class SpeciesBuilder : ISpeciesBuilder
     return this;
   }
 
-  public ISpeciesBuilder WithBaseFriendship(int baseFriendship)
+  public ISpeciesBuilder WithBaseFriendship(byte baseFriendship)
   {
     _baseFriendship = baseFriendship;
     return this;
   }
 
-  public ISpeciesBuilder WithCatchRate(int catchRate)
+  public ISpeciesBuilder WithCatchRate(byte catchRate)
   {
     _catchRate = catchRate;
     return this;
@@ -114,7 +114,7 @@ public class SpeciesBuilder : ISpeciesBuilder
     return this;
   }
 
-  public ISpeciesBuilder WithEggs(int cycles, EggGroup primaryGroup, EggGroup? secondaryGroup = null)
+  public ISpeciesBuilder WithEggs(byte cycles, EggGroup primaryGroup, EggGroup? secondaryGroup = null)
   {
     _eggCycles = cycles;
     _primaryEggGroup = primaryGroup;

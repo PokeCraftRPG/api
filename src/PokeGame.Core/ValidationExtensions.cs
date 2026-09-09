@@ -7,14 +7,14 @@ namespace PokeGame.Core;
 
 internal static class ValidationExtensions
 {
-  public static IRuleBuilderOptions<T, int> Accuracy<T>(this IRuleBuilder<T, int> ruleBuilder)
+  public static IRuleBuilderOptions<T, byte> Accuracy<T>(this IRuleBuilder<T, byte> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween(1, 100);
+    return ruleBuilder.InclusiveBetween((byte)1, (byte)100);
   }
 
-  public static IRuleBuilderOptions<T, int> CatchRate<T>(this IRuleBuilder<T, int> ruleBuilder)
+  public static IRuleBuilderOptions<T, byte> CatchRate<T>(this IRuleBuilder<T, byte> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween(1, Species.CatchRate.MaximumValue);
+    return ruleBuilder.GreaterThan((byte)0);
   }
 
   public static IRuleBuilderOptions<T, string> Content<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -43,19 +43,14 @@ internal static class ValidationExtensions
     return ruleBuilder.GreaterThan(0);
   }
 
-  public static IRuleBuilderOptions<T, int> Friendship<T>(this IRuleBuilder<T, int> ruleBuilder)
-  {
-    return ruleBuilder.InclusiveBetween(0, byte.MaxValue);
-  }
-
   public static IRuleBuilderOptions<T, string> Gender<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(10).SetValidator(new GenderValidator<T>());
   }
 
-  public static IRuleBuilderOptions<T, int> GenderRatio<T>(this IRuleBuilder<T, int> ruleBuilder)
+  public static IRuleBuilderOptions<T, byte> GenderRatio<T>(this IRuleBuilder<T, byte> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween(0, 8);
+    return ruleBuilder.InclusiveBetween(Varieties.GenderRatio.MaleRatio, Varieties.GenderRatio.FemaleRatio);
   }
 
   public static IRuleBuilderOptions<T, string> Genus<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -68,9 +63,9 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(Core.Key.MaximumLength).SetValidator(new SlugValidator<T>());
   }
 
-  public static IRuleBuilderOptions<T, int> Level<T>(this IRuleBuilder<T, int> ruleBuilder)
+  public static IRuleBuilderOptions<T, byte> Level<T>(this IRuleBuilder<T, byte> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween(1, 100);
+    return ruleBuilder.InclusiveBetween((byte)1, (byte)100);
   }
 
   public static IRuleBuilderOptions<T, string> License<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -157,19 +152,19 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(byte.MaxValue);
   }
 
-  public static IRuleBuilderOptions<T, int> Power<T>(this IRuleBuilder<T, int> ruleBuilder)
+  public static IRuleBuilderOptions<T, byte> Power<T>(this IRuleBuilder<T, byte> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween(1, 250);
+    return ruleBuilder.InclusiveBetween((byte)1, (byte)250);
+  }
+
+  public static IRuleBuilderOptions<T, byte> PowerPoints<T>(this IRuleBuilder<T, byte> ruleBuilder)
+  {
+    return ruleBuilder.InclusiveBetween((byte)1, (byte)40);
   }
 
   public static IRuleBuilderOptions<T, int> Price<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
     return ruleBuilder.GreaterThan(0);
-  }
-
-  public static IRuleBuilderOptions<T, int> PowerPoints<T>(this IRuleBuilder<T, int> ruleBuilder)
-  {
-    return ruleBuilder.InclusiveBetween(1, 40);
   }
 
   public static IRuleBuilderOptions<T, string> Summary<T>(this IRuleBuilder<T, string> ruleBuilder)

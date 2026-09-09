@@ -389,7 +389,7 @@ public class VarietyIntegrationTests : IntegrationTests
       Summary = new Optional<string>(create.Summary),
       Content = new Optional<string>(create.Content),
       CanChangeForm = create.CanChangeForm,
-      GenderRatio = new Optional<int?>(create.GenderRatio),
+      GenderRatio = new Optional<byte?>(create.GenderRatio),
       Genus = new Optional<string>(create.Genus)
     };
 

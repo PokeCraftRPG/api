@@ -4,15 +4,15 @@ namespace PokeGame.Core.Moves;
 
 public sealed class Accuracy
 {
-  public int Value { get; }
+  public byte Value { get; }
 
-  public Accuracy(int value)
+  public Accuracy(byte value)
   {
     Value = value;
     new Validator().ValidateAndThrow(this);
   }
 
-  public static Accuracy? TryCreate(int? value) => value.HasValue ? new(value.Value) : null;
+  public static Accuracy? TryCreate(byte? value) => value.HasValue ? new(value.Value) : null;
 
   public override bool Equals(object? obj) => obj is Accuracy accuracy && accuracy.Value == Value;
   public override int GetHashCode() => Value.GetHashCode();

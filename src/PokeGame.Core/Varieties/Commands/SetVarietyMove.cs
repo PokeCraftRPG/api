@@ -1,7 +1,6 @@
 ﻿using Logitar.CQRS;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
-using PokeGame.Core.Pokemon;
 using PokeGame.Core.Varieties.Models;
 
 namespace PokeGame.Core.Varieties.Commands;

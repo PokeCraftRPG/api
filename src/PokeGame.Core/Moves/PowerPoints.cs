@@ -4,17 +4,17 @@ namespace PokeGame.Core.Moves;
 
 public sealed class PowerPoints
 {
-  public int Value { get; }
+  public byte Value { get; }
 
-  public PowerPoints(int value)
+  public PowerPoints(byte value)
   {
     Value = value;
     new Validator().ValidateAndThrow(this);
   }
 
-  public static PowerPoints? TryCreate(int? value) => value.HasValue ? new(value.Value) : null;
+  public static PowerPoints? TryCreate(byte? value) => value.HasValue ? new(value.Value) : null;
 
-  public override bool Equals(object? obj) => obj is PowerPoints powerpoints && powerpoints.Value == Value;
+  public override bool Equals(object? obj) => obj is PowerPoints powerPoints && powerPoints.Value == Value;
   public override int GetHashCode() => Value.GetHashCode();
   public override string ToString() => Value.ToString();
 

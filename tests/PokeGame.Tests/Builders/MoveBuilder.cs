@@ -16,9 +16,9 @@ public interface IMoveBuilder
   IMoveBuilder WithName(string? name);
   IMoveBuilder WithSummary(string? summary);
   IMoveBuilder WithContent(string? content);
-  IMoveBuilder WithAccuracy(int? accuracy);
-  IMoveBuilder WithPower(int? power);
-  IMoveBuilder WithPowerPoints(int? powerPoints);
+  IMoveBuilder WithAccuracy(byte? accuracy);
+  IMoveBuilder WithPower(byte? power);
+  IMoveBuilder WithPowerPoints(byte? powerPoints);
 
   Move Build();
 }
@@ -27,14 +27,14 @@ public class MoveBuilder : IMoveBuilder
 {
   private readonly Faker _faker;
 
-  private int? _accuracy = 100;
+  private byte? _accuracy = 100;
   private MoveCategory _category = MoveCategory.Physical;
   private string? _content;
   private string _key = "tackle";
   private MoveId? _moveId;
   private string? _name = "Tackle";
-  private int? _power = 40;
-  private int? _powerPoints = 35;
+  private byte? _power = 40;
+  private byte? _powerPoints = 35;
   private string? _summary;
   private PokemonType _type = PokemonType.Normal;
   private World? _world;
@@ -92,19 +92,19 @@ public class MoveBuilder : IMoveBuilder
     return this;
   }
 
-  public IMoveBuilder WithAccuracy(int? accuracy)
+  public IMoveBuilder WithAccuracy(byte? accuracy)
   {
     _accuracy = accuracy;
     return this;
   }
 
-  public IMoveBuilder WithPower(int? power)
+  public IMoveBuilder WithPower(byte? power)
   {
     _power = power;
     return this;
   }
 
-  public IMoveBuilder WithPowerPoints(int? powerPoints)
+  public IMoveBuilder WithPowerPoints(byte? powerPoints)
   {
     _powerPoints = powerPoints;
     return this;

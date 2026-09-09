@@ -1,18 +1,18 @@
 ﻿using FluentValidation;
 
-namespace PokeGame.Core.Pokemon;
+namespace PokeGame.Core;
 
 public sealed class Level
 {
-  public int Value { get; }
+  public byte Value { get; }
 
-  public Level(int value)
+  public Level(byte value)
   {
     Value = value;
     new Validator().ValidateAndThrow(this);
   }
 
-  public static Level? TryCreate(int? value) => value.HasValue ? new(value.Value) : null;
+  public static Level? TryCreate(byte? value) => value.HasValue ? new(value.Value) : null;
 
   public override bool Equals(object? obj) => obj is Level level && level.Value == Value;
   public override int GetHashCode() => Value.GetHashCode();

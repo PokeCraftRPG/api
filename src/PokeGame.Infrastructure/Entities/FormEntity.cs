@@ -28,20 +28,20 @@ internal class FormEntity : AggregateEntity
   public PokemonType PrimaryType { get; private set; }
   public PokemonType? SecondaryType { get; private set; }
 
-  public int BaseHP { get; private set; }
-  public int BaseAttack { get; private set; }
-  public int BaseDefense { get; private set; }
-  public int BaseSpecialAttack { get; private set; }
-  public int BaseSpecialDefense { get; private set; }
-  public int BaseSpeed { get; private set; }
+  public byte BaseHP { get; private set; }
+  public byte BaseAttack { get; private set; }
+  public byte BaseDefense { get; private set; }
+  public byte BaseSpecialAttack { get; private set; }
+  public byte BaseSpecialDefense { get; private set; }
+  public byte BaseSpeed { get; private set; }
 
   public int YieldExperience { get; private set; }
-  public int YieldHP { get; private set; }
-  public int YieldAttack { get; private set; }
-  public int YieldDefense { get; private set; }
-  public int YieldSpecialAttack { get; private set; }
-  public int YieldSpecialDefense { get; private set; }
-  public int YieldSpeed { get; private set; }
+  public byte YieldHP { get; private set; }
+  public byte YieldAttack { get; private set; }
+  public byte YieldDefense { get; private set; }
+  public byte YieldSpecialAttack { get; private set; }
+  public byte YieldSpecialDefense { get; private set; }
+  public byte YieldSpeed { get; private set; }
 
   public int Height { get; private set; }
   public int Weight { get; private set; }

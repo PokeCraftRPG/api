@@ -10,9 +10,9 @@ public record UpdateMovePayload
   public Optional<string>? Summary { get; set; }
   public Optional<string>? Content { get; set; }
 
-  public Optional<int?>? Accuracy { get; set; }
-  public Optional<int?>? Power { get; set; }
-  public Optional<int?>? PowerPoints { get; set; }
+  public Optional<byte?>? Accuracy { get; set; }
+  public Optional<byte?>? Power { get; set; }
+  public Optional<byte?>? PowerPoints { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 

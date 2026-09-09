@@ -25,10 +25,12 @@ public sealed class PokemonSpecies : AggregateRoot, IEntityProvider
   public Content? Content { get; private set; }
 
   public Friendship BaseFriendship { get; private set; } = new();
-  public CatchRate CatchRate { get; private set; } = new();
+  private CatchRate? _catchRate = null;
+  public CatchRate CatchRate => _catchRate ?? throw new InvalidOperationException("The catch rate was not initialized.");
   public GrowthRate GrowthRate { get; private set; }
 
-  public SpeciesEggs Eggs { get; private set; } = new();
+  private SpeciesEggs? _eggs = null;
+  public SpeciesEggs Eggs => _eggs ?? throw new InvalidOperationException("The eggs were not initialized.");
 
   private readonly Dictionary<RegionId, Number> _regionalNumbers = [];
   public IReadOnlyDictionary<RegionId, Number> RegionalNumbers => _regionalNumbers.AsReadOnly();
@@ -76,10 +78,10 @@ public sealed class PokemonSpecies : AggregateRoot, IEntityProvider
     _key = @event.Key;
 
     BaseFriendship = @event.BaseFriendship;
-    CatchRate = @event.CatchRate;
+    _catchRate = @event.CatchRate;
     GrowthRate = @event.GrowthRate;
 
-    Eggs = @event.Eggs;
+    _eggs = @event.Eggs;
   }
 
   public void Delete(ActorId? actorId = null)
@@ -101,7 +103,7 @@ public sealed class PokemonSpecies : AggregateRoot, IEntityProvider
   }
   private void Handle(SpeciesBreedingChanged @event)
   {
-    Eggs = @event.Eggs;
+    _eggs = @event.Eggs;
   }
 
   public void SetDetails(Name? name, Summary? summary, Content? content, ActorId? actorId = null)
@@ -140,7 +142,7 @@ public sealed class PokemonSpecies : AggregateRoot, IEntityProvider
   private void Handle(SpeciesProgressionChanged @event)
   {
     BaseFriendship = @event.BaseFriendship;
-    CatchRate = @event.CatchRate;
+    _catchRate = @event.CatchRate;
     GrowthRate = @event.GrowthRate;
   }
 

@@ -17,9 +17,9 @@ public sealed class InvalidMovePowerException : DomainException
     get => (Guid)Data[nameof(MoveId)]!;
     private set => Data[nameof(MoveId)] = value;
   }
-  public int AttemptedPower
+  public byte AttemptedPower
   {
-    get => (int)Data[nameof(AttemptedPower)]!;
+    get => (byte)Data[nameof(AttemptedPower)]!;
     private set => Data[nameof(AttemptedPower)] = value;
   }
   public string PropertyName

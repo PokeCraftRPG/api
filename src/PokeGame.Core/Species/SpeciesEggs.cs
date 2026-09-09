@@ -4,20 +4,18 @@ namespace PokeGame.Core.Species;
 
 public interface ISpeciesEggs
 {
-  int Cycles { get; }
+  byte Cycles { get; }
   EggGroup PrimaryGroup { get; }
   EggGroup? SecondaryGroup { get; }
 }
 
 public sealed record SpeciesEggs : ISpeciesEggs
 {
-  public const int MaximumCycles = byte.MaxValue;
-
-  public int Cycles { get; }
+  public byte Cycles { get; }
   public EggGroup PrimaryGroup { get; }
   public EggGroup? SecondaryGroup { get; }
 
-  public SpeciesEggs(int cycles = MaximumCycles, EggGroup primaryGroup = EggGroup.NoEggsDiscovered, EggGroup? secondaryGroup = null)
+  public SpeciesEggs(byte cycles, EggGroup primaryGroup = EggGroup.NoEggsDiscovered, EggGroup? secondaryGroup = null)
   {
     Cycles = cycles;
     PrimaryGroup = primaryGroup;
@@ -32,7 +30,7 @@ internal class SpeciesEggsValidator : AbstractValidator<ISpeciesEggs>
 {
   public SpeciesEggsValidator()
   {
-    RuleFor(x => x.Cycles).InclusiveBetween(1, SpeciesEggs.MaximumCycles);
+    RuleFor(x => x.Cycles).GreaterThan((byte)0);
     RuleFor(x => x.PrimaryGroup).IsInEnum();
     When(x => x.PrimaryGroup == EggGroup.NoEggsDiscovered || x.PrimaryGroup == EggGroup.Ditto, () => RuleFor(x => x.SecondaryGroup).Null());
     RuleFor(x => x.SecondaryGroup).IsInEnum().NotEqual(x => x.PrimaryGroup);
