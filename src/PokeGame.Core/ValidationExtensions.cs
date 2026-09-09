@@ -159,7 +159,12 @@ internal static class ValidationExtensions
 
   public static IRuleBuilderOptions<T, int> Price<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
-    return ruleBuilder.GreaterThan(1);
+    return ruleBuilder.GreaterThan(0);
+  }
+
+  public static IRuleBuilderOptions<T, int> Weight<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThan(0);
   }
 
   public static IRuleBuilderOptions<T, int> PowerPoints<T>(this IRuleBuilder<T, int> ruleBuilder)

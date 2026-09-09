@@ -22,6 +22,7 @@ internal class ItemEntity : AggregateEntity
   public string? Content { get; private set; }
 
   public int? Price { get; private set; }
+  public int? Weight { get; private set; }
 
   public AssetEntity? Sprite { get; private set; }
   public int? SpriteId { get; private set; }
@@ -66,11 +67,12 @@ internal class ItemEntity : AggregateEntity
     Key = @event.Key.Value;
   }
 
-  public void SetPrice(ItemPriceChanged @event)
+  public void SetProperties(ItemPropertiesChanged @event)
   {
     Update(@event);
 
     Price = @event.Price?.Value;
+    Weight = @event.Weight?.Value;
   }
 
   public void SetSprite(int? spriteId, ItemSpriteChanged @event)

@@ -22,6 +22,7 @@ internal class ItemConfiguration : AggregateConfiguration<ItemEntity>, IEntityTy
     builder.HasIndex(x => new { x.WorldId, x.Name });
     builder.HasIndex(x => new { x.WorldId, x.Summary });
     builder.HasIndex(x => new { x.WorldId, x.Price });
+    builder.HasIndex(x => new { x.WorldId, x.Weight });
 
     builder.Property(x => x.Category).HasMaxLength(8).HasConversion(new EnumToStringConverter<ItemCategory>());
     builder.Property(x => x.Key).HasMaxLength(Key.MaximumLength);

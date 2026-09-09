@@ -58,9 +58,12 @@ internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, Ite
         actorId);
     }
 
-    if (payload.Price is not null)
+    if (payload.Price is not null || payload.Weight is not null)
     {
-      item.SetPrice(Price.TryCreate(payload.Price.Value), actorId);
+      item.SetProperties(
+        payload.Price is null ? item.Price : Price.TryCreate(payload.Price.Value),
+        payload.Weight is null ? item.Weight : Weight.TryCreate(payload.Weight.Value),
+        actorId);
     }
 
     if (payload.SpriteId is not null)

@@ -6,5 +6,6 @@ public enum ItemSort
   Key,
   Name,
   Price,
+  Weight,
   UpdatedOn
 }

@@ -1,4 +1,4 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using PokeGame.Core.Assets.Models;
 
 namespace PokeGame.Core.Items.Models;
@@ -14,6 +14,8 @@ public class ItemDto : Aggregate
   public string? Content { get; set; }
 
   public int? Price { get; set; }
+  public int? Weight { get; set; }
+
   public AssetDto? Sprite { get; set; }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";

@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace PokeGame.Core.Items.Models;
 
@@ -11,6 +11,8 @@ public record UpdateItemPayload
   public Optional<string>? Content { get; set; }
 
   public Optional<int?>? Price { get; set; }
+  public Optional<int?>? Weight { get; set; }
+
   public Optional<Guid?>? SpriteId { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
@@ -26,6 +28,7 @@ public record UpdateItemPayload
       When(x => !string.IsNullOrWhiteSpace(x.Content?.Value), () => RuleFor(x => x.Content!.Value!).Content());
 
       When(x => x.Price?.Value is not null, () => RuleFor(x => x.Price!.Value!.Value).Price());
+      When(x => x.Weight?.Value is not null, () => RuleFor(x => x.Weight!.Value!.Value).Weight());
     }
   }
 }

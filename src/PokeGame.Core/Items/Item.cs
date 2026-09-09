@@ -1,4 +1,4 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using PokeGame.Core.Assets;
 using PokeGame.Core.Items.Events;
 using PokeGame.Core.Worlds;
@@ -23,6 +23,8 @@ public sealed class Item : AggregateRoot, IEntityProvider
   public Content? Content { get; private set; }
 
   public Price? Price { get; private set; }
+  public Weight? Weight { get; private set; }
+
   public AssetId? SpriteId { get; private set; }
 
   public Item() : base()
@@ -87,16 +89,17 @@ public sealed class Item : AggregateRoot, IEntityProvider
     _key = @event.Key;
   }
 
-  public void SetPrice(Price? price, ActorId? actorId = null)
+  public void SetProperties(Price? price, Weight? weight, ActorId? actorId = null)
   {
-    if (!Equals(Price, price))
+    if (!Equals(Price, price) || !Equals(Weight, weight))
     {
-      Raise(new ItemPriceChanged(price), actorId);
+      Raise(new ItemPropertiesChanged(price, weight), actorId);
     }
   }
-  private void Handle(ItemPriceChanged @event)
+  private void Handle(ItemPropertiesChanged @event)
   {
     Price = @event.Price;
+    Weight = @event.Weight;
   }
 
   public void SetSprite(Asset? sprite, ActorId? actorId = null)

@@ -32,6 +32,7 @@ internal static class JsonSerializerOptionsExtensions
     options.Converters.Add(new TrainerIdConverter());
     options.Converters.Add(new UserIdConverter());
     options.Converters.Add(new VarietyIdConverter());
+    options.Converters.Add(new WeightConverter());
     options.Converters.Add(new WorldIdConverter());
   }
 }

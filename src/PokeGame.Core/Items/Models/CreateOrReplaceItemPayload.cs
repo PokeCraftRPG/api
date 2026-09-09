@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace PokeGame.Core.Items.Models;
 
@@ -13,6 +13,8 @@ public record CreateOrReplaceItemPayload
   public string? Content { get; set; }
 
   public int? Price { get; set; }
+  public int? Weight { get; set; }
+
   public Guid? SpriteId { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
@@ -30,6 +32,7 @@ public record CreateOrReplaceItemPayload
       When(x => !string.IsNullOrWhiteSpace(x.Content), () => RuleFor(x => x.Content!).Content());
 
       When(x => x.Price.HasValue, () => RuleFor(x => x.Price!.Value).Price());
+      When(x => x.Weight.HasValue, () => RuleFor(x => x.Weight!.Value).Weight());
     }
   }
 }

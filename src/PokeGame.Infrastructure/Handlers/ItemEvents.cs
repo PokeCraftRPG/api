@@ -11,7 +11,7 @@ internal class ItemEvents :
   IEventHandler<ItemDeleted>,
   IEventHandler<ItemDetailsChanged>,
   IEventHandler<ItemKeyChanged>,
-  IEventHandler<ItemPriceChanged>,
+  IEventHandler<ItemPropertiesChanged>,
   IEventHandler<ItemSpriteChanged>
 {
   public static void Register(IServiceCollection services)
@@ -20,7 +20,7 @@ internal class ItemEvents :
     services.AddTransient<IEventHandler<ItemDeleted>, ItemEvents>();
     services.AddTransient<IEventHandler<ItemDetailsChanged>, ItemEvents>();
     services.AddTransient<IEventHandler<ItemKeyChanged>, ItemEvents>();
-    services.AddTransient<IEventHandler<ItemPriceChanged>, ItemEvents>();
+    services.AddTransient<IEventHandler<ItemPropertiesChanged>, ItemEvents>();
     services.AddTransient<IEventHandler<ItemSpriteChanged>, ItemEvents>();
   }
 
@@ -79,12 +79,12 @@ internal class ItemEvents :
     }
   }
 
-  public async Task HandleAsync(ItemPriceChanged @event, CancellationToken cancellationToken)
+  public async Task HandleAsync(ItemPropertiesChanged @event, CancellationToken cancellationToken)
   {
     ItemEntity? item = await _pokemon.Items.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (item is not null && item.Version == (@event.Version - 1))
     {
-      item.SetPrice(@event);
+      item.SetProperties(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

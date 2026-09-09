@@ -82,7 +82,8 @@ internal class Mapper
       Name = source.Name,
       Summary = source.Summary,
       Content = source.Content,
-      Price = source.Price
+      Price = source.Price,
+      Weight = source.Weight
     };
 
     if (source.Sprite is not null)

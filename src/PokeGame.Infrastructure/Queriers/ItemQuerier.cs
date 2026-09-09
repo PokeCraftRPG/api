@@ -111,6 +111,11 @@ internal class ItemQuerier : IItemQuerier
             ? (sort.Direction == SortDirection.Descending ? query.OrderByDescending(x => x.Price) : query.OrderBy(x => x.Price))
             : (sort.Direction == SortDirection.Descending ? ordered.ThenByDescending(x => x.Price) : ordered.ThenBy(x => x.Price));
           break;
+        case ItemSort.Weight:
+          ordered = (ordered is null)
+            ? (sort.Direction == SortDirection.Descending ? query.OrderByDescending(x => x.Weight) : query.OrderBy(x => x.Weight))
+            : (sort.Direction == SortDirection.Descending ? ordered.ThenByDescending(x => x.Weight) : ordered.ThenBy(x => x.Weight));
+          break;
         case ItemSort.UpdatedOn:
           ordered = (ordered is null)
             ? (sort.Direction == SortDirection.Descending ? query.OrderByDescending(x => x.UpdatedOn) : query.OrderBy(x => x.UpdatedOn))
