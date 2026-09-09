@@ -52,8 +52,8 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
     FormAbilities abilities = await _formManager.ResolveAbilitiesAsync(payload.Abilities, nameof(payload.Abilities), cancellationToken);
     BaseStatistics baseStatistics = BaseStatistics.From(payload.BaseStatistics);
     FormYield yield = FormYield.From(payload.Yield);
-    FormSize? size = payload.Size is null ? null : FormSize.From(payload.Size);
-    FormSprites? sprites = payload.Sprites is null ? null : await _formManager.ResolveSpritesAsync(payload.Sprites, nameof(payload.Sprites), cancellationToken);
+    FormSize size = FormSize.From(payload.Size);
+    FormSpriteAssets? sprites = payload.Sprites is null ? null : await _formManager.ResolveSpritesAsync(payload.Sprites, nameof(payload.Sprites), cancellationToken);
 
     bool created = false;
     if (form is null)
@@ -64,7 +64,7 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
       Variety variety = await _varietyRepository.LoadAsync(varietyId, cancellationToken)
         ?? throw new EntityNotFoundException(varietyId, nameof(payload.VarietyId));
 
-      form = new Form(formId, payload.Category, variety.Id, key, types, abilities, baseStatistics, yield, actorId);
+      form = new Form(formId, payload.Category, variety.Id, key, types, abilities, baseStatistics, yield, size, actorId);
       created = true;
     }
     else
@@ -81,11 +81,11 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
       }
 
       form.SetKey(key, actorId);
-      form.SetMechanics(types, abilities, baseStatistics, yield, actorId);
+      form.SetCharacteristics(types, abilities, baseStatistics, yield, size, actorId);
     }
 
     form.SetDetails(Name.TryCreate(payload.Name), Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
-    form.SetTraits(size, sprites, actorId);
+    form.SetSprites(sprites, actorId);
 
     await _formManager.EnsureUnicityAsync(form, cancellationToken);
     await _formRepository.SaveAsync(form, cancellationToken);

@@ -43,8 +43,8 @@ internal class FormEntity : AggregateEntity
   public int YieldSpecialDefense { get; private set; }
   public int YieldSpeed { get; private set; }
 
-  public int? Height { get; private set; }
-  public int? Weight { get; private set; }
+  public int Height { get; private set; }
+  public int Weight { get; private set; }
 
   public List<FormAbilityEntity> Abilities { get; private set; } = [];
   public List<FormSpriteEntity> Sprites { get; private set; } = [];
@@ -63,6 +63,8 @@ internal class FormEntity : AggregateEntity
     SetAbilities(abilityIds);
     SetStatistics(@event.Statistics);
     SetYield(@event.Yield);
+    Height = @event.Size.Height;
+    Weight = @event.Size.Weight;
   }
 
   private FormEntity() : base()
@@ -93,6 +95,18 @@ internal class FormEntity : AggregateEntity
     return actorIds;
   }
 
+  public void SetCharacteristics(IReadOnlyDictionary<AbilitySlot, int> abilityIds, FormCharacteristicsChanged @event)
+  {
+    Update(@event);
+
+    SetTypes(@event.Types);
+    SetAbilities(abilityIds);
+    SetStatistics(@event.BaseStatistics);
+    SetYield(@event.Yield);
+    Height = @event.Size.Height;
+    Weight = @event.Size.Weight;
+  }
+
   public void SetDetails(FormDetailsChanged @event)
   {
     Update(@event);
@@ -109,22 +123,9 @@ internal class FormEntity : AggregateEntity
     Key = @event.Key.Value;
   }
 
-  public void SetMechanics(IReadOnlyDictionary<AbilitySlot, int> abilityIds, FormMechanicsChanged @event)
+  public void SetSprites(IReadOnlyDictionary<FormSpriteKind, int> assetIds, FormSpritesChanged @event)
   {
     Update(@event);
-
-    SetTypes(@event.Types);
-    SetAbilities(abilityIds);
-    SetStatistics(@event.BaseStatistics);
-    SetYield(@event.Yield);
-  }
-
-  public void SetTraits(IReadOnlyDictionary<FormSpriteKind, int> assetIds, FormTraitsChanged @event)
-  {
-    Update(@event);
-
-    Height = @event.Size?.Height;
-    Weight = @event.Size?.Weight;
 
     Sprites.RemoveAll(x => !assetIds.ContainsKey(x.Kind));
 

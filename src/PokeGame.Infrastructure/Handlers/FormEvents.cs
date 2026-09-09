@@ -10,21 +10,21 @@ using PokeGame.Infrastructure.Entities;
 namespace PokeGame.Infrastructure.Handlers;
 
 internal class FormEvents :
+  IEventHandler<FormCharacteristicsChanged>,
   IEventHandler<FormCreated>,
   IEventHandler<FormDeleted>,
   IEventHandler<FormDetailsChanged>,
   IEventHandler<FormKeyChanged>,
-  IEventHandler<FormMechanicsChanged>,
-  IEventHandler<FormTraitsChanged>
+  IEventHandler<FormSpritesChanged>
 {
   public static void Register(IServiceCollection services)
   {
+    services.AddTransient<IEventHandler<FormCharacteristicsChanged>, FormEvents>();
     services.AddTransient<IEventHandler<FormCreated>, FormEvents>();
     services.AddTransient<IEventHandler<FormDeleted>, FormEvents>();
     services.AddTransient<IEventHandler<FormDetailsChanged>, FormEvents>();
     services.AddTransient<IEventHandler<FormKeyChanged>, FormEvents>();
-    services.AddTransient<IEventHandler<FormMechanicsChanged>, FormEvents>();
-    services.AddTransient<IEventHandler<FormTraitsChanged>, FormEvents>();
+    services.AddTransient<IEventHandler<FormSpritesChanged>, FormEvents>();
   }
 
   private readonly PokemonContext _pokemon;
@@ -32,6 +32,19 @@ internal class FormEvents :
   public FormEvents(PokemonContext pokemon)
   {
     _pokemon = pokemon;
+  }
+
+  public async Task HandleAsync(FormCharacteristicsChanged @event, CancellationToken cancellationToken)
+  {
+    FormEntity? form = await _pokemon.Forms.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (form is not null && form.Version == (@event.Version - 1))
+    {
+      IReadOnlyDictionary<AbilitySlot, int> abilityIds = await FindAbilityIdsAsync(@event.Abilities, cancellationToken);
+
+      form.SetCharacteristics(abilityIds, @event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
   }
 
   public async Task HandleAsync(FormCreated @event, CancellationToken cancellationToken)
@@ -88,20 +101,7 @@ internal class FormEvents :
     }
   }
 
-  public async Task HandleAsync(FormMechanicsChanged @event, CancellationToken cancellationToken)
-  {
-    FormEntity? form = await _pokemon.Forms.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
-    if (form is not null && form.Version == (@event.Version - 1))
-    {
-      IReadOnlyDictionary<AbilitySlot, int> abilityIds = await FindAbilityIdsAsync(@event.Abilities, cancellationToken);
-
-      form.SetMechanics(abilityIds, @event);
-
-      await _pokemon.SaveChangesAsync(cancellationToken);
-    }
-  }
-
-  public async Task HandleAsync(FormTraitsChanged @event, CancellationToken cancellationToken)
+  public async Task HandleAsync(FormSpritesChanged @event, CancellationToken cancellationToken)
   {
     FormEntity? form = await _pokemon.Forms.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (form is not null && form.Version == (@event.Version - 1))
@@ -110,7 +110,7 @@ internal class FormEvents :
         ? new Dictionary<FormSpriteKind, int>()
         : await FindAssetIdsAsync(@event.Sprites, cancellationToken);
 
-      form.SetTraits(assetIds, @event);
+      form.SetSprites(assetIds, @event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

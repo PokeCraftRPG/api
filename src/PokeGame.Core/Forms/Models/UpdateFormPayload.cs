@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace PokeGame.Core.Forms.Models;
 
@@ -14,8 +14,8 @@ public record UpdateFormPayload
   public FormAbilitiesPayload? Abilities { get; set; }
   public BaseStatisticsDto? BaseStatistics { get; set; }
   public FormYieldDto? Yield { get; set; }
+  public FormSizeDto? Size { get; set; }
 
-  public Optional<FormSizeDto?>? Size { get; set; }
   public Optional<FormSpritesPayload?>? Sprites { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
@@ -34,8 +34,8 @@ public record UpdateFormPayload
       When(x => x.Abilities is not null, () => RuleFor(x => x.Abilities!).SetValidator(new FormAbilitiesPayloadValidator()));
       When(x => x.BaseStatistics is not null, () => RuleFor(x => x.BaseStatistics!).SetValidator(new BaseStatisticsValidator()));
       When(x => x.Yield is not null, () => RuleFor(x => x.Yield!).SetValidator(new FormYieldValidator()));
+      When(x => x.Size is not null, () => RuleFor(x => x.Size!).SetValidator(new FormSizeValidator()));
 
-      When(x => x.Size?.Value is not null, () => RuleFor(x => x.Size!.Value!).SetValidator(new FormSizeValidator()));
       When(x => x.Sprites?.Value is not null, () => RuleFor(x => x.Sprites!.Value!).SetValidator(new FormSpritesPayloadValidator()));
     }
   }

@@ -1,4 +1,4 @@
-using Bogus;
+﻿using Bogus;
 using Logitar.EventSourcing;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
@@ -23,7 +23,7 @@ public interface IFormBuilder
   IFormBuilder WithBaseStatistics(int hp, int attack, int defense, int specialAttack, int specialDefense, int speed);
   IFormBuilder WithYield(int experience, int hp, int attack, int defense, int specialAttack, int specialDefense, int speed);
   IFormBuilder WithSize(int? height, int? weight);
-  IFormBuilder WithSprites(FormSprites? sprites);
+  IFormBuilder WithSprites(FormSpriteAssets? sprites);
 
   Form Build();
 }
@@ -49,7 +49,7 @@ public class FormBuilder : IFormBuilder
   private string? _name = "Bulbasaur";
   private PokemonType _primaryType = PokemonType.Grass;
   private PokemonType? _secondaryType = PokemonType.Poison;
-  private FormSprites? _sprites;
+  private FormSpriteAssets? _sprites;
   private string? _summary;
   private Variety? _variety;
   private int? _weight = 69;
@@ -160,7 +160,7 @@ public class FormBuilder : IFormBuilder
     return this;
   }
 
-  public IFormBuilder WithSprites(FormSprites? sprites)
+  public IFormBuilder WithSprites(FormSpriteAssets? sprites)
   {
     _sprites = sprites;
     return this;
@@ -177,15 +177,14 @@ public class FormBuilder : IFormBuilder
     FormAbilities abilities = new(primaryAbility.Id, _secondaryAbility?.Id, _hiddenAbility?.Id);
     BaseStatistics baseStatistics = new(_hp, _attack, _defense, _specialAttack, _specialDefense, _speed);
     FormYield yield = new(_yieldExperience, _yieldHp, _yieldAttack, _yieldDefense, _yieldSpecialAttack, _yieldSpecialDefense, _yieldSpeed);
+    FormSize size = new(_height ?? 7, _weight ?? 69);
 
     Form form = _formId.HasValue
-      ? new(_formId.Value, _category, variety.Id, key, types, abilities, baseStatistics, yield, actorId)
-      : new(variety, _category, key, types, abilities, baseStatistics, yield, actorId);
+      ? new(_formId.Value, _category, variety.Id, key, types, abilities, baseStatistics, yield, size, actorId)
+      : new(variety, _category, key, types, abilities, baseStatistics, yield, size, actorId);
 
     form.SetDetails(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
-
-    FormSize? size = _height.HasValue && _weight.HasValue ? new FormSize(_height.Value, _weight.Value) : null;
-    form.SetTraits(size, _sprites, actorId);
+    form.SetSprites(_sprites, actorId);
 
     return form;
   }

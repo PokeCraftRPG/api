@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
+using PokeGame.Core.Assets;
+using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Permissions;
@@ -19,6 +21,7 @@ namespace PokeGame.Forms;
 public class FormIntegrationTests : IntegrationTests
 {
   private readonly IAbilityRepository _abilityRepository;
+  private readonly IAssetService _assetService;
   private readonly IFormRepository _formRepository;
   private readonly IFormService _formService;
   private readonly ISpeciesRepository _speciesRepository;
@@ -33,6 +36,7 @@ public class FormIntegrationTests : IntegrationTests
   public FormIntegrationTests()
   {
     _abilityRepository = ServiceProvider.GetRequiredService<IAbilityRepository>();
+    _assetService = ServiceProvider.GetRequiredService<IAssetService>();
     _formRepository = ServiceProvider.GetRequiredService<IFormRepository>();
     _formService = ServiceProvider.GetRequiredService<IFormService>();
     _speciesRepository = ServiceProvider.GetRequiredService<ISpeciesRepository>();
@@ -72,7 +76,9 @@ public class FormIntegrationTests : IntegrationTests
     Variety charmanderVariety = VarietyBuilder.Charmander(Faker, charmanderSpecies, Context.World);
     await _varietyRepository.SaveAsync(charmanderVariety);
 
+    AssetDto sprite = await UploadImageAsync();
     CreateOrReplaceFormPayload payload = CreateCharmanderPayload(charmanderVariety.EntityId, blaze.EntityId);
+    payload.Sprites = new FormSpritesPayload { DefaultId = sprite.Id };
     Guid? id = withId ? Guid.NewGuid() : null;
 
     CreateOrReplaceFormResult result = await _formService.CreateOrReplaceAsync(payload, id);
@@ -95,6 +101,11 @@ public class FormIntegrationTests : IntegrationTests
     Assert.True(form.CreatedOn < form.UpdatedOn);
 
     AssertCharmander(payload, form);
+    Assert.NotNull(form.Sprites);
+    Assert.Equal(sprite.Id, form.Sprites.Default.Id);
+    Assert.Null(form.Sprites.Shiny);
+    Assert.Null(form.Sprites.Female);
+    Assert.Null(form.Sprites.FemaleShiny);
   }
 
   [Fact(DisplayName = "It should read a form by ID.")]
@@ -126,7 +137,7 @@ public class FormIntegrationTests : IntegrationTests
     Assert.NotNull(form);
 
     Assert.Equal(id, form.Id);
-    Assert.Equal(6, form.Version);
+    Assert.Equal(4, form.Version);
     Assert.Equal(_seeded.CreatedBy, form.CreatedBy);
     Assert.Equal(_seeded.CreatedOn, form.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, form.UpdatedBy);
@@ -508,6 +519,26 @@ public class FormIntegrationTests : IntegrationTests
     await Assert.ThrowsAsync<ValidationException>(async () => await _formService.UpdateAsync(_form.EntityId, payload));
   }
 
+  [Fact(DisplayName = "It should throw InvalidAssetKindException when a form sprite is not an image.")]
+  public async Task Given_VideoSprite_When_Create_Then_InvalidAssetKindException()
+  {
+    AssetDto video = await UploadVideoAsync();
+    CreateOrReplaceFormPayload payload = CreateCharmanderPayload(_variety.EntityId, _ability.EntityId);
+    payload.Key = "video-sprite-form";
+    payload.Sprites = new FormSpritesPayload
+    {
+      DefaultId = video.Id
+    };
+
+    InvalidAssetKindException exception = await Assert.ThrowsAsync<InvalidAssetKindException>(
+      async () => await _formService.CreateOrReplaceAsync(payload));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(video.Id, exception.AssetId);
+    Assert.Equal(AssetKind.Image, exception.ExpectedKind);
+    Assert.Equal(AssetKind.Video, exception.AttemptedKind);
+    Assert.Equal(nameof(FormSpriteAssets.Default), exception.PropertyName);
+  }
+
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a form.")]
   public async Task Given_NotAllowed_When_Create_Then_PermissionDeniedException()
   {
@@ -566,14 +597,14 @@ public class FormIntegrationTests : IntegrationTests
       Types = create.Types,
       BaseStatistics = create.BaseStatistics,
       Yield = create.Yield,
-      Size = new Optional<FormSizeDto?>(create.Size)
+      Size = create.Size
     };
 
     FormDto? form = await _formService.UpdateAsync(id, payload);
     Assert.NotNull(form);
 
     Assert.Equal(id, form.Id);
-    Assert.Equal(6, form.Version);
+    Assert.Equal(4, form.Version);
     Assert.Equal(_seeded.CreatedBy, form.CreatedBy);
     Assert.Equal(_seeded.CreatedOn, form.CreatedOn, TimeSpan.FromMilliseconds(1));
     Assert.Equal(Actor, form.UpdatedBy);
@@ -594,6 +625,32 @@ public class FormIntegrationTests : IntegrationTests
     Assert.NotNull(form.Size);
     Assert.Equal(create.Size!.Height, form.Size.Height);
     Assert.Equal(create.Size.Weight, form.Size.Weight);
+  }
+
+  private async Task<AssetDto> UploadVideoAsync()
+  {
+    string path = Path.Combine(AppContext.BaseDirectory, "Assets", "sample.mp4");
+    Assert.True(File.Exists(path), $"Add an MP4 file at '{path}'.");
+
+    await using FileStream stream = File.OpenRead(path);
+    UploadAssetPayload payload = new(Path.GetFileName(path), stream.Length, stream);
+    AssetDto? asset = await _assetService.UploadAsync(payload);
+    Assert.NotNull(asset);
+    Assert.Equal(AssetKind.Video, asset.Kind);
+    return asset;
+  }
+
+  private async Task<AssetDto> UploadImageAsync()
+  {
+    string path = Path.Combine(AppContext.BaseDirectory, "Assets", "sample.jpg");
+    Assert.True(File.Exists(path), $"Add a JPEG file at '{path}'.");
+
+    await using FileStream stream = File.OpenRead(path);
+    UploadAssetPayload payload = new(Path.GetFileName(path), stream.Length, stream);
+    AssetDto? asset = await _assetService.UploadAsync(payload);
+    Assert.NotNull(asset);
+    Assert.Equal(AssetKind.Image, asset.Kind);
+    return asset;
   }
 
   private static CreateOrReplaceFormPayload CreateCharmanderPayload(Guid varietyId, Guid primaryAbilityId) => new()
@@ -710,6 +767,9 @@ public class FormIntegrationTests : IntegrationTests
     Assert.NotNull(form.Size);
     Assert.Equal(payload.Size!.Height, form.Size.Height);
     Assert.Equal(payload.Size.Weight, form.Size.Weight);
-    Assert.Null(form.Sprites);
+    if (payload.Sprites is null)
+    {
+      Assert.Null(form.Sprites);
+    }
   }
 }

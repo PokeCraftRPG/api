@@ -11,7 +11,7 @@ public interface IFormManager
 {
   Task EnsureUnicityAsync(Form form, CancellationToken cancellationToken = default);
   Task<FormAbilities> ResolveAbilitiesAsync(FormAbilitiesPayload payload, string propertyName, CancellationToken cancellationToken = default);
-  Task<FormSprites> ResolveSpritesAsync(FormSpritesPayload payload, string propertyName, CancellationToken cancellationToken = default);
+  Task<FormSpriteAssets> ResolveSpritesAsync(FormSpritesPayload payload, string propertyName, CancellationToken cancellationToken = default);
 }
 
 internal class FormManager : IFormManager
@@ -87,7 +87,7 @@ internal class FormManager : IFormManager
     return FormAbilities.From(primary, secondary, hidden);
   }
 
-  public async Task<FormSprites> ResolveSpritesAsync(FormSpritesPayload payload, string propertyName, CancellationToken cancellationToken)
+  public async Task<FormSpriteAssets> ResolveSpritesAsync(FormSpritesPayload payload, string propertyName, CancellationToken cancellationToken)
   {
     WorldId worldId = _context.WorldId;
 
@@ -127,6 +127,6 @@ internal class FormManager : IFormManager
       assetId = new AssetId(worldId, payload.FemaleShinyId.Value);
       femaleShiny = assets.GetValueOrDefault(assetId) ?? throw new EntityNotFoundException(assetId, $"{propertyName}.{nameof(payload.FemaleShinyId)}");
     }
-    return FormSprites.From(@default, shiny, female, femaleShiny);
+    return new FormSpriteAssets(@default, shiny, female, femaleShiny);
   }
 }

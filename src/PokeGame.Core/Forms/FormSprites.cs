@@ -5,8 +5,6 @@ namespace PokeGame.Core.Forms;
 
 public sealed record FormSprites
 {
-  // TODO(fpion): all assets must be Image.
-
   public AssetId DefaultId { get; }
   public AssetId? ShinyId { get; }
   public AssetId? FemaleId { get; }
@@ -20,9 +18,6 @@ public sealed record FormSprites
     FemaleShinyId = femaleShinyId;
     new Validator().ValidateAndThrow(this);
   }
-
-  public static FormSprites From(Asset @default, Asset? shiny = null, Asset? female = null, Asset? femaleShiny = null)
-    => new(@default.Id, shiny?.Id, female?.Id, femaleShiny?.Id);
 
   private class Validator : AbstractValidator<FormSprites>
   {

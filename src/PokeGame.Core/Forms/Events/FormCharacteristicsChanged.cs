@@ -1,14 +1,10 @@
 ﻿using Logitar.EventSourcing;
-using PokeGame.Core.Varieties;
 
 namespace PokeGame.Core.Forms.Events;
 
-public sealed record FormCreated(
-  VarietyId VarietyId,
-  FormCategory Category,
-  Key Key,
+public sealed record FormCharacteristicsChanged(
   FormTypes Types,
   FormAbilities Abilities,
-  BaseStatistics Statistics,
+  BaseStatistics BaseStatistics,
   FormYield Yield,
   FormSize Size) : DomainEvent;
