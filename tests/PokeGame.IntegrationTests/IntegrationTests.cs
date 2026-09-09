@@ -94,6 +94,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Trainers"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Regions"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Moves"";");
+    sql.AppendLine(@"DELETE FROM ""Pokemon"".""Items"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Abilities"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""MemberInvitations"";");
     sql.AppendLine(@"DELETE FROM ""Pokemon"".""Assets"";");

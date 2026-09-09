@@ -74,6 +74,7 @@ internal class PermissionService : IPermissionService
     {
       case Actions.CreateAbility:
       case Actions.CreateForm:
+      case Actions.CreateItem:
       case Actions.CreateMove:
       case Actions.CreateRegion:
       case Actions.CreateSpecies:

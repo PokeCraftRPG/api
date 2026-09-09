@@ -157,6 +157,11 @@ internal static class ValidationExtensions
     return ruleBuilder.InclusiveBetween(1, 250);
   }
 
+  public static IRuleBuilderOptions<T, int> Price<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThan(0);
+  }
+
   public static IRuleBuilderOptions<T, int> PowerPoints<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
     return ruleBuilder.InclusiveBetween(1, 40);
@@ -170,5 +175,10 @@ internal static class ValidationExtensions
   public static IRuleBuilderOptions<T, string> TimeZone<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(32).SetValidator(new TimeZoneValidator<T>());
+  }
+
+  public static IRuleBuilderOptions<T, int> Weight<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThan(0);
   }
 }

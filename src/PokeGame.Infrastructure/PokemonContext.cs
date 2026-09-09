@@ -19,6 +19,7 @@ public class PokemonContext : DbContext
   internal DbSet<FormAbilityEntity> FormAbilities => Set<FormAbilityEntity>();
   internal DbSet<FormEntity> Forms => Set<FormEntity>();
   internal DbSet<FormSpriteEntity> FormSprites => Set<FormSpriteEntity>();
+  internal DbSet<ItemEntity> Items => Set<ItemEntity>();
   internal DbSet<MemberEntity> Members => Set<MemberEntity>();
   internal DbSet<MemberInvitationEntity> MemberInvitations => Set<MemberInvitationEntity>();
   internal DbSet<MoveEntity> Moves => Set<MoveEntity>();
