@@ -63,6 +63,13 @@ internal class MemberInvitationEntity : AggregateEntity
     Status = MemberInvitationStatus.Cancelled;
   }
 
+  public void Claim(MemberInvitationClaimed @event)
+  {
+    Update(@event);
+
+    UserId = @event.UserId.Value;
+  }
+
   public void Decline(MemberInvitationDeclined @event)
   {
     Update(@event);
