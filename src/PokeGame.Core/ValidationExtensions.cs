@@ -12,9 +12,9 @@ internal static class ValidationExtensions
     return ruleBuilder.InclusiveBetween((byte)1, (byte)100);
   }
 
-  public static IRuleBuilderOptions<T, int> CatchRate<T>(this IRuleBuilder<T, int> ruleBuilder)
+  public static IRuleBuilderOptions<T, byte> CatchRate<T>(this IRuleBuilder<T, byte> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween(1, Species.CatchRate.MaximumValue);
+    return ruleBuilder.GreaterThan((byte)0);
   }
 
   public static IRuleBuilderOptions<T, string> Content<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -41,11 +41,6 @@ internal static class ValidationExtensions
   public static IRuleBuilderOptions<T, long> FileSize<T>(this IRuleBuilder<T, long> ruleBuilder)
   {
     return ruleBuilder.GreaterThan(0);
-  }
-
-  public static IRuleBuilderOptions<T, int> Friendship<T>(this IRuleBuilder<T, int> ruleBuilder)
-  {
-    return ruleBuilder.InclusiveBetween(0, byte.MaxValue);
   }
 
   public static IRuleBuilderOptions<T, string> Gender<T>(this IRuleBuilder<T, string> ruleBuilder)

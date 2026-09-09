@@ -13,8 +13,8 @@ public class SpeciesDto : Aggregate
   public string? Summary { get; set; }
   public string? Content { get; set; }
 
-  public int BaseFriendship { get; set; }
-  public int CatchRate { get; set; }
+  public byte BaseFriendship { get; set; }
+  public byte CatchRate { get; set; }
   public GrowthRate GrowthRate { get; set; }
   public SpeciesEggsDto Eggs { get; set; } = new();
 
