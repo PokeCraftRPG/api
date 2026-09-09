@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Assets;
+using PokeGame.Core.Evolutions;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Items;
@@ -69,6 +70,7 @@ public static class DependencyInjectionExtensions
   {
     AbilityEvents.Register(services);
     AssetEvents.Register(services);
+    EvolutionEvents.Register(services);
     FormEvents.Register(services);
     ItemEvents.Register(services);
     MemberInvitationEvents.Register(services);
@@ -127,6 +129,7 @@ public static class DependencyInjectionExtensions
     return services
       .AddScoped<IAbilityQuerier, AbilityQuerier>()
       .AddScoped<IAssetQuerier, AssetQuerier>()
+      .AddScoped<IEvolutionQuerier, EvolutionQuerier>()
       .AddScoped<IFormQuerier, FormQuerier>()
       .AddScoped<IItemQuerier, ItemQuerier>()
       .AddScoped<IMemberInvitationQuerier, MemberInvitationQuerier>()
@@ -143,6 +146,7 @@ public static class DependencyInjectionExtensions
     return services
       .AddScoped<IAbilityRepository, AbilityRepository>()
       .AddScoped<IAssetRepository, AssetRepository>()
+      .AddScoped<IEvolutionRepository, EvolutionRepository>()
       .AddScoped<IFormRepository, FormRepository>()
       .AddScoped<IItemRepository, ItemRepository>()
       .AddScoped<IMemberInvitationRepository, MemberInvitationRepository>()

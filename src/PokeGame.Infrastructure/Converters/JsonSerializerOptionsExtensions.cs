@@ -10,6 +10,7 @@ internal static class JsonSerializerOptionsExtensions
     options.Converters.Add(new CatchRateConverter());
     options.Converters.Add(new ContentConverter());
     options.Converters.Add(new EmailAddressConverter());
+    options.Converters.Add(new EvolutionIdConverter());
     options.Converters.Add(new FormIdConverter());
     options.Converters.Add(new FriendshipConverter());
     options.Converters.Add(new GenderRatioConverter());
@@ -18,6 +19,7 @@ internal static class JsonSerializerOptionsExtensions
     options.Converters.Add(new KeyConverter());
     options.Converters.Add(new LevelConverter());
     options.Converters.Add(new LicenseConverter());
+    options.Converters.Add(new LocationConverter());
     options.Converters.Add(new MemberInvitationIdConverter());
     options.Converters.Add(new MoneyConverter());
     options.Converters.Add(new MoveIdConverter());

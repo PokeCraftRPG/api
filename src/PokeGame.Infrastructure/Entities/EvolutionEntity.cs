@@ -1,4 +1,6 @@
-﻿using PokeGame.Core;
+﻿using Logitar;
+using Logitar.EventSourcing;
+using PokeGame.Core;
 using PokeGame.Core.Evolutions;
 using PokeGame.Core.Evolutions.Events;
 
@@ -43,6 +45,28 @@ internal class EvolutionEntity : AggregateEntity
 
   private EvolutionEntity()
   {
+  }
+
+  public override IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = new(base.GetActorIds());
+    if (Source is not null)
+    {
+      actorIds.AddRange(Source.GetActorIds());
+    }
+    if (Target is not null)
+    {
+      actorIds.AddRange(Target.GetActorIds());
+    }
+    if (Item is not null)
+    {
+      actorIds.AddRange(Item.GetActorIds());
+    }
+    if (Move is not null)
+    {
+      actorIds.AddRange(Move.GetActorIds());
+    }
+    return actorIds;
   }
 
   public void SetConditions(int? itemId, int? moveId, EvolutionConditionsChanged @event)

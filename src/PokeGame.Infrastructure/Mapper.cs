@@ -5,6 +5,7 @@ using Logitar.EventSourcing;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Assets.Models;
+using PokeGame.Core.Evolutions.Models;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Items.Models;
@@ -72,27 +73,39 @@ internal class Mapper
     return destination;
   }
 
-  public ItemDto ToItem(ItemEntity source)
+  public EvolutionDto ToEvolution(EvolutionEntity source)
   {
-    ItemDto destination = new()
+    FormEntity sourceForm = source.Source ?? throw new ArgumentException("The source form is required.", nameof(source));
+    FormEntity targetForm = source.Target ?? throw new ArgumentException("The target form is required.", nameof(source));
+    EvolutionDto destination = new()
     {
       Id = source.Id,
-      Category = source.Category,
-      Key = source.Key,
-      Name = source.Name,
-      Summary = source.Summary,
-      Content = source.Content,
-      Price = source.Price,
-      Weight = source.Weight
+      Source = ToForm(sourceForm),
+      Target = ToForm(targetForm),
+      Trigger = source.Trigger,
+      Level = source.Level,
+      Friendship = source.Friendship,
+      Gender = source.Gender,
+      Location = source.Location,
+      TimeOfDay = source.TimeOfDay
     };
 
-    if (source.Sprite is not null)
+    if (source.Item is not null)
     {
-      destination.Sprite = ToAsset(source.Sprite);
+      destination.Item = ToItem(source.Item);
     }
-    else if (source.SpriteId.HasValue)
+    else if (source.ItemId.HasValue)
     {
-      throw new ArgumentException("The sprite is required.", nameof(source));
+      throw new ArgumentException("The item is required.", nameof(source));
+    }
+
+    if (source.Move is not null)
+    {
+      destination.Move = ToMove(source.Move);
+    }
+    else if (source.MoveId.HasValue)
+    {
+      throw new ArgumentException("The move is required.", nameof(source));
     }
 
     MapAggregate(source, destination);
@@ -185,6 +198,34 @@ internal class Mapper
     if (defaultFound)
     {
       destination.Sprites = sprites;
+    }
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public ItemDto ToItem(ItemEntity source)
+  {
+    ItemDto destination = new()
+    {
+      Id = source.Id,
+      Category = source.Category,
+      Key = source.Key,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content,
+      Price = source.Price,
+      Weight = source.Weight
+    };
+
+    if (source.Sprite is not null)
+    {
+      destination.Sprite = ToAsset(source.Sprite);
+    }
+    else if (source.SpriteId.HasValue)
+    {
+      throw new ArgumentException("The sprite is required.", nameof(source));
     }
 
     MapAggregate(source, destination);
