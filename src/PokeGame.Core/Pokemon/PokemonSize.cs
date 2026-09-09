@@ -1,4 +1,4 @@
-﻿namespace PokeGame.Core.Specimens;
+﻿namespace PokeGame.Core.Pokemon;
 
 public interface IPokemonSize
 {

@@ -1,10 +1,11 @@
 ﻿using Logitar.EventSourcing;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
+using PokeGame.Core.Pokemon;
 using PokeGame.Core.Species;
 using PokeGame.Core.Varieties;
 
-namespace PokeGame.Core.Specimens.Events;
+namespace PokeGame.Core.Pokemon.Events;
 
 public sealed record PokemonCreated(
   SpeciesId SpeciesId,

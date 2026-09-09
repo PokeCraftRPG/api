@@ -3,18 +3,18 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Assets;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Items;
+using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Species;
-using PokeGame.Core.Specimens.Events;
 using PokeGame.Core.Varieties;
 using PokeGame.Core.Worlds;
 
-namespace PokeGame.Core.Specimens;
+namespace PokeGame.Core.Pokemon;
 
 public sealed class Specimen : AggregateRoot, IEntityProvider
 {
   public const string EntityKind = "Specimen";
 
-  public new SpecimenId Id => new(base.Id);
+  public new PokemonId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
   public Guid EntityId => Id.EntityId;
 
@@ -39,15 +39,15 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   private readonly PokemonNature? _nature = null;
   public PokemonNature Nature => _nature ?? throw new InvalidOperationException("The nature was not initialized.");
 
-  public int EggCycles { get; private set; }
+  public byte EggCycles { get; private set; }
   public bool IsEgg => EggCycles > 0;
   public GrowthRate GrowthRate { get; private set; }
   public int Experience { get; private set; }
-  // TODO(fpion): Level
+  public byte Level { get; private set; }
 
-  private BaseStatistics? _baseStatistics = null;
-  private IndividualValues? _individualValues = null;
-  private EffortValues? _effortValues = null;
+  private readonly BaseStatistics? _baseStatistics = null;
+  private readonly IndividualValues? _individualValues = null;
+  private readonly EffortValues? _effortValues = null;
   // TODO(fpion): Statistics
 
   public int Vitality { get; private set; }
@@ -71,7 +71,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   }
 
   public Specimen(
-    SpecimenId specimenId,
+    PokemonId specimenId,
     PokemonSpecies species,
     Variety variety,
     Form form,
@@ -92,83 +92,11 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     ActorId? actorId = null)
     : base(specimenId.StreamId)
   {
-    WorldMismatchException.ThrowIfMismatch(this, species, nameof(species));
-
-    WorldMismatchException.ThrowIfMismatch(this, variety, nameof(variety));
-    if (variety.SpeciesId != species.Id)
-    {
-      throw new NotImplementedException(); // TODO(fpion): ArgumentException
-    }
-
-    WorldMismatchException.ThrowIfMismatch(this, form, nameof(form));
-    if (form.VarietyId != variety.Id)
-    {
-      throw new NotImplementedException(); // TODO(fpion): ArgumentException
-    }
-    // TODO(fpion): should we validate against form.Category?
-
-    if (gender.HasValue && !Enum.IsDefined(gender.Value))
-    {
-      throw new ArgumentOutOfRangeException(nameof(gender));
-    }
-    // TODO(fpion): validate gender against variety.GenderRatio
-    // TODO(fpion): randomize gender
-
-    if (teraType.HasValue && !Enum.IsDefined(teraType.Value))
-    {
-      throw new ArgumentOutOfRangeException(nameof(teraType));
-    }
-
-    if (abilitySlot.HasValue && !Enum.IsDefined(abilitySlot.Value))
-    {
-      throw new ArgumentOutOfRangeException(nameof(abilitySlot));
-    }
-    // TODO(fpion): validate ability slot against form.Abilities
-    abilitySlot ??= AbilitySlot.Primary; // TODO(fpion): randomize
-
-    key ??= species.Key;
-    isShiny ??= null!; // TODO(fpion): randomize
-    teraType ??= null!; // TODO(fpion): randomize
-    individualValues ??= null!; // TODO(fpion): randomize
-    effortValues ??= new();
-    int experience = 0;
-    vitality ??= 0;
-    stamina ??= 0;
-    friendship ??= species.BaseFriendship;
-
-    PokemonCreated @event = new(
-      species.Id,
-      variety.Id,
-      form.Id,
-      key,
-      gender,
-      isShiny.Value,
-      teraType.Value,
-      abilitySlot.Value,
-      species.GrowthRate,
-      experience,
-      form.BaseStatistics,
-      individualValues,
-      effortValues,
-      vitality.Value,
-      stamina.Value,
-      friendship);
-    Raise(@event, actorId);
+    // TODO(fpion): raise PokemonCreated
   }
   private void Handle(PokemonCreated @event)
   {
-    SpeciesId = @event.SpeciesId;
-    VarietyId = @event.VarietyId;
-    FormId = @event.FormId;
-
-    _key = @event.Key;
-    Gender = @event.Gender;
-    IsShiny = @event.IsShiny;
-    TeraType = @event.TeraType;
-
-    _baseStatistics = @event.BaseStatistics;
-    _individualValues = @event.IndividualValues;
-    _effortValues = @event.EffortValues;
+    // TODO(fpion): handle PokemonCreated
   }
 
   public void Delete(ActorId? actorId = null)

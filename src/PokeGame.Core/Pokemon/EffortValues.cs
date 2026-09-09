@@ -1,27 +1,27 @@
 ﻿using FluentValidation;
 
-namespace PokeGame.Core.Specimens;
+namespace PokeGame.Core.Pokemon;
 
 public interface IEffortValues
 {
-  int HP { get; }
-  int Attack { get; }
-  int Defense { get; }
-  int SpecialAttack { get; }
-  int SpecialDefense { get; }
-  int Speed { get; }
+  byte HP { get; }
+  byte Attack { get; }
+  byte Defense { get; }
+  byte SpecialAttack { get; }
+  byte SpecialDefense { get; }
+  byte Speed { get; }
 }
 
 public sealed record EffortValues : IEffortValues
 {
-  public int HP { get; }
-  public int Attack { get; }
-  public int Defense { get; }
-  public int SpecialAttack { get; }
-  public int SpecialDefense { get; }
-  public int Speed { get; }
+  public byte HP { get; }
+  public byte Attack { get; }
+  public byte Defense { get; }
+  public byte SpecialAttack { get; }
+  public byte SpecialDefense { get; }
+  public byte Speed { get; }
 
-  public EffortValues(int hp = 0, int attack = 0, int defense = 0, int specialAttack = 0, int specialDefense = 0, int speed = 0)
+  public EffortValues(byte hp = 0, byte attack = 0, byte defense = 0, byte specialAttack = 0, byte specialDefense = 0, byte speed = 0)
   {
     HP = hp;
     Attack = attack;
@@ -42,13 +42,6 @@ internal class EffortValuesValidator : AbstractValidator<IEffortValues>
 
   public EffortValuesValidator()
   {
-    RuleFor(x => x.HP).InclusiveBetween(0, byte.MaxValue);
-    RuleFor(x => x.Attack).InclusiveBetween(0, byte.MaxValue);
-    RuleFor(x => x.Defense).InclusiveBetween(0, byte.MaxValue);
-    RuleFor(x => x.SpecialAttack).InclusiveBetween(0, byte.MaxValue);
-    RuleFor(x => x.SpecialDefense).InclusiveBetween(0, byte.MaxValue);
-    RuleFor(x => x.Speed).InclusiveBetween(0, byte.MaxValue);
-
     RuleFor(x => x).Must(HaveAValidTotal)
       .WithErrorCode(nameof(EffortValuesValidator))
       .WithMessage($"The total effort values must be less than or equal to {MaximumTotal}.");
