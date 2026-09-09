@@ -12,6 +12,8 @@ namespace PokeGame.Api.Controllers;
 [Route("members/invitations")]
 public class MemberInvitationController : ControllerBase
 {
+  private const string GetByIdRoute = "GetMemberInvitation";
+
   private readonly IMemberInvitationService _memberInvitationService;
 
   public MemberInvitationController(IMemberInvitationService memberInvitationService)
@@ -40,7 +42,7 @@ public class MemberInvitationController : ControllerBase
     return invitation is null ? NotFound() : Ok(invitation);
   }
 
-  [HttpGet("{id}")]
+  [HttpGet("{id}", Name = GetByIdRoute)]
   public async Task<ActionResult<MemberInvitationDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     MemberInvitationDto? invitation = await _memberInvitationService.ReadAsync(id, cancellationToken);
@@ -67,6 +69,6 @@ public class MemberInvitationController : ControllerBase
   public async Task<ActionResult<MemberInvitationDto>> SendAsync(Guid worldId, [FromBody] SendMemberInvitationPayload payload, CancellationToken cancellationToken)
   {
     MemberInvitationDto? invitation = await _memberInvitationService.SendAsync(worldId, payload, cancellationToken);
-    return invitation is null ? NotFound() : CreatedAtAction(nameof(ReadAsync), new { id = invitation.Id }, invitation);
+    return invitation is null ? NotFound() : CreatedAtRoute(GetByIdRoute, new { id = invitation.Id }, invitation);
   }
 }

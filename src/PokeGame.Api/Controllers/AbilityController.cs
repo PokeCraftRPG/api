@@ -14,6 +14,8 @@ namespace PokeGame.Api.Controllers;
 [Route("abilities")]
 public class AbilityController : ControllerBase
 {
+  private const string GetByIdRoute = "GetAbility";
+
   private readonly IAbilityService _abilityService;
 
   public AbilityController(IAbilityService abilityService)
@@ -28,15 +30,15 @@ public class AbilityController : ControllerBase
     return ToActionResult(result);
   }
 
-  [HttpGet("{id}")]
-  public async Task<ActionResult<AbilityDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
+  [HttpGet("{id}", Name = GetByIdRoute)]
+  public async Task<ActionResult<AbilityDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     AbilityDto? ability = await _abilityService.ReadAsync(id, key: null, cancellationToken);
     return ability is null ? NotFound() : Ok(ability);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<AbilityDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<AbilityDto>> ReadAsync(string key, CancellationToken cancellationToken)
   {
     AbilityDto? ability = await _abilityService.ReadAsync(id: null, key, cancellationToken);
     return ability is null ? NotFound() : Ok(ability);
@@ -65,6 +67,6 @@ public class AbilityController : ControllerBase
   }
 
   private ActionResult<AbilityDto> ToActionResult(CreateOrReplaceAbilityResult result) => result.Created
-    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Ability.Id }, result.Ability)
+    ? CreatedAtRoute(GetByIdRoute, new { id = result.Ability.Id }, result.Ability)
     : Ok(result.Ability);
 }

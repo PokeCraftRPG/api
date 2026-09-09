@@ -14,6 +14,8 @@ namespace PokeGame.Api.Controllers;
 [Route("forms")]
 public class FormController : ControllerBase
 {
+  private const string GetByIdRoute = "GetForm";
+
   private readonly IFormService _formService;
 
   public FormController(IFormService formService)
@@ -28,15 +30,15 @@ public class FormController : ControllerBase
     return ToActionResult(result);
   }
 
-  [HttpGet("{id}")]
-  public async Task<ActionResult<FormDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
+  [HttpGet("{id}", Name = GetByIdRoute)]
+  public async Task<ActionResult<FormDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     FormDto? form = await _formService.ReadAsync(id, key: null, cancellationToken);
     return form is null ? NotFound() : Ok(form);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<FormDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<FormDto>> ReadAsync(string key, CancellationToken cancellationToken)
   {
     FormDto? form = await _formService.ReadAsync(id: null, key, cancellationToken);
     return form is null ? NotFound() : Ok(form);
@@ -65,6 +67,6 @@ public class FormController : ControllerBase
   }
 
   private ActionResult<FormDto> ToActionResult(CreateOrReplaceFormResult result) => result.Created
-    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Form.Id }, result.Form)
+    ? CreatedAtRoute(GetByIdRoute, new { id = result.Form.Id }, result.Form)
     : Ok(result.Form);
 }

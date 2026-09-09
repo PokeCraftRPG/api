@@ -12,6 +12,8 @@ namespace PokeGame.Api.Controllers;
 [Route("worlds")]
 public class WorldController : ControllerBase
 {
+  private const string GetByIdRoute = "GetWorld";
+
   private readonly IWorldService _worldService;
 
   public WorldController(IWorldService worldService)
@@ -26,15 +28,15 @@ public class WorldController : ControllerBase
     return ToActionResult(result);
   }
 
-  [HttpGet("{id}")]
-  public async Task<ActionResult<WorldDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
+  [HttpGet("{id}", Name = GetByIdRoute)]
+  public async Task<ActionResult<WorldDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     WorldDto? world = await _worldService.ReadAsync(id, key: null, cancellationToken);
     return world is null ? NotFound() : Ok(world);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<WorldDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<WorldDto>> ReadAsync(string key, CancellationToken cancellationToken)
   {
     WorldDto? world = await _worldService.ReadAsync(id: null, key, cancellationToken);
     return world is null ? NotFound() : Ok(world);
@@ -63,6 +65,6 @@ public class WorldController : ControllerBase
   }
 
   private ActionResult<WorldDto> ToActionResult(CreateOrReplaceWorldResult result) => result.Created
-    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.World.Id }, result.World)
+    ? CreatedAtRoute(GetByIdRoute, new { id = result.World.Id }, result.World)
     : Ok(result.World);
 }

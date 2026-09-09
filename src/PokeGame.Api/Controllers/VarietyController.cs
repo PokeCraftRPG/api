@@ -14,6 +14,8 @@ namespace PokeGame.Api.Controllers;
 [Route("varieties")]
 public class VarietyController : ControllerBase
 {
+  private const string GetByIdRoute = "GetVariety";
+
   private readonly IVarietyService _varietyService;
 
   public VarietyController(IVarietyService varietyService)
@@ -28,15 +30,15 @@ public class VarietyController : ControllerBase
     return ToActionResult(result);
   }
 
-  [HttpGet("{id}")]
-  public async Task<ActionResult<VarietyDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
+  [HttpGet("{id}", Name = GetByIdRoute)]
+  public async Task<ActionResult<VarietyDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     VarietyDto? variety = await _varietyService.ReadAsync(id, key: null, cancellationToken);
     return variety is null ? NotFound() : Ok(variety);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<VarietyDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<VarietyDto>> ReadAsync(string key, CancellationToken cancellationToken)
   {
     VarietyDto? variety = await _varietyService.ReadAsync(id: null, key, cancellationToken);
     return variety is null ? NotFound() : Ok(variety);
@@ -65,6 +67,6 @@ public class VarietyController : ControllerBase
   }
 
   private ActionResult<VarietyDto> ToActionResult(CreateOrReplaceVarietyResult result) => result.Created
-    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Variety.Id }, result.Variety)
+    ? CreatedAtRoute(GetByIdRoute, new { id = result.Variety.Id }, result.Variety)
     : Ok(result.Variety);
 }

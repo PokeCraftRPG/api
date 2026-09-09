@@ -13,6 +13,7 @@ namespace PokeGame.Api.Controllers;
 public class AssetController : ControllerBase
 {
   private const long MaximumUploadSize = 4L * 1024 * 1024 * 1024;
+  private const string GetByIdRoute = "GetAsset";
 
   private readonly IAssetService _assetService;
 
@@ -21,7 +22,7 @@ public class AssetController : ControllerBase
     _assetService = assetService;
   }
 
-  [HttpGet("{id}")]
+  [HttpGet("{id}", Name = GetByIdRoute)]
   public async Task<ActionResult<AssetDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     AssetDto? asset = await _assetService.ReadAsync(id, cancellationToken);
@@ -37,6 +38,6 @@ public class AssetController : ControllerBase
     UploadAssetPayload payload = new(file.FileName, file.Length, stream);
 
     AssetDto? asset = await _assetService.UploadAsync(payload, cancellationToken);
-    return asset is null ? NotFound() : CreatedAtAction(nameof(ReadAsync), new { id = asset.Id }, asset);
+    return asset is null ? NotFound() : CreatedAtRoute(GetByIdRoute, new { id = asset.Id }, asset);
   }
 }

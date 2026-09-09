@@ -14,6 +14,8 @@ namespace PokeGame.Api.Controllers;
 [Route("regions")]
 public class RegionController : ControllerBase
 {
+  private const string GetByIdRoute = "GetRegion";
+
   private readonly IRegionService _regionService;
 
   public RegionController(IRegionService regionService)
@@ -28,15 +30,15 @@ public class RegionController : ControllerBase
     return ToActionResult(result);
   }
 
-  [HttpGet("{id}")]
-  public async Task<ActionResult<RegionDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
+  [HttpGet("{id}", Name = GetByIdRoute)]
+  public async Task<ActionResult<RegionDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     RegionDto? region = await _regionService.ReadAsync(id, key: null, cancellationToken);
     return region is null ? NotFound() : Ok(region);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<RegionDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<RegionDto>> ReadAsync(string key, CancellationToken cancellationToken)
   {
     RegionDto? region = await _regionService.ReadAsync(id: null, key, cancellationToken);
     return region is null ? NotFound() : Ok(region);
@@ -65,6 +67,6 @@ public class RegionController : ControllerBase
   }
 
   private ActionResult<RegionDto> ToActionResult(CreateOrReplaceRegionResult result) => result.Created
-    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Region.Id }, result.Region)
+    ? CreatedAtRoute(GetByIdRoute, new { id = result.Region.Id }, result.Region)
     : Ok(result.Region);
 }
