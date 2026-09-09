@@ -13,8 +13,8 @@ public record CreateOrReplaceSpeciesPayload
   public string? Summary { get; set; }
   public string? Content { get; set; }
 
-  public int BaseFriendship { get; set; }
-  public int CatchRate { get; set; } = Species.CatchRate.MaximumValue;
+  public byte BaseFriendship { get; set; }
+  public byte CatchRate { get; set; }
   public GrowthRate GrowthRate { get; set; }
   public SpeciesEggsDto Eggs { get; set; } = new();
 
@@ -35,7 +35,6 @@ public record CreateOrReplaceSpeciesPayload
       When(x => !string.IsNullOrWhiteSpace(x.Summary), () => RuleFor(x => x.Summary!).Summary());
       When(x => !string.IsNullOrWhiteSpace(x.Content), () => RuleFor(x => x.Content!).Content());
 
-      RuleFor(x => x.BaseFriendship).Friendship();
       RuleFor(x => x.CatchRate).CatchRate();
       RuleFor(x => x.GrowthRate).IsInEnum();
       RuleFor(x => x.Eggs).SetValidator(new SpeciesEggsValidator());

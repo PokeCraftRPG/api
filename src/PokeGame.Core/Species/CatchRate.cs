@@ -4,11 +4,9 @@ namespace PokeGame.Core.Species;
 
 public sealed class CatchRate
 {
-  public const int MaximumValue = byte.MaxValue;
+  public byte Value { get; }
 
-  public int Value { get; }
-
-  public CatchRate(int value = MaximumValue)
+  public CatchRate(byte value)
   {
     Value = value;
     new Validator().ValidateAndThrow(this);

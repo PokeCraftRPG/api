@@ -22,10 +22,11 @@ internal class SpeciesEntity : AggregateEntity
   public string? Summary { get; private set; }
   public string? Content { get; private set; }
 
-  public int BaseFriendship { get; private set; }
-  public int CatchRate { get; private set; } = Core.Species.CatchRate.MaximumValue;
+  public byte BaseFriendship { get; private set; }
+  public byte CatchRate { get; private set; }
   public GrowthRate GrowthRate { get; private set; }
-  public int EggCycles { get; private set; } = SpeciesEggs.MaximumCycles;
+
+  public byte EggCycles { get; private set; }
   public EggGroup PrimaryEggGroup { get; private set; }
   public EggGroup? SecondaryEggGroup { get; private set; }
 
