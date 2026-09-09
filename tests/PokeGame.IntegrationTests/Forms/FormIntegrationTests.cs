@@ -184,11 +184,10 @@ public class FormIntegrationTests : IntegrationTests
     Form charmander = FormBuilder.Charmander(Faker, charmanderVariety, blaze, Context.World);
     await _formRepository.SaveAsync(charmander);
 
-    InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+    TooManyResultsException<FormDto> exception = await Assert.ThrowsAsync<TooManyResultsException<FormDto>>(
       async () => await _formService.ReadAsync(_form.EntityId, charmander.Key.Value));
-    TooManyResultsException<FormDto> tooMany = Assert.IsType<TooManyResultsException<FormDto>>(exception.InnerException);
-    Assert.Equal(1, tooMany.ExpectedCount);
-    Assert.Equal(2, tooMany.ActualCount);
+    Assert.Equal(1, exception.ExpectedCount);
+    Assert.Equal(2, exception.ActualCount);
   }
 
   [Fact(DisplayName = "It should return null when the form was not found.")]

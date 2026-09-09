@@ -134,11 +134,10 @@ public class RegionIntegrationTests : IntegrationTests
     Region johto = RegionBuilder.Johto(Faker, Context.World);
     await _regionRepository.SaveAsync(johto);
 
-    InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+    TooManyResultsException<RegionDto> exception = await Assert.ThrowsAsync<TooManyResultsException<RegionDto>>(
       async () => await _regionService.ReadAsync(_region.EntityId, johto.Key.Value));
-    TooManyResultsException<RegionDto> tooMany = Assert.IsType<TooManyResultsException<RegionDto>>(exception.InnerException);
-    Assert.Equal(1, tooMany.ExpectedCount);
-    Assert.Equal(2, tooMany.ActualCount);
+    Assert.Equal(1, exception.ExpectedCount);
+    Assert.Equal(2, exception.ActualCount);
   }
 
   [Fact(DisplayName = "It should return null when the region was not found.")]

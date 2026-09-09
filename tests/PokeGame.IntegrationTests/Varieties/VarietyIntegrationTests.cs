@@ -147,11 +147,10 @@ public class VarietyIntegrationTests : IntegrationTests
     Variety charmander = VarietyBuilder.Charmander(Faker, charmanderSpecies, Context.World);
     await _varietyRepository.SaveAsync(charmander);
 
-    InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+    TooManyResultsException<VarietyDto> exception = await Assert.ThrowsAsync<TooManyResultsException<VarietyDto>>(
       async () => await _varietyService.ReadAsync(_variety.EntityId, charmander.Key.Value));
-    TooManyResultsException<VarietyDto> tooMany = Assert.IsType<TooManyResultsException<VarietyDto>>(exception.InnerException);
-    Assert.Equal(1, tooMany.ExpectedCount);
-    Assert.Equal(2, tooMany.ActualCount);
+    Assert.Equal(1, exception.ExpectedCount);
+    Assert.Equal(2, exception.ActualCount);
   }
 
   [Fact(DisplayName = "It should return null when the variety was not found.")]

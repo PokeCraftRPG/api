@@ -154,11 +154,10 @@ public class ItemIntegrationTests : IntegrationTests
     Item superPotion = ItemBuilder.SuperPotion(Faker, Context.World);
     await _itemRepository.SaveAsync(superPotion);
 
-    InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+    TooManyResultsException<ItemDto> exception = await Assert.ThrowsAsync<TooManyResultsException<ItemDto>>(
       async () => await _itemService.ReadAsync(_item.EntityId, superPotion.Key.Value));
-    TooManyResultsException<ItemDto> tooMany = Assert.IsType<TooManyResultsException<ItemDto>>(exception.InnerException);
-    Assert.Equal(1, tooMany.ExpectedCount);
-    Assert.Equal(2, tooMany.ActualCount);
+    Assert.Equal(1, exception.ExpectedCount);
+    Assert.Equal(2, exception.ActualCount);
   }
 
   [Fact(DisplayName = "It should return null when the item was not found.")]

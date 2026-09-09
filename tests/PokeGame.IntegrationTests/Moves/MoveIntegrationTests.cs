@@ -134,11 +134,10 @@ public class MoveIntegrationTests : IntegrationTests
     Move ember = MoveBuilder.Ember(Faker, Context.World);
     await _moveRepository.SaveAsync(ember);
 
-    InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+    TooManyResultsException<MoveDto> exception = await Assert.ThrowsAsync<TooManyResultsException<MoveDto>>(
       async () => await _moveService.ReadAsync(_move.EntityId, ember.Key.Value));
-    TooManyResultsException<MoveDto> tooMany = Assert.IsType<TooManyResultsException<MoveDto>>(exception.InnerException);
-    Assert.Equal(1, tooMany.ExpectedCount);
-    Assert.Equal(2, tooMany.ActualCount);
+    Assert.Equal(1, exception.ExpectedCount);
+    Assert.Equal(2, exception.ActualCount);
   }
 
   [Fact(DisplayName = "It should return null when the move was not found.")]

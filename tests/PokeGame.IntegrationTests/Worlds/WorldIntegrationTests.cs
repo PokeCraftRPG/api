@@ -186,11 +186,10 @@ public class WorldIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw TooManyResultsException when many worlds were read.")]
   public async Task Given_ManyFound_When_Read_Then_TooManyResultsException()
   {
-    InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+    TooManyResultsException<WorldDto> exception = await Assert.ThrowsAsync<TooManyResultsException<WorldDto>>(
       async () => await _worldService.ReadAsync(Context.World!.EntityId, _world.Key.Value));
-    TooManyResultsException<WorldDto> tooMany = Assert.IsType<TooManyResultsException<WorldDto>>(exception.InnerException);
-    Assert.Equal(1, tooMany.ExpectedCount);
-    Assert.Equal(2, tooMany.ActualCount);
+    Assert.Equal(1, exception.ExpectedCount);
+    Assert.Equal(2, exception.ActualCount);
   }
 
   [Fact(DisplayName = "It should return null when the world was not found.")]

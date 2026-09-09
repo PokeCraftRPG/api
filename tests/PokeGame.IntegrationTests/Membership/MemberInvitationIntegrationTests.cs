@@ -361,13 +361,12 @@ public class MemberInvitationIntegrationTests : IntegrationTests
       Limit = 10
     };
 
-    InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+    PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _memberInvitationService.SearchWorldAsync(Context.WorldId.EntityId, payload));
-    PermissionDeniedException denied = Assert.IsType<PermissionDeniedException>(exception.InnerException);
-    Assert.Equal(Context.ActorId?.Value, denied.Principal);
-    Assert.Equal("ViewInvitations", denied.Action);
-    Assert.Equal(Context.World!.GetEntity().ToString(), denied.Resource);
-    Assert.Equal(Context.WorldId.EntityId, denied.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
+    Assert.Equal("ViewInvitations", exception.Action);
+    Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
   }
 
   [Fact(DisplayName = "It should return the correct world search results.")]
