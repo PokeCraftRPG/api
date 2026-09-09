@@ -15,7 +15,7 @@ public class VarietyDto : Aggregate
   public string? Content { get; set; }
 
   public bool CanChangeForm { get; set; }
-  public int? GenderRatio { get; set; }
+  public byte? GenderRatio { get; set; }
   public string? Genus { get; set; }
 
   public List<VarietyMoveDto> Moves { get; set; } = [];

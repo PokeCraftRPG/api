@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace PokeGame.Core.Varieties.Models;
 
@@ -14,7 +14,7 @@ public record CreateOrReplaceVarietyPayload
   public string? Content { get; set; }
 
   public bool CanChangeForm { get; set; }
-  public int? GenderRatio { get; set; }
+  public byte? GenderRatio { get; set; }
   public string? Genus { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);

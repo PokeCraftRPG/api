@@ -18,7 +18,7 @@ public interface IVarietyBuilder
   IVarietyBuilder WithContent(string? content);
   IVarietyBuilder WithIsDefault(bool isDefault);
   IVarietyBuilder WithCanChangeForm(bool canChangeForm);
-  IVarietyBuilder WithGenderRatio(int? femaleRate);
+  IVarietyBuilder WithGenderRatio(byte? femaleRate);
   IVarietyBuilder WithGenus(string? genus);
 
   Variety Build();
@@ -30,7 +30,7 @@ public class VarietyBuilder : IVarietyBuilder
 
   private bool _canChangeForm;
   private string? _content;
-  private int? _genderRatio = 1;
+  private byte? _genderRatio = 1;
   private string? _genus = "Seed";
   private bool _isDefault = true;
   private string _key = "bulbasaur";
@@ -99,7 +99,7 @@ public class VarietyBuilder : IVarietyBuilder
     return this;
   }
 
-  public IVarietyBuilder WithGenderRatio(int? femaleRate)
+  public IVarietyBuilder WithGenderRatio(byte? femaleRate)
   {
     _genderRatio = femaleRate;
     return this;

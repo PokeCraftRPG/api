@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using PokeGame.Core.Moves;
-using PokeGame.Core.Pokemon;
 
 namespace PokeGame.Core.Varieties;
 
