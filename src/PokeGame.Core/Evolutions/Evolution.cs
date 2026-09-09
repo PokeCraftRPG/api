@@ -59,7 +59,7 @@ public sealed class Evolution : AggregateRoot, IEntityProvider
     }
     else if (trigger == EvolutionTrigger.ItemUsed)
     {
-      throw new NotImplementedException(); // TODO(fpion): implement
+      throw new EvolutionItemRequiredException(this);
     }
 
     Raise(new EvolutionCreated(source.Id, target.Id, trigger, item?.Id), actorId);
@@ -104,7 +104,7 @@ public sealed class Evolution : AggregateRoot, IEntityProvider
     }
     else if (Trigger == EvolutionTrigger.ItemUsed)
     {
-      throw new NotImplementedException(); // TODO(fpion): implement
+      throw new EvolutionItemRequiredException(this);
     }
 
     if (move is not null)

@@ -3,7 +3,10 @@ using Logitar.EventSourcing;
 using PokeGame.Core.Evolutions.Models;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Items;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Pokemon;
+using PokeGame.Core.Regions;
 
 namespace PokeGame.Core.Evolutions.Commands;
 
@@ -14,20 +17,26 @@ internal class CreateOrReplaceEvolutionCommandHandler : ICommandHandler<CreateOr
   private readonly IContext _context;
   private readonly IEvolutionQuerier _evolutionQuerier;
   private readonly IEvolutionRepository _evolutionRepository;
+  private readonly IFormRepository _formRepository;
   private readonly IItemRepository _itemRepository;
+  private readonly IMoveRepository _moveRepository;
   private readonly IPermissionService _permissionService;
 
   public CreateOrReplaceEvolutionCommandHandler(
     IContext context,
     IEvolutionQuerier evolutionQuerier,
     IEvolutionRepository evolutionRepository,
+    IFormRepository formRepository,
     IItemRepository itemRepository,
+    IMoveRepository moveRepository,
     IPermissionService permissionService)
   {
     _context = context;
     _evolutionQuerier = evolutionQuerier;
     _evolutionRepository = evolutionRepository;
+    _formRepository = formRepository;
     _itemRepository = itemRepository;
+    _moveRepository = moveRepository;
     _permissionService = permissionService;
   }
 
@@ -44,6 +53,20 @@ internal class CreateOrReplaceEvolutionCommandHandler : ICommandHandler<CreateOr
       evolution = await _evolutionRepository.LoadAsync(evolutionId, cancellationToken);
     }
 
+    Item? item = null;
+    if (payload.ItemId.HasValue)
+    {
+      ItemId itemId = new(evolutionId.WorldId, payload.ItemId.Value);
+      item = await _itemRepository.LoadAsync(itemId, cancellationToken) ?? throw new EntityNotFoundException(itemId, nameof(payload.ItemId));
+    }
+
+    Move? move = null;
+    if (payload.MoveId.HasValue)
+    {
+      MoveId moveId = new(evolutionId.WorldId, payload.MoveId.Value);
+      move = await _moveRepository.LoadAsync(moveId, cancellationToken) ?? throw new EntityNotFoundException(moveId, nameof(payload.MoveId));
+    }
+
     ActorId? actorId = _context.ActorId;
 
     bool created = false;
@@ -51,9 +74,11 @@ internal class CreateOrReplaceEvolutionCommandHandler : ICommandHandler<CreateOr
     {
       await _permissionService.CheckAsync(Actions.CreateEvolution, cancellationToken);
 
-      Form source = null!; // TODO(fpion): implement
-      Form target = null!; // TODO(fpion): implement
-      Item? item = null; // TODO(fpion): implement
+      FormId sourceId = new(evolutionId.WorldId, payload.SourceId);
+      Form source = await _formRepository.LoadAsync(sourceId, cancellationToken) ?? throw new EntityNotFoundException(sourceId, nameof(payload.SourceId));
+
+      FormId targetId = new(evolutionId.WorldId, payload.TargetId);
+      Form target = await _formRepository.LoadAsync(targetId, cancellationToken) ?? throw new EntityNotFoundException(targetId, nameof(payload.TargetId));
 
       evolution = new Evolution(evolutionId, source, target, payload.Trigger, item, actorId);
       created = true;
@@ -76,7 +101,15 @@ internal class CreateOrReplaceEvolutionCommandHandler : ICommandHandler<CreateOr
       }
     }
 
-    // TODO(fpion): conditions
+    evolution.SetConditions(
+      Level.TryCreate(payload.Level),
+      payload.Friendship,
+      payload.Gender,
+      item,
+      move,
+      Location.TryCreate(payload.Location),
+      payload.TimeOfDay,
+      actorId);
 
     await _evolutionRepository.SaveAsync(evolution, cancellationToken);
 
