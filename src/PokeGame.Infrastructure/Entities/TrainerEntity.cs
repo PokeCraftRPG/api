@@ -1,5 +1,6 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
+using PokeGame.Core;
 using PokeGame.Core.Trainers;
 using PokeGame.Core.Trainers.Events;
 

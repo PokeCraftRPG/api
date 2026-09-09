@@ -78,6 +78,11 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(Trainers.License.MaximumLength).SetValidator(new SlugValidator<T>());
   }
 
+  public static IRuleBuilderOptions<T, string> Location<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty().MaximumLength(Regions.Location.MaximumLength);
+  }
+
   public static IRuleBuilderOptions<T, string> Locale<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(LocaleValidator<T>.MaximumLength).SetValidator(new LocaleValidator<T>());

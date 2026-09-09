@@ -1,4 +1,4 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 
 namespace PokeGame.Core.Items.Events;
 

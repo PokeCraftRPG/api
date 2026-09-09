@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PokeGame.Api.Models.Search;
-using PokeGame.Core.Trainers;
+using PokeGame.Core;
 using PokeGame.Core.Trainers.Models;
 
 namespace PokeGame.Api.Models.Trainer;
