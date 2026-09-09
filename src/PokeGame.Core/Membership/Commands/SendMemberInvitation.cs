@@ -63,7 +63,7 @@ internal class SendMemberInvitationCommandHandler : ICommandHandler<SendMemberIn
     DateTime expiresOn = DateTime.Now.AddDays(MemberInvitationLifetimeDays);
     MemberInvitation invitation = new(world, emailAddress, userId, expiresOn, _context.ActorId);
 
-    MemberInvitationId? existingId = await _memberInvitationQuerier.GetIdAsync(invitation, MemberInvitationStatus.Pending, cancellationToken);
+    MemberInvitationId? existingId = await _memberInvitationQuerier.GetPendingActiveIdAsync(invitation, cancellationToken);
     if (existingId.HasValue)
     {
       throw new MemberInvitationAlreadyPendingException(world, existingId.Value);

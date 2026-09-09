@@ -4,7 +4,9 @@ using Krakenar.Contracts.Sessions;
 using Krakenar.Contracts.Tokens;
 using Krakenar.Contracts.Users;
 using Logitar.CQRS;
+using PokeGame.Core.Identity.Events;
 using PokeGame.Core.Identity.Models;
+using PokeGame.Core.Messaging;
 
 namespace PokeGame.Core.Identity.Commands;
 
@@ -13,6 +15,7 @@ internal record SignInAccountCommand(SignInAccountPayload Payload) : ICommand<Si
 internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountCommand, SignInAccountResult>
 {
   private readonly IMessageGateway _messageGateway;
+  private readonly IMessagingManager _messagingManager;
   private readonly IOneTimePasswordGateway _oneTimePasswordGateway;
   private readonly IRealmGateway _realmGateway;
   private readonly ISessionGateway _sessionGateway;
@@ -21,6 +24,7 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
 
   public SignInAccountCommandHandler(
     IMessageGateway messageGateway,
+    IMessagingManager messagingManager,
     IOneTimePasswordGateway oneTimePasswordGateway,
     IRealmGateway realmGateway,
     ISessionGateway sessionGateway,
@@ -28,6 +32,7 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     IUserGateway userGateway)
   {
     _messageGateway = messageGateway;
+    _messagingManager = messagingManager;
     _oneTimePasswordGateway = oneTimePasswordGateway;
     _realmGateway = realmGateway;
     _sessionGateway = sessionGateway;
@@ -121,6 +126,9 @@ internal class SignInAccountCommandHandler : ICommandHandler<SignInAccountComman
     if (validatedToken.Subject is null)
     {
       user = await _userGateway.CreateAsync(email, cancellationToken);
+
+      UserCreated @event = new(new UserId(user), new EmailAddress(email.Address));
+      await _messagingManager.PublishAsync(@event, cancellationToken);
     }
     else
     {

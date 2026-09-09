@@ -23,6 +23,7 @@ namespace PokeGame.Membership;
 public class MemberInvitationIntegrationTests : IntegrationTests
 {
   private readonly ICacheService _cacheService;
+  private readonly IMemberInvitationRepository _memberInvitationRepository;
   private readonly IMemberInvitationService _memberInvitationService;
   private readonly IWorldRepository _worldRepository;
   private readonly IWorldService _worldService;
@@ -30,6 +31,7 @@ public class MemberInvitationIntegrationTests : IntegrationTests
   public MemberInvitationIntegrationTests()
   {
     _cacheService = ServiceProvider.GetRequiredService<ICacheService>();
+    _memberInvitationRepository = ServiceProvider.GetRequiredService<IMemberInvitationRepository>();
     _memberInvitationService = ServiceProvider.GetRequiredService<IMemberInvitationService>();
     _worldRepository = ServiceProvider.GetRequiredService<IWorldRepository>();
     _worldService = ServiceProvider.GetRequiredService<IWorldService>();
@@ -87,6 +89,98 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     MemberInvitationDto second = await SendInvitationAsync(payload, world.EntityId);
     Assert.NotEqual(first.Id, second.Id);
     Assert.Equal(world.EntityId, second.World.Id);
+  }
+
+  [Fact(DisplayName = "It should claim unassigned pending invitations for an email address.")]
+  public async Task Given_UnassignedPending_When_Claim_Then_Assigned()
+  {
+    string email = "claim.me@example.com";
+    MemberInvitationDto seeded = await SendInvitationAsync(CreatePayload(email));
+
+    User claimer = KrakenarFactory.Instance.NewUser(Faker);
+    UserId userId = new(claimer);
+    await _memberInvitationService.ClaimAsync(userId, new EmailAddress(email));
+
+    MemberInvitation? loaded = await _memberInvitationRepository.LoadAsync(new MemberInvitationId(seeded.Id));
+    Assert.NotNull(loaded);
+    Assert.Equal(userId, loaded.UserId);
+    Assert.Equal(EmailAddress.Format(email), loaded.EmailAddress.Value);
+    Assert.Equal(MemberInvitationStatus.Pending, loaded.Status);
+
+    SetupInvitee(claimer);
+    MemberInvitationDto? dto = await _memberInvitationService.ReadAsync(seeded.Id);
+    Assert.NotNull(dto);
+    Assert.Equal(new Actor(claimer), dto.Invitee);
+  }
+
+  [Fact(DisplayName = "It should claim invitations across worlds for the same email.")]
+  public async Task Given_MultipleWorlds_When_Claim_Then_AllAssigned()
+  {
+    string email = "multi.world@example.com";
+    MemberInvitationDto first = await SendInvitationAsync(CreatePayload(email));
+
+    World otherWorld = new WorldBuilder(Faker).WithOwner(Context.User).WithKey("claim-other-world").Build();
+    await _worldRepository.SaveAsync(otherWorld);
+    Context.World = otherWorld;
+    MemberInvitationDto second = await SendInvitationAsync(CreatePayload(email), otherWorld.EntityId);
+
+    User claimer = KrakenarFactory.Instance.NewUser(Faker);
+    UserId userId = new(claimer);
+    await _memberInvitationService.ClaimAsync(userId, new EmailAddress(email));
+
+    MemberInvitation? loadedFirst = await _memberInvitationRepository.LoadAsync(new MemberInvitationId(first.Id));
+    Assert.NotNull(loadedFirst);
+    Assert.Equal(userId, loadedFirst.UserId);
+
+    MemberInvitation? loadedSecond = await _memberInvitationRepository.LoadAsync(new MemberInvitationId(second.Id));
+    Assert.NotNull(loadedSecond);
+    Assert.Equal(userId, loadedSecond.UserId);
+  }
+
+  [Fact(DisplayName = "It should not claim cancelled, expired or already assigned invitations.")]
+  public async Task Given_IneligibleInvitations_When_Claim_Then_Unchanged()
+  {
+    string email = "skip.me@example.com";
+
+    MemberInvitationDto cancelled = await SendInvitationAsync(CreatePayload(email));
+    await _memberInvitationService.CancelAsync(cancelled.Id);
+
+    MemberInvitationDto expired = await SendInvitationAsync(CreatePayload(email));
+    await ExpireInvitationAsync(expired.Id);
+
+    MemberInvitationDto pending = await SendInvitationAsync(CreatePayload(email));
+
+    User existingInvitee = KrakenarFactory.Instance.NewUser(Faker);
+    SetupInvitee(existingInvitee);
+    MemberInvitationDto assigned = await SendInvitationAsync(CreatePayload(existingInvitee.Email!.Address));
+
+    User claimer = KrakenarFactory.Instance.NewUser(Faker);
+    UserId userId = new(claimer);
+    await _memberInvitationService.ClaimAsync(userId, new EmailAddress(email));
+    await _memberInvitationService.ClaimAsync(userId, new EmailAddress(existingInvitee.Email.Address));
+
+    MemberInvitation? loadedPending = await _memberInvitationRepository.LoadAsync(new MemberInvitationId(pending.Id));
+    Assert.NotNull(loadedPending);
+    Assert.Equal(userId, loadedPending.UserId);
+
+    MemberInvitation? loadedCancelled = await _memberInvitationRepository.LoadAsync(new MemberInvitationId(cancelled.Id));
+    Assert.NotNull(loadedCancelled);
+    Assert.Null(loadedCancelled.UserId);
+
+    MemberInvitation? loadedExpired = await _memberInvitationRepository.LoadAsync(new MemberInvitationId(expired.Id));
+    Assert.NotNull(loadedExpired);
+    Assert.Null(loadedExpired.UserId);
+
+    MemberInvitation? loadedAssigned = await _memberInvitationRepository.LoadAsync(new MemberInvitationId(assigned.Id));
+    Assert.NotNull(loadedAssigned);
+    Assert.Equal(new UserId(existingInvitee), loadedAssigned.UserId);
+  }
+
+  [Fact(DisplayName = "It should do nothing when there is no invitation to claim.")]
+  public async Task Given_NoInvitation_When_Claim_Then_NoOp()
+  {
+    User claimer = KrakenarFactory.Instance.NewUser(Faker);
+    await _memberInvitationService.ClaimAsync(new UserId(claimer), new EmailAddress("nobody@example.com"));
   }
 
   [Fact(DisplayName = "It should throw UserIsAlreadyMemberException when the user is already a member.")]

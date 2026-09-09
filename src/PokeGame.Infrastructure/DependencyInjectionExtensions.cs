@@ -3,6 +3,7 @@ using Logitar.CQRS;
 using Logitar.EventSourcing.EntityFrameworkCore.PostgreSQL;
 using Logitar.EventSourcing.EntityFrameworkCore.Relational;
 using Logitar.EventSourcing.Infrastructure;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,7 @@ using PokeGame.Core.Assets;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
+using PokeGame.Core.Messaging;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
@@ -20,8 +22,11 @@ using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Assets;
 using PokeGame.Infrastructure.Caching;
+using PokeGame.Infrastructure.Converters;
 using PokeGame.Infrastructure.Handlers;
 using PokeGame.Infrastructure.Identity;
+using PokeGame.Infrastructure.Messaging;
+using PokeGame.Infrastructure.Messaging.Consumers;
 using PokeGame.Infrastructure.Queriers;
 using PokeGame.Infrastructure.Repositories;
 
@@ -49,6 +54,7 @@ public static class DependencyInjectionExtensions
       .AddIdentityGateways()
       .AddLogitarEventSourcingWithEntityFrameworkCoreRelational()
       .AddLogitarEventSourcingWithEntityFrameworkCorePostgreSQL(connectionString)
+      .AddMessaging()
       .AddQueriers()
       .AddRepositories()
       .AddSingleton(serviceProvider => StorageSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
@@ -85,6 +91,33 @@ public static class DependencyInjectionExtensions
       .AddSingleton<ISessionGateway, SessionGateway>()
       .AddSingleton<ITokenGateway, TokenGateway>()
       .AddSingleton<IUserGateway, UserGateway>();
+  }
+
+  private static IServiceCollection AddMessaging(this IServiceCollection services)
+  {
+    return services
+      .AddSingleton(serviceProvider => RabbitMQSettings.Initialize(serviceProvider.GetRequiredService<IConfiguration>()))
+      .AddMassTransit(configurator =>
+      {
+        configurator.SetKebabCaseEndpointNameFormatter();
+        configurator.AddConsumer<ClaimMemberInvitationsConsumer>();
+        configurator.UsingRabbitMq((context, rabbitMQ) =>
+        {
+          RabbitMQSettings settings = context.GetRequiredService<RabbitMQSettings>();
+          rabbitMQ.Host(settings.Host, settings.VirtualHost, host =>
+          {
+            host.Username(settings.Username);
+            host.Password(settings.Password);
+          });
+          rabbitMQ.ConfigureJsonSerializerOptions(options =>
+          {
+            options.RegisterConverters();
+            return options;
+          });
+          rabbitMQ.ConfigureEndpoints(context);
+        });
+      })
+      .AddScoped<IMessagingManager, MessagingManager>();
   }
 
   private static IServiceCollection AddQueriers(this IServiceCollection services)

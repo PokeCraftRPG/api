@@ -42,7 +42,7 @@ internal class AcceptMemberInvitationCommandHandler : ICommandHandler<AcceptMemb
 
     World world = await _worldRepository.LoadAsync(invitation.WorldId, cancellationToken)
       ?? throw new InvalidOperationException($"The world 'Id={invitation.WorldId}' was not loaded.");
-    UserId userId = invitation.UserId ?? throw new InvalidOperationException($"The member invitation 'Id={invitation.Id}' has no user identifier."); // TODO(fpion): assign on creation.
+    UserId userId = invitation.UserId ?? throw new InvalidOperationException($"The member invitation 'Id={invitation.Id}' has no user identifier.");
 
     invitation.Accept(_context.ActorId);
     world.GrantMembership(userId, invitation.CreatedBy);

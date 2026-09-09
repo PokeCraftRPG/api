@@ -23,6 +23,26 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
 
+  rabbitmq:
+    image: rabbitmq:4.3.5-management
+    container_name: pokecraft_api_rabbitmq
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: pokegame
+      RABBITMQ_DEFAULT_PASS: pokegame
+      RABBITMQ_DEFAULT_VHOST: pokegame
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   cms:
     image: logitar/krakenar:v2.2.0
     container_name: pokecraft_api_cms
@@ -47,12 +67,14 @@ services:
     container_name: pokecraft_api
     depends_on:
       - cms
+      - rabbitmq
     restart: unless-stopped
     environment:
       ASPNETCORE_Environment: Development
       KRAKENAR_BASE_URL: http://cms:8080
       MONGOCONNSTR_Pokemon: mongodb://pokecraft:FzPVUyGvNErn4Hsj@mongo:27017/
       POSTGRESQLCONNSTR_Pokemon: User ID=postgres;Password=YSDPert8wW5mgkf4;Host=postgres;Port=5432;Database=api;
+      RABBITMQ_HOST: rabbitmq
     ports:
       - 8092:8080
     volumes:
@@ -62,3 +84,4 @@ volumes:
   api_data:
   mongo_data:
   postgres_data:
+  rabbitmq_data:

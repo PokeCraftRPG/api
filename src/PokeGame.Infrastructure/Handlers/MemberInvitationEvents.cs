@@ -9,6 +9,7 @@ namespace PokeGame.Infrastructure.Handlers;
 internal class MemberInvitationEvents :
   IEventHandler<MemberInvitationAccepted>,
   IEventHandler<MemberInvitationCancelled>,
+  IEventHandler<MemberInvitationClaimed>,
   IEventHandler<MemberInvitationDeclined>,
   IEventHandler<MemberInvitationDeleted>,
   IEventHandler<MemberInvitationSent>
@@ -17,6 +18,7 @@ internal class MemberInvitationEvents :
   {
     services.AddTransient<IEventHandler<MemberInvitationAccepted>, MemberInvitationEvents>();
     services.AddTransient<IEventHandler<MemberInvitationCancelled>, MemberInvitationEvents>();
+    services.AddTransient<IEventHandler<MemberInvitationClaimed>, MemberInvitationEvents>();
     services.AddTransient<IEventHandler<MemberInvitationDeclined>, MemberInvitationEvents>();
     services.AddTransient<IEventHandler<MemberInvitationDeleted>, MemberInvitationEvents>();
     services.AddTransient<IEventHandler<MemberInvitationSent>, MemberInvitationEvents>();
@@ -46,6 +48,17 @@ internal class MemberInvitationEvents :
     if (invitation is not null && invitation.Version == (@event.Version - 1))
     {
       invitation.Cancel(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(MemberInvitationClaimed @event, CancellationToken cancellationToken)
+  {
+    MemberInvitationEntity? invitation = await _pokemon.MemberInvitations.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (invitation is not null && invitation.Version == (@event.Version - 1))
+    {
+      invitation.Claim(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
