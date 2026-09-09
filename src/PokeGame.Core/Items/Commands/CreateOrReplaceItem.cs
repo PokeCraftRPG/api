@@ -1,4 +1,4 @@
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using Logitar.EventSourcing;
 using PokeGame.Core.Items.Models;
 using PokeGame.Core.Permissions;
@@ -66,7 +66,7 @@ internal class CreateOrReplaceItemCommandHandler : ICommandHandler<CreateOrRepla
     }
 
     item.SetDetails(Name.TryCreate(payload.Name), Summary.TryCreate(payload.Summary), Content.TryCreate(payload.Content), actorId);
-    item.SetProperties(Price.TryCreate(payload.Price), Weight.TryCreate(payload.Weight), actorId);
+    item.SetCharacteristics(Price.TryCreate(payload.Price), Weight.TryCreate(payload.Weight), actorId);
     await _itemManager.SetSpriteAsync(item, payload.SpriteId, nameof(payload.SpriteId), cancellationToken);
 
     await _itemManager.EnsureUnicityAsync(item, cancellationToken);

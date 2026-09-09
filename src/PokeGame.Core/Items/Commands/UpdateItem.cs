@@ -1,4 +1,4 @@
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using Logitar.EventSourcing;
 using PokeGame.Core.Items.Models;
 using PokeGame.Core.Permissions;
@@ -60,7 +60,7 @@ internal class UpdateItemCommandHandler : ICommandHandler<UpdateItemCommand, Ite
 
     if (payload.Price is not null || payload.Weight is not null)
     {
-      item.SetProperties(
+      item.SetCharacteristics(
         payload.Price is null ? item.Price : Price.TryCreate(payload.Price.Value),
         payload.Weight is null ? item.Weight : Weight.TryCreate(payload.Weight.Value),
         actorId);

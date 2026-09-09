@@ -63,6 +63,19 @@ public sealed class Item : AggregateRoot, IEntityProvider
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId);
 
+  public void SetCharacteristics(Price? price, Weight? weight, ActorId? actorId = null)
+  {
+    if (!Equals(Price, price) || !Equals(Weight, weight))
+    {
+      Raise(new ItemCharacteristicsChanged(price, weight), actorId);
+    }
+  }
+  private void Handle(ItemCharacteristicsChanged @event)
+  {
+    Price = @event.Price;
+    Weight = @event.Weight;
+  }
+
   public void SetDetails(Name? name, Summary? summary, Content? content, ActorId? actorId = null)
   {
     if (!Equals(Name, name) || !Equals(Summary, summary) || !Equals(Content, content))
@@ -87,19 +100,6 @@ public sealed class Item : AggregateRoot, IEntityProvider
   private void Handle(ItemKeyChanged @event)
   {
     _key = @event.Key;
-  }
-
-  public void SetProperties(Price? price, Weight? weight, ActorId? actorId = null)
-  {
-    if (!Equals(Price, price) || !Equals(Weight, weight))
-    {
-      Raise(new ItemPropertiesChanged(price, weight), actorId);
-    }
-  }
-  private void Handle(ItemPropertiesChanged @event)
-  {
-    Price = @event.Price;
-    Weight = @event.Weight;
   }
 
   public void SetSprite(Asset? sprite, ActorId? actorId = null)

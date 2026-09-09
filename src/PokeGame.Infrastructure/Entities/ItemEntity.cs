@@ -1,4 +1,4 @@
-using Logitar;
+﻿using Logitar;
 using Logitar.EventSourcing;
 using PokeGame.Core.Items;
 using PokeGame.Core.Items.Events;
@@ -51,6 +51,14 @@ internal class ItemEntity : AggregateEntity
     return actorIds;
   }
 
+  public void SetCharacteristics(ItemCharacteristicsChanged @event)
+  {
+    Update(@event);
+
+    Price = @event.Price?.Value;
+    Weight = @event.Weight?.Value;
+  }
+
   public void SetDetails(ItemDetailsChanged @event)
   {
     Update(@event);
@@ -65,14 +73,6 @@ internal class ItemEntity : AggregateEntity
     Update(@event);
 
     Key = @event.Key.Value;
-  }
-
-  public void SetProperties(ItemPropertiesChanged @event)
-  {
-    Update(@event);
-
-    Price = @event.Price?.Value;
-    Weight = @event.Weight?.Value;
   }
 
   public void SetSprite(int? spriteId, ItemSpriteChanged @event)
