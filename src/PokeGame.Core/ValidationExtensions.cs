@@ -157,6 +157,11 @@ internal static class ValidationExtensions
     return ruleBuilder.InclusiveBetween(1, 250);
   }
 
+  public static IRuleBuilderOptions<T, int> Price<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.GreaterThan(1);
+  }
+
   public static IRuleBuilderOptions<T, int> PowerPoints<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
     return ruleBuilder.InclusiveBetween(1, 40);

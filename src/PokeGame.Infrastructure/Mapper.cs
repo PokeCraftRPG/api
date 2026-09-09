@@ -7,6 +7,7 @@ using PokeGame.Core.Abilities.Models;
 using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Items.Models;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Regions.Models;
@@ -65,6 +66,33 @@ internal class Mapper
       Summary = source.Summary,
       Content = source.Content
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public ItemDto ToItem(ItemEntity source)
+  {
+    ItemDto destination = new()
+    {
+      Id = source.Id,
+      Category = source.Category,
+      Key = source.Key,
+      Name = source.Name,
+      Summary = source.Summary,
+      Content = source.Content,
+      Price = source.Price
+    };
+
+    if (source.Sprite is not null)
+    {
+      destination.Sprite = ToAsset(source.Sprite);
+    }
+    else if (source.SpriteId.HasValue)
+    {
+      throw new ArgumentException("The sprite is required.", nameof(source));
+    }
 
     MapAggregate(source, destination);
 

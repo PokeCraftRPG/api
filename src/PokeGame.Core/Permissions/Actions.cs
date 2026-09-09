@@ -6,6 +6,7 @@ internal static class Actions
   public const string Cancel = "Cancel";
   public const string CreateAbility = "CreateAbility";
   public const string CreateForm = "CreateForm";
+  public const string CreateItem = "CreateItem";
   public const string CreateMove = "CreateMove";
   public const string CreateRegion = "CreateRegion";
   public const string CreateSpecies = "CreateSpecies";

@@ -1,0 +1,62 @@
+using Krakenar.Contracts.Search;
+using Logitar.CQRS;
+using Microsoft.Extensions.DependencyInjection;
+using PokeGame.Core.Items.Commands;
+using PokeGame.Core.Items.Models;
+using PokeGame.Core.Items.Queries;
+
+namespace PokeGame.Core.Items;
+
+public interface IItemService
+{
+  Task<CreateOrReplaceItemResult> CreateOrReplaceAsync(CreateOrReplaceItemPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
+  Task<ItemDto?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
+  Task<SearchResults<ItemDto>> SearchAsync(SearchItemsPayload payload, CancellationToken cancellationToken = default);
+  Task<ItemDto?> UpdateAsync(Guid id, UpdateItemPayload payload, CancellationToken cancellationToken = default);
+}
+
+internal class ItemService : IItemService
+{
+  public static void Register(IServiceCollection services)
+  {
+    services.AddTransient<IItemService, ItemService>();
+    services.AddTransient<IItemManager, ItemManager>();
+    services.AddTransient<ICommandHandler<CreateOrReplaceItemCommand, CreateOrReplaceItemResult>, CreateOrReplaceItemCommandHandler>();
+    services.AddTransient<ICommandHandler<UpdateItemCommand, ItemDto?>, UpdateItemCommandHandler>();
+    services.AddTransient<IQueryHandler<ReadItemQuery, ItemDto?>, ReadItemQueryHandler>();
+    services.AddTransient<IQueryHandler<SearchItemsQuery, SearchResults<ItemDto>>, SearchItemsQueryHandler>();
+  }
+
+  private readonly ICommandBus _commandBus;
+  private readonly IQueryBus _queryBus;
+
+  public ItemService(ICommandBus commandBus, IQueryBus queryBus)
+  {
+    _commandBus = commandBus;
+    _queryBus = queryBus;
+  }
+
+  public async Task<CreateOrReplaceItemResult> CreateOrReplaceAsync(CreateOrReplaceItemPayload payload, Guid? id, CancellationToken cancellationToken)
+  {
+    CreateOrReplaceItemCommand command = new(payload, id);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<ItemDto?> ReadAsync(Guid? id, string? key, CancellationToken cancellationToken)
+  {
+    ReadItemQuery query = new(id, key);
+    return await _queryBus.ExecuteAsync(query, cancellationToken);
+  }
+
+  public async Task<SearchResults<ItemDto>> SearchAsync(SearchItemsPayload payload, CancellationToken cancellationToken)
+  {
+    SearchItemsQuery query = new(payload);
+    return await _queryBus.ExecuteAsync(query, cancellationToken);
+  }
+
+  public async Task<ItemDto?> UpdateAsync(Guid id, UpdateItemPayload payload, CancellationToken cancellationToken)
+  {
+    UpdateItemCommand command = new(id, payload);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+}

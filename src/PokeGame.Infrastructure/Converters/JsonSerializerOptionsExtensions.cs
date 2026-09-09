@@ -14,6 +14,7 @@ internal static class JsonSerializerOptionsExtensions
     options.Converters.Add(new FriendshipConverter());
     options.Converters.Add(new GenderRatioConverter());
     options.Converters.Add(new GenusConverter());
+    options.Converters.Add(new ItemIdConverter());
     options.Converters.Add(new KeyConverter());
     options.Converters.Add(new LevelConverter());
     options.Converters.Add(new LicenseConverter());
@@ -24,6 +25,7 @@ internal static class JsonSerializerOptionsExtensions
     options.Converters.Add(new NumberConverter());
     options.Converters.Add(new PowerConverter());
     options.Converters.Add(new PowerPointsConverter());
+    options.Converters.Add(new PriceConverter());
     options.Converters.Add(new RegionIdConverter());
     options.Converters.Add(new SpeciesIdConverter());
     options.Converters.Add(new SummaryConverter());

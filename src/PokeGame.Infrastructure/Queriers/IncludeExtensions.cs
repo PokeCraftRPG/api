@@ -11,6 +11,9 @@ internal static class IncludeExtensions
     .Include(x => x.Variety).ThenInclude(x => x!.Moves).ThenInclude(x => x.Move)
     .Include(x => x.Variety).ThenInclude(x => x!.Species).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region);
 
+  public static IQueryable<ItemEntity> IncludeRelated(this IQueryable<ItemEntity> query) => query
+    .Include(x => x.Sprite);
+
   public static IQueryable<MemberInvitationEntity> IncludeRelated(this IQueryable<MemberInvitationEntity> query) => query
     .Include(x => x.World).ThenInclude(x => x!.Members);
 

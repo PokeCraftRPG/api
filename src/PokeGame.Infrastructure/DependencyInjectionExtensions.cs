@@ -11,6 +11,7 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Assets;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Items;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Messaging;
 using PokeGame.Core.Moves;
@@ -69,6 +70,7 @@ public static class DependencyInjectionExtensions
     AbilityEvents.Register(services);
     AssetEvents.Register(services);
     FormEvents.Register(services);
+    ItemEvents.Register(services);
     MemberInvitationEvents.Register(services);
     MoveEvents.Register(services);
     RegionEvents.Register(services);
@@ -126,6 +128,7 @@ public static class DependencyInjectionExtensions
       .AddScoped<IAbilityQuerier, AbilityQuerier>()
       .AddScoped<IAssetQuerier, AssetQuerier>()
       .AddScoped<IFormQuerier, FormQuerier>()
+      .AddScoped<IItemQuerier, ItemQuerier>()
       .AddScoped<IMemberInvitationQuerier, MemberInvitationQuerier>()
       .AddScoped<IMoveQuerier, MoveQuerier>()
       .AddScoped<IRegionQuerier, RegionQuerier>()
@@ -141,6 +144,7 @@ public static class DependencyInjectionExtensions
       .AddScoped<IAbilityRepository, AbilityRepository>()
       .AddScoped<IAssetRepository, AssetRepository>()
       .AddScoped<IFormRepository, FormRepository>()
+      .AddScoped<IItemRepository, ItemRepository>()
       .AddScoped<IMemberInvitationRepository, MemberInvitationRepository>()
       .AddScoped<IMoveRepository, MoveRepository>()
       .AddScoped<IRegionRepository, RegionRepository>()
