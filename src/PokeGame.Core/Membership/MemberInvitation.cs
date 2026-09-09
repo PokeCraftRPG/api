@@ -92,6 +92,23 @@ public sealed class MemberInvitation : AggregateRoot, IEntityProvider
     Status = MemberInvitationStatus.Cancelled;
   }
 
+  public void Claim(UserId userId)
+  {
+    if (UserId != userId)
+    {
+      if (UserId.HasValue)
+      {
+        throw new InvalidOperationException($"The member invitation 'Id={Id}' has already been claimed by user 'Id={UserId}'.");
+      }
+
+      Raise(new MemberInvitationClaimed(userId), userId.ActorId);
+    }
+  }
+  private void Handle(MemberInvitationClaimed @event)
+  {
+    UserId = @event.UserId;
+  }
+
   public void Decline(ActorId? actorId = null)
   {
     if (Status != MemberInvitationStatus.Pending && Status != MemberInvitationStatus.Declined)

@@ -26,23 +26,26 @@ internal class MemberInvitationQuerier : IMemberInvitationQuerier
     _invitations = pokemon.MemberInvitations;
   }
 
-  public async Task<MemberInvitationId?> GetIdAsync(World world, EmailAddress emailAddress, MemberInvitationStatus status, CancellationToken cancellationToken)
-  {
-    string? streamId = await _invitations
-      .Where(x => x.World!.StreamId == world.Id.Value && x.EmailAddress == emailAddress.Value && x.Status == status)
-      .Select(x => x.StreamId)
-      .FirstOrDefaultAsync(cancellationToken);
-    return streamId is null ? null : new MemberInvitationId(streamId);
-  }
-  public async Task<MemberInvitationId?> GetIdAsync(MemberInvitation invitation, MemberInvitationStatus status, CancellationToken cancellationToken)
+  public async Task<MemberInvitationId?> GetPendingActiveIdAsync(MemberInvitation invitation, CancellationToken cancellationToken)
   {
     string? streamId = await _invitations
       .Where(x => x.World!.StreamId == invitation.WorldId.Value
         && (invitation.UserId.HasValue ? x.UserId == invitation.UserId.Value.Value : x.EmailAddress == invitation.EmailAddress.Value)
-        && x.Status == status)
+        && x.Status == MemberInvitationStatus.Pending
+        && (!x.ExpiresOn.HasValue || x.ExpiresOn.Value > DateTime.UtcNow))
       .Select(x => x.StreamId)
       .FirstOrDefaultAsync(cancellationToken);
     return streamId is null ? null : new MemberInvitationId(streamId);
+  }
+
+  public async Task<IReadOnlyCollection<MemberInvitationId>> GetUnassignedPendingActiveIdsAsync(EmailAddress emailAddress, CancellationToken cancellationToken)
+  {
+    string[] streamIds = await _invitations
+      .Where(x => x.EmailAddress == emailAddress.Value && x.UserId == null
+        && x.Status == MemberInvitationStatus.Pending && (!x.ExpiresOn.HasValue || x.ExpiresOn.Value > DateTime.UtcNow))
+      .Select(x => x.StreamId)
+      .ToArrayAsync(cancellationToken);
+    return streamIds.Select(streamId => new MemberInvitationId(streamId)).ToList().AsReadOnly();
   }
 
   public async Task<MemberInvitationDto> ReadAsync(MemberInvitation invitation, CancellationToken cancellationToken)
