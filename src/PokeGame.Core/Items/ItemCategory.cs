@@ -2,13 +2,13 @@
 
 public enum ItemCategory
 {
-  OtherItem = 0,
-  BattleItem,
+  Other = 0,
+  Battle,
   Berry,
-  KeyItem,
+  Key,
+  Machine,
   Material,
   Medicine,
   PokeBall,
-  TechnicalMachine,
   Treasure
 }
