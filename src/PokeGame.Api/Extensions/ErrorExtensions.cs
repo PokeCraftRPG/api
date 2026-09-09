@@ -31,11 +31,15 @@ internal static class ErrorExtensions
 
   public static int GetStatusCode(this Exception exception)
   {
-    if (exception is IdentityException || exception is ValidationException)
+    if (exception is ValidationException)
     {
       return StatusCodes.Status400BadRequest;
     }
-    if (exception is PermissionDeniedException)
+    if (exception is InvalidOneTimePasswordException || exception is OneTimePasswordNotFoundException)
+    {
+      return StatusCodes.Status401Unauthorized;
+    }
+    if (exception is AuthenticationFlowNotAllowedException || exception is PermissionDeniedException)
     {
       return StatusCodes.Status403Forbidden;
     }

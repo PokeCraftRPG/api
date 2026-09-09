@@ -134,11 +134,10 @@ public class AbilityIntegrationTests : IntegrationTests
     Ability blaze = AbilityBuilder.Blaze(Faker, Context.World);
     await _abilityRepository.SaveAsync(blaze);
 
-    InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+    TooManyResultsException<AbilityDto> exception = await Assert.ThrowsAsync<TooManyResultsException<AbilityDto>>(
       async () => await _abilityService.ReadAsync(_ability.EntityId, blaze.Key.Value));
-    TooManyResultsException<AbilityDto> tooMany = Assert.IsType<TooManyResultsException<AbilityDto>>(exception.InnerException);
-    Assert.Equal(1, tooMany.ExpectedCount);
-    Assert.Equal(2, tooMany.ActualCount);
+    Assert.Equal(1, exception.ExpectedCount);
+    Assert.Equal(2, exception.ActualCount);
   }
 
   [Fact(DisplayName = "It should return null when the ability was not found.")]

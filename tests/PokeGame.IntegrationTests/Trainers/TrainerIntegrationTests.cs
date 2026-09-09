@@ -176,11 +176,10 @@ public class TrainerIntegrationTests : IntegrationTests
     Trainer misty = TrainerBuilder.Misty(Faker, Context.World);
     await _trainerRepository.SaveAsync(misty);
 
-    InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+    TooManyResultsException<TrainerDto> exception = await Assert.ThrowsAsync<TooManyResultsException<TrainerDto>>(
       async () => await _trainerService.ReadAsync(_trainer.EntityId, misty.Key.Value));
-    TooManyResultsException<TrainerDto> tooMany = Assert.IsType<TooManyResultsException<TrainerDto>>(exception.InnerException);
-    Assert.Equal(1, tooMany.ExpectedCount);
-    Assert.Equal(2, tooMany.ActualCount);
+    Assert.Equal(1, exception.ExpectedCount);
+    Assert.Equal(2, exception.ActualCount);
   }
 
   [Fact(DisplayName = "It should return null when the trainer was not found.")]

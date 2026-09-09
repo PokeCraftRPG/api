@@ -179,11 +179,10 @@ public class SpeciesIntegrationTests : IntegrationTests
     PokemonSpecies charmander = SpeciesBuilder.Charmander(Faker, Context.World);
     await _speciesRepository.SaveAsync(charmander);
 
-    InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(
+    TooManyResultsException<SpeciesDto> exception = await Assert.ThrowsAsync<TooManyResultsException<SpeciesDto>>(
       async () => await _speciesService.ReadAsync(_species.EntityId, number: null, charmander.Key.Value));
-    TooManyResultsException<SpeciesDto> tooMany = Assert.IsType<TooManyResultsException<SpeciesDto>>(exception.InnerException);
-    Assert.Equal(1, tooMany.ExpectedCount);
-    Assert.Equal(2, tooMany.ActualCount);
+    Assert.Equal(1, exception.ExpectedCount);
+    Assert.Equal(2, exception.ActualCount);
   }
 
   [Fact(DisplayName = "It should return null when the species was not found.")]
