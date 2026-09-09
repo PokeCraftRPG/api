@@ -13,7 +13,7 @@ public record UpdateVarietyPayload
   public Optional<string>? Content { get; set; }
 
   public bool? CanChangeForm { get; set; }
-  public Optional<int?>? GenderRatio { get; set; }
+  public Optional<byte?>? GenderRatio { get; set; }
   public Optional<string>? Genus { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);

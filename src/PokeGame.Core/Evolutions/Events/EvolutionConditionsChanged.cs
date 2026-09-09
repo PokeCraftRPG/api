@@ -1,7 +1,6 @@
 ﻿using Logitar.EventSourcing;
 using PokeGame.Core.Items;
 using PokeGame.Core.Moves;
-using PokeGame.Core.Pokemon;
 using PokeGame.Core.Regions;
 
 namespace PokeGame.Core.Evolutions.Events;

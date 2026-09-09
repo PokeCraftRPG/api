@@ -3,7 +3,6 @@ using PokeGame.Core.Evolutions.Events;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Items;
 using PokeGame.Core.Moves;
-using PokeGame.Core.Pokemon;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Worlds;
 

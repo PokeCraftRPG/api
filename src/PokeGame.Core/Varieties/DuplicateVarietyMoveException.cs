@@ -33,9 +33,9 @@ public sealed class DuplicateVarietyMoveException : ConflictException
     get => (LearningMethod)Data[nameof(LearningMethod)]!;
     private set => Data[nameof(LearningMethod)] = value;
   }
-  public int? Level
+  public byte? Level
   {
-    get => (int?)Data[nameof(Level)];
+    get => (byte?)Data[nameof(Level)];
     private set => Data[nameof(Level)] = value;
   }
 
