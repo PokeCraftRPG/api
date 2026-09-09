@@ -279,7 +279,7 @@ public class MoveIntegrationTests : IntegrationTests
       async () => await _moveService.CreateOrReplaceAsync(payload, id));
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     Assert.Equal(id, exception.MoveId);
-    Assert.Equal(payload.Power, exception.AttemptedPower);
+    Assert.Equal(payload.Power!.Value, exception.AttemptedPower);
     Assert.Equal(nameof(Move.Power), exception.PropertyName);
   }
 
@@ -299,14 +299,14 @@ public class MoveIntegrationTests : IntegrationTests
 
     UpdateMovePayload payload = new()
     {
-      Power = new Optional<int?>(40)
+      Power = new Optional<byte?>(40)
     };
 
     InvalidMovePowerException exception = await Assert.ThrowsAsync<InvalidMovePowerException>(
       async () => await _moveService.UpdateAsync(growl.EntityId, payload));
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     Assert.Equal(growl.EntityId, exception.MoveId);
-    Assert.Equal(40, exception.AttemptedPower);
+    Assert.Equal((byte)40, exception.AttemptedPower);
     Assert.Equal(nameof(Move.Power), exception.PropertyName);
   }
 
@@ -365,9 +365,9 @@ public class MoveIntegrationTests : IntegrationTests
       Name = new Optional<string>(create.Name),
       Summary = new Optional<string>(create.Summary),
       Content = new Optional<string>(create.Content),
-      Power = new Optional<int?>(create.Power),
-      Accuracy = new Optional<int?>(create.Accuracy),
-      PowerPoints = new Optional<int?>(create.PowerPoints)
+      Power = new Optional<byte?>(create.Power),
+      Accuracy = new Optional<byte?>(create.Accuracy),
+      PowerPoints = new Optional<byte?>(create.PowerPoints)
     };
 
     MoveDto? move = await _moveService.UpdateAsync(id, payload);
