@@ -20,8 +20,8 @@ public interface IFormBuilder
   IFormBuilder WithContent(string? content);
   IFormBuilder WithTypes(PokemonType primary, PokemonType? secondary = null);
   IFormBuilder WithAbilities(Ability primary, Ability? secondary = null, Ability? hidden = null);
-  IFormBuilder WithBaseStatistics(int hp, int attack, int defense, int specialAttack, int specialDefense, int speed);
-  IFormBuilder WithYield(int experience, int hp, int attack, int defense, int specialAttack, int specialDefense, int speed);
+  IFormBuilder WithBaseStatistics(byte hp, byte attack, byte defense, byte specialAttack, byte specialDefense, byte speed);
+  IFormBuilder WithYield(int experience, byte hp, byte attack, byte defense, byte specialAttack, byte specialDefense, byte speed);
   IFormBuilder WithSize(int? height, int? weight);
   IFormBuilder WithSprites(FormSpriteAssets? sprites);
 
@@ -35,12 +35,12 @@ public class FormBuilder : IFormBuilder
   private Ability? _hiddenAbility;
   private Ability? _primaryAbility;
   private Ability? _secondaryAbility;
-  private int _attack = 49;
-  private int _defense = 49;
-  private int _hp = 45;
-  private int _specialAttack = 65;
-  private int _specialDefense = 65;
-  private int _speed = 45;
+  private byte _attack = 49;
+  private byte _defense = 49;
+  private byte _hp = 45;
+  private byte _specialAttack = 65;
+  private byte _specialDefense = 65;
+  private byte _speed = 45;
   private FormCategory _category = FormCategory.Default;
   private string? _content;
   private FormId? _formId;
@@ -54,13 +54,13 @@ public class FormBuilder : IFormBuilder
   private Variety? _variety;
   private int? _weight = 69;
   private World? _world;
-  private int _yieldAttack;
-  private int _yieldDefense;
+  private byte _yieldAttack;
+  private byte _yieldDefense;
   private int _yieldExperience = 64;
-  private int _yieldHp;
-  private int _yieldSpecialAttack = 1;
-  private int _yieldSpecialDefense;
-  private int _yieldSpeed;
+  private byte _yieldHp;
+  private byte _yieldSpecialAttack = 1;
+  private byte _yieldSpecialDefense;
+  private byte _yieldSpeed;
 
   public FormBuilder(Faker? faker = null)
   {
@@ -130,7 +130,7 @@ public class FormBuilder : IFormBuilder
     return this;
   }
 
-  public IFormBuilder WithBaseStatistics(int hp, int attack, int defense, int specialAttack, int specialDefense, int speed)
+  public IFormBuilder WithBaseStatistics(byte hp, byte attack, byte defense, byte specialAttack, byte specialDefense, byte speed)
   {
     _hp = hp;
     _attack = attack;
@@ -141,7 +141,7 @@ public class FormBuilder : IFormBuilder
     return this;
   }
 
-  public IFormBuilder WithYield(int experience, int hp, int attack, int defense, int specialAttack, int specialDefense, int speed)
+  public IFormBuilder WithYield(int experience, byte hp, byte attack, byte defense, byte specialAttack, byte specialDefense, byte speed)
   {
     _yieldExperience = experience;
     _yieldHp = hp;

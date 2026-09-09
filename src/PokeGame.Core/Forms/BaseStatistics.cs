@@ -4,24 +4,24 @@ namespace PokeGame.Core.Forms;
 
 public interface IBaseStatistics
 {
-  int HP { get; }
-  int Attack { get; }
-  int Defense { get; }
-  int SpecialAttack { get; }
-  int SpecialDefense { get; }
-  int Speed { get; }
+  byte HP { get; }
+  byte Attack { get; }
+  byte Defense { get; }
+  byte SpecialAttack { get; }
+  byte SpecialDefense { get; }
+  byte Speed { get; }
 }
 
 public sealed record BaseStatistics : IBaseStatistics
 {
-  public int HP { get; }
-  public int Attack { get; }
-  public int Defense { get; }
-  public int SpecialAttack { get; }
-  public int SpecialDefense { get; }
-  public int Speed { get; }
+  public byte HP { get; }
+  public byte Attack { get; }
+  public byte Defense { get; }
+  public byte SpecialAttack { get; }
+  public byte SpecialDefense { get; }
+  public byte Speed { get; }
 
-  public BaseStatistics(int hp, int attack, int defense, int specialAttack, int specialDefense, int speed)
+  public BaseStatistics(byte hp, byte attack, byte defense, byte specialAttack, byte specialDefense, byte speed)
   {
     HP = hp;
     Attack = attack;
@@ -39,11 +39,11 @@ internal class BaseStatisticsValidator : AbstractValidator<IBaseStatistics>
 {
   public BaseStatisticsValidator()
   {
-    RuleFor(x => x.HP).InclusiveBetween(1, byte.MaxValue);
-    RuleFor(x => x.Attack).InclusiveBetween(1, byte.MaxValue);
-    RuleFor(x => x.Defense).InclusiveBetween(1, byte.MaxValue);
-    RuleFor(x => x.SpecialAttack).InclusiveBetween(1, byte.MaxValue);
-    RuleFor(x => x.SpecialDefense).InclusiveBetween(1, byte.MaxValue);
-    RuleFor(x => x.Speed).InclusiveBetween(1, byte.MaxValue);
+    RuleFor(x => x.HP).GreaterThan((byte)0);
+    RuleFor(x => x.Attack).GreaterThan((byte)0);
+    RuleFor(x => x.Defense).GreaterThan((byte)0);
+    RuleFor(x => x.SpecialAttack).GreaterThan((byte)0);
+    RuleFor(x => x.SpecialDefense).GreaterThan((byte)0);
+    RuleFor(x => x.Speed).GreaterThan((byte)0);
   }
 }
