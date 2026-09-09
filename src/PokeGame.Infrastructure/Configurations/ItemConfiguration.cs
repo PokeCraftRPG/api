@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PokeGame.Core;
@@ -24,7 +24,7 @@ internal class ItemConfiguration : AggregateConfiguration<ItemEntity>, IEntityTy
     builder.HasIndex(x => new { x.WorldId, x.Price });
     builder.HasIndex(x => new { x.WorldId, x.Weight });
 
-    builder.Property(x => x.Category).HasMaxLength(8).HasConversion(new EnumToStringConverter<ItemCategory>());
+    builder.Property(x => x.Category).HasMaxLength(16).HasConversion(new EnumToStringConverter<ItemCategory>());
     builder.Property(x => x.Key).HasMaxLength(Key.MaximumLength);
     builder.Property(x => x.Name).HasMaxLength(Name.MaximumLength);
     builder.Property(x => x.Summary).HasMaxLength(Summary.MaximumLength);
