@@ -14,6 +14,8 @@ namespace PokeGame.Api.Controllers;
 [Route("trainers")]
 public class TrainerController : ControllerBase
 {
+  private const string GetByIdRoute = "GetTrainer";
+
   private readonly ITrainerService _trainerService;
 
   public TrainerController(ITrainerService trainerService)
@@ -28,15 +30,15 @@ public class TrainerController : ControllerBase
     return ToActionResult(result);
   }
 
-  [HttpGet("{id}")]
-  public async Task<ActionResult<TrainerDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
+  [HttpGet("{id}", Name = GetByIdRoute)]
+  public async Task<ActionResult<TrainerDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     TrainerDto? trainer = await _trainerService.ReadAsync(id, key: null, license: null, cancellationToken);
     return trainer is null ? NotFound() : Ok(trainer);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<TrainerDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<TrainerDto>> ReadAsync(string key, CancellationToken cancellationToken)
   {
     TrainerDto? trainer = await _trainerService.ReadAsync(id: null, key, license: null, cancellationToken);
     return trainer is null ? NotFound() : Ok(trainer);
@@ -72,6 +74,6 @@ public class TrainerController : ControllerBase
   }
 
   private ActionResult<TrainerDto> ToActionResult(CreateOrReplaceTrainerResult result) => result.Created
-    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Trainer.Id }, result.Trainer)
+    ? CreatedAtRoute(GetByIdRoute, new { id = result.Trainer.Id }, result.Trainer)
     : Ok(result.Trainer);
 }

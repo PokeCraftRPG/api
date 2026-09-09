@@ -14,6 +14,8 @@ namespace PokeGame.Api.Controllers;
 [Route("items")]
 public class ItemController : ControllerBase
 {
+  private const string GetByIdRoute = "GetItem";
+
   private readonly IItemService _itemService;
 
   public ItemController(IItemService itemService)
@@ -28,15 +30,15 @@ public class ItemController : ControllerBase
     return ToActionResult(result);
   }
 
-  [HttpGet("{id}")]
-  public async Task<ActionResult<ItemDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
+  [HttpGet("{id}", Name = GetByIdRoute)]
+  public async Task<ActionResult<ItemDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     ItemDto? item = await _itemService.ReadAsync(id, key: null, cancellationToken);
     return item is null ? NotFound() : Ok(item);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<ItemDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<ItemDto>> ReadAsync(string key, CancellationToken cancellationToken)
   {
     ItemDto? item = await _itemService.ReadAsync(id: null, key, cancellationToken);
     return item is null ? NotFound() : Ok(item);
@@ -65,6 +67,6 @@ public class ItemController : ControllerBase
   }
 
   private ActionResult<ItemDto> ToActionResult(CreateOrReplaceItemResult result) => result.Created
-    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Item.Id }, result.Item)
+    ? CreatedAtRoute(GetByIdRoute, new { id = result.Item.Id }, result.Item)
     : Ok(result.Item);
 }

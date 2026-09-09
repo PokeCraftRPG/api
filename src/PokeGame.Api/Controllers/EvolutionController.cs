@@ -14,6 +14,8 @@ namespace PokeGame.Api.Controllers;
 [Route("evolutions")]
 public class EvolutionController : ControllerBase
 {
+  private const string GetByIdRoute = "GetEvolution";
+
   private readonly IEvolutionService _evolutionService;
 
   public EvolutionController(IEvolutionService evolutionService)
@@ -28,8 +30,8 @@ public class EvolutionController : ControllerBase
     return ToActionResult(result);
   }
 
-  [HttpGet("{id}")]
-  public async Task<ActionResult<EvolutionDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
+  [HttpGet("{id}", Name = GetByIdRoute)]
+  public async Task<ActionResult<EvolutionDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     EvolutionDto? evolution = await _evolutionService.ReadAsync(id, cancellationToken);
     return evolution is null ? NotFound() : Ok(evolution);
@@ -58,6 +60,6 @@ public class EvolutionController : ControllerBase
   }
 
   private ActionResult<EvolutionDto> ToActionResult(CreateOrReplaceEvolutionResult result) => result.Created
-    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Evolution.Id }, result.Evolution)
+    ? CreatedAtRoute(GetByIdRoute, new { id = result.Evolution.Id }, result.Evolution)
     : Ok(result.Evolution);
 }

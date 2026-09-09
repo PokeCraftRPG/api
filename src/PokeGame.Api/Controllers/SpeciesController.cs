@@ -14,6 +14,8 @@ namespace PokeGame.Api.Controllers;
 [Route("species")]
 public class SpeciesController : ControllerBase
 {
+  private const string GetByIdRoute = "GetSpecies";
+
   private readonly ISpeciesService _speciesService;
 
   public SpeciesController(ISpeciesService speciesService)
@@ -28,22 +30,22 @@ public class SpeciesController : ControllerBase
     return ToActionResult(result);
   }
 
-  [HttpGet("{id}")]
-  public async Task<ActionResult<SpeciesDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
+  [HttpGet("{id}", Name = GetByIdRoute)]
+  public async Task<ActionResult<SpeciesDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     SpeciesDto? species = await _speciesService.ReadAsync(id, number: null, key: null, cancellationToken);
     return species is null ? NotFound() : Ok(species);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<SpeciesDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<SpeciesDto>> ReadAsync(string key, CancellationToken cancellationToken)
   {
     SpeciesDto? species = await _speciesService.ReadAsync(id: null, number: null, key, cancellationToken);
     return species is null ? NotFound() : Ok(species);
   }
 
   [HttpGet("number:{number}")]
-  public async Task<ActionResult<SpeciesDto>> ReadByNumberAsync(int number, CancellationToken cancellationToken)
+  public async Task<ActionResult<SpeciesDto>> ReadAsync(int number, CancellationToken cancellationToken)
   {
     SpeciesDto? species = await _speciesService.ReadAsync(id: null, number, key: null, cancellationToken);
     return species is null ? NotFound() : Ok(species);
@@ -72,6 +74,6 @@ public class SpeciesController : ControllerBase
   }
 
   private ActionResult<SpeciesDto> ToActionResult(CreateOrReplaceSpeciesResult result) => result.Created
-    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Species.Id }, result.Species)
+    ? CreatedAtRoute(GetByIdRoute, new { id = result.Species.Id }, result.Species)
     : Ok(result.Species);
 }

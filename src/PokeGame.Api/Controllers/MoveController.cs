@@ -14,6 +14,8 @@ namespace PokeGame.Api.Controllers;
 [Route("moves")]
 public class MoveController : ControllerBase
 {
+  private const string GetByIdRoute = "GetMove";
+
   private readonly IMoveService _moveService;
 
   public MoveController(IMoveService moveService)
@@ -28,15 +30,15 @@ public class MoveController : ControllerBase
     return ToActionResult(result);
   }
 
-  [HttpGet("{id}")]
-  public async Task<ActionResult<MoveDto>> ReadByIdAsync(Guid id, CancellationToken cancellationToken)
+  [HttpGet("{id}", Name = GetByIdRoute)]
+  public async Task<ActionResult<MoveDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {
     MoveDto? move = await _moveService.ReadAsync(id, key: null, cancellationToken);
     return move is null ? NotFound() : Ok(move);
   }
 
   [HttpGet("key:{key}")]
-  public async Task<ActionResult<MoveDto>> ReadByKeyAsync(string key, CancellationToken cancellationToken)
+  public async Task<ActionResult<MoveDto>> ReadAsync(string key, CancellationToken cancellationToken)
   {
     MoveDto? move = await _moveService.ReadAsync(id: null, key, cancellationToken);
     return move is null ? NotFound() : Ok(move);
@@ -65,6 +67,6 @@ public class MoveController : ControllerBase
   }
 
   private ActionResult<MoveDto> ToActionResult(CreateOrReplaceMoveResult result) => result.Created
-    ? CreatedAtAction(nameof(ReadByIdAsync), new { id = result.Move.Id }, result.Move)
+    ? CreatedAtRoute(GetByIdRoute, new { id = result.Move.Id }, result.Move)
     : Ok(result.Move);
 }
