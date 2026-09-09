@@ -28,5 +28,15 @@
     "Content": {
       "Type": "text/plain"
     }
+  },
+  {
+    "Id": "8d039c86-203b-4391-a3a0-7394c9f0b8dd",
+    "UniqueName": "MemberInvitation",
+    "DisplayName": "Member Invitation",
+    "Description": null,
+    "Subject": "MemberInvitation_Subject",
+    "Content": {
+      "Type": "text/html"
+    }
   }
 ]

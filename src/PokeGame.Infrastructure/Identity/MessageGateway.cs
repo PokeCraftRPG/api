@@ -29,20 +29,36 @@ internal class MessageGateway : IMessageGateway
   public async Task<Guid> SendEmailVerificationAsync(string emailAddress, string locale, string token, CancellationToken cancellationToken)
   {
     RecipientPayload recipient = new(new EmailPayload(emailAddress));
-    Variable variables = new(UrlKey, GetEmailVerificationUrl(token));
-    return (await SendAsync(SenderKind.Email, EmailVerificationTemplate, [recipient], ignoreUserLocale: true, locale, [variables], cancellationToken)).Ids.Single();
+    Variable variable = new(UrlKey, GetEmailVerificationUrl(token));
+    return (await SendAsync(SenderKind.Email, EmailVerificationTemplate, [recipient], ignoreUserLocale: true, locale, [variable], cancellationToken)).Ids.Single();
   }
   public async Task<Guid> SendEmailVerificationAsync(User user, string locale, string token, CancellationToken cancellationToken)
   {
     RecipientPayload recipient = new(user.Id);
-    Variable variables = new(UrlKey, GetEmailVerificationUrl(token));
-    return (await SendAsync(SenderKind.Email, EmailVerificationTemplate, [recipient], ignoreUserLocale: true, locale, [variables], cancellationToken)).Ids.Single();
+    Variable variable = new(UrlKey, GetEmailVerificationUrl(token));
+    return (await SendAsync(SenderKind.Email, EmailVerificationTemplate, [recipient], ignoreUserLocale: true, locale, [variable], cancellationToken)).Ids.Single();
   }
   private string GetEmailVerificationUrl(string token)
   {
     string baseUrl = _clientApp.BaseUrl.TrimEnd('/');
     string path = _clientApp.EmailVerificationPath.Replace("{token}", token).TrimStart('/');
     return $"{baseUrl}/{path}";
+  }
+
+  public async Task SendMemberInvitationAsync(MemberInvitation invitation, string locale, CancellationToken cancellationToken)
+  {
+    RecipientPayload recipient;
+    if (invitation.UserId.HasValue)
+    {
+      recipient = new RecipientPayload(invitation.UserId.Value.EntityId);
+    }
+    else
+    {
+      EmailAddress emailAddress = invitation.EmailAddress ?? throw new ArgumentException("The email address is required.", nameof(invitation));
+      recipient = new RecipientPayload(new EmailPayload(emailAddress.Value));
+    }
+    Variable variable = new("UserExists", invitation.UserId.HasValue.ToString());
+    await SendAsync(SenderKind.Email, MemberInvitationTemplate, [recipient], ignoreUserLocale: false, locale, [variable], cancellationToken);
   }
 
   public async Task<Guid> SendMultiFactorAuthenticationAsync(User user, string? locale, OneTimePassword oneTimePassword, CancellationToken cancellationToken)
@@ -82,19 +98,4 @@ internal class MessageGateway : IMessageGateway
   }
 
   private static string GetMultiFactorAuthenticationTemplate(SenderKind senderKind) => string.Concat(MultiFactorAuthenticationTemplate, senderKind);
-
-  public async Task SendMemberInvitationAsync(MemberInvitation invitation, string locale, CancellationToken cancellationToken)
-  {
-    RecipientPayload recipient;
-    if (invitation.UserId.HasValue)
-    {
-      recipient = new RecipientPayload(invitation.UserId.Value.EntityId);
-    }
-    else
-    {
-      EmailAddress emailAddress = invitation.EmailAddress ?? throw new ArgumentException("The email address is required.", nameof(invitation));
-      recipient = new RecipientPayload(new EmailPayload(emailAddress.Value));
-    }
-    await SendAsync(SenderKind.Email, MemberInvitationTemplate, [recipient], ignoreUserLocale: false, locale, variables: null, cancellationToken);
-  }
 }

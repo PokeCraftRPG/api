@@ -24,7 +24,7 @@
                 @(Model.Resource("MemberInvitation_Access"))
               </p>
 
-              @if (Model.UserExists)
+              @if (bool.Parse(Model.Variable("UserExists")))
               {
                 <p style="margin:0 0 24px; font-size:16px; line-height:24px;">
                   @(Model.Resource("MemberInvitation_ExistingUserInstructions"))
