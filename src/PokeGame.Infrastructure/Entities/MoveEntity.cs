@@ -21,9 +21,9 @@ internal class MoveEntity : AggregateEntity
   public string? Summary { get; private set; }
   public string? Content { get; private set; }
 
-  public int? Accuracy { get; private set; }
-  public int? Power { get; private set; }
-  public int? PowerPoints { get; private set; }
+  public byte? Accuracy { get; private set; }
+  public byte? Power { get; private set; }
+  public byte? PowerPoints { get; private set; }
 
   public List<VarietyMoveEntity> Varieties { get; private set; } = [];
 

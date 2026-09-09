@@ -7,9 +7,9 @@ namespace PokeGame.Core;
 
 internal static class ValidationExtensions
 {
-  public static IRuleBuilderOptions<T, int> Accuracy<T>(this IRuleBuilder<T, int> ruleBuilder)
+  public static IRuleBuilderOptions<T, byte> Accuracy<T>(this IRuleBuilder<T, byte> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween(1, 100);
+    return ruleBuilder.InclusiveBetween((byte)1, (byte)100);
   }
 
   public static IRuleBuilderOptions<T, int> CatchRate<T>(this IRuleBuilder<T, int> ruleBuilder)
@@ -157,19 +157,19 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(byte.MaxValue);
   }
 
-  public static IRuleBuilderOptions<T, int> Power<T>(this IRuleBuilder<T, int> ruleBuilder)
+  public static IRuleBuilderOptions<T, byte> Power<T>(this IRuleBuilder<T, byte> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween(1, 250);
+    return ruleBuilder.InclusiveBetween((byte)1, (byte)250);
+  }
+
+  public static IRuleBuilderOptions<T, byte> PowerPoints<T>(this IRuleBuilder<T, byte> ruleBuilder)
+  {
+    return ruleBuilder.InclusiveBetween((byte)1, (byte)40);
   }
 
   public static IRuleBuilderOptions<T, int> Price<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
     return ruleBuilder.GreaterThan(0);
-  }
-
-  public static IRuleBuilderOptions<T, int> PowerPoints<T>(this IRuleBuilder<T, int> ruleBuilder)
-  {
-    return ruleBuilder.InclusiveBetween(1, 40);
   }
 
   public static IRuleBuilderOptions<T, string> Summary<T>(this IRuleBuilder<T, string> ruleBuilder)
