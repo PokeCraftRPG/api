@@ -91,19 +91,20 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.False(pokemon.IsShiny);
     Assert.Equal(PokemonType.Grass, pokemon.TeraType);
     Assert.Equal(AbilitySlot.Primary, pokemon.AbilitySlot);
-    Assert.Equal((byte)128, pokemon.Size);
-    Assert.Equal(SizeCategory.Medium, pokemon.SizeCategory);
-    Assert.Equal("Hardy", pokemon.Nature);
+    Assert.Equal((byte)128, pokemon.Size.Scale);
+    Assert.Equal(SizeCategory.Medium, pokemon.Size.Category);
+    Assert.Equal("Hardy", pokemon.Nature.Name);
+    Assert.Null(pokemon.Nature.IncreasedStatistic);
+    Assert.Null(pokemon.Nature.DecreasedStatistic);
     Assert.Equal((byte)0, pokemon.EggCycles);
-    Assert.False(pokemon.IsEgg);
     Assert.Equal(0, pokemon.Experience);
     Assert.Equal((byte)1, pokemon.Level);
-    Assert.Equal((byte)10, pokemon.IndividualValues.HP);
-    Assert.Equal((byte)11, pokemon.IndividualValues.Attack);
-    Assert.Equal((byte)12, pokemon.IndividualValues.Defense);
-    Assert.Equal((byte)13, pokemon.IndividualValues.SpecialAttack);
-    Assert.Equal((byte)14, pokemon.IndividualValues.SpecialDefense);
-    Assert.Equal((byte)15, pokemon.IndividualValues.Speed);
+    Assert.Equal((byte)10, pokemon.Statistics.HP.Individual);
+    Assert.Equal((byte)11, pokemon.Statistics.Attack.Individual);
+    Assert.Equal((byte)12, pokemon.Statistics.Defense.Individual);
+    Assert.Equal((byte)13, pokemon.Statistics.SpecialAttack.Individual);
+    Assert.Equal((byte)14, pokemon.Statistics.SpecialDefense.Individual);
+    Assert.Equal((byte)15, pokemon.Statistics.Speed.Individual);
     Assert.True(pokemon.Vitality > 0);
     Assert.Equal(pokemon.Vitality, pokemon.Stamina);
     Assert.Null(pokemon.HeldItem);
@@ -142,7 +143,6 @@ public class PokemonIntegrationTests : IntegrationTests
 
     PokemonDto pokemon = await _pokemonService.CreateAsync(payload);
     Assert.Equal((byte)10, pokemon.EggCycles);
-    Assert.True(pokemon.IsEgg);
     Assert.Equal(0, pokemon.Experience);
     Assert.Equal((byte)1, pokemon.Level);
   }
@@ -156,14 +156,17 @@ public class PokemonIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw EntityNotFoundException when the form does not exist.")]
   public async Task Given_MissingForm_When_Create_Then_EntityNotFoundException()
   {
+    Guid missingFormId = Guid.NewGuid();
     CreatePokemonPayload payload = new()
     {
-      FormId = Guid.NewGuid()
+      FormId = missingFormId
     };
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.CreateAsync(payload));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     Assert.Equal(Form.EntityKind, exception.EntityKind);
+    Assert.Equal(missingFormId, exception.EntityId);
     Assert.Equal(nameof(payload.FormId), exception.PropertyName);
   }
 
@@ -181,6 +184,8 @@ public class PokemonIntegrationTests : IntegrationTests
       async () => await _pokemonService.CreateAsync(payload));
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
     Assert.Equal(Specimen.EntityKind, exception.EntityKind);
+    Assert.NotEqual(created.Id, exception.EntityId);
+    Assert.NotEqual(Guid.Empty, exception.EntityId);
     Assert.Equal(created.Id, exception.ConflictId);
     Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
     Assert.Equal(nameof(Specimen.Key), exception.PropertyName);
@@ -198,8 +203,11 @@ public class PokemonIntegrationTests : IntegrationTests
     InvalidEggCyclesException exception = await Assert.ThrowsAsync<InvalidEggCyclesException>(
       async () => await _pokemonService.CreateAsync(payload));
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(payload.EggCycles, exception.AttemptedEggCycles);
+    Assert.NotEqual(Guid.Empty, exception.PokemonId);
+    Assert.Equal(_species.EntityId, exception.SpeciesId);
     Assert.Equal(_species.Eggs.Cycles, exception.MaximumEggCycles);
+    Assert.Equal(payload.EggCycles, exception.AttemptedEggCycles);
+    Assert.Equal(nameof(Specimen.EggCycles), exception.PropertyName);
   }
 
   [Fact(DisplayName = "It should throw InvalidPokemonFormCategoryException when the form category is invalid.")]
@@ -226,8 +234,11 @@ public class PokemonIntegrationTests : IntegrationTests
 
     InvalidPokemonFormCategoryException exception = await Assert.ThrowsAsync<InvalidPokemonFormCategoryException>(
       async () => await _pokemonService.CreateAsync(payload));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.NotEqual(Guid.Empty, exception.PokemonId);
     Assert.Equal(mega.EntityId, exception.FormId);
     Assert.Equal(FormCategory.Mega, exception.AttemptedCategory);
+    Assert.Equal(nameof(Specimen.FormId), exception.PropertyName);
   }
 
   [Fact(DisplayName = "It should throw InvalidAbilitySlotException when the ability slot is unavailable.")]
@@ -241,7 +252,11 @@ public class PokemonIntegrationTests : IntegrationTests
 
     InvalidAbilitySlotException exception = await Assert.ThrowsAsync<InvalidAbilitySlotException>(
       async () => await _pokemonService.CreateAsync(payload));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.NotEqual(Guid.Empty, exception.PokemonId);
+    Assert.Equal(_form.EntityId, exception.FormId);
     Assert.Equal(AbilitySlot.Hidden, exception.AttemptedSlot);
+    Assert.Equal(nameof(Specimen.AbilitySlot), exception.PropertyName);
   }
 
   [Fact(DisplayName = "It should throw InvalidPokemonGenderException when the gender is not allowed.")]
@@ -278,8 +293,12 @@ public class PokemonIntegrationTests : IntegrationTests
 
     InvalidPokemonGenderException exception = await Assert.ThrowsAsync<InvalidPokemonGenderException>(
       async () => await _pokemonService.CreateAsync(payload));
-    Assert.Equal(Gender.Male, exception.AttemptedGender);
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.NotEqual(Guid.Empty, exception.PokemonId);
+    Assert.Equal(genderless.EntityId, exception.VarietyId);
     Assert.Null(exception.FemaleRate);
+    Assert.Equal(Gender.Male, exception.AttemptedGender);
+    Assert.Equal(nameof(Specimen.Gender), exception.PropertyName);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when egg cycles and experience are both set.")]

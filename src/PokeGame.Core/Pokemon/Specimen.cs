@@ -117,7 +117,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     }
 
     key ??= species.Key;
-    gender = PokemonHelper.ResolveGender(randomizer, variety.GenderRatio, gender);
+    gender = PokemonHelper.ResolveGender(randomizer, this, variety, gender);
     isShiny ??= randomizer.Shininess();
     teraType ??= randomizer.TeraType(form.Types);
     abilitySlot = PokemonHelper.ResolveAbilitySlot(randomizer, this, form, abilitySlot);
