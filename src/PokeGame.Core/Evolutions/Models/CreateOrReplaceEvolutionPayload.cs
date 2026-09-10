@@ -8,7 +8,7 @@ public record CreateOrReplaceEvolutionPayload
   public Guid TargetId { get; set; }
   public EvolutionTrigger Trigger { get; set; }
 
-  public byte? Level { get; set; }
+  public int? Level { get; set; }
   public bool Friendship { get; set; }
   public Gender? Gender { get; set; }
   public Guid? ItemId { get; set; }

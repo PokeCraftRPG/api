@@ -17,7 +17,7 @@ internal class VarietyMoveEntity
   public int MoveId { get; private set; }
 
   public LearningMethod LearningMethod { get; private set; }
-  public byte? Level { get; private set; }
+  public int? Level { get; private set; }
 
   public string? CreatedBy { get; private set; }
   public DateTime CreatedOn { get; private set; }

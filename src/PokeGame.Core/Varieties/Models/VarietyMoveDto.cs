@@ -11,7 +11,7 @@ public class VarietyMoveDto
   public MoveDto Move { get; set; } = new();
 
   public LearningMethod LearningMethod { get; set; }
-  public byte? Level { get; set; }
+  public int? Level { get; set; }
 
   public Actor CreatedBy { get; set; } = new();
   public DateTime CreatedOn { get; set; }

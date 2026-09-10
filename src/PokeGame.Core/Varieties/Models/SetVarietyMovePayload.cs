@@ -8,7 +8,7 @@ public record SetVarietyMovePayload
   public Guid MoveId { get; set; }
 
   public LearningMethod LearningMethod { get; set; }
-  public byte? Level { get; set; }
+  public int? Level { get; set; }
 
   public void Validate() => new Validator().ValidateAndThrow(this);
 

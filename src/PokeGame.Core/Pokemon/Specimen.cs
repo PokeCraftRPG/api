@@ -5,6 +5,7 @@ using PokeGame.Core.Forms;
 using PokeGame.Core.Items;
 using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Species;
+using PokeGame.Core.Trainers;
 using PokeGame.Core.Varieties;
 using PokeGame.Core.Worlds;
 
@@ -64,6 +65,17 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   public ItemId? HeldItemId { get; private set; }
 
   public AssetId? SpriteId { get; private set; }
+
+  public TrainerId? OriginalTrainerId { get; private set; }
+  // TODO(fpion): Poké Ball ID
+  // TODO(fpion): Current Trainer ID
+  // TODO(fpion): Ownership Kind ∈ { Caught, Received } (Bought? Gifted? Hatched? Traded? Winned?)
+  // TODO(fpion): Met at Level
+  // TODO(fpion): Met at Location
+  // TODO(fpion): Met on
+  // TODO(fpion): Description/Notes
+  // TODO(fpion): Position
+  // TODO(fpion): Box
 
   public Specimen() : base()
   {
