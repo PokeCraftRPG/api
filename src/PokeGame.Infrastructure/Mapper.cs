@@ -8,6 +8,7 @@ using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Evolutions.Models;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Inventory.Models;
 using PokeGame.Core.Items.Models;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Moves.Models;
@@ -206,6 +207,12 @@ internal class Mapper
 
     return destination;
   }
+
+  public InventoryItemDto ToInventoryItem(InventoryItemEntity source) => new()
+  {
+    Item = ToItem(source.Item ?? throw new ArgumentException("The item is required.", nameof(source))),
+    Quantity = source.Quantity
+  };
 
   public ItemDto ToItem(ItemEntity source)
   {
