@@ -8,4 +8,18 @@ public record BaseStatisticsDto : IBaseStatistics
   public byte SpecialAttack { get; set; }
   public byte SpecialDefense { get; set; }
   public byte Speed { get; set; }
+
+  public BaseStatisticsDto()
+  {
+  }
+
+  public BaseStatisticsDto(byte hp, byte attack, byte defense, byte specialAttack, byte specialDefense, byte speed)
+  {
+    HP = hp;
+    Attack = attack;
+    Defense = defense;
+    SpecialAttack = specialAttack;
+    SpecialDefense = specialDefense;
+    Speed = speed;
+  }
 }

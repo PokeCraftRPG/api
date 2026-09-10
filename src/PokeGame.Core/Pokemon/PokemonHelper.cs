@@ -6,7 +6,7 @@ namespace PokeGame.Core.Pokemon;
 
 internal static class PokemonHelper
 {
-  public static AbilitySlot ResolveAbilitySlot(IPokemonRandomizer randomizer, FormAbilities abilites, AbilitySlot? slot)
+  public static AbilitySlot ResolveAbilitySlot(IPokemonRandomizer randomizer, Specimen specimen, Form form, AbilitySlot? slot)
   {
     if (slot.HasValue)
     {
@@ -15,19 +15,22 @@ internal static class PokemonHelper
         throw new ArgumentOutOfRangeException(nameof(slot));
       }
 
-      if ((slot.Value == AbilitySlot.Secondary && !abilites.SecondaryId.HasValue) || (slot.Value == AbilitySlot.Hidden && !abilites.HiddenId.HasValue))
+      if ((slot.Value == AbilitySlot.Secondary && !form.Abilities.SecondaryId.HasValue)
+        || (slot.Value == AbilitySlot.Hidden && !form.Abilities.HiddenId.HasValue))
       {
-        throw new NotImplementedException(); // TODO(fpion): 422
+        throw new InvalidAbilitySlotException(specimen, form, slot.Value);
       }
 
       return slot.Value;
     }
 
-    return randomizer.AbilitySlot(abilites);
+    return randomizer.AbilitySlot(form.Abilities);
   }
 
-  public static Gender? ResolveGender(IPokemonRandomizer randomizer, GenderRatio? ratio, Gender? gender)
+  public static Gender? ResolveGender(IPokemonRandomizer randomizer, Specimen specimen, Variety variety, Gender? gender)
   {
+    GenderRatio? ratio = variety.GenderRatio;
+
     if (gender.HasValue)
     {
       if (!Enum.IsDefined(gender.Value))
@@ -37,7 +40,7 @@ internal static class PokemonHelper
 
       if (ratio is null || (Equals(ratio, GenderRatio.AllFemale) && gender == Gender.Male) || (Equals(ratio, GenderRatio.AllMale) && gender == Gender.Female))
       {
-        throw new NotImplementedException(); // TODO(fpion): 422
+        throw new InvalidPokemonGenderException(specimen, variety, gender.Value);
       }
 
       return gender;

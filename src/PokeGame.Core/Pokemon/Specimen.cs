@@ -91,7 +91,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     WorldMismatchException.ThrowIfMismatch(this, species, nameof(species));
     if (eggCycles > species.Eggs.Cycles)
     {
-      throw new NotImplementedException(); // TODO(fpion): 422
+      throw new InvalidEggCyclesException(this, species, eggCycles);
     }
 
     WorldMismatchException.ThrowIfMismatch(this, variety, nameof(variety));
@@ -107,20 +107,20 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     }
     if (form.Category != FormCategory.Default && form.Category != FormCategory.Alternative)
     {
-      throw new NotImplementedException(); // TODO(fpion): 422
+      throw new InvalidPokemonFormCategoryException(this, form);
     }
 
     ArgumentOutOfRangeException.ThrowIfNegative(experience, nameof(experience));
     if (eggCycles > 0 && experience > 0)
     {
-      throw new NotImplementedException();
+      throw new InvalidOperationException("Egg cycles and experience cannot both be greater than zero.");
     }
 
     key ??= species.Key;
     gender = PokemonHelper.ResolveGender(randomizer, variety.GenderRatio, gender);
     isShiny ??= randomizer.Shininess();
     teraType ??= randomizer.TeraType(form.Types);
-    abilitySlot ??= PokemonHelper.ResolveAbilitySlot(randomizer, form.Abilities, abilitySlot);
+    abilitySlot = PokemonHelper.ResolveAbilitySlot(randomizer, this, form, abilitySlot);
     size ??= randomizer.Size();
     nature ??= randomizer.Nature();
     individualValues ??= randomizer.IndividualValues();

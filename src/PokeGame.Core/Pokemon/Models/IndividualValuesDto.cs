@@ -8,4 +8,18 @@ public record IndividualValuesDto : IIndividualValues
   public byte SpecialAttack { get; set; }
   public byte SpecialDefense { get; set; }
   public byte Speed { get; set; }
+
+  public IndividualValuesDto()
+  {
+  }
+
+  public IndividualValuesDto(byte hp, byte attack, byte defense, byte specialAttack, byte specialDefense, byte speed)
+  {
+    HP = hp;
+    Attack = attack;
+    Defense = defense;
+    SpecialAttack = specialAttack;
+    SpecialDefense = specialDefense;
+    Speed = speed;
+  }
 }

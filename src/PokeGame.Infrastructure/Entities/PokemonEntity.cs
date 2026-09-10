@@ -2,8 +2,10 @@
 using Logitar.EventSourcing;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
+using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Events;
+using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Species;
 
 namespace PokeGame.Infrastructure.Entities;
@@ -136,6 +138,29 @@ internal class PokemonEntity : AggregateEntity
     }
     return actorIds;
   }
+
+  public IReadOnlyDictionary<PokemonSkill, byte> GetSkillRanks()
+  {
+    if (SkillRanks is null)
+    {
+      return new Dictionary<PokemonSkill, byte>();
+    }
+
+    string[] values = SkillRanks.Split('|');
+    Dictionary<PokemonSkill, byte> skillRanks = new(capacity: values.Length);
+    foreach (string value in values)
+    {
+      string[] pair = value.Split(':');
+      if (pair.Length == 2 && Enum.TryParse(pair[0], out PokemonSkill skill) && Enum.IsDefined(skill) && byte.TryParse(pair[1], out byte rank))
+      {
+        skillRanks[skill] = rank;
+      }
+    }
+    return skillRanks.AsReadOnly();
+  }
+
+  public BaseStatisticsDto GetBaseStatistics() => new(BaseHP, BaseAttack, BaseDefense, BaseSpecialAttack, BaseSpecialDefense, BaseSpeed);
+  public IndividualValuesDto GetIndividualValues() => new(IndividualHP, IndividualAttack, IndividualDefense, IndividualSpecialAttack, IndividualSpecialDefense, IndividualSpeed);
 
   public void SetDetails(PokemonDetailsChanged @event)
   {

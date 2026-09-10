@@ -1,4 +1,4 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using PokeGame.Core.Pokemon;
 
 namespace PokeGame.Infrastructure.Repositories;
@@ -18,12 +18,12 @@ internal class PokemonRepository : Repository, IPokemonRepository
     return await base.LoadAsync<Specimen>(ids.Select(id => id.StreamId), cancellationToken);
   }
 
-  public async Task SaveAsync(Specimen pokemon, CancellationToken cancellationToken)
+  public async Task SaveAsync(Specimen specimen, CancellationToken cancellationToken)
   {
-    await base.SaveAsync(pokemon, cancellationToken);
+    await base.SaveAsync(specimen, cancellationToken);
   }
-  public async Task SaveAsync(IEnumerable<Specimen> pokemon, CancellationToken cancellationToken)
+  public async Task SaveAsync(IEnumerable<Specimen> specimens, CancellationToken cancellationToken)
   {
-    await base.SaveAsync(pokemon, cancellationToken);
+    await base.SaveAsync(specimens, cancellationToken);
   }
 }

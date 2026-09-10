@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
@@ -32,10 +32,10 @@ internal class PokemonQuerier : IPokemonQuerier
     return streamId is null ? null : new PokemonId(streamId);
   }
 
-  public async Task<PokemonDto> ReadAsync(Specimen pokemon, CancellationToken cancellationToken)
+  public async Task<PokemonDto> ReadAsync(Specimen specimen, CancellationToken cancellationToken)
   {
-    return await ReadAsync(pokemon.Id, cancellationToken)
-      ?? throw new InvalidOperationException($"The Pokémon entity 'StreamId={pokemon.Id}' was not found.");
+    return await ReadAsync(specimen.Id, cancellationToken)
+      ?? throw new InvalidOperationException($"The Pokémon entity 'StreamId={specimen.Id}' was not found.");
   }
   public async Task<PokemonDto?> ReadAsync(PokemonId id, CancellationToken cancellationToken)
   {

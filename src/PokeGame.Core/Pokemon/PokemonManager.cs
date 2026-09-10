@@ -1,11 +1,11 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using PokeGame.Core.Pokemon.Events;
 
 namespace PokeGame.Core.Pokemon;
 
 public interface IPokemonManager
 {
-  Task EnsureUnicityAsync(Specimen pokemon, CancellationToken cancellationToken = default);
+  Task EnsureUnicityAsync(Specimen specimen, CancellationToken cancellationToken = default);
 }
 
 internal class PokemonManager : IPokemonManager
@@ -17,10 +17,10 @@ internal class PokemonManager : IPokemonManager
     _pokemonQuerier = pokemonQuerier;
   }
 
-  public async Task EnsureUnicityAsync(Specimen pokemon, CancellationToken cancellationToken)
+  public async Task EnsureUnicityAsync(Specimen specimen, CancellationToken cancellationToken)
   {
     Key? key = null;
-    foreach (IEvent change in pokemon.Changes)
+    foreach (IEvent change in specimen.Changes)
     {
       if (change is PokemonCreated created)
       {
@@ -35,9 +35,9 @@ internal class PokemonManager : IPokemonManager
     if (key is not null)
     {
       PokemonId? pokemonId = await _pokemonQuerier.GetIdAsync(key, cancellationToken);
-      if (pokemonId.HasValue && !pokemonId.Value.Equals(pokemon.Id))
+      if (pokemonId.HasValue && !pokemonId.Value.Equals(specimen.Id))
       {
-        throw new KeyAlreadyUsedException(pokemon, pokemonId.Value.EntityId, pokemon.Key, nameof(pokemon.Key));
+        throw new KeyAlreadyUsedException(specimen, pokemonId.Value.EntityId, specimen.Key, nameof(specimen.Key));
       }
     }
   }
