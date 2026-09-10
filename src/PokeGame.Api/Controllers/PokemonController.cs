@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Api.Filters;
 using PokeGame.Core.Pokemon;
@@ -19,6 +19,13 @@ public class PokemonController : ControllerBase
   public PokemonController(IPokemonService pokemonService)
   {
     _pokemonService = pokemonService;
+  }
+
+  [HttpPut("{pokemonId}/form/{formId}")]
+  public async Task<ActionResult<PokemonDto>> ChangeFormAsync(Guid pokemonId, Guid formId, CancellationToken cancellationToken)
+  {
+    PokemonDto? pokemon = await _pokemonService.ChangeFormAsync(pokemonId, formId, cancellationToken);
+    return pokemon is null ? NotFound() : Ok(pokemon);
   }
 
   [HttpPost]
