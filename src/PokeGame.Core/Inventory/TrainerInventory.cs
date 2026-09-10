@@ -49,7 +49,7 @@ public sealed class TrainerInventory : AggregateRoot, IEntityProvider
   {
     if (quantity < MinimumQuantity || quantity > MaximumQuantity)
     {
-      // TODO(fpion): 422
+      throw new InventoryQuantityOutOfRangeException(this, itemId, quantity);
     }
 
     int existingQuantity = _quantities.GetValueOrDefault(itemId);
