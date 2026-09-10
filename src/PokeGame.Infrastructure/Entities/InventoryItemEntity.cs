@@ -10,7 +10,7 @@ internal class InventoryItemEntity
   public ItemEntity? Item { get; private set; }
   public int ItemId { get; private set; }
 
-  public int Quantity { get; private set; }
+  public int Quantity { get; set; }
 
   public InventoryItemEntity(int trainerId, int itemId, int quantity)
   {
