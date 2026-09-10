@@ -162,6 +162,23 @@ internal class PokemonEntity : AggregateEntity
   public BaseStatisticsDto GetBaseStatistics() => new(BaseHP, BaseAttack, BaseDefense, BaseSpecialAttack, BaseSpecialDefense, BaseSpeed);
   public IndividualValuesDto GetIndividualValues() => new(IndividualHP, IndividualAttack, IndividualDefense, IndividualSpecialAttack, IndividualSpecialDefense, IndividualSpeed);
 
+  public void ChangeForm(int formId, PokemonFormChanged @event)
+  {
+    Update(@event);
+
+    FormId = formId;
+
+    BaseHP = @event.BaseStatistics.HP;
+    BaseAttack = @event.BaseStatistics.Attack;
+    BaseDefense = @event.BaseStatistics.Defense;
+    BaseSpecialAttack = @event.BaseStatistics.SpecialAttack;
+    BaseSpecialDefense = @event.BaseStatistics.SpecialDefense;
+    BaseSpeed = @event.BaseStatistics.Speed;
+
+    Vitality = @event.Vitality;
+    Stamina = @event.Stamina;
+  }
+
   public void SetDetails(PokemonDetailsChanged @event)
   {
     Update(@event);

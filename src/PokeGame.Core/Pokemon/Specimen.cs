@@ -161,6 +161,34 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     Characteristic = @event.Characteristic;
   }
 
+  public void ChangeForm(Form form, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(this, form, nameof(form));
+    if (form.VarietyId != VarietyId)
+    {
+      throw new InvalidPokemonFormException(this, form);
+    }
+
+    FormId formId = form.Id;
+    if (!Equals(FormId, formId))
+    {
+      PokemonStatistics current = new(this);
+      PokemonStatistics changed = new(form.BaseStatistics, IndividualValues, EffortValues, Level, Nature);
+      int delta = changed.HP - current.HP;
+      int vitality = Math.Clamp(Vitality + delta, 0, changed.HP);
+      int stamina = Math.Clamp(Stamina + delta, 0, changed.HP);
+
+      Raise(new PokemonFormChanged(formId, form.BaseStatistics, vitality, stamina), actorId);
+    }
+  }
+  private void Handle(PokemonFormChanged @event)
+  {
+    FormId = @event.FormId;
+    _baseStatistics = @event.BaseStatistics;
+    Vitality = @event.Vitality;
+    Stamina = @event.Stamina;
+  }
+
   public void Delete(ActorId? actorId = null)
   {
     if (!IsDeleted)

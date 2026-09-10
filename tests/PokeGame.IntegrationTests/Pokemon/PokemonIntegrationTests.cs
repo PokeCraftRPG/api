@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
@@ -607,6 +607,109 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
   }
 
+  [Fact(DisplayName = "It should return null when changing the form of a Pokémon that does not exist.")]
+  public async Task Given_NotFound_When_ChangeForm_Then_NullReturned()
+  {
+    Assert.Null(await _pokemonService.ChangeFormAsync(Guid.NewGuid(), _form.EntityId));
+  }
+
+  [Fact(DisplayName = "It should change a Pokémon form.")]
+  public async Task Given_ValidForm_When_ChangeForm_Then_Changed()
+  {
+    PokemonDto created = await CreatePokemonAsync("change-form");
+    PokemonDto? damaged = await _pokemonService.UpdateAsync(created.Id, new UpdatePokemonPayload
+    {
+      Vitality = 1,
+      Stamina = 1
+    });
+    Assert.NotNull(damaged);
+
+    Form alternative = await CreateAlternativeFormAsync();
+
+    PokemonDto? pokemon = await _pokemonService.ChangeFormAsync(created.Id, alternative.EntityId);
+    Assert.NotNull(pokemon);
+    Assert.Equal(damaged.Id, pokemon.Id);
+    Assert.Equal(damaged.Version + 1, pokemon.Version);
+    Assert.Equal(damaged.CreatedBy, pokemon.CreatedBy);
+    Assert.Equal(damaged.CreatedOn, pokemon.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(Actor, pokemon.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, pokemon.UpdatedOn, TimeSpan.FromSeconds(10));
+
+    Assert.Equal(alternative.EntityId, pokemon.Form.Id);
+    Assert.Equal(FormCategory.Alternative, pokemon.Form.Category);
+    Assert.Equal(alternative.BaseStatistics.HP, pokemon.Statistics.HP.Base);
+    Assert.Equal(alternative.BaseStatistics.Attack, pokemon.Statistics.Attack.Base);
+    Assert.Equal(alternative.BaseStatistics.Defense, pokemon.Statistics.Defense.Base);
+    Assert.Equal(alternative.BaseStatistics.SpecialAttack, pokemon.Statistics.SpecialAttack.Base);
+    Assert.Equal(alternative.BaseStatistics.SpecialDefense, pokemon.Statistics.SpecialDefense.Base);
+    Assert.Equal(alternative.BaseStatistics.Speed, pokemon.Statistics.Speed.Base);
+
+    int delta = pokemon.Statistics.HP.Total - damaged.Statistics.HP.Total;
+    Assert.Equal(Math.Clamp(damaged.Vitality + delta, 0, pokemon.Statistics.HP.Total), pokemon.Vitality);
+    Assert.Equal(Math.Clamp(damaged.Stamina + delta, 0, pokemon.Statistics.HP.Total), pokemon.Stamina);
+  }
+
+  [Fact(DisplayName = "It should not change a Pokémon form when it is already the target form.")]
+  public async Task Given_SameForm_When_ChangeForm_Then_Unchanged()
+  {
+    PokemonDto created = await CreatePokemonAsync("same-form");
+
+    PokemonDto? pokemon = await _pokemonService.ChangeFormAsync(created.Id, _form.EntityId);
+    Assert.NotNull(pokemon);
+    Assert.Equal(created.Version, pokemon.Version);
+    Assert.Equal(_form.EntityId, pokemon.Form.Id);
+  }
+
+  [Fact(DisplayName = "It should throw EntityNotFoundException when the form does not exist.")]
+  public async Task Given_MissingForm_When_ChangeForm_Then_EntityNotFoundException()
+  {
+    PokemonDto created = await CreatePokemonAsync("missing-form");
+    Guid missingFormId = Guid.NewGuid();
+
+    EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
+      async () => await _pokemonService.ChangeFormAsync(created.Id, missingFormId));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Form.EntityKind, exception.EntityKind);
+    Assert.Equal(missingFormId, exception.EntityId);
+    Assert.Equal("FormId", exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw InvalidPokemonFormException when the form belongs to another variety.")]
+  public async Task Given_OtherVariety_When_ChangeForm_Then_InvalidPokemonFormException()
+  {
+    PokemonDto created = await CreatePokemonAsync("other-variety");
+
+    PokemonSpecies species = SpeciesBuilder.Charmander(Faker, Context.World);
+    await _speciesRepository.SaveAsync(species);
+    Variety variety = VarietyBuilder.Charmander(Faker, species, Context.World);
+    await _varietyRepository.SaveAsync(variety);
+    Form form = FormBuilder.Charmander(Faker, variety, _ability, Context.World);
+    await _formRepository.SaveAsync(form);
+
+    InvalidPokemonFormException exception = await Assert.ThrowsAsync<InvalidPokemonFormException>(
+      async () => await _pokemonService.ChangeFormAsync(created.Id, form.EntityId));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(created.Id, exception.PokemonId);
+    Assert.Equal(_variety.EntityId, exception.VarietyId);
+    Assert.Equal(variety.EntityId, exception.AttemptedVarietyId);
+    Assert.Equal(form.EntityId, exception.AttemptedFormId);
+    Assert.Equal(nameof(Specimen.FormId), exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw PermissionDeniedException when changing a Pokémon form.")]
+  public async Task Given_NotAllowed_When_ChangeForm_Then_PermissionDeniedException()
+  {
+    PokemonDto created = await CreatePokemonAsync("denied-form");
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
+
+    PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
+      async () => await _pokemonService.ChangeFormAsync(created.Id, _form.EntityId));
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
+    Assert.Equal("Update", exception.Action);
+    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Resource);
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+  }
+
   private async Task<PokemonDto> CreatePokemonAsync(string key)
   {
     CreatePokemonPayload payload = new()
@@ -615,6 +718,24 @@ public class PokemonIntegrationTests : IntegrationTests
       Key = key
     };
     return await _pokemonService.CreateAsync(payload);
+  }
+
+  private async Task<Form> CreateAlternativeFormAsync()
+  {
+    Form form = new FormBuilder(Faker)
+      .WithWorld(Context.World)
+      .WithVariety(_variety)
+      .WithAbilities(_ability)
+      .WithCategory(FormCategory.Alternative)
+      .WithKey("bulbasaur-sprout")
+      .WithName("Sprout Bulbasaur")
+      .WithTypes(PokemonType.Grass, PokemonType.Poison)
+      .WithBaseStatistics(80, 100, 123, 122, 120, 80)
+      .WithYield(64, 0, 0, 0, 1, 0, 0)
+      .WithSize(7, 69)
+      .Build();
+    await _formRepository.SaveAsync(form);
+    return form;
   }
 
   private async Task<AssetDto> UploadSpriteAsync()

@@ -5,7 +5,6 @@ namespace PokeGame.Core.Pokemon.Models;
 public record UpdatePokemonPayload
 {
   // TODO(fpion): species, variety and form can be changed through Evolution.
-  // TODO(fpion): form can be changed through Metamorphosis.
 
   public string? Key { get; set; }
 
