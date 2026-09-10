@@ -29,6 +29,11 @@ internal class TrainerQuerier : ITrainerQuerier
     _trainers = pokemon.Trainers;
   }
 
+  public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
+  {
+    return await _trainers.AnyAsync(x => x.World!.StreamId == _context.WorldId.Value && x.Id == id, cancellationToken);
+  }
+
   public async Task<TrainerId?> GetIdAsync(Key key, CancellationToken cancellationToken)
   {
     string? streamId = await _trainers

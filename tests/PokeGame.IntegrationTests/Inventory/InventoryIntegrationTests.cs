@@ -226,9 +226,13 @@ public class InventoryIntegrationTests : IntegrationTests
   {
     await SetAsync(1);
 
-    Context.World = new WorldBuilder(Faker).Build();
+    SearchInventoryItemsPayload payload = new()
+    {
+      Limit = 10
+    };
+    payload.Search.Terms.Add("zzzzz");
 
-    SearchResults<InventoryItemDto>? results = await SearchAsync();
+    SearchResults<InventoryItemDto>? results = await _inventoryService.SearchAsync(_trainer.EntityId, payload);
     Assert.NotNull(results);
     Assert.Equal(0, results.Total);
     Assert.Empty(results.Items);
@@ -243,13 +247,10 @@ public class InventoryIntegrationTests : IntegrationTests
     Assert.Empty(results.Items);
   }
 
-  [Fact(DisplayName = "It should return empty search results when the trainer does not exist.")]
-  public async Task Given_MissingTrainer_When_Search_Then_EmptyResults()
+  [Fact(DisplayName = "It should return null when searching a missing trainer.")]
+  public async Task Given_MissingTrainer_When_Search_Then_NullReturned()
   {
-    SearchResults<InventoryItemDto>? results = await SearchAsync(Guid.NewGuid());
-    Assert.NotNull(results);
-    Assert.Equal(0, results.Total);
-    Assert.Empty(results.Items);
+    Assert.Null(await SearchAsync(Guid.NewGuid()));
   }
 
   [Fact(DisplayName = "It should return the correct search results.")]

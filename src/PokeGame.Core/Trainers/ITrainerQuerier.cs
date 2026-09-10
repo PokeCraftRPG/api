@@ -6,6 +6,8 @@ namespace PokeGame.Core.Trainers;
 
 public interface ITrainerQuerier
 {
+  Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
+
   Task<TrainerId?> GetIdAsync(Key key, CancellationToken cancellationToken = default);
   Task<TrainerId?> GetIdAsync(License license, CancellationToken cancellationToken = default);
 
