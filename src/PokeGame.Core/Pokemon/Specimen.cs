@@ -72,7 +72,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
 
   public Specimen(
     IPokemonRandomizer randomizer,
-    PokemonId specimenId,
+    PokemonId pokemonId,
     PokemonSpecies species,
     Variety variety,
     Form form,
@@ -86,7 +86,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     byte eggCycles = 0,
     int experience = 0,
     IndividualValues? individualValues = null,
-    ActorId? actorId = null) : base(specimenId.StreamId)
+    ActorId? actorId = null) : base(pokemonId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(this, species, nameof(species));
     if (eggCycles > species.Eggs.Cycles)
