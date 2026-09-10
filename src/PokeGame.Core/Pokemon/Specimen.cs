@@ -34,21 +34,24 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   public bool IsShiny { get; private set; }
   public PokemonType TeraType { get; private set; }
   public AbilitySlot AbilitySlot { get; private set; }
-  private readonly PokemonSize? _size = null;
+  private PokemonSize? _size = null;
   public PokemonSize Size => _size ?? throw new InvalidOperationException("The size was not initialized.");
-  private readonly PokemonNature? _nature = null;
+  private PokemonNature? _nature = null;
   public PokemonNature Nature => _nature ?? throw new InvalidOperationException("The nature was not initialized.");
 
   public byte EggCycles { get; private set; }
   public bool IsEgg => EggCycles > 0;
   public GrowthRate GrowthRate { get; private set; }
   public int Experience { get; private set; }
-  public byte Level { get; private set; }
+  public int Level => ExperienceTable.GetLevel(GrowthRate, Experience);
 
-  private readonly BaseStatistics? _baseStatistics = null;
-  private readonly IndividualValues? _individualValues = null;
-  private readonly EffortValues? _effortValues = null;
-  // TODO(fpion): Statistics
+  private BaseStatistics? _baseStatistics = null;
+  public BaseStatistics BaseStatistics => _baseStatistics ?? throw new InvalidOperationException("The base statistics were not initialized.");
+  public IndividualValues IndividualValues { get; private set; } = new();
+  private readonly Dictionary<PokemonSkill, byte> _skills = [];
+  public IReadOnlyDictionary<PokemonSkill, byte> Skills => _skills.AsReadOnly();
+  public EffortValues EffortValues => new(Skills);
+  public PokemonStatistics Statistics => new(this);
 
   public int Vitality { get; private set; }
   public int Stamina { get; private set; }
@@ -56,13 +59,9 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   public StatusCondition? Condition { get; private set; }
   public Friendship Friendship { get; private set; } = new();
 
-  // TODO(fpion): Characteristic
+  public PokemonCharacteristic Characteristic { get; private set; }
 
   public ItemId? HeldItemId { get; private set; }
-
-  // TODO(fpion): Moves
-
-  // TODO(fpion): Ownership
 
   public AssetId? SpriteId { get; private set; }
 
@@ -71,32 +70,95 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   }
 
   public Specimen(
+    IPokemonRandomizer randomizer,
     PokemonId specimenId,
     PokemonSpecies species,
     Variety variety,
     Form form,
-    // TODO(fpion): size
-    // TODO(fpion): nature
     Key? key = null,
     Gender? gender = null,
     bool? isShiny = null,
     PokemonType? teraType = null,
     AbilitySlot? abilitySlot = null,
-    // TODO(fpion): egg cycles
-    // TODO(fpion): experience
+    PokemonSize? size = null,
+    PokemonNature? nature = null,
+    byte eggCycles = 0,
+    int experience = 0,
     IndividualValues? individualValues = null,
-    EffortValues? effortValues = null,
-    int? vitality = null,
-    int? stamina = null,
-    Friendship? friendship = null,
-    ActorId? actorId = null)
-    : base(specimenId.StreamId)
+    ActorId? actorId = null) : base(specimenId.StreamId)
   {
-    // TODO(fpion): raise PokemonCreated
+    WorldMismatchException.ThrowIfMismatch(this, species, nameof(species));
+    if (eggCycles > species.Eggs.Cycles)
+    {
+      throw new NotImplementedException(); // TODO(fpion): 422
+    }
+
+    WorldMismatchException.ThrowIfMismatch(this, variety, nameof(variety));
+    if (variety.SpeciesId != species.Id)
+    {
+      throw new ArgumentException($"The variety '{variety}' does not belong to the species '{species}'.", nameof(variety));
+    }
+
+    WorldMismatchException.ThrowIfMismatch(this, form, nameof(form));
+    if (form.VarietyId != variety.Id)
+    {
+      throw new ArgumentException($"The form '{form}' does not belong to the variety '{variety}'.", nameof(form));
+    }
+    if (form.Category != FormCategory.Default && form.Category != FormCategory.Alternative)
+    {
+      throw new NotImplementedException(); // TODO(fpion): 422
+    }
+
+    ArgumentOutOfRangeException.ThrowIfNegative(experience, nameof(experience));
+    if (eggCycles > 0 && experience > 0)
+    {
+      throw new NotImplementedException();
+    }
+
+    key ??= species.Key;
+    gender = PokemonHelper.ResolveGender(randomizer, variety.GenderRatio, gender);
+    isShiny ??= randomizer.Shininess();
+    teraType ??= randomizer.TeraType(form.Types);
+    abilitySlot ??= PokemonHelper.ResolveAbilitySlot(randomizer, form.Abilities, abilitySlot);
+    size ??= randomizer.Size();
+    nature ??= randomizer.Nature();
+    individualValues ??= randomizer.IndividualValues();
+    PokemonCharacteristic characteristic = randomizer.Characteristic(individualValues);
+
+    int level = ExperienceTable.GetLevel(species.GrowthRate, experience);
+    PokemonStatistics statistics = new(form.BaseStatistics, individualValues, EffortValues, level, nature);
+
+    PokemonCreated @event = new(species.Id, variety.Id, form.Id, key, gender, isShiny.Value, teraType.Value, abilitySlot.Value, size, nature, eggCycles,
+      species.GrowthRate, experience, form.BaseStatistics, individualValues, statistics.HP, statistics.HP, species.BaseFriendship, characteristic);
+    Raise(@event, actorId);
   }
   private void Handle(PokemonCreated @event)
   {
-    // TODO(fpion): handle PokemonCreated
+    SpeciesId = @event.SpeciesId;
+    VarietyId = @event.VarietyId;
+    FormId = @event.FormId;
+
+    _key = @event.Key;
+
+    Gender = @event.Gender;
+    IsShiny = @event.IsShiny;
+    TeraType = @event.TeraType;
+    AbilitySlot = @event.AbilitySlot;
+    _size = @event.Size;
+    _nature = @event.Nature;
+
+    EggCycles = @event.EggCycles;
+    GrowthRate = @event.GrowthRate;
+    Experience = @event.Experience;
+
+    _baseStatistics = @event.BaseStatistics;
+    IndividualValues = @event.IndividualValues;
+
+    Vitality = @event.Vitality;
+    Stamina = @event.Stamina;
+    Friendship = @event.Friendship;
+
+    Characteristic = @event.Characteristic;
   }
 
   public void Delete(ActorId? actorId = null)
@@ -120,6 +182,24 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   {
     Summary = @event.Summary;
     Content = @event.Content;
+  }
+
+  public void SetHeldItem(Item? heldItem, ActorId? actorId = null)
+  {
+    if (heldItem is not null)
+    {
+      WorldMismatchException.ThrowIfMismatch(this, heldItem, nameof(heldItem));
+    }
+
+    ItemId? heldItemId = heldItem?.Id;
+    if (!Equals(HeldItemId, heldItemId))
+    {
+      Raise(new PokemonHeldItemChanged(heldItemId), actorId);
+    }
+  }
+  private void Handle(PokemonHeldItemChanged @event)
+  {
+    HeldItemId = @event.HeldItemId;
   }
 
   public void SetKey(Key key, ActorId? actorId = null)

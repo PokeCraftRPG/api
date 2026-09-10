@@ -1,19 +1,10 @@
-﻿using FluentValidation;
+﻿namespace PokeGame.Core.Pokemon;
 
-namespace PokeGame.Core.Pokemon;
-
-public interface IEffortValues
+public sealed record EffortValues
 {
-  byte HP { get; }
-  byte Attack { get; }
-  byte Defense { get; }
-  byte SpecialAttack { get; }
-  byte SpecialDefense { get; }
-  byte Speed { get; }
-}
+  private const byte MaximumSkillRank = 14;
+  private const byte EffortValuePerSkillRank = 18;
 
-public sealed record EffortValues : IEffortValues
-{
   public byte HP { get; }
   public byte Attack { get; }
   public byte Defense { get; }
@@ -21,35 +12,15 @@ public sealed record EffortValues : IEffortValues
   public byte SpecialDefense { get; }
   public byte Speed { get; }
 
-  public EffortValues(byte hp = 0, byte attack = 0, byte defense = 0, byte specialAttack = 0, byte specialDefense = 0, byte speed = 0)
+  public EffortValues(IReadOnlyDictionary<PokemonSkill, byte> skillRanks)
   {
-    HP = hp;
-    Attack = attack;
-    Defense = defense;
-    SpecialAttack = specialAttack;
-    SpecialDefense = specialDefense;
-    Speed = speed;
-    new EffortValuesValidator().ValidateAndThrow(this);
+    HP = 0; // TODO(fpion): implement
+    Attack = CalculateEffortValue(skillRanks.GetValueOrDefault(PokemonSkill.Melee));
+    Defense = CalculateEffortValue(skillRanks.GetValueOrDefault(PokemonSkill.Resistance));
+    SpecialAttack = CalculateEffortValue(skillRanks.GetValueOrDefault(PokemonSkill.Occultism));
+    SpecialDefense = CalculateEffortValue(skillRanks.GetValueOrDefault(PokemonSkill.Discipline));
+    Speed = CalculateEffortValue(skillRanks.GetValueOrDefault(PokemonSkill.Acrobatics));
   }
 
-  public static IndividualValues From(IEffortValues effort)
-    => new(effort.HP, effort.Attack, effort.Defense, effort.SpecialAttack, effort.SpecialDefense, effort.Speed);
-}
-
-internal class EffortValuesValidator : AbstractValidator<IEffortValues>
-{
-  private const int MaximumTotal = 510;
-
-  public EffortValuesValidator()
-  {
-    RuleFor(x => x).Must(HaveAValidTotal)
-      .WithErrorCode(nameof(EffortValuesValidator))
-      .WithMessage($"The total effort values must be less than or equal to {MaximumTotal}.");
-  }
-
-  private static bool HaveAValidTotal(IEffortValues effort)
-  {
-    int total = effort.HP + effort.Attack + effort.Defense + effort.SpecialAttack + effort.SpecialDefense + effort.Speed;
-    return total <= MaximumTotal;
-  }
+  private static byte CalculateEffortValue(byte rank) => (byte)(Math.Max(rank, MaximumSkillRank) * EffortValuePerSkillRank);
 }

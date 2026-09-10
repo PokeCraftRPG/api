@@ -21,7 +21,7 @@ public sealed record IndividualValues : IIndividualValues
   public byte SpecialDefense { get; }
   public byte Speed { get; }
 
-  public IndividualValues(byte hp, byte attack, byte defense, byte specialAttack, byte specialDefense, byte speed)
+  public IndividualValues(byte hp = 0, byte attack = 0, byte defense = 0, byte specialAttack = 0, byte specialDefense = 0, byte speed = 0)
   {
     HP = hp;
     Attack = attack;
