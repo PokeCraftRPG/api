@@ -42,13 +42,21 @@ internal class PokemonEntity : AggregateEntity
   public int Experience { get; private set; }
   public byte Level { get; private set; }
 
-  // TODO(fpion): base stats
-  // TODO(fpion): IVs
-  // TODO(fpion): skill ranks
-  // TODO(fpion): EVs
-  // TODO(fpion): total stats
-  // TODO(fpion): attribute totals
-  // TODO(fpion): skill totals
+  public string? SkillRanks { get; private set; }
+
+  public byte BaseHP { get; private set; }
+  public byte BaseAttack { get; private set; }
+  public byte BaseDefense { get; private set; }
+  public byte BaseSpecialAttack { get; private set; }
+  public byte BaseSpecialDefense { get; private set; }
+  public byte BaseSpeed { get; private set; }
+
+  public byte IndividualHP { get; private set; }
+  public byte IndividualAttack { get; private set; }
+  public byte IndividualDefense { get; private set; }
+  public byte IndividualSpecialAttack { get; private set; }
+  public byte IndividualSpecialDefense { get; private set; }
+  public byte IndividualSpeed { get; private set; }
 
   public int Vitality { get; private set; }
   public int Stamina { get; private set; }
@@ -86,13 +94,19 @@ internal class PokemonEntity : AggregateEntity
     Experience = @event.Experience;
     Level = (byte)ExperienceTable.GetLevel(GrowthRate, Experience);
 
-    // TODO(fpion): base stats
-    // TODO(fpion): IVs
-    // TODO(fpion): skill ranks
-    // TODO(fpion): EVs
-    // TODO(fpion): total stats
-    // TODO(fpion): attribute totals
-    // TODO(fpion): skill totals
+    BaseHP = @event.BaseStatistics.HP;
+    BaseAttack = @event.BaseStatistics.Attack;
+    BaseDefense = @event.BaseStatistics.Defense;
+    BaseSpecialAttack = @event.BaseStatistics.SpecialAttack;
+    BaseSpecialDefense = @event.BaseStatistics.SpecialDefense;
+    BaseSpeed = @event.BaseStatistics.Speed;
+
+    IndividualHP = @event.IndividualValues.HP;
+    IndividualAttack = @event.IndividualValues.Attack;
+    IndividualDefense = @event.IndividualValues.Defense;
+    IndividualSpecialAttack = @event.IndividualValues.SpecialAttack;
+    IndividualSpecialDefense = @event.IndividualValues.SpecialDefense;
+    IndividualSpeed = @event.IndividualValues.Speed;
 
     Vitality = @event.Vitality;
     Stamina = @event.Stamina;
