@@ -373,6 +373,38 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal(payload.Content.Value?.Trim(), pokemon.Content);
   }
 
+  [Fact(DisplayName = "It should update a Pokémon status.")]
+  public async Task Given_Status_When_Update_Then_Updated()
+  {
+    PokemonDto created = await CreatePokemonAsync("status");
+
+    UpdatePokemonPayload payload = new()
+    {
+      Vitality = 0,
+      Stamina = 1,
+      Condition = new Optional<StatusCondition?>(StatusCondition.Poison),
+      Friendship = 200
+    };
+
+    PokemonDto? pokemon = await _pokemonService.UpdateAsync(created.Id, payload);
+    Assert.NotNull(pokemon);
+    Assert.Equal(payload.Vitality, pokemon.Vitality);
+    Assert.Equal(payload.Stamina, pokemon.Stamina);
+    Assert.Equal(StatusCondition.Poison, pokemon.Condition);
+    Assert.Equal(payload.Friendship, pokemon.Friendship);
+
+    payload = new()
+    {
+      Condition = new Optional<StatusCondition?>(null)
+    };
+    pokemon = await _pokemonService.UpdateAsync(created.Id, payload);
+    Assert.NotNull(pokemon);
+    Assert.Equal(0, pokemon.Vitality);
+    Assert.Equal(1, pokemon.Stamina);
+    Assert.Null(pokemon.Condition);
+    Assert.Equal((byte)200, pokemon.Friendship);
+  }
+
   [Fact(DisplayName = "It should update a Pokémon held item.")]
   public async Task Given_HeldItem_When_Update_Then_Updated()
   {
@@ -503,6 +535,46 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal(nameof(Specimen.SpriteId), exception.PropertyName);
   }
 
+  [Fact(DisplayName = "It should throw ConstitutionOutOfRangeException when vitality exceeds HP.")]
+  public async Task Given_VitalityTooHigh_When_Update_Then_ConstitutionOutOfRangeException()
+  {
+    PokemonDto created = await CreatePokemonAsync("vitality-too-high");
+    int attemptedValue = created.Statistics.HP.Total + 1;
+
+    UpdatePokemonPayload payload = new()
+    {
+      Vitality = attemptedValue
+    };
+
+    ConstitutionOutOfRangeException exception = await Assert.ThrowsAsync<ConstitutionOutOfRangeException>(
+      async () => await _pokemonService.UpdateAsync(created.Id, payload));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(created.Id, exception.PokemonId);
+    Assert.Equal(created.Statistics.HP.Total, exception.MaximumValue);
+    Assert.Equal(attemptedValue, exception.AttemptedValue);
+    Assert.Equal(nameof(Specimen.Vitality), exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw ConstitutionOutOfRangeException when stamina exceeds HP.")]
+  public async Task Given_StaminaTooHigh_When_Update_Then_ConstitutionOutOfRangeException()
+  {
+    PokemonDto created = await CreatePokemonAsync("stamina-too-high");
+    int attemptedValue = created.Statistics.HP.Total + 1;
+
+    UpdatePokemonPayload payload = new()
+    {
+      Stamina = attemptedValue
+    };
+
+    ConstitutionOutOfRangeException exception = await Assert.ThrowsAsync<ConstitutionOutOfRangeException>(
+      async () => await _pokemonService.UpdateAsync(created.Id, payload));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(created.Id, exception.PokemonId);
+    Assert.Equal(created.Statistics.HP.Total, exception.MaximumValue);
+    Assert.Equal(attemptedValue, exception.AttemptedValue);
+    Assert.Equal(nameof(Specimen.Stamina), exception.PropertyName);
+  }
+
   [Fact(DisplayName = "It should throw ValidationException when the update payload is invalid.")]
   public async Task Given_InvalidPayload_When_Update_Then_ValidationException()
   {
@@ -510,7 +582,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     UpdatePokemonPayload payload = new()
     {
-      Key = "not valid"
+      Key = "not valid",
+      Vitality = -1,
+      Stamina = -1,
+      Condition = new Optional<StatusCondition?>((StatusCondition)(-1))
     };
 
     await Assert.ThrowsAsync<ValidationException>(async () => await _pokemonService.UpdateAsync(created.Id, payload));

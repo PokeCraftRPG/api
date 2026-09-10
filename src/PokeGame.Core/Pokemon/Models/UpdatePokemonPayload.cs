@@ -20,7 +20,7 @@ public record UpdatePokemonPayload
   // TODO(fpion): EggCycles can be decreased (how?).
   // TODO(fpion): Experience can only be gained.
 
-  // TODO(fpion): SkillRanks should have its dedicated endpoint.
+  // TODO(fpion): SkillRanks should have their own dedicated endpoint.
 
   // TODO(fpion): IndividualValues can never change. Hyper Training acts as an override and does not replace the actual IVs.
 

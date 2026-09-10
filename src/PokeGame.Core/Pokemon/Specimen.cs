@@ -52,7 +52,6 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   public BaseStatistics BaseStatistics => _baseStatistics ?? throw new InvalidOperationException("The base statistics were not initialized.");
   public IndividualValues IndividualValues { get; private set; } = new();
   public EffortValues EffortValues => new(SkillRanks);
-  public PokemonStatistics Statistics => new(this);
 
   public int Vitality { get; private set; }
   public int Stamina { get; private set; }
@@ -248,15 +247,24 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
 
   public void SetStatus(int vitality, int stamina, StatusCondition? condition, Friendship friendship, ActorId? actorId = null)
   {
+    PokemonStatistics statistics = new(this);
+
     ArgumentOutOfRangeException.ThrowIfNegative(vitality, nameof(vitality));
+    if (vitality > statistics.HP)
+    {
+      throw new ConstitutionOutOfRangeException(this, vitality, nameof(Vitality));
+    }
+
     ArgumentOutOfRangeException.ThrowIfNegative(stamina, nameof(stamina));
+    if (stamina > statistics.HP)
+    {
+      throw new ConstitutionOutOfRangeException(this, stamina, nameof(Stamina));
+    }
+
     if (condition.HasValue && !Enum.IsDefined(condition.Value))
     {
       throw new ArgumentOutOfRangeException(nameof(condition));
     }
-
-    // TODO(fpion): validate Vitality against maximum
-    // TODO(fpion): validate Stamina against maximum
 
     if (!Equals(Vitality, vitality) || !Equals(Stamina, stamina) || !Equals(Condition, condition) || !Equals(Friendship, friendship))
     {
