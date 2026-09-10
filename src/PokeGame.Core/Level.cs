@@ -4,18 +4,18 @@ namespace PokeGame.Core;
 
 public sealed class Level
 {
-  public const byte MinimumValue = 1;
-  public const byte MaximumValue = 100;
+  public const int MinimumValue = 1;
+  public const int MaximumValue = 100;
 
-  public byte Value { get; }
+  public int Value { get; }
 
-  public Level(byte value)
+  public Level(int value)
   {
     Value = value;
     new Validator().ValidateAndThrow(this);
   }
 
-  public static Level? TryCreate(byte? value) => value.HasValue ? new(value.Value) : null;
+  public static Level? TryCreate(int? value) => value.HasValue ? new(value.Value) : null;
 
   public override bool Equals(object? obj) => obj is Level level && level.Value == Value;
   public override int GetHashCode() => Value.GetHashCode();

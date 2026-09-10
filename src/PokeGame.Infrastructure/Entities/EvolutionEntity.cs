@@ -20,7 +20,7 @@ internal class EvolutionEntity : AggregateEntity
   public int TargetId { get; private set; }
   public EvolutionTrigger Trigger { get; private set; }
 
-  public byte? Level { get; private set; }
+  public int? Level { get; private set; }
   public bool Friendship { get; private set; }
   public Gender? Gender { get; private set; }
   public ItemEntity? Item { get; private set; }

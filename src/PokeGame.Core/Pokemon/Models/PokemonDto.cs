@@ -28,7 +28,7 @@ public class PokemonDto : Aggregate
   public byte EggCycles { get; set; }
   public GrowthRate GrowthRate { get; set; }
   public int Experience { get; set; }
-  public byte Level { get; set; }
+  public int Level { get; set; }
 
   // TODO(fpion): Attributes
   public List<SkillRankDto> SkillRanks { get; set; } = [];

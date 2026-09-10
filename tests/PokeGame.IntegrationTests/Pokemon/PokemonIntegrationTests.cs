@@ -105,7 +105,7 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Null(pokemon.Nature.DecreasedStatistic);
     Assert.Equal((byte)0, pokemon.EggCycles);
     Assert.Equal(0, pokemon.Experience);
-    Assert.Equal((byte)1, pokemon.Level);
+    Assert.Equal(1, pokemon.Level);
     Assert.Equal((byte)10, pokemon.Statistics.HP.Individual);
     Assert.Equal((byte)11, pokemon.Statistics.Attack.Individual);
     Assert.Equal((byte)12, pokemon.Statistics.Defense.Individual);
@@ -151,7 +151,7 @@ public class PokemonIntegrationTests : IntegrationTests
     PokemonDto pokemon = await _pokemonService.CreateAsync(payload);
     Assert.Equal((byte)10, pokemon.EggCycles);
     Assert.Equal(0, pokemon.Experience);
-    Assert.Equal((byte)1, pokemon.Level);
+    Assert.Equal(1, pokemon.Level);
   }
 
   [Fact(DisplayName = "It should return null when no Pokémon was found.")]

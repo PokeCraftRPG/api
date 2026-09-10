@@ -1,9 +1,9 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
-using PokeGame.Core.Abilities;
 using PokeGame.Core;
+using PokeGame.Core.Abilities;
 using PokeGame.Core.Evolutions;
 using PokeGame.Core.Evolutions.Models;
 using PokeGame.Core.Forms;
@@ -11,7 +11,6 @@ using PokeGame.Core.Items;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Regions;
-using PokeGame.Core.Search;
 using PokeGame.Core.Species;
 using PokeGame.Core.Varieties;
 
@@ -264,7 +263,7 @@ public class EvolutionIntegrationTests : IntegrationTests
   {
     UpdateEvolutionPayload payload = new()
     {
-      Level = new Optional<byte?>(0)
+      Level = new Optional<int?>(0)
     };
 
     await Assert.ThrowsAsync<ValidationException>(async () => await _evolutionService.UpdateAsync(_evolution.EntityId, payload));
@@ -297,7 +296,7 @@ public class EvolutionIntegrationTests : IntegrationTests
   {
     UpdateEvolutionPayload payload = new()
     {
-      Level = new Optional<byte?>(20),
+      Level = new Optional<int?>(20),
       Friendship = false,
       Gender = new Optional<Gender?>(Gender.Male),
       ItemId = new Optional<Guid?>(_item.EntityId),
@@ -309,7 +308,7 @@ public class EvolutionIntegrationTests : IntegrationTests
     Assert.NotNull(evolution);
     Assert.Equal(_evolution.EntityId, evolution.Id);
     Assert.Equal(3, evolution.Version);
-    Assert.Equal((byte)20, evolution.Level);
+    Assert.Equal(20, evolution.Level);
     Assert.False(evolution.Friendship);
     Assert.Equal(Gender.Male, evolution.Gender);
     Assert.NotNull(evolution.Item);

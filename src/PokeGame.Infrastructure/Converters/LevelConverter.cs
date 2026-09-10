@@ -6,7 +6,7 @@ internal class LevelConverter : JsonConverter<Level>
 {
   public override Level? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
   {
-    return reader.TryGetByte(out byte value) ? new Level(value) : null;
+    return reader.TryGetInt32(out int value) ? new Level(value) : null;
   }
 
   public override void Write(Utf8JsonWriter writer, Level level, JsonSerializerOptions options)

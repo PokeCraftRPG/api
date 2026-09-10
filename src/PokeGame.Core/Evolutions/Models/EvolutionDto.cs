@@ -11,7 +11,7 @@ public class EvolutionDto : Aggregate
   public FormDto Target { get; set; } = new();
   public EvolutionTrigger Trigger { get; set; }
 
-  public byte? Level { get; set; }
+  public int? Level { get; set; }
   public bool Friendship { get; set; }
   public Gender? Gender { get; set; }
   public ItemDto? Item { get; set; }

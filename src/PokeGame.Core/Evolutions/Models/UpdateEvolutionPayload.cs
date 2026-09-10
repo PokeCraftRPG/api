@@ -4,7 +4,7 @@ namespace PokeGame.Core.Evolutions.Models;
 
 public record UpdateEvolutionPayload
 {
-  public Optional<byte?>? Level { get; set; }
+  public Optional<int?>? Level { get; set; }
   public bool? Friendship { get; set; }
   public Optional<Gender?>? Gender { get; set; }
   public Optional<Guid?>? ItemId { get; set; }

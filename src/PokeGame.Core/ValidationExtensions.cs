@@ -64,7 +64,7 @@ internal static class ValidationExtensions
     return ruleBuilder.NotEmpty().MaximumLength(Core.Key.MaximumLength).SetValidator(new SlugValidator<T>());
   }
 
-  public static IRuleBuilderOptions<T, byte> Level<T>(this IRuleBuilder<T, byte> ruleBuilder)
+  public static IRuleBuilderOptions<T, int> Level<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
     return ruleBuilder.InclusiveBetween(Core.Level.MinimumValue, Core.Level.MaximumValue);
   }
