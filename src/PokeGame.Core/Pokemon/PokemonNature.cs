@@ -11,7 +11,7 @@ public interface IPokemonNature
   Flavor? DislikedFlavor { get; }
 }
 
-public record PokemonNature : IPokemonNature
+public sealed record PokemonNature : IPokemonNature
 {
   public const int MaximumLength = 8;
 
