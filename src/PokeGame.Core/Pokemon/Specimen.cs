@@ -45,14 +45,13 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   public int Experience { get; private set; }
   public int Level => ExperienceTable.GetLevel(GrowthRate, Experience);
 
-  private readonly Dictionary<PokemonSkill, byte> _skills = [];
-  public IReadOnlyDictionary<PokemonSkill, byte> Skills => _skills.AsReadOnly();
+  private readonly Dictionary<PokemonSkill, byte> _skillRanks = [];
+  public IReadOnlyDictionary<PokemonSkill, byte> SkillRanks => _skillRanks.AsReadOnly();
 
   private BaseStatistics? _baseStatistics = null;
   public BaseStatistics BaseStatistics => _baseStatistics ?? throw new InvalidOperationException("The base statistics were not initialized.");
   public IndividualValues IndividualValues { get; private set; } = new();
-  public EffortValues EffortValues => new(Skills);
-  public PokemonStatistics Statistics => new(this);
+  public EffortValues EffortValues => new(SkillRanks);
 
   public int Vitality { get; private set; }
   public int Stamina { get; private set; }
@@ -244,6 +243,40 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   private void Handle(PokemonSpriteChanged @event)
   {
     SpriteId = @event.SpriteId;
+  }
+
+  public void SetStatus(int vitality, int stamina, StatusCondition? condition, Friendship friendship, ActorId? actorId = null)
+  {
+    PokemonStatistics statistics = new(this);
+
+    ArgumentOutOfRangeException.ThrowIfNegative(vitality, nameof(vitality));
+    if (vitality > statistics.HP)
+    {
+      throw new ConstitutionOutOfRangeException(this, vitality, nameof(Vitality));
+    }
+
+    ArgumentOutOfRangeException.ThrowIfNegative(stamina, nameof(stamina));
+    if (stamina > statistics.HP)
+    {
+      throw new ConstitutionOutOfRangeException(this, stamina, nameof(Stamina));
+    }
+
+    if (condition.HasValue && !Enum.IsDefined(condition.Value))
+    {
+      throw new ArgumentOutOfRangeException(nameof(condition));
+    }
+
+    if (!Equals(Vitality, vitality) || !Equals(Stamina, stamina) || !Equals(Condition, condition) || !Equals(Friendship, friendship))
+    {
+      Raise(new PokemonStatusChanged(vitality, stamina, condition, friendship), actorId);
+    }
+  }
+  private void Handle(PokemonStatusChanged @event)
+  {
+    Vitality = @event.Vitality;
+    Stamina = @event.Stamina;
+    Condition = @event.Condition;
+    Friendship = @event.Friendship;
   }
 
   public override string ToString() => $"{Nickname?.Value ?? Key.Value} | {base.ToString()}";

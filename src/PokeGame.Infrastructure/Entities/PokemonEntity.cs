@@ -198,5 +198,15 @@ internal class PokemonEntity : AggregateEntity
     SpriteId = spriteId;
   }
 
+  public void SetStatus(PokemonStatusChanged @event)
+  {
+    Update(@event);
+
+    Vitality = @event.Vitality;
+    Stamina = @event.Stamina;
+    Condition = @event.Condition;
+    Friendship = @event.Friendship.Value;
+  }
+
   public override string ToString() => $"{Nickname ?? Key} | {base.ToString()}";
 }
