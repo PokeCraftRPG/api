@@ -24,7 +24,7 @@ internal class InventoryService : IInventoryService
     services.AddTransient<ICommandHandler<AdjustInventoryItemCommand, InventoryItemDto>, AdjustInventoryItemCommandHandler>();
     services.AddTransient<ICommandHandler<SetInventoryItemCommand, InventoryItemDto>, SetInventoryItemCommandHandler>();
     services.AddTransient<IQueryHandler<ReadInventoryItemQuery, InventoryItemDto?>, ReadInventoryItemQueryHandler>();
-    services.AddTransient<IQueryHandler<SearchInventoryQuery, SearchResults<InventoryItemDto>?>, SearchInventoryQueryHandler>();
+    services.AddTransient<IQueryHandler<SearchInventoryItemsQuery, SearchResults<InventoryItemDto>?>, SearchInventoryItemsQueryHandler>();
   }
 
   private readonly ICommandBus _commandBus;
@@ -50,7 +50,7 @@ internal class InventoryService : IInventoryService
 
   public async Task<SearchResults<InventoryItemDto>?> SearchAsync(Guid trainerId, SearchInventoryItemsPayload payload, CancellationToken cancellationToken)
   {
-    SearchInventoryQuery query = new(trainerId, payload);
+    SearchInventoryItemsQuery query = new(trainerId, payload);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 

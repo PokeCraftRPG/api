@@ -20,6 +20,8 @@ internal class SearchInventoryItemsQueryHandler : IQueryHandler<SearchInventoryI
     SearchInventoryItemsPayload payload = query.Payload;
     payload.Validate();
 
+    // TODO(fpion): 404 Not Found when the trainer does not exist.
+
     return await _inventoryQuerier.SearchAsync(query.TrainerId, payload, cancellationToken);
   }
 }
