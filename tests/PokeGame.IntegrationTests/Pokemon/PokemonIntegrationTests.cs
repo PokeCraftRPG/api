@@ -3,7 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
+using PokeGame.Core.Assets;
+using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Forms;
+using PokeGame.Core.Items;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Models;
@@ -17,7 +20,9 @@ namespace PokeGame.Pokemon;
 public class PokemonIntegrationTests : IntegrationTests
 {
   private readonly IAbilityRepository _abilityRepository;
+  private readonly IAssetService _assetService;
   private readonly IFormRepository _formRepository;
+  private readonly IItemRepository _itemRepository;
   private readonly IPokemonService _pokemonService;
   private readonly ISpeciesRepository _speciesRepository;
   private readonly IVarietyRepository _varietyRepository;
@@ -30,7 +35,9 @@ public class PokemonIntegrationTests : IntegrationTests
   public PokemonIntegrationTests()
   {
     _abilityRepository = ServiceProvider.GetRequiredService<IAbilityRepository>();
+    _assetService = ServiceProvider.GetRequiredService<IAssetService>();
     _formRepository = ServiceProvider.GetRequiredService<IFormRepository>();
+    _itemRepository = ServiceProvider.GetRequiredService<IItemRepository>();
     _pokemonService = ServiceProvider.GetRequiredService<IPokemonService>();
     _speciesRepository = ServiceProvider.GetRequiredService<ISpeciesRepository>();
     _varietyRepository = ServiceProvider.GetRequiredService<IVarietyRepository>();
@@ -330,5 +337,233 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal("CreatePokemon", exception.Action);
     Assert.Null(exception.Resource);
     Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+  }
+
+  [Fact(DisplayName = "It should return null when updating a Pokémon that does not exist.")]
+  public async Task Given_NotFound_When_Update_Then_NullReturned()
+  {
+    Assert.Null(await _pokemonService.UpdateAsync(Guid.NewGuid(), new UpdatePokemonPayload()));
+  }
+
+  [Fact(DisplayName = "It should update an existing Pokémon.")]
+  public async Task Given_Exists_When_Update_Then_Updated()
+  {
+    PokemonDto created = await CreatePokemonAsync("update-me");
+
+    UpdatePokemonPayload payload = new()
+    {
+      Key = "updated-starter",
+      Nickname = new Optional<string>(" Bulby "),
+      Summary = new Optional<string>("  A loyal starter.  "),
+      Content = new Optional<string>("   Always ready for battle.   ")
+    };
+
+    PokemonDto? pokemon = await _pokemonService.UpdateAsync(created.Id, payload);
+    Assert.NotNull(pokemon);
+    Assert.Equal(created.Id, pokemon.Id);
+    Assert.Equal(4, pokemon.Version);
+    Assert.Equal(created.CreatedBy, pokemon.CreatedBy);
+    Assert.Equal(created.CreatedOn, pokemon.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(Actor, pokemon.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, pokemon.UpdatedOn, TimeSpan.FromSeconds(10));
+
+    Assert.Equal(SlugHelper.Format(payload.Key), pokemon.Key);
+    Assert.Equal(payload.Nickname.Value?.Trim(), pokemon.Nickname);
+    Assert.Equal(payload.Summary.Value?.Trim(), pokemon.Summary);
+    Assert.Equal(payload.Content.Value?.Trim(), pokemon.Content);
+  }
+
+  [Fact(DisplayName = "It should update a Pokémon held item.")]
+  public async Task Given_HeldItem_When_Update_Then_Updated()
+  {
+    PokemonDto created = await CreatePokemonAsync("held-item");
+    Item potion = ItemBuilder.Potion(Faker, Context.World);
+    await _itemRepository.SaveAsync(potion);
+
+    UpdatePokemonPayload payload = new()
+    {
+      HeldItemId = new Optional<Guid?>(potion.EntityId)
+    };
+
+    PokemonDto? pokemon = await _pokemonService.UpdateAsync(created.Id, payload);
+    Assert.NotNull(pokemon);
+    Assert.NotNull(pokemon.HeldItem);
+    Assert.Equal(potion.EntityId, pokemon.HeldItem.Id);
+
+    payload = new()
+    {
+      HeldItemId = new Optional<Guid?>(null)
+    };
+    pokemon = await _pokemonService.UpdateAsync(created.Id, payload);
+    Assert.NotNull(pokemon);
+    Assert.Null(pokemon.HeldItem);
+  }
+
+  [Fact(DisplayName = "It should update a Pokémon sprite.")]
+  public async Task Given_Sprite_When_Update_Then_Updated()
+  {
+    PokemonDto created = await CreatePokemonAsync("sprite");
+    AssetDto sprite = await UploadSpriteAsync();
+
+    UpdatePokemonPayload payload = new()
+    {
+      SpriteId = new Optional<Guid?>(sprite.Id)
+    };
+
+    PokemonDto? pokemon = await _pokemonService.UpdateAsync(created.Id, payload);
+    Assert.NotNull(pokemon);
+    Assert.NotNull(pokemon.Sprite);
+    Assert.Equal(sprite.Id, pokemon.Sprite.Id);
+
+    payload = new()
+    {
+      SpriteId = new Optional<Guid?>(null)
+    };
+    pokemon = await _pokemonService.UpdateAsync(created.Id, payload);
+    Assert.NotNull(pokemon);
+    Assert.Null(pokemon.Sprite);
+  }
+
+  [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating a Pokémon and the key conflicts.")]
+  public async Task Given_KeyConflict_When_Update_Then_KeyAlreadyUsedException()
+  {
+    PokemonDto existing = await CreatePokemonAsync("taken-key");
+    PokemonDto created = await CreatePokemonAsync("other-key");
+
+    UpdatePokemonPayload payload = new()
+    {
+      Key = existing.Key
+    };
+
+    KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
+      async () => await _pokemonService.UpdateAsync(created.Id, payload));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Specimen.EntityKind, exception.EntityKind);
+    Assert.Equal(created.Id, exception.EntityId);
+    Assert.Equal(existing.Id, exception.ConflictId);
+    Assert.Equal(existing.Key, exception.AttemptedKey);
+    Assert.Equal(nameof(Specimen.Key), exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw EntityNotFoundException when the held item does not exist.")]
+  public async Task Given_MissingHeldItem_When_Update_Then_EntityNotFoundException()
+  {
+    PokemonDto created = await CreatePokemonAsync("missing-item");
+    Guid missingItemId = Guid.NewGuid();
+
+    UpdatePokemonPayload payload = new()
+    {
+      HeldItemId = new Optional<Guid?>(missingItemId)
+    };
+
+    EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
+      async () => await _pokemonService.UpdateAsync(created.Id, payload));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Item.EntityKind, exception.EntityKind);
+    Assert.Equal(missingItemId, exception.EntityId);
+    Assert.Equal(nameof(payload.HeldItemId), exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw EntityNotFoundException when the sprite does not exist.")]
+  public async Task Given_MissingSprite_When_Update_Then_EntityNotFoundException()
+  {
+    PokemonDto created = await CreatePokemonAsync("missing-sprite");
+    Guid missingSpriteId = Guid.NewGuid();
+
+    UpdatePokemonPayload payload = new()
+    {
+      SpriteId = new Optional<Guid?>(missingSpriteId)
+    };
+
+    EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
+      async () => await _pokemonService.UpdateAsync(created.Id, payload));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Asset.EntityKind, exception.EntityKind);
+    Assert.Equal(missingSpriteId, exception.EntityId);
+    Assert.Equal(nameof(payload.SpriteId), exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw InvalidAssetKindException when the sprite is not an image.")]
+  public async Task Given_VideoSprite_When_Update_Then_InvalidAssetKindException()
+  {
+    PokemonDto created = await CreatePokemonAsync("video-sprite");
+    AssetDto video = await UploadVideoAsync();
+
+    UpdatePokemonPayload payload = new()
+    {
+      SpriteId = new Optional<Guid?>(video.Id)
+    };
+
+    InvalidAssetKindException exception = await Assert.ThrowsAsync<InvalidAssetKindException>(
+      async () => await _pokemonService.UpdateAsync(created.Id, payload));
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(video.Id, exception.AssetId);
+    Assert.Equal(AssetKind.Image, exception.ExpectedKind);
+    Assert.Equal(AssetKind.Video, exception.AttemptedKind);
+    Assert.Equal(nameof(Specimen.SpriteId), exception.PropertyName);
+  }
+
+  [Fact(DisplayName = "It should throw ValidationException when the update payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Update_Then_ValidationException()
+  {
+    PokemonDto created = await CreatePokemonAsync("invalid-update");
+
+    UpdatePokemonPayload payload = new()
+    {
+      Key = "not valid"
+    };
+
+    await Assert.ThrowsAsync<ValidationException>(async () => await _pokemonService.UpdateAsync(created.Id, payload));
+  }
+
+  [Fact(DisplayName = "It should throw PermissionDeniedException when updating a Pokémon.")]
+  public async Task Given_NotAllowed_When_Update_Then_PermissionDeniedException()
+  {
+    PokemonDto created = await CreatePokemonAsync("denied-update");
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
+
+    UpdatePokemonPayload payload = new();
+
+    PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
+      async () => await _pokemonService.UpdateAsync(created.Id, payload));
+    Assert.Equal(Context.ActorId?.Value, exception.Principal);
+    Assert.Equal("Update", exception.Action);
+    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Resource);
+    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+  }
+
+  private async Task<PokemonDto> CreatePokemonAsync(string key)
+  {
+    CreatePokemonPayload payload = new()
+    {
+      FormId = _form.EntityId,
+      Key = key
+    };
+    return await _pokemonService.CreateAsync(payload);
+  }
+
+  private async Task<AssetDto> UploadSpriteAsync()
+  {
+    string path = Path.Combine(AppContext.BaseDirectory, "Assets", "sample.jpg");
+    Assert.True(File.Exists(path), $"Add a JPEG file at '{path}'.");
+
+    await using FileStream stream = File.OpenRead(path);
+    UploadAssetPayload payload = new(Path.GetFileName(path), stream.Length, stream);
+    AssetDto? asset = await _assetService.UploadAsync(payload);
+    Assert.NotNull(asset);
+    return asset;
+  }
+
+  private async Task<AssetDto> UploadVideoAsync()
+  {
+    string path = Path.Combine(AppContext.BaseDirectory, "Assets", "sample.mp4");
+    Assert.True(File.Exists(path), $"Add an MP4 file at '{path}'.");
+
+    await using FileStream stream = File.OpenRead(path);
+    UploadAssetPayload payload = new(Path.GetFileName(path), stream.Length, stream);
+    AssetDto? asset = await _assetService.UploadAsync(payload);
+    Assert.NotNull(asset);
+    Assert.Equal(AssetKind.Video, asset.Kind);
+    return asset;
   }
 }

@@ -45,13 +45,13 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   public int Experience { get; private set; }
   public int Level => ExperienceTable.GetLevel(GrowthRate, Experience);
 
-  private readonly Dictionary<PokemonSkill, byte> _skills = [];
-  public IReadOnlyDictionary<PokemonSkill, byte> Skills => _skills.AsReadOnly();
+  private readonly Dictionary<PokemonSkill, byte> _skillRanks = [];
+  public IReadOnlyDictionary<PokemonSkill, byte> SkillRanks => _skillRanks.AsReadOnly();
 
   private BaseStatistics? _baseStatistics = null;
   public BaseStatistics BaseStatistics => _baseStatistics ?? throw new InvalidOperationException("The base statistics were not initialized.");
   public IndividualValues IndividualValues { get; private set; } = new();
-  public EffortValues EffortValues => new(Skills);
+  public EffortValues EffortValues => new(SkillRanks);
   public PokemonStatistics Statistics => new(this);
 
   public int Vitality { get; private set; }

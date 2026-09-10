@@ -41,4 +41,11 @@ public class PokemonController : ControllerBase
     PokemonDto? pokemon = await _pokemonService.ReadAsync(id: null, key, cancellationToken);
     return pokemon is null ? NotFound() : Ok(pokemon);
   }
+
+  [HttpPatch("{id}")]
+  public async Task<ActionResult<PokemonDto>> UpdateAsync(Guid id, [FromBody] UpdatePokemonPayload payload, CancellationToken cancellationToken)
+  {
+    PokemonDto? pokemon = await _pokemonService.UpdateAsync(id, payload, cancellationToken);
+    return pokemon is null ? NotFound() : Ok(pokemon);
+  }
 }
