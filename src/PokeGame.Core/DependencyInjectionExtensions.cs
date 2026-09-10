@@ -7,6 +7,7 @@ using PokeGame.Core.Assets;
 using PokeGame.Core.Evolutions;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Inventory;
 using PokeGame.Core.Items;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Moves;
@@ -39,6 +40,7 @@ public static class DependencyInjectionExtensions
     EvolutionService.Register(services);
     FormService.Register(services);
     IdentityService.Register(services);
+    InventoryService.Register(services);
     ItemService.Register(services);
     MemberInvitationService.Register(services);
     MembershipService.Register(services);

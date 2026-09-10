@@ -15,6 +15,7 @@ internal static class JsonSerializerOptionsExtensions
     options.Converters.Add(new FriendshipConverter());
     options.Converters.Add(new GenderRatioConverter());
     options.Converters.Add(new GenusConverter());
+    options.Converters.Add(new InventoryIdConverter());
     options.Converters.Add(new ItemIdConverter());
     options.Converters.Add(new KeyConverter());
     options.Converters.Add(new LevelConverter());
