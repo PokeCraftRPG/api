@@ -246,5 +246,30 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     SpriteId = @event.SpriteId;
   }
 
+  public void SetStatus(int vitality, int stamina, StatusCondition? condition, Friendship friendship, ActorId? actorId = null)
+  {
+    ArgumentOutOfRangeException.ThrowIfNegative(vitality, nameof(vitality));
+    ArgumentOutOfRangeException.ThrowIfNegative(stamina, nameof(stamina));
+    if (condition.HasValue && !Enum.IsDefined(condition.Value))
+    {
+      throw new ArgumentOutOfRangeException(nameof(condition));
+    }
+
+    // TODO(fpion): validate Vitality against maximum
+    // TODO(fpion): validate Stamina against maximum
+
+    if (!Equals(Vitality, vitality) || !Equals(Stamina, stamina) || !Equals(Condition, condition) || !Equals(Friendship, friendship))
+    {
+      Raise(new PokemonStatusChanged(vitality, stamina, condition, friendship), actorId);
+    }
+  }
+  private void Handle(PokemonStatusChanged @event)
+  {
+    Vitality = @event.Vitality;
+    Stamina = @event.Stamina;
+    Condition = @event.Condition;
+    Friendship = @event.Friendship;
+  }
+
   public override string ToString() => $"{Nickname?.Value ?? Key.Value} | {base.ToString()}";
 }

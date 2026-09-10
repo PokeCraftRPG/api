@@ -70,6 +70,16 @@ internal class UpdatePokemonCommandHandler : ICommandHandler<UpdatePokemonComman
         actorId);
     }
 
+    if (payload.Vitality is not null || payload.Stamina is not null || payload.Condition is not null || payload.Friendship is not null)
+    {
+      specimen.SetStatus(
+        payload.Vitality ?? specimen.Vitality,
+        payload.Stamina ?? specimen.Stamina,
+        payload.Condition is null ? specimen.Condition : payload.Condition.Value,
+        payload.Friendship.HasValue ? new Friendship(payload.Friendship.Value) : specimen.Friendship,
+        actorId);
+    }
+
     if (payload.HeldItemId is not null)
     {
       Item? heldItem = null;
