@@ -1,10 +1,10 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Logitar.CQRS;
 using PokeGame.Core.Inventory.Models;
 
 namespace PokeGame.Core.Inventory.Queries;
 
-internal record SearchInventoryQuery(Guid TrainerId) : IQuery<SearchResults<InventoryItemDto>?>;
+internal record SearchInventoryQuery(Guid TrainerId, SearchInventoryItemsPayload Payload) : IQuery<SearchResults<InventoryItemDto>?>;
 
 internal class SearchInventoryQueryHandler : IQueryHandler<SearchInventoryQuery, SearchResults<InventoryItemDto>?>
 {
@@ -17,6 +17,9 @@ internal class SearchInventoryQueryHandler : IQueryHandler<SearchInventoryQuery,
 
   public async Task<SearchResults<InventoryItemDto>?> HandleAsync(SearchInventoryQuery query, CancellationToken cancellationToken)
   {
-    return await _inventoryQuerier.SearchAsync(query.TrainerId, cancellationToken);
+    SearchInventoryItemsPayload payload = query.Payload;
+    payload.Validate();
+
+    return await _inventoryQuerier.SearchAsync(query.TrainerId, payload, cancellationToken);
   }
 }

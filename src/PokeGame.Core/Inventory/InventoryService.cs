@@ -11,7 +11,7 @@ public interface IInventoryService
 {
   Task<InventoryItemDto> AdjustAsync(Guid trainerId, Guid itemId, AdjustInventoryItemPayload payload, CancellationToken cancellationToken = default);
   Task<InventoryItemDto?> ReadAsync(Guid trainerId, Guid itemId, CancellationToken cancellationToken = default);
-  Task<SearchResults<InventoryItemDto>?> SearchAsync(Guid trainerId, CancellationToken cancellationToken = default);
+  Task<SearchResults<InventoryItemDto>?> SearchAsync(Guid trainerId, SearchInventoryItemsPayload payload, CancellationToken cancellationToken = default);
   Task<InventoryItemDto> SetAsync(Guid trainerId, Guid itemId, SetInventoryItemPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -20,6 +20,7 @@ internal class InventoryService : IInventoryService
   public static void Register(IServiceCollection services)
   {
     services.AddTransient<IInventoryService, InventoryService>();
+    services.AddTransient<IInventoryManager, InventoryManager>();
     services.AddTransient<ICommandHandler<AdjustInventoryItemCommand, InventoryItemDto>, AdjustInventoryItemCommandHandler>();
     services.AddTransient<ICommandHandler<SetInventoryItemCommand, InventoryItemDto>, SetInventoryItemCommandHandler>();
     services.AddTransient<IQueryHandler<ReadInventoryItemQuery, InventoryItemDto?>, ReadInventoryItemQueryHandler>();
@@ -47,9 +48,9 @@ internal class InventoryService : IInventoryService
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 
-  public async Task<SearchResults<InventoryItemDto>?> SearchAsync(Guid trainerId, CancellationToken cancellationToken)
+  public async Task<SearchResults<InventoryItemDto>?> SearchAsync(Guid trainerId, SearchInventoryItemsPayload payload, CancellationToken cancellationToken)
   {
-    SearchInventoryQuery query = new(trainerId);
+    SearchInventoryQuery query = new(trainerId, payload);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 

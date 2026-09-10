@@ -11,6 +11,7 @@ internal record SetInventoryItemCommand(Guid TrainerId, Guid ItemId, SetInventor
 internal class SetInventoryItemCommandHandler : ICommandHandler<SetInventoryItemCommand, InventoryItemDto>
 {
   private readonly IContext _context;
+  private readonly IInventoryManager _inventoryManager;
   private readonly IInventoryRepository _inventoryRepository;
   private readonly IItemQuerier _itemQuerier;
   private readonly IItemRepository _itemRepository;
@@ -18,12 +19,14 @@ internal class SetInventoryItemCommandHandler : ICommandHandler<SetInventoryItem
 
   public SetInventoryItemCommandHandler(
     IContext context,
+    IInventoryManager inventoryManager,
     IInventoryRepository inventoryRepository,
     IItemQuerier itemQuerier,
     IItemRepository itemRepository,
     IPermissionService permissionService)
   {
     _context = context;
+    _inventoryManager = inventoryManager;
     _inventoryRepository = inventoryRepository;
     _itemQuerier = itemQuerier;
     _itemRepository = itemRepository;
@@ -36,9 +39,7 @@ internal class SetInventoryItemCommandHandler : ICommandHandler<SetInventoryItem
     payload.Validate();
 
     TrainerId trainerId = new(_context.WorldId, command.TrainerId);
-    InventoryId inventoryId = new(trainerId);
-    TrainerInventory inventory = await _inventoryRepository.LoadAsync(inventoryId, cancellationToken)
-      ?? throw new NotImplementedException(); // TODO(fpion): implement
+    TrainerInventory inventory = await _inventoryManager.FindAsync(trainerId, nameof(command.TrainerId), cancellationToken);
     await _permissionService.CheckAsync(Actions.Update, inventory, cancellationToken);
 
     ItemId itemId = new(trainerId.WorldId, command.ItemId);

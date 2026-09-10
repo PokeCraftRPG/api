@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Api.Filters;
+using PokeGame.Api.Models.Inventory;
 using PokeGame.Core.Inventory;
 using PokeGame.Core.Inventory.Models;
 
@@ -43,9 +44,10 @@ public class InventoryController : ControllerBase
   }
 
   [HttpGet]
-  public async Task<ActionResult<SearchResults<InventoryItemDto>>> SearchAsync(Guid trainerId, CancellationToken cancellationToken)
+  public async Task<ActionResult<SearchResults<InventoryItemDto>>> SearchAsync(Guid trainerId, [FromQuery] SearchInventoryItemsParameters parameters, CancellationToken cancellationToken)
   {
-    SearchResults<InventoryItemDto>? results = await _inventoryService.SearchAsync(trainerId, cancellationToken);
+    SearchInventoryItemsPayload payload = parameters.ToPayload();
+    SearchResults<InventoryItemDto>? results = await _inventoryService.SearchAsync(trainerId, payload, cancellationToken);
     return results is null ? NotFound() : Ok(results);
   }
 
