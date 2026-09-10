@@ -77,6 +77,7 @@ internal class PermissionService : IPermissionService
       case Actions.CreateForm:
       case Actions.CreateItem:
       case Actions.CreateMove:
+      case Actions.CreatePokemon:
       case Actions.CreateRegion:
       case Actions.CreateSpecies:
       case Actions.CreateTrainer:

@@ -4,6 +4,9 @@ namespace PokeGame.Core;
 
 public sealed class Level
 {
+  public const byte MinimumValue = 1;
+  public const byte MaximumValue = 100;
+
   public byte Value { get; }
 
   public Level(byte value)

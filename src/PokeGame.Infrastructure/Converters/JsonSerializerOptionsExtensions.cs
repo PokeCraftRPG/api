@@ -25,6 +25,9 @@ internal static class JsonSerializerOptionsExtensions
     options.Converters.Add(new MoveIdConverter());
     options.Converters.Add(new NameConverter());
     options.Converters.Add(new NumberConverter());
+    options.Converters.Add(new PokemonIdConverter());
+    options.Converters.Add(new PokemonNatureConverter());
+    options.Converters.Add(new PokemonSizeConverter());
     options.Converters.Add(new PowerConverter());
     options.Converters.Add(new PowerPointsConverter());
     options.Converters.Add(new PriceConverter());

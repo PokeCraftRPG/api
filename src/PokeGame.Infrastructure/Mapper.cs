@@ -11,6 +11,8 @@ using PokeGame.Core.Identity;
 using PokeGame.Core.Items.Models;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Moves.Models;
+using PokeGame.Core.Pokemon;
+using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Regions.Models;
 using PokeGame.Core.Species.Models;
 using PokeGame.Core.Trainers.Models;
@@ -284,6 +286,75 @@ internal class Mapper
       Power = source.Power,
       PowerPoints = source.PowerPoints
     };
+
+    MapAggregate(source, destination);
+
+    return destination;
+  }
+
+  public PokemonDto ToPokemon(PokemonEntity source)
+  {
+    FormEntity form = source.Form ?? throw new ArgumentException("The form is required.", nameof(source));
+    PokemonNature nature = PokemonNatures.Find(source.Nature);
+    PokemonDto destination = new()
+    {
+      Id = source.Id,
+      Form = ToForm(form),
+      Key = source.Key,
+      Nickname = source.Nickname,
+      Summary = source.Summary,
+      Content = source.Content,
+      Gender = source.Gender,
+      IsShiny = source.IsShiny,
+      TeraType = source.TeraType,
+      AbilitySlot = source.AbilitySlot,
+      Size = new PokemonSizeDto(source.Size),
+      Nature = new PokemonNatureDto(nature),
+      EggCycles = source.EggCycles,
+      GrowthRate = source.GrowthRate,
+      Experience = source.Experience,
+      Level = source.Level,
+      Vitality = source.Vitality,
+      Stamina = source.Stamina,
+      Condition = source.Condition,
+      Friendship = source.Friendship,
+      Characteristic = source.Characteristic
+    };
+
+    IReadOnlyDictionary<PokemonSkill, byte> skillRanks = source.GetSkillRanks();
+    foreach (KeyValuePair<PokemonSkill, byte> skillRank in skillRanks)
+    {
+      destination.SkillRanks.Add(new SkillRankDto(skillRank.Key, skillRank.Value));
+    }
+
+    BaseStatisticsDto baseStatistics = source.GetBaseStatistics();
+    IndividualValuesDto individualValues = source.GetIndividualValues();
+    EffortValues effortValues = new(skillRanks);
+    PokemonStatistics statistics = new(baseStatistics, individualValues, effortValues, source.Level, nature);
+    destination.Statistics.HP = new PokemonStatisticDto(baseStatistics.HP, individualValues.HP, effortValues.HP, statistics.HP);
+    destination.Statistics.Attack = new PokemonStatisticDto(baseStatistics.Attack, individualValues.Attack, effortValues.Attack, statistics.Attack);
+    destination.Statistics.Defense = new PokemonStatisticDto(baseStatistics.Defense, individualValues.Defense, effortValues.Defense, statistics.Defense);
+    destination.Statistics.SpecialAttack = new PokemonStatisticDto(baseStatistics.SpecialAttack, individualValues.SpecialAttack, effortValues.SpecialAttack, statistics.SpecialAttack);
+    destination.Statistics.SpecialDefense = new PokemonStatisticDto(baseStatistics.SpecialDefense, individualValues.SpecialDefense, effortValues.SpecialDefense, statistics.SpecialDefense);
+    destination.Statistics.Speed = new PokemonStatisticDto(baseStatistics.Speed, individualValues.Speed, effortValues.Speed, statistics.Speed);
+
+    if (source.HeldItem is not null)
+    {
+      destination.HeldItem = ToItem(source.HeldItem);
+    }
+    else if (source.HeldItemId.HasValue)
+    {
+      throw new ArgumentException("The held item is required.", nameof(source));
+    }
+
+    if (source.Sprite is not null)
+    {
+      destination.Sprite = ToAsset(source.Sprite);
+    }
+    else if (source.SpriteId.HasValue)
+    {
+      throw new ArgumentException("The sprite is required.", nameof(source));
+    }
 
     MapAggregate(source, destination);
 

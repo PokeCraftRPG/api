@@ -1,6 +1,6 @@
-﻿namespace PokeGame.Core.Forms.Models;
+﻿namespace PokeGame.Core.Pokemon.Models;
 
-public record BaseStatisticsDto : IBaseStatistics
+public record IndividualValuesDto : IIndividualValues
 {
   public byte HP { get; set; }
   public byte Attack { get; set; }
@@ -9,11 +9,11 @@ public record BaseStatisticsDto : IBaseStatistics
   public byte SpecialDefense { get; set; }
   public byte Speed { get; set; }
 
-  public BaseStatisticsDto()
+  public IndividualValuesDto()
   {
   }
 
-  public BaseStatisticsDto(byte hp, byte attack, byte defense, byte specialAttack, byte specialDefense, byte speed)
+  public IndividualValuesDto(byte hp, byte attack, byte defense, byte specialAttack, byte specialDefense, byte speed)
   {
     HP = hp;
     Attack = attack;

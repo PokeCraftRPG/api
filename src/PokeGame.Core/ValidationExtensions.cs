@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Krakenar.Contracts.Settings;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Pokemon;
 using PokeGame.Core.Seo;
 
 namespace PokeGame.Core;
@@ -65,7 +66,7 @@ internal static class ValidationExtensions
 
   public static IRuleBuilderOptions<T, byte> Level<T>(this IRuleBuilder<T, byte> ruleBuilder)
   {
-    return ruleBuilder.InclusiveBetween((byte)1, (byte)100);
+    return ruleBuilder.InclusiveBetween(Core.Level.MinimumValue, Core.Level.MaximumValue);
   }
 
   public static IRuleBuilderOptions<T, string> License<T>(this IRuleBuilder<T, string> ruleBuilder)
@@ -98,6 +99,11 @@ internal static class ValidationExtensions
   public static IRuleBuilderOptions<T, string> Name<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Core.Name.MaximumLength);
+  }
+
+  public static IRuleBuilderOptions<T, string> Nature<T>(this IRuleBuilder<T, string> ruleBuilder)
+  {
+    return ruleBuilder.NotEmpty().MaximumLength(PokemonNature.MaximumLength).SetValidator(new NatureValidator<T>());
   }
 
   public static IRuleBuilderOptions<T, int> Number<T>(this IRuleBuilder<T, int> ruleBuilder)

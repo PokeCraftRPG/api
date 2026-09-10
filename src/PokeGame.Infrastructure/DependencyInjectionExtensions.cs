@@ -16,6 +16,7 @@ using PokeGame.Core.Items;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Messaging;
 using PokeGame.Core.Moves;
+using PokeGame.Core.Pokemon;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
 using PokeGame.Core.Trainers;
@@ -75,6 +76,7 @@ public static class DependencyInjectionExtensions
     ItemEvents.Register(services);
     MemberInvitationEvents.Register(services);
     MoveEvents.Register(services);
+    PokemonEvents.Register(services);
     RegionEvents.Register(services);
     SpeciesEvents.Register(services);
     TrainerEvents.Register(services);
@@ -134,6 +136,7 @@ public static class DependencyInjectionExtensions
       .AddScoped<IItemQuerier, ItemQuerier>()
       .AddScoped<IMemberInvitationQuerier, MemberInvitationQuerier>()
       .AddScoped<IMoveQuerier, MoveQuerier>()
+      .AddScoped<IPokemonQuerier, PokemonQuerier>()
       .AddScoped<IRegionQuerier, RegionQuerier>()
       .AddScoped<ISpeciesQuerier, SpeciesQuerier>()
       .AddScoped<ITrainerQuerier, TrainerQuerier>()
@@ -151,6 +154,7 @@ public static class DependencyInjectionExtensions
       .AddScoped<IItemRepository, ItemRepository>()
       .AddScoped<IMemberInvitationRepository, MemberInvitationRepository>()
       .AddScoped<IMoveRepository, MoveRepository>()
+      .AddScoped<IPokemonRepository, PokemonRepository>()
       .AddScoped<IRegionRepository, RegionRepository>()
       .AddScoped<ISpeciesRepository, SpeciesRepository>()
       .AddScoped<ITrainerRepository, TrainerRepository>()

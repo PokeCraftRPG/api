@@ -1,0 +1,35 @@
+﻿namespace PokeGame.Core.Pokemon;
+
+public enum PokemonCharacteristic
+{
+  ALittleQuickTempered,
+  AlertToSounds,
+  CapableOfTakingHits,
+  GoodEndurance,
+  GoodPerseverance,
+  HatesToLose,
+  HighlyCurious,
+  HighlyPersistent,
+  ImpetuousAndSilly,
+  LikesToFight,
+  LikesToRelax,
+  LikesToRun,
+  LikesToThrashAbout,
+  LovesToEat,
+  Mischievous,
+  NodsOffALot,
+  OftenLostInThought,
+  ProudOfItsPower,
+  QuickTempered,
+  QuickToFlee,
+  ScattersThingsOften,
+  SomewhatOfAClown,
+  SomewhatStubborn,
+  SomewhatVain,
+  StrongWilled,
+  StronglyDefiant,
+  SturdyBody,
+  TakesPlentyOfSiestas,
+  ThoroughlyCunning,
+  VeryFinicky
+}

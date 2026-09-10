@@ -2,7 +2,7 @@
 
 namespace PokeGame.Core.Forms;
 
-public record FormSpriteAssets
+public sealed record FormSpriteAssets
 {
   public Asset Default { get; }
   public Asset? Shiny { get; }
