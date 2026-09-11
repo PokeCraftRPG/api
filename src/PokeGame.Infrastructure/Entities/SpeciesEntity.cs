@@ -31,7 +31,6 @@ internal class SpeciesEntity : AggregateEntity
   public EggGroup? SecondaryEggGroup { get; private set; }
 
   public List<RegionalNumberEntity> RegionalNumbers { get; private set; } = [];
-  public List<VarietyEntity> Varieties { get; private set; } = [];
 
   public SpeciesEntity(int worldId, SpeciesCreated @event) : base(@event)
   {

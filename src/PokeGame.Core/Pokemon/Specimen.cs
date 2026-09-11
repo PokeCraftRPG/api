@@ -4,6 +4,7 @@ using PokeGame.Core.Assets;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Items;
 using PokeGame.Core.Pokemon.Events;
+using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
 using PokeGame.Core.Trainers;
 using PokeGame.Core.Varieties;
@@ -67,15 +68,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   public AssetId? SpriteId { get; private set; }
 
   public TrainerId? OriginalTrainerId { get; private set; }
-  // TODO(fpion): Poké Ball ID
-  // TODO(fpion): Current Trainer ID
-  // TODO(fpion): Ownership Kind ∈ { Caught, Received } (Bought? Gifted? Hatched? Traded? Winned?)
-  // TODO(fpion): Met at Level
-  // TODO(fpion): Met at Location
-  // TODO(fpion): Met on
-  // TODO(fpion): Description/Notes
-  // TODO(fpion): Position
-  // TODO(fpion): Box
+  public PokemonOwnership? Ownership { get; private set; }
 
   public Specimen() : base()
   {
@@ -207,6 +200,43 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     {
       Raise(new PokemonDeleted(), actorId);
     }
+  }
+
+  public void Receive(Trainer trainer, Item pokeBall, Location location, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(this, trainer, nameof(trainer));
+    WorldMismatchException.ThrowIfMismatch(this, pokeBall, nameof(pokeBall));
+
+    if (pokeBall.Category != ItemCategory.PokeBall)
+    {
+      throw new InvalidItemCategoryException(pokeBall, ItemCategory.PokeBall, nameof(Ownership.PokeBallId));
+    }
+
+    TrainerId trainerId = trainer.Id;
+    ItemId pokeBallId = pokeBall.Id;
+
+    if (Ownership is not null)
+    {
+      if (Ownership.TrainerId == trainerId)
+      {
+        throw new PokemonAlreadyOwnedException(this);
+      }
+      if (Ownership.PokeBallId != pokeBallId)
+      {
+        throw new ImmutablePropertyException<Guid>(this, Ownership.PokeBallId.EntityId, pokeBallId.EntityId, nameof(Ownership.PokeBallId));
+      }
+    }
+
+    Raise(new PokemonReceived(trainerId, pokeBallId, new Level(Level), location), actorId);
+  }
+  private void Handle(PokemonReceived @event)
+  {
+    if (!OriginalTrainerId.HasValue && !IsEgg)
+    {
+      OriginalTrainerId = @event.TrainerId;
+    }
+
+    Ownership = new PokemonOwnership(OwnershipEvent.Received, @event.TrainerId, @event.PokeBallId, @event.Level, @event.Location, @event.OccurredOn);
   }
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId);

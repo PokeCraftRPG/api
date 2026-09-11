@@ -1,7 +1,4 @@
-﻿using Logitar.EventSourcing;
-using Microsoft.EntityFrameworkCore;
-using PokeGame.Core;
-using PokeGame.Core.Worlds;
+﻿using Microsoft.EntityFrameworkCore;
 using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure;
@@ -33,15 +30,6 @@ public class PokemonContext : DbContext
   internal DbSet<VarietyEntity> Varieties => Set<VarietyEntity>();
   internal DbSet<VarietyMoveEntity> VarietyMoves => Set<VarietyMoveEntity>();
   internal DbSet<WorldEntity> Worlds => Set<WorldEntity>();
-
-  internal async Task<int> FindWorldIdAsync(StreamId streamId, CancellationToken cancellationToken = default)
-  {
-    WorldId worldId = Entity.Parse(streamId.Value).WorldId ?? throw new ArgumentException("A world identifier is required.", nameof(streamId));
-    return await Worlds.Where(x => x.StreamId == worldId.Value)
-      .Select(x => (int?)x.WorldId)
-      .SingleOrDefaultAsync(cancellationToken)
-      ?? throw new InvalidOperationException($"The world entity 'StreamId={worldId}' was not found.");
-  }
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

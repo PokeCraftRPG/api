@@ -134,15 +134,7 @@ internal class TrainerEvents :
     TrainerEntity? trainer = await _pokemon.Trainers.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (trainer is not null && trainer.Version == (@event.Version - 1))
     {
-      int? spriteId = null;
-      if (@event.SpriteId.HasValue)
-      {
-        spriteId = await _pokemon.Assets
-          .Where(x => x.StreamId == @event.SpriteId.Value.Value)
-          .Select(x => (int?)x.AssetId)
-          .SingleOrDefaultAsync(cancellationToken)
-          ?? throw new InvalidOperationException($"The asset entity 'StreamId={@event.SpriteId}' was not found.");
-      }
+      int? spriteId = @event.SpriteId.HasValue ? await _pokemon.FindAssetIdAsync(@event.SpriteId.Value, cancellationToken) : null;
 
       trainer.SetSprite(spriteId, @event);
 

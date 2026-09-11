@@ -14,6 +14,7 @@ internal class PokemonEvents :
   IEventHandler<PokemonHeldItemChanged>,
   IEventHandler<PokemonKeyChanged>,
   IEventHandler<PokemonNicknameChanged>,
+  IEventHandler<PokemonReceived>,
   IEventHandler<PokemonSpriteChanged>,
   IEventHandler<PokemonStatusChanged>
 {
@@ -26,6 +27,7 @@ internal class PokemonEvents :
     services.AddTransient<IEventHandler<PokemonHeldItemChanged>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonKeyChanged>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonNicknameChanged>, PokemonEvents>();
+    services.AddTransient<IEventHandler<PokemonReceived>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonSpriteChanged>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonStatusChanged>, PokemonEvents>();
   }
@@ -83,11 +85,7 @@ internal class PokemonEvents :
     PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (pokemon is not null && pokemon.Version == (@event.Version - 1))
     {
-      int formId = await _pokemon.Forms
-        .Where(x => x.StreamId == @event.FormId.Value)
-        .Select(x => (int?)x.FormId)
-        .SingleOrDefaultAsync(cancellationToken)
-        ?? throw new InvalidOperationException($"The form entity 'StreamId={@event.FormId}' was not found.");
+      int formId = await _pokemon.FindFormIdAsync(@event.FormId, cancellationToken);
 
       pokemon.ChangeForm(formId, @event);
 
@@ -100,15 +98,7 @@ internal class PokemonEvents :
     PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (pokemon is not null && pokemon.Version == (@event.Version - 1))
     {
-      int? heldItemId = null;
-      if (@event.HeldItemId.HasValue)
-      {
-        heldItemId = await _pokemon.Items
-          .Where(x => x.StreamId == @event.HeldItemId.Value.Value)
-          .Select(x => (int?)x.ItemId)
-          .SingleOrDefaultAsync(cancellationToken)
-          ?? throw new InvalidOperationException($"The item entity 'StreamId={@event.HeldItemId}' was not found.");
-      }
+      int? heldItemId = @event.HeldItemId.HasValue ? await _pokemon.FindItemIdAsync(@event.HeldItemId.Value, cancellationToken) : null;
 
       pokemon.SetHeldItem(heldItemId, @event);
 
@@ -138,20 +128,26 @@ internal class PokemonEvents :
     }
   }
 
+  public async Task HandleAsync(PokemonReceived @event, CancellationToken cancellationToken)
+  {
+    PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (pokemon is not null && pokemon.Version == (@event.Version - 1))
+    {
+      int trainerId = await _pokemon.FindTrainerIdAsync(@event.TrainerId, cancellationToken);
+      int pokeBallId = await _pokemon.FindItemIdAsync(@event.PokeBallId, cancellationToken);
+
+      pokemon.Receive(trainerId, pokeBallId, @event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
   public async Task HandleAsync(PokemonSpriteChanged @event, CancellationToken cancellationToken)
   {
     PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (pokemon is not null && pokemon.Version == (@event.Version - 1))
     {
-      int? spriteId = null;
-      if (@event.SpriteId.HasValue)
-      {
-        spriteId = await _pokemon.Assets
-          .Where(x => x.StreamId == @event.SpriteId.Value.Value)
-          .Select(x => (int?)x.AssetId)
-          .SingleOrDefaultAsync(cancellationToken)
-          ?? throw new InvalidOperationException($"The asset entity 'StreamId={@event.SpriteId}' was not found.");
-      }
+      int? spriteId = @event.SpriteId.HasValue ? await _pokemon.FindAssetIdAsync(@event.SpriteId.Value, cancellationToken) : null;
 
       pokemon.SetSprite(spriteId, @event);
 

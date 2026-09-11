@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Pokemon;
+using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
 using PokeGame.Infrastructure.Entities;
 
@@ -28,6 +29,10 @@ internal class PokemonConfiguration : AggregateConfiguration<PokemonEntity>, IEn
     builder.HasIndex(x => new { x.WorldId, x.Gender });
     builder.HasIndex(x => new { x.WorldId, x.IsShiny });
     builder.HasIndex(x => new { x.WorldId, x.HeldItemId });
+    builder.HasIndex(x => new { x.WorldId, x.OriginalTrainerId });
+    builder.HasIndex(x => new { x.WorldId, x.OwnershipEvent });
+    builder.HasIndex(x => new { x.WorldId, x.CurrentTrainerId });
+    builder.HasIndex(x => new { x.WorldId, x.PokeBallId });
 
     builder.Property(x => x.Key).HasMaxLength(Key.MaximumLength);
     builder.Property(x => x.Nickname).HasMaxLength(Name.MaximumLength);
@@ -39,6 +44,8 @@ internal class PokemonConfiguration : AggregateConfiguration<PokemonEntity>, IEn
     builder.Property(x => x.GrowthRate).HasMaxLength(16).HasConversion(new EnumToStringConverter<GrowthRate>());
     builder.Property(x => x.Condition).HasMaxLength(16).HasConversion(new EnumToStringConverter<StatusCondition>());
     builder.Property(x => x.Characteristic).HasMaxLength(32).HasConversion(new EnumToStringConverter<PokemonCharacteristic>());
+    builder.Property(x => x.OwnershipEvent).HasMaxLength(8).HasConversion(new EnumToStringConverter<OwnershipEvent>());
+    builder.Property(x => x.MetAt).HasMaxLength(Location.MaximumLength);
 
     builder.HasOne(x => x.World).WithMany().OnDelete(DeleteBehavior.Restrict);
     builder.HasOne(x => x.Species).WithMany().OnDelete(DeleteBehavior.Restrict);
@@ -46,5 +53,8 @@ internal class PokemonConfiguration : AggregateConfiguration<PokemonEntity>, IEn
     builder.HasOne(x => x.Form).WithMany().OnDelete(DeleteBehavior.Restrict);
     builder.HasOne(x => x.HeldItem).WithMany().OnDelete(DeleteBehavior.Restrict);
     builder.HasOne(x => x.Sprite).WithMany().OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.OriginalTrainer).WithMany().OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.CurrentTrainer).WithMany().OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.PokeBall).WithMany().OnDelete(DeleteBehavior.Restrict);
   }
 }

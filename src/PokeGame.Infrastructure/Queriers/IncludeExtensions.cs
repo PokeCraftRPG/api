@@ -6,15 +6,15 @@ namespace PokeGame.Infrastructure.Queriers;
 internal static class IncludeExtensions
 {
   public static IQueryable<EvolutionEntity> IncludeRelated(this IQueryable<EvolutionEntity> query) => query.AsSplitQuery()
-    .Include(x => x.Source!).ThenInclude(x => x.Abilities).ThenInclude(x => x.Ability)
-    .Include(x => x.Source!).ThenInclude(x => x.Sprites).ThenInclude(x => x.Asset)
-    .Include(x => x.Source!).ThenInclude(x => x.Variety).ThenInclude(x => x!.Moves).ThenInclude(x => x.Move)
-    .Include(x => x.Source!).ThenInclude(x => x.Variety).ThenInclude(x => x!.Species).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
-    .Include(x => x.Target!).ThenInclude(x => x.Abilities).ThenInclude(x => x.Ability)
-    .Include(x => x.Target!).ThenInclude(x => x.Sprites).ThenInclude(x => x.Asset)
-    .Include(x => x.Target!).ThenInclude(x => x.Variety).ThenInclude(x => x!.Moves).ThenInclude(x => x.Move)
-    .Include(x => x.Target!).ThenInclude(x => x.Variety).ThenInclude(x => x!.Species).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
-    .Include(x => x.Item!).ThenInclude(x => x.Sprite)
+    .Include(x => x.Source).ThenInclude(x => x!.Abilities).ThenInclude(x => x.Ability)
+    .Include(x => x.Source).ThenInclude(x => x!.Sprites).ThenInclude(x => x.Asset)
+    .Include(x => x.Source).ThenInclude(x => x!.Variety).ThenInclude(x => x!.Moves).ThenInclude(x => x.Move)
+    .Include(x => x.Source).ThenInclude(x => x!.Variety).ThenInclude(x => x!.Species).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
+    .Include(x => x.Target).ThenInclude(x => x!.Abilities).ThenInclude(x => x.Ability)
+    .Include(x => x.Target).ThenInclude(x => x!.Sprites).ThenInclude(x => x.Asset)
+    .Include(x => x.Target).ThenInclude(x => x!.Variety).ThenInclude(x => x!.Moves).ThenInclude(x => x.Move)
+    .Include(x => x.Target).ThenInclude(x => x!.Variety).ThenInclude(x => x!.Species).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
+    .Include(x => x.Item).ThenInclude(x => x!.Sprite)
     .Include(x => x.Move);
 
   public static IQueryable<FormEntity> IncludeRelated(this IQueryable<FormEntity> query) => query.AsSplitQuery()
@@ -30,11 +30,14 @@ internal static class IncludeExtensions
     .Include(x => x.Sprite);
 
   public static IQueryable<PokemonEntity> IncludeRelated(this IQueryable<PokemonEntity> query) => query.AsSplitQuery()
-    .Include(x => x.Form!).ThenInclude(x => x.Abilities).ThenInclude(x => x.Ability)
-    .Include(x => x.Form!).ThenInclude(x => x.Sprites).ThenInclude(x => x.Asset)
-    .Include(x => x.Form!).ThenInclude(x => x.Variety).ThenInclude(x => x!.Moves).ThenInclude(x => x.Move)
-    .Include(x => x.Form!).ThenInclude(x => x.Variety).ThenInclude(x => x!.Species).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
-    .Include(x => x.HeldItem!).ThenInclude(x => x.Sprite)
+    .Include(x => x.Form).ThenInclude(x => x!.Abilities).ThenInclude(x => x.Ability)
+    .Include(x => x.Form).ThenInclude(x => x!.Sprites).ThenInclude(x => x.Asset)
+    .Include(x => x.Form).ThenInclude(x => x!.Variety).ThenInclude(x => x!.Moves).ThenInclude(x => x.Move)
+    .Include(x => x.Form).ThenInclude(x => x!.Variety).ThenInclude(x => x!.Species).ThenInclude(x => x!.RegionalNumbers).ThenInclude(x => x.Region)
+    .Include(x => x.HeldItem).ThenInclude(x => x!.Sprite)
+    .Include(x => x.CurrentTrainer).ThenInclude(x => x!.Sprite)
+    .Include(x => x.OriginalTrainer).ThenInclude(x => x!.Sprite)
+    .Include(x => x.PokeBall).ThenInclude(x => x!.Sprite)
     .Include(x => x.Sprite);
 
   public static IQueryable<MemberInvitationEntity> IncludeRelated(this IQueryable<MemberInvitationEntity> query) => query

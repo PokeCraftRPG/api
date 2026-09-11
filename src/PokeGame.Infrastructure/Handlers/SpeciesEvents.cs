@@ -107,10 +107,7 @@ internal class SpeciesEvents :
 
   public async Task HandleAsync(SpeciesRegionalNumberChanged @event, CancellationToken cancellationToken)
   {
-    int regionId = await _pokemon.Regions.Where(x => x.StreamId == @event.RegionId.Value)
-      .Select(x => (int?)x.RegionId)
-      .SingleOrDefaultAsync(cancellationToken)
-      ?? throw new InvalidOperationException($"The region entity 'StreamId={@event.RegionId}' was not found.");
+    int regionId = await _pokemon.FindRegionIdAsync(@event.RegionId, cancellationToken);
 
     SpeciesEntity? species = await _pokemon.Species
       .Include(x => x.RegionalNumbers.Where(y => y.RegionId == regionId))

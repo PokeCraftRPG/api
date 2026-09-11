@@ -36,6 +36,6 @@ internal class FormConfiguration : AggregateConfiguration<FormEntity>, IEntityTy
     builder.Property(x => x.SecondaryType).HasMaxLength(8).HasConversion(new EnumToStringConverter<PokemonType>());
 
     builder.HasOne(x => x.World).WithMany().OnDelete(DeleteBehavior.Restrict);
-    builder.HasOne(x => x.Variety).WithMany(x => x.Forms).OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.Variety).WithMany().OnDelete(DeleteBehavior.Restrict);
   }
 }

@@ -27,7 +27,6 @@ internal class VarietyEntity : AggregateEntity
   public byte? GenderRatio { get; private set; }
   public string? Genus { get; private set; }
 
-  public List<FormEntity> Forms { get; private set; } = [];
   public List<VarietyMoveEntity> Moves { get; private set; } = [];
 
   public VarietyEntity(int worldId, int speciesId, VarietyCreated @event) : base(@event)
