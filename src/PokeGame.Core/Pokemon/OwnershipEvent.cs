@@ -2,5 +2,6 @@
 
 public enum OwnershipEvent
 {
-  Received = 0
+  Received = 0,
+  Caught = 1
 }

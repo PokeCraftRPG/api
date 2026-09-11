@@ -7,6 +7,7 @@ using PokeGame.Infrastructure.Entities;
 namespace PokeGame.Infrastructure.Handlers;
 
 internal class PokemonEvents :
+  IEventHandler<PokemonCaught>,
   IEventHandler<PokemonCreated>,
   IEventHandler<PokemonDeleted>,
   IEventHandler<PokemonDetailsChanged>,
@@ -20,6 +21,7 @@ internal class PokemonEvents :
 {
   public static void Register(IServiceCollection services)
   {
+    services.AddTransient<IEventHandler<PokemonCaught>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonCreated>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonDeleted>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonDetailsChanged>, PokemonEvents>();
@@ -37,6 +39,20 @@ internal class PokemonEvents :
   public PokemonEvents(PokemonContext pokemon)
   {
     _pokemon = pokemon;
+  }
+
+  public async Task HandleAsync(PokemonCaught @event, CancellationToken cancellationToken)
+  {
+    PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (pokemon is not null && pokemon.Version == (@event.Version - 1))
+    {
+      int trainerId = await _pokemon.FindTrainerIdAsync(@event.TrainerId, cancellationToken);
+      int pokeBallId = await _pokemon.FindItemIdAsync(@event.PokeBallId, cancellationToken);
+
+      pokemon.Catch(trainerId, pokeBallId, @event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
   }
 
   public async Task HandleAsync(PokemonCreated @event, CancellationToken cancellationToken)

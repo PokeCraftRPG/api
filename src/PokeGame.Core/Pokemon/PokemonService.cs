@@ -8,6 +8,7 @@ namespace PokeGame.Core.Pokemon;
 
 public interface IPokemonService
 {
+  Task<PokemonDto?> CatchAsync(Guid id, CatchPokemonPayload payload, CancellationToken cancellationToken = default);
   Task<PokemonDto?> ChangeFormAsync(Guid pokemonId, Guid formId, CancellationToken cancellationToken = default);
   Task<PokemonDto> CreateAsync(CreatePokemonPayload payload, CancellationToken cancellationToken = default);
   Task<PokemonDto?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
@@ -22,6 +23,7 @@ internal class PokemonService : IPokemonService
     services.AddSingleton<IPokemonRandomizer, PokemonRandomizer>();
     services.AddTransient<IPokemonService, PokemonService>();
     services.AddTransient<IPokemonManager, PokemonManager>();
+    services.AddTransient<ICommandHandler<CatchPokemonCommand, PokemonDto?>, CatchPokemonCommandHandler>();
     services.AddTransient<ICommandHandler<ChangePokemonFormCommand, PokemonDto?>, ChangePokemonFormCommandHandler>();
     services.AddTransient<ICommandHandler<CreatePokemonCommand, PokemonDto>, CreatePokemonCommandHandler>();
     services.AddTransient<ICommandHandler<ReceivePokemonCommand, PokemonDto?>, ReceivePokemonCommandHandler>();
@@ -36,6 +38,12 @@ internal class PokemonService : IPokemonService
   {
     _commandBus = commandBus;
     _queryBus = queryBus;
+  }
+
+  public async Task<PokemonDto?> CatchAsync(Guid id, CatchPokemonPayload payload, CancellationToken cancellationToken)
+  {
+    CatchPokemonCommand command = new(id, payload);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
   public async Task<PokemonDto?> ChangeFormAsync(Guid pokemonId, Guid formId, CancellationToken cancellationToken)
