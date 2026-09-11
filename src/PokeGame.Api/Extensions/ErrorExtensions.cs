@@ -85,3 +85,16 @@ internal static class ErrorExtensions
     return new Error(exception);
   }
 }
+
+/* TODO(fpion): ErrorException
+ * MediaTypeNotSupportedException (0)
+ * ConflictException (11)
+ * DomainException (13)
+ * IdentityException (3)
+ * MemberInvitationExpiredException → 410 Gone (0)
+ * NotFoundException (2) → RegionsNotFoundException?
+ * PermissionDeniedException (0)
+ * ValidationException
+ * - if query: 400 Bad Request
+ * - if command: 422 Unprocessable Entity
+ */
