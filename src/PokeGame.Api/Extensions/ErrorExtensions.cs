@@ -96,10 +96,7 @@ internal static class ErrorExtensions
   }
 }
 
-/* TODO(fpion): ErrorException
- * DomainException (13)
- *
- * ValidationException
+/* TODO(fpion): ValidationException
  * - if command: 422 Unprocessable Entity
  * - if query: 400 Bad Request
  */

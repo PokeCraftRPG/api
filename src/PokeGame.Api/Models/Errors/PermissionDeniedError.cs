@@ -2,7 +2,7 @@
 
 namespace PokeGame.Api.Models.Errors;
 
-public sealed record PermissionDeniedError : Error
+internal sealed record PermissionDeniedError : Error
 {
   public PermissionDeniedError() : base("PermissionDenied", "The specified permission was denied.")
   {
