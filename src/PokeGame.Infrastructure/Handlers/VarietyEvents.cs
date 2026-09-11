@@ -105,15 +105,7 @@ internal class VarietyEvents :
       .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (variety is not null && variety.Version == (@event.Version - 1))
     {
-      int? moveId = null;
-      if (!variety.Moves.Any(x => x.Id == @event.VarietyMoveId))
-      {
-        moveId = await _pokemon.Moves
-          .Where(x => x.StreamId == @event.Move.MoveId.Value)
-          .Select(x => (int?)x.MoveId)
-          .SingleOrDefaultAsync(cancellationToken)
-          ?? throw new InvalidOperationException($"The move entity 'StreamId={@event.Move.MoveId}' was not found.");
-      }
+      int? moveId = variety.Moves.Any(x => x.Id == @event.VarietyMoveId) ? null : await _pokemon.FindMoveIdAsync(@event.Move.MoveId, cancellationToken);
 
       variety.SetMove(moveId, @event);
 

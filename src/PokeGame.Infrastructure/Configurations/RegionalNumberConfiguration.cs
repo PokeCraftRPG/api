@@ -22,6 +22,6 @@ internal class RegionalNumberConfiguration : IEntityTypeConfiguration<RegionalNu
     builder.Property(x => x.UpdatedBy).HasMaxLength(ActorId.MaximumLength);
 
     builder.HasOne(x => x.Species).WithMany(x => x.RegionalNumbers).OnDelete(DeleteBehavior.Cascade);
-    builder.HasOne(x => x.Region).WithMany(x => x.RegionalNumbers).OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.Region).WithMany().OnDelete(DeleteBehavior.Restrict);
   }
 }

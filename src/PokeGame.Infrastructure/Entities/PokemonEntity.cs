@@ -73,6 +73,17 @@ internal class PokemonEntity : AggregateEntity
   public AssetEntity? Sprite { get; private set; }
   public int? SpriteId { get; private set; }
 
+  public TrainerEntity? OriginalTrainer { get; private set; }
+  public int? OriginalTrainerId { get; private set; }
+  public OwnershipEvent? OwnershipEvent { get; private set; }
+  public TrainerEntity? CurrentTrainer { get; private set; }
+  public int? CurrentTrainerId { get; private set; }
+  public ItemEntity? PokeBall { get; private set; }
+  public int? PokeBallId { get; private set; }
+  public int? MetLevel { get; private set; }
+  public string? MetAt { get; private set; }
+  public DateTime? MetOn { get; private set; }
+
   public PokemonEntity(int worldId, int speciesId, int varietyId, int formId, PokemonCreated @event) : base(@event)
   {
     WorldId = worldId;
@@ -136,6 +147,18 @@ internal class PokemonEntity : AggregateEntity
     {
       actorIds.AddRange(Sprite.GetActorIds());
     }
+    if (OriginalTrainer is not null)
+    {
+      actorIds.AddRange(OriginalTrainer.GetActorIds());
+    }
+    if (CurrentTrainer is not null)
+    {
+      actorIds.AddRange(CurrentTrainer.GetActorIds());
+    }
+    if (PokeBall is not null)
+    {
+      actorIds.AddRange(PokeBall.GetActorIds());
+    }
     return actorIds;
   }
 
@@ -177,6 +200,23 @@ internal class PokemonEntity : AggregateEntity
 
     Vitality = @event.Vitality;
     Stamina = @event.Stamina;
+  }
+
+  public void Receive(int trainerId, int pokeBallId, PokemonReceived @event)
+  {
+    Update(@event);
+
+    if (!OriginalTrainerId.HasValue && EggCycles < 1)
+    {
+      OriginalTrainerId = trainerId;
+    }
+
+    OwnershipEvent = Core.Pokemon.OwnershipEvent.Received;
+    CurrentTrainerId = trainerId;
+    PokeBallId = pokeBallId;
+    MetLevel = @event.Level.Value;
+    MetAt = @event.Location.Value;
+    MetOn = @event.OccurredOn.AsUniversalTime();
   }
 
   public void SetDetails(PokemonDetailsChanged @event)

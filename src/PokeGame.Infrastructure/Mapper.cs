@@ -363,6 +363,28 @@ internal class Mapper
       throw new ArgumentException("The sprite is required.", nameof(source));
     }
 
+    if (source.OriginalTrainer is not null)
+    {
+      destination.OriginalTrainer = ToTrainer(source.OriginalTrainer);
+    }
+    else if (source.OriginalTrainerId.HasValue)
+    {
+      throw new ArgumentException("The original trainer is required.", nameof(source));
+    }
+
+    if (source.OwnershipEvent.HasValue)
+    {
+      destination.Ownership = new PokemonOwnershipDto
+      {
+        Event = source.OwnershipEvent.Value,
+        Trainer = ToTrainer(source.CurrentTrainer ?? throw new ArgumentException("The current trainer is required.", nameof(source))),
+        PokeBall = ToItem(source.PokeBall ?? throw new ArgumentException("The Poké Ball is required.", nameof(source))),
+        MetLevel = source.MetLevel ?? throw new ArgumentException("The met level is required.", nameof(source)),
+        MetAt = source.MetAt ?? throw new ArgumentException("The met location is required.", nameof(source)),
+        MetOn = source.MetOn?.AsUniversalTime() ?? throw new ArgumentException("The met date is required.", nameof(source))
+      };
+    }
+
     MapAggregate(source, destination);
 
     return destination;

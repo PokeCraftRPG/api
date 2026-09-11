@@ -17,8 +17,6 @@ internal class RegionEntity : AggregateEntity
   public string? Summary { get; private set; }
   public string? Content { get; private set; }
 
-  public List<RegionalNumberEntity> RegionalNumbers { get; private set; } = [];
-
   public RegionEntity(int worldId, RegionCreated @event) : base(@event)
   {
     WorldId = worldId;

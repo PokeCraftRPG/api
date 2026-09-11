@@ -31,6 +31,6 @@ internal class VarietyConfiguration : AggregateConfiguration<VarietyEntity>, IEn
     builder.Property(x => x.Genus).HasMaxLength(Genus.MaximumLength);
 
     builder.HasOne(x => x.World).WithMany().OnDelete(DeleteBehavior.Restrict);
-    builder.HasOne(x => x.Species).WithMany(x => x.Varieties).OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.Species).WithMany().OnDelete(DeleteBehavior.Restrict);
   }
 }

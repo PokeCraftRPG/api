@@ -28,6 +28,6 @@ internal class VarietyMoveConfiguration : IEntityTypeConfiguration<VarietyMoveEn
     builder.Property(x => x.UpdatedBy).HasMaxLength(ActorId.MaximumLength);
 
     builder.HasOne(x => x.Variety).WithMany(x => x.Moves).OnDelete(DeleteBehavior.Cascade);
-    builder.HasOne(x => x.Move).WithMany(x => x.Varieties).OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.Move).WithMany().OnDelete(DeleteBehavior.Restrict);
   }
 }
