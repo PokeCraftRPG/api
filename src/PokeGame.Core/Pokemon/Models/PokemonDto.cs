@@ -4,6 +4,7 @@ using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Items.Models;
 using PokeGame.Core.Species;
+using PokeGame.Core.Trainers.Models;
 
 namespace PokeGame.Core.Pokemon.Models;
 
@@ -44,6 +45,9 @@ public class PokemonDto : Aggregate
   public ItemDto? HeldItem { get; set; }
 
   public AssetDto? Sprite { get; set; }
+
+  public TrainerDto? OriginalTrainer { get; set; }
+  public PokemonOwnershipDto? Ownership { get; set; }
 
   public override string ToString() => $"{Nickname ?? Key} | {base.ToString()}";
 }

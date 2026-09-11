@@ -147,6 +147,18 @@ internal class PokemonEntity : AggregateEntity
     {
       actorIds.AddRange(Sprite.GetActorIds());
     }
+    if (OriginalTrainer is not null)
+    {
+      actorIds.AddRange(OriginalTrainer.GetActorIds());
+    }
+    if (CurrentTrainer is not null)
+    {
+      actorIds.AddRange(CurrentTrainer.GetActorIds());
+    }
+    if (PokeBall is not null)
+    {
+      actorIds.AddRange(PokeBall.GetActorIds());
+    }
     return actorIds;
   }
 

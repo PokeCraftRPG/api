@@ -49,6 +49,13 @@ public class PokemonController : ControllerBase
     return pokemon is null ? NotFound() : Ok(pokemon);
   }
 
+  [HttpPost("{id}/receive")]
+  public async Task<ActionResult<PokemonDto>> ReceiveAsync(Guid id, [FromBody] ReceivePokemonPayload payload, CancellationToken cancellationToken)
+  {
+    PokemonDto? pokemon = await _pokemonService.ReceiveAsync(id, payload, cancellationToken);
+    return pokemon is null ? NotFound() : Ok(pokemon);
+  }
+
   [HttpPatch("{id}")]
   public async Task<ActionResult<PokemonDto>> UpdateAsync(Guid id, [FromBody] UpdatePokemonPayload payload, CancellationToken cancellationToken)
   {
