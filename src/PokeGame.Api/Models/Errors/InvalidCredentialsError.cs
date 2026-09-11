@@ -1,8 +1,8 @@
 ﻿using Krakenar.Contracts;
 
-namespace PokeGame.Core.Identity;
+namespace PokeGame.Api.Models.Errors;
 
-public record InvalidCredentialsError : Error // TODO(fpion): move to PokeGame.Api.Models.Error
+public sealed record InvalidCredentialsError : Error
 {
   public InvalidCredentialsError() : base("InvalidCredentials", "The specified credentials did not match.")
   {

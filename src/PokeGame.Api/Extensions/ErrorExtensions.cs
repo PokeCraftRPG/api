@@ -10,6 +10,7 @@ using PokeGame.Core.Assets;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Permissions;
+using KrakenarClientException = Krakenar.Client.KrakenarClientException;
 
 namespace PokeGame.Api.Extensions;
 
@@ -36,7 +37,7 @@ internal static class ErrorExtensions
     {
       return StatusCodes.Status400BadRequest;
     }
-    if (exception is InvalidOneTimePasswordException || exception is OneTimePasswordNotFoundException)
+    if (exception is KrakenarClientException || exception is InvalidOneTimePasswordException || exception is OneTimePasswordNotFoundException)
     {
       return StatusCodes.Status401Unauthorized;
     }
@@ -69,17 +70,10 @@ internal static class ErrorExtensions
 
   public static Error ToError(this Exception exception)
   {
-    #region TODO(fpion): refactor
     if (exception is IdentityException)
     {
       return new InvalidCredentialsError();
     }
-    if (exception is ErrorException errorException)
-    {
-      return errorException.Error;
-    }
-    #endregion
-
     if (exception is PermissionDeniedException)
     {
       return new PermissionDeniedError();
@@ -103,7 +97,6 @@ internal static class ErrorExtensions
 }
 
 /* TODO(fpion): ErrorException
- * IdentityException (3)
  * ConflictException (11)
  * DomainException (13)
  *

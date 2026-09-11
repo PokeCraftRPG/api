@@ -2,7 +2,8 @@
 
 public sealed class MediaTypeNotSupportedException : Exception
 {
-  public MediaTypeNotSupportedException(string mediaType) : base("The specified media type is not supported.")
+  public MediaTypeNotSupportedException(string mediaType)
+    : base("The specified media type is not supported.")
   {
     Data["MediaType"] = mediaType;
   }
