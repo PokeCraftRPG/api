@@ -277,10 +277,10 @@ public class MoveIntegrationTests : IntegrationTests
 
     InvalidMovePowerException exception = await Assert.ThrowsAsync<InvalidMovePowerException>(
       async () => await _moveService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(id, exception.MoveId);
-    Assert.Equal(payload.Power!.Value, exception.AttemptedPower);
-    Assert.Equal(nameof(Move.Power), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(id, exception.Data["MoveId"]);
+    Assert.Equal(payload.Power!.Value, exception.Data["AttemptedPower"]);
+    Assert.Equal(nameof(Move.Power), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidMovePowerException when updating a status move with power.")]
@@ -304,10 +304,10 @@ public class MoveIntegrationTests : IntegrationTests
 
     InvalidMovePowerException exception = await Assert.ThrowsAsync<InvalidMovePowerException>(
       async () => await _moveService.UpdateAsync(growl.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(growl.EntityId, exception.MoveId);
-    Assert.Equal((byte)40, exception.AttemptedPower);
-    Assert.Equal(nameof(Move.Power), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(growl.EntityId, exception.Data["MoveId"]);
+    Assert.Equal((byte)40, exception.Data["AttemptedPower"]);
+    Assert.Equal(nameof(Move.Power), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a move.")]

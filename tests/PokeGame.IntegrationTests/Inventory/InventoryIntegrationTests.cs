@@ -172,13 +172,13 @@ public class InventoryIntegrationTests : IntegrationTests
 
     InventoryQuantityOutOfRangeException exception = await Assert.ThrowsAsync<InventoryQuantityOutOfRangeException>(
       async () => await AdjustAsync(1));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(_trainer.EntityId, exception.TrainerId);
-    Assert.Equal(_item.EntityId, exception.ItemId);
-    Assert.Equal(TrainerInventory.MinimumQuantity, exception.MinimumQuantity);
-    Assert.Equal(TrainerInventory.MaximumQuantity, exception.MaximumQuantity);
-    Assert.Equal(TrainerInventory.MaximumQuantity + 1, exception.AttemptedQuantity);
-    Assert.Equal("Quantity", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(_item.EntityId, exception.Data["ItemId"]);
+    Assert.Equal(TrainerInventory.MinimumQuantity, exception.Data["MinimumQuantity"]);
+    Assert.Equal(TrainerInventory.MaximumQuantity, exception.Data["MaximumQuantity"]);
+    Assert.Equal(TrainerInventory.MaximumQuantity + 1, exception.Data["AttemptedQuantity"]);
+    Assert.Equal("Quantity", exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InventoryQuantityOutOfRangeException when adjusting below the minimum.")]
@@ -186,13 +186,13 @@ public class InventoryIntegrationTests : IntegrationTests
   {
     InventoryQuantityOutOfRangeException exception = await Assert.ThrowsAsync<InventoryQuantityOutOfRangeException>(
       async () => await AdjustAsync(-1));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(_trainer.EntityId, exception.TrainerId);
-    Assert.Equal(_item.EntityId, exception.ItemId);
-    Assert.Equal(TrainerInventory.MinimumQuantity, exception.MinimumQuantity);
-    Assert.Equal(TrainerInventory.MaximumQuantity, exception.MaximumQuantity);
-    Assert.Equal(-1, exception.AttemptedQuantity);
-    Assert.Equal("Quantity", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(_item.EntityId, exception.Data["ItemId"]);
+    Assert.Equal(TrainerInventory.MinimumQuantity, exception.Data["MinimumQuantity"]);
+    Assert.Equal(TrainerInventory.MaximumQuantity, exception.Data["MaximumQuantity"]);
+    Assert.Equal(-1, exception.Data["AttemptedQuantity"]);
+    Assert.Equal("Quantity", exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should read an inventory item.")]

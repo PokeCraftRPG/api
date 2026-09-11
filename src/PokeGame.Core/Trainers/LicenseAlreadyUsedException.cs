@@ -9,6 +9,6 @@ public sealed class LicenseAlreadyUsedException : ConflictException
     Data["TrainerId"] = trainer.EntityId;
     Data["ConflictId"] = conflictId.EntityId;
     Data["AttemptedLicense"] = trainer.License?.Value;
-    Data["PropertyName"] = nameof(trainer.License);
+    Data["PropertyName"] = nameof(Trainer.License);
   }
 }

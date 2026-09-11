@@ -531,11 +531,11 @@ public class FormIntegrationTests : IntegrationTests
 
     InvalidAssetKindException exception = await Assert.ThrowsAsync<InvalidAssetKindException>(
       async () => await _formService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(video.Id, exception.AssetId);
-    Assert.Equal(AssetKind.Image, exception.ExpectedKind);
-    Assert.Equal(AssetKind.Video, exception.AttemptedKind);
-    Assert.Equal(nameof(FormSpriteAssets.Default), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(video.Id, exception.Data["AssetId"]);
+    Assert.Equal(AssetKind.Image, exception.Data["ExpectedKind"]);
+    Assert.Equal(AssetKind.Video, exception.Data["AttemptedKind"]);
+    Assert.Equal(nameof(FormSpriteAssets.Default), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a form.")]

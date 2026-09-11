@@ -242,7 +242,7 @@ public class EvolutionIntegrationTests : IntegrationTests
 
     EvolutionItemRequiredException exception = await Assert.ThrowsAsync<EvolutionItemRequiredException>(
       async () => await _evolutionService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]

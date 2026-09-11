@@ -393,11 +393,11 @@ public class TrainerIntegrationTests : IntegrationTests
 
     InvalidAssetKindException exception = await Assert.ThrowsAsync<InvalidAssetKindException>(
       async () => await _trainerService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(video.Id, exception.AssetId);
-    Assert.Equal(AssetKind.Image, exception.ExpectedKind);
-    Assert.Equal(AssetKind.Video, exception.AttemptedKind);
-    Assert.Equal(nameof(Trainer.SpriteId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(video.Id, exception.Data["AssetId"]);
+    Assert.Equal(AssetKind.Image, exception.Data["ExpectedKind"]);
+    Assert.Equal(AssetKind.Video, exception.Data["AttemptedKind"]);
+    Assert.Equal(nameof(Trainer.SpriteId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a trainer.")]

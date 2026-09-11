@@ -12,6 +12,6 @@ public sealed class NumberAlreadyUsedException : ConflictException
     Data["ConflictId"] = conflictId.EntityId;
     Data["RegionId"] = regionId?.EntityId;
     Data["AttemptedNumber"] = species.Number.Value;
-    Data["PropertyName"] = nameof(species.Number);
+    Data["PropertyName"] = nameof(PokemonSpecies.Number);
   }
 }
