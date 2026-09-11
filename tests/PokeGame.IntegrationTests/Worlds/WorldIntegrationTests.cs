@@ -235,12 +235,12 @@ public class WorldIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _worldService.CreateOrReplaceAsync(payload, id));
-    Assert.Null(exception.WorldId);
-    Assert.Equal(World.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_world.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(World.Key), exception.PropertyName);
+    Assert.Null(exception.Data["WorldId"]);
+    Assert.Equal(World.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_world.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(World.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when replacing a world and the key conflicts.")]
@@ -257,12 +257,12 @@ public class WorldIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _worldService.CreateOrReplaceAsync(payload, id));
-    Assert.Null(exception.WorldId);
-    Assert.Equal(World.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_world.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(World.Key), exception.PropertyName);
+    Assert.Null(exception.Data["WorldId"]);
+    Assert.Equal(World.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_world.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(World.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating a world and the key conflicts.")]
@@ -279,12 +279,12 @@ public class WorldIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _worldService.UpdateAsync(id, payload));
-    Assert.Null(exception.WorldId);
-    Assert.Equal(World.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_world.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(World.Key), exception.PropertyName);
+    Assert.Null(exception.Data["WorldId"]);
+    Assert.Equal(World.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_world.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(World.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]

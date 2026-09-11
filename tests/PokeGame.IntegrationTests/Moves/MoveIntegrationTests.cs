@@ -185,12 +185,12 @@ public class MoveIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _moveService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Move.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_move.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Move.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Move.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_move.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Move.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when replacing a move and the key conflicts.")]
@@ -209,12 +209,12 @@ public class MoveIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _moveService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Move.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_move.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Move.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Move.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_move.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Move.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating a move and the key conflicts.")]
@@ -231,12 +231,12 @@ public class MoveIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _moveService.UpdateAsync(id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Move.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_move.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Move.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Move.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_move.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Move.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]

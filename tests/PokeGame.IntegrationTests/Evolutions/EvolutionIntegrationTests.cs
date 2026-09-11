@@ -204,11 +204,11 @@ public class EvolutionIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<EvolutionTrigger> exception = await Assert.ThrowsAsync<ImmutablePropertyException<EvolutionTrigger>>(
       async () => await _evolutionService.CreateOrReplaceAsync(payload, _evolution.EntityId));
-    Assert.Equal(Evolution.EntityKind, exception.EntityKind);
-    Assert.Equal(_evolution.EntityId, exception.EntityId);
-    Assert.Equal(_seeded.Trigger, exception.ExpectedValue);
-    Assert.Equal(payload.Trigger, exception.AttemptedValue);
-    Assert.Equal(nameof(payload.Trigger), exception.PropertyName);
+    Assert.Equal(Evolution.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(_evolution.EntityId, exception.Data["EntityId"]);
+    Assert.Equal(_seeded.Trigger, exception.Data["ExpectedValue"]);
+    Assert.Equal(payload.Trigger, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(payload.Trigger), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the source form does not exist.")]

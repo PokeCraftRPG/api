@@ -272,12 +272,12 @@ public class TrainerIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _trainerService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Trainer.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_trainer.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Trainer.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Trainer.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when replacing a trainer and the key conflicts.")]
@@ -294,12 +294,12 @@ public class TrainerIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _trainerService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Trainer.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_trainer.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Trainer.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Trainer.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating a trainer and the key conflicts.")]
@@ -316,12 +316,12 @@ public class TrainerIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _trainerService.UpdateAsync(id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Trainer.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_trainer.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Trainer.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Trainer.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw LicenseAlreadyUsedException when creating a trainer and the license conflicts.")]
@@ -333,11 +333,11 @@ public class TrainerIntegrationTests : IntegrationTests
 
     LicenseAlreadyUsedException exception = await Assert.ThrowsAsync<LicenseAlreadyUsedException>(
       async () => await _trainerService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(id, exception.TrainerId);
-    Assert.Equal(_trainer.EntityId, exception.ConflictId);
-    Assert.Equal(License.Format(payload.License!), exception.AttemptedLicense);
-    Assert.Equal(nameof(Trainer.License), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(id, exception.Data["TrainerId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(License.Format(payload.License!), exception.Data["AttemptedLicense"]);
+    Assert.Equal(nameof(Trainer.License), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw LicenseAlreadyUsedException when updating a trainer and the license conflicts.")]
@@ -353,11 +353,11 @@ public class TrainerIntegrationTests : IntegrationTests
 
     LicenseAlreadyUsedException exception = await Assert.ThrowsAsync<LicenseAlreadyUsedException>(
       async () => await _trainerService.UpdateAsync(misty.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(misty.EntityId, exception.TrainerId);
-    Assert.Equal(_trainer.EntityId, exception.ConflictId);
-    Assert.Equal(_seeded.License, exception.AttemptedLicense);
-    Assert.Equal(nameof(Trainer.License), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(misty.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(_seeded.License, exception.Data["AttemptedLicense"]);
+    Assert.Equal(nameof(Trainer.License), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]
@@ -454,8 +454,8 @@ public class TrainerIntegrationTests : IntegrationTests
 
     UserIsNotMemberException exception = await Assert.ThrowsAsync<UserIsNotMemberException>(
       async () => await _trainerService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(user.Id, exception.UserId);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(user.Id, exception.Data["UserId"]);
   }
 
   [Fact(DisplayName = "It should update an existing trainer.")]

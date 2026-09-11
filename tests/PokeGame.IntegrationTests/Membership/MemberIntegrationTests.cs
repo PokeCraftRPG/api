@@ -262,8 +262,8 @@ public class MemberIntegrationTests : IntegrationTests
 
     OwnerCannotLeaveWorldException exception = await Assert.ThrowsAsync<OwnerCannotLeaveWorldException>(
       async () => await _membershipService.LeaveAsync(Context.WorldId.EntityId));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(owner.Id, exception.OwnerId);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(owner.Id, exception.Data["OwnerId"]);
   }
 
   [Fact(DisplayName = "It should throw WorldOwnershipCannotBeRevokedException when revoking the owner.")]
@@ -273,8 +273,8 @@ public class MemberIntegrationTests : IntegrationTests
 
     WorldOwnershipCannotBeRevokedException exception = await Assert.ThrowsAsync<WorldOwnershipCannotBeRevokedException>(
       async () => await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = owner.Id }));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(owner.Id, exception.OwnerId);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(owner.Id, exception.Data["OwnerId"]);
   }
 
   [Fact(DisplayName = "It should transfer world ownership to a member.")]
@@ -371,8 +371,8 @@ public class MemberIntegrationTests : IntegrationTests
 
     UserIsNotMemberException exception = await Assert.ThrowsAsync<UserIsNotMemberException>(
       async () => await _membershipService.TransferOwnershipAsync(Context.WorldId.EntityId, new TransferOwnershipPayload { UserId = user.Id }));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(user.Id, exception.UserId);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(user.Id, exception.Data["UserId"]);
   }
 
   private static void AssertOwnerOnly(WorldDto world, User owner)

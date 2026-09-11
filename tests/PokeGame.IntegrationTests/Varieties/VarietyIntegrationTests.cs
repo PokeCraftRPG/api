@@ -223,12 +223,12 @@ public class VarietyIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _varietyService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Variety.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_variety.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Variety.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Variety.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_variety.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Variety.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when replacing a variety and the key conflicts.")]
@@ -246,12 +246,12 @@ public class VarietyIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _varietyService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Variety.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_variety.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Variety.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Variety.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_variety.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Variety.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating a variety and the key conflicts.")]
@@ -271,12 +271,12 @@ public class VarietyIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _varietyService.UpdateAsync(id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Variety.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_variety.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Variety.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Variety.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_variety.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Variety.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ImmutablePropertyException when replacing a variety with a different species.")]
@@ -289,11 +289,11 @@ public class VarietyIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<Guid> exception = await Assert.ThrowsAsync<ImmutablePropertyException<Guid>>(
       async () => await _varietyService.CreateOrReplaceAsync(payload, _variety.EntityId));
-    Assert.Equal(Variety.EntityKind, exception.EntityKind);
-    Assert.Equal(_variety.EntityId, exception.EntityId);
-    Assert.Equal(_species.EntityId, exception.ExpectedValue);
-    Assert.Equal(payload.SpeciesId, exception.AttemptedValue);
-    Assert.Equal(nameof(payload.SpeciesId), exception.PropertyName);
+    Assert.Equal(Variety.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(_variety.EntityId, exception.Data["EntityId"]);
+    Assert.Equal(_species.EntityId, exception.Data["ExpectedValue"]);
+    Assert.Equal(payload.SpeciesId, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(payload.SpeciesId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the species does not exist.")]

@@ -232,11 +232,11 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<Guid> exception = await Assert.ThrowsAsync<ImmutablePropertyException<Guid>>(
       async () => await _pokemonService.ReceiveAsync(created.Id, payload));
-    Assert.Equal(Specimen.EntityKind, exception.EntityKind);
-    Assert.Equal(created.Id, exception.EntityId);
-    Assert.Equal(_masterBall.EntityId, exception.ExpectedValue);
-    Assert.Equal(pokeBall.EntityId, exception.AttemptedValue);
-    Assert.Equal(nameof(PokemonOwnership.PokeBallId), exception.PropertyName);
+    Assert.Equal(Specimen.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(created.Id, exception.Data["EntityId"]);
+    Assert.Equal(_masterBall.EntityId, exception.Data["ExpectedValue"]);
+    Assert.Equal(pokeBall.EntityId, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(PokemonOwnership.PokeBallId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the payload is invalid.")]

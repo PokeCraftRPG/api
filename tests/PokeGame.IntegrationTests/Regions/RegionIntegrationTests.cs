@@ -182,11 +182,11 @@ public class RegionIntegrationTests : IntegrationTests
     Guid id = Guid.NewGuid();
 
     var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _regionService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Region.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_region.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Region.Key), exception.PropertyName);
+    Assert.Equal(Region.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_region.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Region.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when replacing a region and the key conflicts.")]
@@ -202,11 +202,11 @@ public class RegionIntegrationTests : IntegrationTests
     Guid id = johto.EntityId;
 
     var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _regionService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Region.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_region.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Region.Key), exception.PropertyName);
+    Assert.Equal(Region.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_region.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Region.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating a region and the key conflicts.")]
@@ -222,11 +222,11 @@ public class RegionIntegrationTests : IntegrationTests
     Guid id = johto.EntityId;
 
     var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _regionService.UpdateAsync(id, payload));
-    Assert.Equal(Region.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_region.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Region.Key), exception.PropertyName);
+    Assert.Equal(Region.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_region.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Region.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]

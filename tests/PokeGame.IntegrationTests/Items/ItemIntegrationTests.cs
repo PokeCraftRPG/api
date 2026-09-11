@@ -224,12 +224,12 @@ public class ItemIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _itemService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_item.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Item.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_item.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Item.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when replacing an item and the key conflicts.")]
@@ -247,12 +247,12 @@ public class ItemIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _itemService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_item.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Item.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_item.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Item.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating an item and the key conflicts.")]
@@ -269,12 +269,12 @@ public class ItemIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _itemService.UpdateAsync(id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_item.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Item.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_item.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Item.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ImmutablePropertyException when replacing an item with a different category.")]
@@ -285,11 +285,11 @@ public class ItemIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<ItemCategory> exception = await Assert.ThrowsAsync<ImmutablePropertyException<ItemCategory>>(
       async () => await _itemService.CreateOrReplaceAsync(payload, _item.EntityId));
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(_item.EntityId, exception.EntityId);
-    Assert.Equal(_seeded.Category, exception.ExpectedValue);
-    Assert.Equal(payload.Category, exception.AttemptedValue);
-    Assert.Equal(nameof(payload.Category), exception.PropertyName);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(_item.EntityId, exception.Data["EntityId"]);
+    Assert.Equal(_seeded.Category, exception.Data["ExpectedValue"]);
+    Assert.Equal(payload.Category, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(payload.Category), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]

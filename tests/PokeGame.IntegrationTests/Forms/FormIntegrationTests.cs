@@ -364,12 +364,12 @@ public class FormIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _formService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_form.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Form.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_form.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Form.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when replacing a form and the key conflicts.")]
@@ -393,12 +393,12 @@ public class FormIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _formService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_form.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Form.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_form.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Form.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating a form and the key conflicts.")]
@@ -424,12 +424,12 @@ public class FormIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _formService.UpdateAsync(id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_form.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Form.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_form.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Form.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ImmutablePropertyException when replacing a form with a different variety.")]
@@ -445,11 +445,11 @@ public class FormIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<Guid> exception = await Assert.ThrowsAsync<ImmutablePropertyException<Guid>>(
       async () => await _formService.CreateOrReplaceAsync(payload, _form.EntityId));
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(_form.EntityId, exception.EntityId);
-    Assert.Equal(_variety.EntityId, exception.ExpectedValue);
-    Assert.Equal(payload.VarietyId, exception.AttemptedValue);
-    Assert.Equal(nameof(payload.VarietyId), exception.PropertyName);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(_form.EntityId, exception.Data["EntityId"]);
+    Assert.Equal(_variety.EntityId, exception.Data["ExpectedValue"]);
+    Assert.Equal(payload.VarietyId, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(payload.VarietyId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ImmutablePropertyException when replacing a form with a different category.")]
@@ -460,11 +460,11 @@ public class FormIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<FormCategory> exception = await Assert.ThrowsAsync<ImmutablePropertyException<FormCategory>>(
       async () => await _formService.CreateOrReplaceAsync(payload, _form.EntityId));
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(_form.EntityId, exception.EntityId);
-    Assert.Equal(_form.Category, exception.ExpectedValue);
-    Assert.Equal(payload.Category, exception.AttemptedValue);
-    Assert.Equal(nameof(payload.Category), exception.PropertyName);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(_form.EntityId, exception.Data["EntityId"]);
+    Assert.Equal(_form.Category, exception.Data["ExpectedValue"]);
+    Assert.Equal(payload.Category, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(payload.Category), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the variety does not exist.")]

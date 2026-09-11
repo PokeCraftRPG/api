@@ -169,11 +169,11 @@ public class VarietyMoveIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<Guid> exception = await Assert.ThrowsAsync<ImmutablePropertyException<Guid>>(
       async () => await _varietyService.SetMoveAsync(_variety.EntityId, payload, existing.Id));
-    Assert.Equal(Variety.EntityKind, exception.EntityKind);
-    Assert.Equal(_variety.EntityId, exception.EntityId);
-    Assert.Equal(_tackle.EntityId, exception.ExpectedValue);
-    Assert.Equal(_ember.EntityId, exception.AttemptedValue);
-    Assert.Equal(nameof(payload.MoveId), exception.PropertyName);
+    Assert.Equal(Variety.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(_variety.EntityId, exception.Data["EntityId"]);
+    Assert.Equal(_tackle.EntityId, exception.Data["ExpectedValue"]);
+    Assert.Equal(_ember.EntityId, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(payload.MoveId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw DuplicateVarietyMoveException when the move already exists.")]
@@ -196,12 +196,12 @@ public class VarietyMoveIntegrationTests : IntegrationTests
 
     DuplicateVarietyMoveException exception = await Assert.ThrowsAsync<DuplicateVarietyMoveException>(
       async () => await _varietyService.SetMoveAsync(_variety.EntityId, payload, duplicateId));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(_variety.EntityId, exception.VarietyId);
-    Assert.Equal(duplicateId, exception.VarietyMoveId);
-    Assert.Equal(payload.MoveId, exception.MoveId);
-    Assert.Equal(payload.LearningMethod, exception.LearningMethod);
-    Assert.Equal(payload.Level, exception.Level);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(_variety.EntityId, exception.Data["VarietyId"]);
+    Assert.Equal(duplicateId, exception.Data["VarietyMoveId"]);
+    Assert.Equal(payload.MoveId, exception.Data["MoveId"]);
+    Assert.Equal(payload.LearningMethod, exception.Data["LearningMethod"]);
+    Assert.Equal(payload.Level, exception.Data["Level"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the variety does not exist.")]

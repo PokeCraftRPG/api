@@ -189,13 +189,13 @@ public class PokemonIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _pokemonService.CreateAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Specimen.EntityKind, exception.EntityKind);
-    Assert.NotEqual(created.Id, exception.EntityId);
-    Assert.NotEqual(Guid.Empty, exception.EntityId);
-    Assert.Equal(created.Id, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Specimen.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Specimen.EntityKind, exception.Data["EntityKind"]);
+    Assert.NotEqual(created.Id, exception.Data["EntityId"]);
+    Assert.NotEqual(Guid.Empty, exception.Data["EntityId"]);
+    Assert.Equal(created.Id, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Specimen.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidEggCyclesException when egg cycles exceed the species maximum.")]
@@ -469,12 +469,12 @@ public class PokemonIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _pokemonService.UpdateAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Specimen.EntityKind, exception.EntityKind);
-    Assert.Equal(created.Id, exception.EntityId);
-    Assert.Equal(existing.Id, exception.ConflictId);
-    Assert.Equal(existing.Key, exception.AttemptedKey);
-    Assert.Equal(nameof(Specimen.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Specimen.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(created.Id, exception.Data["EntityId"]);
+    Assert.Equal(existing.Id, exception.Data["ConflictId"]);
+    Assert.Equal(existing.Key, exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Specimen.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the held item does not exist.")]

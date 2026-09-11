@@ -193,8 +193,8 @@ public class MemberInvitationIntegrationTests : IntegrationTests
 
     UserIsAlreadyMemberException exception = await Assert.ThrowsAsync<UserIsAlreadyMemberException>(
       async () => await _memberInvitationService.SendAsync(Context.WorldId.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(member.Id, exception.UserId);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(member.Id, exception.Data["UserId"]);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
       It.IsAny<MemberInvitation>(),
       It.IsAny<string>(),
@@ -223,8 +223,8 @@ public class MemberInvitationIntegrationTests : IntegrationTests
 
     MemberInvitationAlreadyPendingException exception = await Assert.ThrowsAsync<MemberInvitationAlreadyPendingException>(
       async () => await _memberInvitationService.SendAsync(Context.WorldId.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(existing.Id, exception.InvitationId);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(existing.Id, exception.Data["InvitationId"]);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
       It.IsAny<MemberInvitation>(),
       It.IsAny<string>(),
@@ -242,8 +242,8 @@ public class MemberInvitationIntegrationTests : IntegrationTests
 
     MemberInvitationAlreadyPendingException exception = await Assert.ThrowsAsync<MemberInvitationAlreadyPendingException>(
       async () => await _memberInvitationService.SendAsync(Context.WorldId.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(existing.Id, exception.InvitationId);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(existing.Id, exception.Data["InvitationId"]);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
       It.IsAny<MemberInvitation>(),
       It.IsAny<string>(),
@@ -644,9 +644,9 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     Context.User = invitee;
     InvalidMemberInvitationStatusException exception = await Assert.ThrowsAsync<InvalidMemberInvitationStatusException>(
       async () => await _memberInvitationService.AcceptAsync(seeded.Id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(seeded.Id, exception.MemberInvitationId);
-    Assert.Equal(MemberInvitationStatus.Cancelled, exception.Status);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(seeded.Id, exception.Data["InvitationId"]);
+    Assert.Equal(MemberInvitationStatus.Cancelled, exception.Data["Status"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidMemberInvitationStatusException when declining a cancelled invitation.")]
@@ -659,9 +659,9 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     Context.User = invitee;
     InvalidMemberInvitationStatusException exception = await Assert.ThrowsAsync<InvalidMemberInvitationStatusException>(
       async () => await _memberInvitationService.DeclineAsync(seeded.Id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(seeded.Id, exception.MemberInvitationId);
-    Assert.Equal(MemberInvitationStatus.Cancelled, exception.Status);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(seeded.Id, exception.Data["InvitationId"]);
+    Assert.Equal(MemberInvitationStatus.Cancelled, exception.Data["Status"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidMemberInvitationStatusException when cancelling an accepted invitation.")]
@@ -677,9 +677,9 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     Context.User = owner;
     InvalidMemberInvitationStatusException exception = await Assert.ThrowsAsync<InvalidMemberInvitationStatusException>(
       async () => await _memberInvitationService.CancelAsync(seeded.Id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(seeded.Id, exception.MemberInvitationId);
-    Assert.Equal(MemberInvitationStatus.Accepted, exception.Status);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(seeded.Id, exception.Data["InvitationId"]);
+    Assert.Equal(MemberInvitationStatus.Accepted, exception.Data["Status"]);
   }
 
   [Fact(DisplayName = "It should not change an already accepted invitation.")]
@@ -745,8 +745,8 @@ public class MemberInvitationIntegrationTests : IntegrationTests
 
     UserIsAlreadyMemberException exception = await Assert.ThrowsAsync<UserIsAlreadyMemberException>(
       async () => await _memberInvitationService.SendAsync(Context.WorldId.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(invitee.Id, exception.UserId);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(invitee.Id, exception.Data["UserId"]);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
       It.IsAny<MemberInvitation>(),
       It.IsAny<string>(),
