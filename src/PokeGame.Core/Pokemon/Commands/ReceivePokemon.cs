@@ -65,3 +65,6 @@ internal class ReceivePokemonCommandHandler : ICommandHandler<ReceivePokemonComm
     return await _pokemonQuerier.ReadAsync(specimen, cancellationToken);
   }
 }
+
+// TODO(fpion): PokéDex
+// TODO(fpion): Position
