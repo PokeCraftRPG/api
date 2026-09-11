@@ -4,6 +4,7 @@ using Logitar;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using PokeGame.Api.Models.Errors;
 using PokeGame.Core;
 using PokeGame.Core.Assets;
 using PokeGame.Core.Identity;
@@ -78,24 +79,31 @@ internal static class ErrorExtensions
     }
     if (exception is ValidationException validation)
     {
-      Error error = new(exception.GetErrorCode(), "Validation failed.");
-      error.Data["Failures"] = validation.Errors;
-      return error;
+      return new ValidationError(validation.Errors);
     }
-    return new Error(exception);
+
+    Error error = new(exception.GetErrorCode(), exception.Message);
+    foreach (DictionaryEntry data in exception.Data)
+    {
+      string? key = data.Key.ToString();
+      if (key is not null)
+      {
+        error.Data[key] = data.Value;
+      }
+    }
+    return error;
   }
 }
 
 /* TODO(fpion): ErrorException
- * MediaTypeNotSupportedException (0)
  * MemberInvitationExpiredException → 410 Gone (0)
- * * PermissionDeniedException (0)
+ * PermissionDeniedException (0)
  * NotFoundException (2) → RegionsNotFoundException?
  * IdentityException (3)
  * ConflictException (11)
  * DomainException (13)
  *
  * ValidationException
- * - if query: 400 Bad Request
  * - if command: 422 Unprocessable Entity
+ * - if query: 400 Bad Request
  */

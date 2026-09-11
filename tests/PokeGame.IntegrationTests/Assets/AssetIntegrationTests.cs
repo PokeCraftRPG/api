@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using PokeGame.Builders;
 using PokeGame.Core.Assets;
 using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Permissions;
@@ -67,7 +66,7 @@ public class AssetIntegrationTests : IntegrationTests
     UploadAssetPayload payload = new("unsupported.bmp", stream.Length, stream);
 
     var exception = await Assert.ThrowsAsync<MediaTypeNotSupportedException>(async () => await _assetService.UploadAsync(payload));
-    Assert.Equal("image/bmp", exception.MediaType);
+    Assert.Equal("image/bmp", exception.Data["MediaType"]);
   }
 
   [Fact(DisplayName = "It should upload an image asset.")]
