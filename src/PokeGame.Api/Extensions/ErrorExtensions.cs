@@ -97,7 +97,6 @@ internal static class ErrorExtensions
 }
 
 /* TODO(fpion): ErrorException
- * ConflictException (11)
  * DomainException (13)
  *
  * ValidationException
