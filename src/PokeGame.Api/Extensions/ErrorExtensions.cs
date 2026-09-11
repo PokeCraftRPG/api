@@ -96,7 +96,6 @@ internal static class ErrorExtensions
 }
 
 /* TODO(fpion): ErrorException
- * MemberInvitationExpiredException → 410 Gone (0)
  * PermissionDeniedException (0)
  * NotFoundException (2) → RegionsNotFoundException?
  * IdentityException (3)
