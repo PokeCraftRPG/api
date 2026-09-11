@@ -166,6 +166,39 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     Characteristic = @event.Characteristic;
   }
 
+  public void Catch(Trainer trainer, Item pokeBall, Location location, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(this, trainer, nameof(trainer));
+    WorldMismatchException.ThrowIfMismatch(this, pokeBall, nameof(pokeBall));
+
+    if (pokeBall.Category != ItemCategory.PokeBall)
+    {
+      throw new InvalidItemCategoryException(pokeBall, ItemCategory.PokeBall, nameof(Ownership.PokeBallId));
+    }
+    if (IsEgg)
+    {
+      throw new CannotCatchEggPokemon(this);
+    }
+    if (Ownership is not null)
+    {
+      throw new PokemonAlreadyOwnedException(this);
+    }
+
+    TrainerId trainerId = trainer.Id;
+    ItemId pokeBallId = pokeBall.Id;
+
+    Raise(new PokemonCaught(trainerId, pokeBallId, new Level(Level), location), actorId);
+  }
+  private void Handle(PokemonCaught @event)
+  {
+    if (!OriginalTrainerId.HasValue)
+    {
+      OriginalTrainerId = @event.TrainerId;
+    }
+
+    Ownership = PokemonOwnership.Caught(@event);
+  }
+
   public void ChangeForm(Form form, ActorId? actorId = null)
   {
     WorldMismatchException.ThrowIfMismatch(this, form, nameof(form));
@@ -202,6 +235,8 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     }
   }
 
+  public Entity GetEntity() => new(EntityKind, EntityId, WorldId);
+
   public void Receive(Trainer trainer, Item pokeBall, Location location, ActorId? actorId = null)
   {
     WorldMismatchException.ThrowIfMismatch(this, trainer, nameof(trainer));
@@ -236,10 +271,8 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
       OriginalTrainerId = @event.TrainerId;
     }
 
-    Ownership = new PokemonOwnership(OwnershipEvent.Received, @event.TrainerId, @event.PokeBallId, @event.Level, @event.Location, @event.OccurredOn);
+    Ownership = PokemonOwnership.Received(@event);
   }
-
-  public Entity GetEntity() => new(EntityKind, EntityId, WorldId);
 
   public void SetDetails(Summary? summary, Content? content, ActorId? actorId = null)
   {

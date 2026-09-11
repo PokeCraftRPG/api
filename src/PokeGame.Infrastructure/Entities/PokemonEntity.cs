@@ -6,6 +6,7 @@ using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Pokemon.Models;
+using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
 
 namespace PokeGame.Infrastructure.Entities;
@@ -185,6 +186,18 @@ internal class PokemonEntity : AggregateEntity
   public BaseStatisticsDto GetBaseStatistics() => new(BaseHP, BaseAttack, BaseDefense, BaseSpecialAttack, BaseSpecialDefense, BaseSpeed);
   public IndividualValuesDto GetIndividualValues() => new(IndividualHP, IndividualAttack, IndividualDefense, IndividualSpecialAttack, IndividualSpecialDefense, IndividualSpeed);
 
+  public void Catch(int trainerId, int pokeBallId, PokemonCaught @event)
+  {
+    Update(@event);
+
+    if (!OriginalTrainerId.HasValue)
+    {
+      OriginalTrainerId = trainerId;
+    }
+
+    SetOwnership(Core.Pokemon.OwnershipEvent.Caught, trainerId, pokeBallId, @event.Level, @event.Location, @event.OccurredOn);
+  }
+
   public void ChangeForm(int formId, PokemonFormChanged @event)
   {
     Update(@event);
@@ -211,12 +224,7 @@ internal class PokemonEntity : AggregateEntity
       OriginalTrainerId = trainerId;
     }
 
-    OwnershipEvent = Core.Pokemon.OwnershipEvent.Received;
-    CurrentTrainerId = trainerId;
-    PokeBallId = pokeBallId;
-    MetLevel = @event.Level.Value;
-    MetAt = @event.Location.Value;
-    MetOn = @event.OccurredOn.AsUniversalTime();
+    SetOwnership(Core.Pokemon.OwnershipEvent.Received, trainerId, pokeBallId, @event.Level, @event.Location, @event.OccurredOn);
   }
 
   public void SetDetails(PokemonDetailsChanged @event)
@@ -263,6 +271,16 @@ internal class PokemonEntity : AggregateEntity
     Stamina = @event.Stamina;
     Condition = @event.Condition;
     Friendship = @event.Friendship.Value;
+  }
+
+  private void SetOwnership(OwnershipEvent @event, int trainerId, int pokeBallId, Level metLevel, Location metAt, DateTime metOn)
+  {
+    OwnershipEvent = @event;
+    CurrentTrainerId = trainerId;
+    PokeBallId = pokeBallId;
+    MetLevel = metLevel.Value;
+    MetAt = metAt.Value;
+    MetOn = metOn.AsUniversalTime();
   }
 
   public override string ToString() => $"{Nickname ?? Key} | {base.ToString()}";
