@@ -261,10 +261,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town")));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should catch a wild Pokémon and remove a Poké Ball from the inventory.")]
@@ -461,10 +461,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _pokemonService.CatchAsync(created.Id, CreateCatchPayload("Viridian Forest")));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
 
     InventoryItemDto? inventoryItem = await _inventoryService.ReadAsync(_trainer.EntityId, _masterBall.EntityId);
     Assert.NotNull(inventoryItem);

@@ -319,10 +319,10 @@ public class MoveIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _moveService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("CreateMove", exception.Action);
-    Assert.Null(exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("CreateMove", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a move.")]
@@ -334,10 +334,10 @@ public class MoveIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _moveService.CreateOrReplaceAsync(payload, _move.EntityId));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_move.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_move.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a move.")]
@@ -349,10 +349,10 @@ public class MoveIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _moveService.UpdateAsync(_move.EntityId, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_move.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_move.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should update an existing move.")]

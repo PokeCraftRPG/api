@@ -547,10 +547,10 @@ public class FormIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _formService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("CreateForm", exception.Action);
-    Assert.Null(exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("CreateForm", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a form.")]
@@ -562,10 +562,10 @@ public class FormIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _formService.CreateOrReplaceAsync(payload, _form.EntityId));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_form.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_form.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a form.")]
@@ -577,10 +577,10 @@ public class FormIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _formService.UpdateAsync(_form.EntityId, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_form.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_form.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should update an existing form.")]

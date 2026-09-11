@@ -333,10 +333,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _pokemonService.CreateAsync(payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("CreatePokemon", exception.Action);
-    Assert.Null(exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("CreatePokemon", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should return null when updating a Pokémon that does not exist.")]
@@ -601,10 +601,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _pokemonService.UpdateAsync(created.Id, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should return null when changing the form of a Pokémon that does not exist.")]
@@ -704,10 +704,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _pokemonService.ChangeFormAsync(created.Id, _form.EntityId));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   private async Task<PokemonDto> CreatePokemonAsync(string key)

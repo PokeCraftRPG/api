@@ -151,10 +151,10 @@ public class MemberIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _membershipService.RevokeAsync(Context.WorldId.EntityId, new RevokeMembershipPayload { UserId = member.Id }));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("RevokeMembership", exception.Action);
-    Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("RevokeMembership", exception.Data["Action"]);
+    Assert.Equal(Context.World!.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should leave a world membership.")]
@@ -358,10 +358,10 @@ public class MemberIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _membershipService.TransferOwnershipAsync(Context.WorldId.EntityId, new TransferOwnershipPayload { UserId = member.Id }));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("TransferOwnership", exception.Action);
-    Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("TransferOwnership", exception.Data["Action"]);
+    Assert.Equal(Context.World!.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw UserIsNotMemberException when transferring ownership to a non-member.")]

@@ -271,10 +271,10 @@ public class MemberInvitationIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _memberInvitationService.SendAsync(Context.WorldId.EntityId, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("InviteMember", exception.Action);
-    Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("InviteMember", exception.Data["Action"]);
+    Assert.Equal(Context.World!.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
       It.IsAny<MemberInvitation>(),
       It.IsAny<string>(),
@@ -363,10 +363,10 @@ public class MemberInvitationIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _memberInvitationService.SearchWorldAsync(Context.WorldId.EntityId, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("ViewInvitations", exception.Action);
-    Assert.Equal(Context.World!.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("ViewInvitations", exception.Data["Action"]);
+    Assert.Equal(Context.World!.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should return the correct world search results.")]
@@ -599,10 +599,10 @@ public class MemberInvitationIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _memberInvitationService.AcceptAsync(seeded.Id));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Accept", exception.Action);
-    Assert.Equal(new Entity(MemberInvitation.EntityKind, seeded.Id, Context.WorldId).ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Accept", exception.Data["Action"]);
+    Assert.Equal(new Entity(MemberInvitation.EntityKind, seeded.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when declining an invitation.")]
@@ -613,10 +613,10 @@ public class MemberInvitationIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _memberInvitationService.DeclineAsync(seeded.Id));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Decline", exception.Action);
-    Assert.Equal(new Entity(MemberInvitation.EntityKind, seeded.Id, Context.WorldId).ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Decline", exception.Data["Action"]);
+    Assert.Equal(new Entity(MemberInvitation.EntityKind, seeded.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when cancelling an invitation.")]
@@ -628,10 +628,10 @@ public class MemberInvitationIntegrationTests : IntegrationTests
     Context.User = invitee;
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _memberInvitationService.CancelAsync(seeded.Id));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Cancel", exception.Action);
-    Assert.Equal(new Entity(MemberInvitation.EntityKind, seeded.Id, Context.WorldId).ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Cancel", exception.Data["Action"]);
+    Assert.Equal(new Entity(MemberInvitation.EntityKind, seeded.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidMemberInvitationStatusException when accepting a cancelled invitation.")]

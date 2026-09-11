@@ -53,10 +53,10 @@ public class AssetIntegrationTests : IntegrationTests
     UploadAssetPayload payload = new("denied.bmp", stream.Length, stream);
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _assetService.UploadAsync(payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Upload", exception.Action);
-    Assert.Null(exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Upload", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw MediaTypeNotSupportedException when the media type is not supported.")]

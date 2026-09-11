@@ -465,10 +465,10 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _speciesService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("CreateSpecies", exception.Action);
-    Assert.Null(exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("CreateSpecies", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a species.")]
@@ -480,10 +480,10 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _speciesService.CreateOrReplaceAsync(payload, _species.EntityId));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_species.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_species.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a species.")]
@@ -495,10 +495,10 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _speciesService.UpdateAsync(_species.EntityId, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_species.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_species.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should update an existing species.")]

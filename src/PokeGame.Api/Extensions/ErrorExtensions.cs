@@ -69,6 +69,7 @@ internal static class ErrorExtensions
 
   public static Error ToError(this Exception exception)
   {
+    #region TODO(fpion): refactor
     if (exception is IdentityException)
     {
       return new InvalidCredentialsError();
@@ -76,6 +77,12 @@ internal static class ErrorExtensions
     if (exception is ErrorException errorException)
     {
       return errorException.Error;
+    }
+    #endregion
+
+    if (exception is PermissionDeniedException)
+    {
+      return new PermissionDeniedError();
     }
     if (exception is ValidationException validation)
     {
@@ -96,7 +103,6 @@ internal static class ErrorExtensions
 }
 
 /* TODO(fpion): ErrorException
- * PermissionDeniedException (0)
  * NotFoundException (2) → RegionsNotFoundException?
  * IdentityException (3)
  * ConflictException (11)

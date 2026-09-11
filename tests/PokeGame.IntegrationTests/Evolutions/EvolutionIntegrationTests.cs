@@ -276,8 +276,8 @@ public class EvolutionIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _evolutionService.CreateOrReplaceAsync(CreateUpdatedLevelPayload(_source.EntityId, _target.EntityId)));
-    Assert.Equal("CreateEvolution", exception.Action);
-    Assert.Null(exception.Resource);
+    Assert.Equal("CreateEvolution", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing an evolution.")]
@@ -287,8 +287,8 @@ public class EvolutionIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _evolutionService.CreateOrReplaceAsync(CreateUpdatedLevelPayload(_source.EntityId, _target.EntityId), _evolution.EntityId));
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_evolution.GetEntity().ToString(), exception.Resource);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_evolution.GetEntity().ToString(), exception.Data["Resource"]);
   }
 
   [Fact(DisplayName = "It should update an existing evolution.")]
