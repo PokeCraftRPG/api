@@ -103,7 +103,6 @@ internal static class ErrorExtensions
 }
 
 /* TODO(fpion): ErrorException
- * NotFoundException (2) → RegionsNotFoundException?
  * IdentityException (3)
  * ConflictException (11)
  * DomainException (13)

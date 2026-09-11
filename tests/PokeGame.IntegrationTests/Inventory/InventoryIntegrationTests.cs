@@ -399,10 +399,10 @@ public class InventoryIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _inventoryService.SetAsync(missingTrainerId, _item.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Trainer.EntityKind, exception.EntityKind);
-    Assert.Equal(missingTrainerId, exception.EntityId);
-    Assert.Equal("TrainerId", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingTrainerId, exception.Data["EntityId"]);
+    Assert.Equal("TrainerId", exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the item does not exist.")]
@@ -416,10 +416,10 @@ public class InventoryIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _inventoryService.SetAsync(_trainer.EntityId, missingItemId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(missingItemId, exception.EntityId);
-    Assert.Equal("ItemId", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingItemId, exception.Data["EntityId"]);
+    Assert.Equal("ItemId", exception.Data["PropertyName"]);
   }
 
   [Theory(DisplayName = "It should throw ValidationException when the set payload is invalid.")]
@@ -465,10 +465,10 @@ public class InventoryIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _inventoryService.AdjustAsync(missingTrainerId, _item.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Trainer.EntityKind, exception.EntityKind);
-    Assert.Equal(missingTrainerId, exception.EntityId);
-    Assert.Equal("TrainerId", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingTrainerId, exception.Data["EntityId"]);
+    Assert.Equal("TrainerId", exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when adjusting a missing item.")]
@@ -482,10 +482,10 @@ public class InventoryIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _inventoryService.AdjustAsync(_trainer.EntityId, missingItemId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(missingItemId, exception.EntityId);
-    Assert.Equal("ItemId", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingItemId, exception.Data["EntityId"]);
+    Assert.Equal("ItemId", exception.Data["PropertyName"]);
   }
 
   [Theory(DisplayName = "It should throw ValidationException when the adjust payload is invalid.")]

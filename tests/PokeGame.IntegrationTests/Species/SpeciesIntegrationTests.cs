@@ -427,9 +427,9 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     RegionsNotFoundException exception = await Assert.ThrowsAsync<RegionsNotFoundException>(
       async () => await _speciesService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal([missingRegionId], exception.RegionIds);
-    Assert.Equal(nameof(payload.RegionalNumbers), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal([missingRegionId], Assert.IsAssignableFrom<IReadOnlyCollection<Guid>>(exception.Data["RegionIds"]));
+    Assert.Equal(nameof(payload.RegionalNumbers), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]

@@ -218,8 +218,8 @@ public class EvolutionIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _evolutionService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(nameof(payload.SourceId), exception.PropertyName);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(nameof(payload.SourceId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the item does not exist.")]
@@ -229,8 +229,8 @@ public class EvolutionIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _evolutionService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(nameof(payload.ItemId), exception.PropertyName);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(nameof(payload.ItemId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EvolutionItemRequiredException when creating an item-triggered evolution without item.")]

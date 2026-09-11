@@ -171,10 +171,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.CreateAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(missingFormId, exception.EntityId);
-    Assert.Equal(nameof(payload.FormId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingFormId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.FormId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when the key conflicts.")]
@@ -490,10 +490,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.UpdateAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(missingItemId, exception.EntityId);
-    Assert.Equal(nameof(payload.HeldItemId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingItemId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.HeldItemId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the sprite does not exist.")]
@@ -509,10 +509,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.UpdateAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Asset.EntityKind, exception.EntityKind);
-    Assert.Equal(missingSpriteId, exception.EntityId);
-    Assert.Equal(nameof(payload.SpriteId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Asset.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingSpriteId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.SpriteId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidAssetKindException when the sprite is not an image.")]
@@ -668,10 +668,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.ChangeFormAsync(created.Id, missingFormId));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(missingFormId, exception.EntityId);
-    Assert.Equal("FormId", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingFormId, exception.Data["EntityId"]);
+    Assert.Equal("FormId", exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidPokemonFormException when the form belongs to another variety.")]

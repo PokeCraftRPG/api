@@ -304,10 +304,10 @@ public class VarietyIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _varietyService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(PokemonSpecies.EntityKind, exception.EntityKind);
-    Assert.Equal(missingSpeciesId, exception.EntityId);
-    Assert.Equal(nameof(payload.SpeciesId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(PokemonSpecies.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingSpeciesId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.SpeciesId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]

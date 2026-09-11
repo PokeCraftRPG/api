@@ -217,10 +217,10 @@ public class VarietyMoveIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _varietyService.SetMoveAsync(missingVarietyId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Variety.EntityKind, exception.EntityKind);
-    Assert.Equal(missingVarietyId, exception.EntityId);
-    Assert.Equal("VarietyId", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Variety.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingVarietyId, exception.Data["EntityId"]);
+    Assert.Equal("VarietyId", exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the move does not exist.")]
@@ -236,10 +236,10 @@ public class VarietyMoveIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _varietyService.SetMoveAsync(_variety.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Move.EntityKind, exception.EntityKind);
-    Assert.Equal(missingMoveId, exception.EntityId);
-    Assert.Equal(nameof(payload.MoveId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Move.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingMoveId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.MoveId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the payload is invalid.")]

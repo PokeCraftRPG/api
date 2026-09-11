@@ -475,10 +475,10 @@ public class FormIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _formService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Variety.EntityKind, exception.EntityKind);
-    Assert.Equal(missingVarietyId, exception.EntityId);
-    Assert.Equal(nameof(payload.VarietyId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Variety.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingVarietyId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.VarietyId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the ability does not exist.")]
@@ -489,10 +489,10 @@ public class FormIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _formService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Ability.EntityKind, exception.EntityKind);
-    Assert.Equal(missingAbilityId, exception.EntityId);
-    Assert.Equal($"{nameof(payload.Abilities)}.{nameof(payload.Abilities.PrimaryId)}", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Ability.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingAbilityId, exception.Data["EntityId"]);
+    Assert.Equal($"{nameof(payload.Abilities)}.{nameof(payload.Abilities.PrimaryId)}", exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]

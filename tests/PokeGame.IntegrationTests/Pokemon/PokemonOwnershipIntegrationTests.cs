@@ -143,10 +143,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.ReceiveAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Trainer.EntityKind, exception.EntityKind);
-    Assert.Equal(missingTrainerId, exception.EntityId);
-    Assert.Equal(nameof(payload.TrainerId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingTrainerId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.TrainerId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the Poké Ball does not exist.")]
@@ -163,10 +163,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.ReceiveAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(missingPokeBallId, exception.EntityId);
-    Assert.Equal(nameof(payload.PokeBallId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingPokeBallId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.PokeBallId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidItemCategoryException when the item is not a Poké Ball.")]
@@ -389,10 +389,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.CatchAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Trainer.EntityKind, exception.EntityKind);
-    Assert.Equal(missingTrainerId, exception.EntityId);
-    Assert.Equal(nameof(payload.TrainerId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingTrainerId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.TrainerId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when catching with a missing Poké Ball.")]
@@ -409,10 +409,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.CatchAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(missingPokeBallId, exception.EntityId);
-    Assert.Equal(nameof(payload.PokeBallId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingPokeBallId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.PokeBallId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidItemCategoryException when catching with an item that is not a Poké Ball.")]
