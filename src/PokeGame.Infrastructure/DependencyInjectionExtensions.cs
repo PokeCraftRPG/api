@@ -111,6 +111,7 @@ public static class DependencyInjectionExtensions
       {
         configurator.SetKebabCaseEndpointNameFormatter();
         configurator.AddConsumer<ClaimMemberInvitationsConsumer>();
+        // TODO(fpion): PokemonAcquiredConsumer
         configurator.UsingRabbitMq((context, rabbitMQ) =>
         {
           RabbitMQSettings settings = context.GetRequiredService<RabbitMQSettings>();
