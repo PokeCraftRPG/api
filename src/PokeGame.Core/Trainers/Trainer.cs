@@ -26,6 +26,7 @@ public sealed class Trainer : AggregateRoot, IEntityProvider
   public Money Money { get; private set; } = new();
   public AssetId? SpriteId { get; private set; }
 
+  public int? PartyLimit { get; private set; } // TODO(fpion): mutate this value
   public UserId? MemberId { get; private set; }
 
   public Trainer() : base()

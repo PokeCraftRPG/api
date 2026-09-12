@@ -2,9 +2,12 @@
 using Logitar.EventSourcing;
 using PokeGame.Core.Inventory;
 using PokeGame.Core.Items;
+using PokeGame.Core.Messaging;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Rosters;
 using PokeGame.Core.Trainers;
 using PokeGame.Core.Worlds;
 
@@ -17,26 +20,32 @@ internal class CatchPokemonCommandHandler : ICommandHandler<CatchPokemonCommand,
   private readonly IContext _context;
   private readonly IInventoryRepository _inventoryRepository;
   private readonly IItemRepository _itemRepository;
+  private readonly IMessagingManager _messagingManager;
   private readonly IPermissionService _permissionService;
   private readonly IPokemonQuerier _pokemonQuerier;
   private readonly IPokemonRepository _pokemonRepository;
+  private readonly IRosterRepository _rosterRepository;
   private readonly ITrainerRepository _trainerRepository;
 
   public CatchPokemonCommandHandler(
     IContext context,
     IInventoryRepository inventoryRepository,
     IItemRepository itemRepository,
+    IMessagingManager messagingManager,
     IPermissionService permissionService,
     IPokemonQuerier pokemonQuerier,
     IPokemonRepository pokemonRepository,
+    IRosterRepository rosterRepository,
     ITrainerRepository trainerRepository)
   {
     _context = context;
     _inventoryRepository = inventoryRepository;
     _itemRepository = itemRepository;
+    _messagingManager = messagingManager;
     _permissionService = permissionService;
     _pokemonQuerier = pokemonQuerier;
     _pokemonRepository = pokemonRepository;
+    _rosterRepository = rosterRepository;
     _trainerRepository = trainerRepository;
   }
 
@@ -66,17 +75,23 @@ internal class CatchPokemonCommandHandler : ICommandHandler<CatchPokemonCommand,
     TrainerInventory inventory = await _inventoryRepository.LoadAsync(inventoryId, cancellationToken) ?? new(trainer);
     await _permissionService.CheckAsync(Actions.Update, inventory, cancellationToken);
 
+    RosterId rosterId = new(trainer.Id);
+    Roster roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken) ?? new(trainer);
+    await _permissionService.CheckAsync(Actions.Update, roster, cancellationToken);
+
     Location location = new(payload.Location);
 
     specimen.Catch(trainer, pokeBall, location, actorId);
     inventory.AdjustQuantity(pokeBall, delta: -1, actorId);
+    roster.Add(specimen, trainer, actorId);
 
     await _pokemonRepository.SaveAsync(specimen, cancellationToken);
     await _inventoryRepository.SaveAsync(inventory, cancellationToken);
+    await _rosterRepository.SaveAsync(roster, cancellationToken);
+
+    PokemonAcquired acquired = PokemonAcquired.From(specimen);
+    await _messagingManager.PublishAsync(acquired, cancellationToken);
 
     return await _pokemonQuerier.ReadAsync(specimen, cancellationToken);
   }
 }
-
-// TODO(fpion): PokéDex
-// TODO(fpion): Position

@@ -1,8 +1,12 @@
 ﻿using Logitar.CQRS;
+using Logitar.EventSourcing;
 using PokeGame.Core.Items;
+using PokeGame.Core.Messaging;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Rosters;
 using PokeGame.Core.Trainers;
 using PokeGame.Core.Worlds;
 
@@ -14,24 +18,30 @@ internal class ReceivePokemonCommandHandler : ICommandHandler<ReceivePokemonComm
 {
   private readonly IContext _context;
   private readonly IItemRepository _itemRepository;
+  private readonly IMessagingManager _messagingManager;
   private readonly IPermissionService _permissionService;
   private readonly IPokemonQuerier _pokemonQuerier;
   private readonly IPokemonRepository _pokemonRepository;
+  private readonly IRosterRepository _rosterRepository;
   private readonly ITrainerRepository _trainerRepository;
 
   public ReceivePokemonCommandHandler(
     IContext context,
     IItemRepository itemRepository,
+    IMessagingManager messagingManager,
     IPermissionService permissionService,
     IPokemonQuerier pokemonQuerier,
     IPokemonRepository pokemonRepository,
+    IRosterRepository rosterRepository,
     ITrainerRepository trainerRepository)
   {
     _context = context;
     _itemRepository = itemRepository;
+    _messagingManager = messagingManager;
     _permissionService = permissionService;
     _pokemonQuerier = pokemonQuerier;
     _pokemonRepository = pokemonRepository;
+    _rosterRepository = rosterRepository;
     _trainerRepository = trainerRepository;
   }
 
@@ -40,6 +50,7 @@ internal class ReceivePokemonCommandHandler : ICommandHandler<ReceivePokemonComm
     ReceivePokemonPayload payload = command.Payload;
     payload.Validate();
 
+    ActorId? actorId = _context.ActorId;
     WorldId worldId = _context.WorldId;
 
     PokemonId pokemonId = new(worldId, command.Id);
@@ -56,15 +67,36 @@ internal class ReceivePokemonCommandHandler : ICommandHandler<ReceivePokemonComm
     ItemId pokeBallId = new(worldId, payload.PokeBallId);
     Item pokeBall = await _itemRepository.LoadAsync(pokeBallId, cancellationToken) ?? throw new EntityNotFoundException(pokeBallId, nameof(payload.PokeBallId));
 
+    List<Roster> rosters = new(capacity: 2);
+    Roster? sourceRoster = null;
+    if (specimen.Ownership is not null)
+    {
+      RosterId sourceRosterId = new(specimen.Ownership.TrainerId);
+      sourceRoster = await _rosterRepository.LoadAsync(sourceRosterId, cancellationToken);
+      if (sourceRoster is not null)
+      {
+        await _permissionService.CheckAsync(Actions.Update, sourceRoster, cancellationToken);
+        rosters.Add(sourceRoster);
+      }
+    }
+
+    RosterId targetRosterId = new(trainer.Id);
+    Roster targetRoster = await _rosterRepository.LoadAsync(targetRosterId, cancellationToken) ?? new(trainer);
+    await _permissionService.CheckAsync(Actions.Update, targetRoster, cancellationToken);
+    rosters.Add(targetRoster);
+
     Location location = new(payload.Location);
 
-    specimen.Receive(trainer, pokeBall, location, _context.ActorId);
+    specimen.Receive(trainer, pokeBall, location, actorId);
+    sourceRoster?.Remove(specimen, actorId);
+    targetRoster.Add(specimen, trainer, actorId);
 
     await _pokemonRepository.SaveAsync(specimen, cancellationToken);
+    await _rosterRepository.SaveAsync(rosters, cancellationToken);
+
+    PokemonAcquired acquired = PokemonAcquired.From(specimen);
+    await _messagingManager.PublishAsync(acquired, cancellationToken);
 
     return await _pokemonQuerier.ReadAsync(specimen, cancellationToken);
   }
 }
-
-// TODO(fpion): PokéDex
-// TODO(fpion): Position

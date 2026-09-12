@@ -17,4 +17,12 @@ internal class MessagingManager : IMessagingManager
   {
     await _publishEndpoint.Publish(@event, @event.GetType(), cancellationToken);
   }
+
+  public async Task PublishAsync(IEnumerable<IEvent> events, CancellationToken cancellationToken)
+  {
+    foreach (IEvent @event in events)
+    {
+      await PublishAsync(@event, cancellationToken);
+    }
+  }
 }

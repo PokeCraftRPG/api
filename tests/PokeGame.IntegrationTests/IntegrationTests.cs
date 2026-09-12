@@ -13,6 +13,7 @@ using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Caching;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Messaging;
 using PokeGame.Core.Worlds;
 using PokeGame.Infrastructure;
 using PokeGame.Infrastructure.Assets;
@@ -34,6 +35,7 @@ public abstract class IntegrationTests : IAsyncLifetime
   protected virtual Actor Actor => Context.User is null ? _system : new(Context.User);
   protected virtual Mock<IUserClient> UserClient { get; set; } = new();
   protected virtual Mock<IMessageGateway> MessageGateway { get; set; } = new();
+  protected virtual Mock<IMessagingManager> MessagingManager { get; set; } = new();
 
   protected IntegrationTests()
   {
@@ -68,6 +70,7 @@ public abstract class IntegrationTests : IAsyncLifetime
     services.AddSingleton<IContext>(Context);
     services.AddSingleton(UserClient.Object);
     services.AddSingleton(MessageGateway.Object);
+    services.AddSingleton(MessagingManager.Object);
 
     return services.BuildServiceProvider();
   }

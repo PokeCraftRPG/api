@@ -19,6 +19,7 @@ using PokeGame.Core.Messaging;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Rosters;
 using PokeGame.Core.Species;
 using PokeGame.Core.Trainers;
 using PokeGame.Core.Varieties;
@@ -80,6 +81,7 @@ public static class DependencyInjectionExtensions
     MoveEvents.Register(services);
     PokemonEvents.Register(services);
     RegionEvents.Register(services);
+    RosterEvents.Register(services);
     SpeciesEvents.Register(services);
     TrainerEvents.Register(services);
     VarietyEvents.Register(services);
@@ -109,6 +111,7 @@ public static class DependencyInjectionExtensions
       {
         configurator.SetKebabCaseEndpointNameFormatter();
         configurator.AddConsumer<ClaimMemberInvitationsConsumer>();
+        // TODO(fpion): PokemonAcquiredConsumer
         configurator.UsingRabbitMq((context, rabbitMQ) =>
         {
           RabbitMQSettings settings = context.GetRequiredService<RabbitMQSettings>();
@@ -160,6 +163,7 @@ public static class DependencyInjectionExtensions
       .AddScoped<IMoveRepository, MoveRepository>()
       .AddScoped<IPokemonRepository, PokemonRepository>()
       .AddScoped<IRegionRepository, RegionRepository>()
+      .AddScoped<IRosterRepository, RosterRepository>()
       .AddScoped<ISpeciesRepository, SpeciesRepository>()
       .AddScoped<ITrainerRepository, TrainerRepository>()
       .AddScoped<IVarietyRepository, VarietyRepository>()

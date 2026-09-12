@@ -85,6 +85,9 @@ internal class PokemonEntity : AggregateEntity
   public string? MetAt { get; private set; }
   public DateTime? MetOn { get; private set; }
 
+  public bool IsInParty { get; set; }
+  public int Priority { get; set; }
+
   public PokemonEntity(int worldId, int speciesId, int varietyId, int formId, PokemonCreated @event) : base(@event)
   {
     WorldId = worldId;

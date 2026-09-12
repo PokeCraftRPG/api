@@ -115,11 +115,15 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal(pokemon.Vitality, pokemon.Stamina);
     Assert.Null(pokemon.HeldItem);
     Assert.Null(pokemon.Sprite);
+    Assert.False(pokemon.IsInParty);
+    Assert.Equal(0, pokemon.Priority);
 
     PokemonDto? read = await _pokemonService.ReadAsync(pokemon.Id);
     Assert.NotNull(read);
     Assert.Equal(pokemon.Id, read.Id);
     Assert.Equal(pokemon.Key, read.Key);
+    Assert.False(read.IsInParty);
+    Assert.Equal(0, read.Priority);
   }
 
   [Fact(DisplayName = "It should read a Pokémon by key.")]
@@ -151,6 +155,8 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal((byte)10, pokemon.EggCycles);
     Assert.Equal(0, pokemon.Experience);
     Assert.Equal(1, pokemon.Level);
+    Assert.False(pokemon.IsInParty);
+    Assert.Equal(0, pokemon.Priority);
   }
 
   [Fact(DisplayName = "It should return null when no Pokémon was found.")]

@@ -325,7 +325,9 @@ internal class Mapper
       Stamina = source.Stamina,
       Condition = source.Condition,
       Friendship = source.Friendship,
-      Characteristic = source.Characteristic
+      Characteristic = source.Characteristic,
+      IsInParty = source.IsInParty,
+      Priority = source.Priority
     };
 
     IReadOnlyDictionary<PokemonSkill, byte> skillRanks = source.GetSkillRanks();

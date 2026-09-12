@@ -33,6 +33,8 @@ internal class PokemonConfiguration : AggregateConfiguration<PokemonEntity>, IEn
     builder.HasIndex(x => new { x.WorldId, x.OwnershipEvent });
     builder.HasIndex(x => new { x.WorldId, x.CurrentTrainerId });
     builder.HasIndex(x => new { x.WorldId, x.PokeBallId });
+    builder.HasIndex(x => new { x.WorldId, x.IsInParty });
+    builder.HasIndex(x => new { x.WorldId, x.Priority });
 
     builder.Property(x => x.Key).HasMaxLength(Key.MaximumLength);
     builder.Property(x => x.Nickname).HasMaxLength(Name.MaximumLength);
