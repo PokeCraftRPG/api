@@ -93,10 +93,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     ActorId? actorId = null) : base(pokemonId.StreamId)
   {
     WorldMismatchException.ThrowIfMismatch(this, species, nameof(species));
-    if (eggCycles > species.Eggs.Cycles)
-    {
-      throw new InvalidEggCyclesException(this, species, eggCycles);
-    }
+    InvalidEggCyclesException.ThrowIfNotValid(this, species, eggCycles);
 
     WorldMismatchException.ThrowIfMismatch(this, variety, nameof(variety));
     if (variety.SpeciesId != species.Id)
@@ -109,9 +106,30 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     {
       throw new ArgumentException($"The form '{form}' does not belong to the variety '{variety}'.", nameof(form));
     }
-    if (form.Category != FormCategory.Default && form.Category != FormCategory.Alternative)
+    InvalidPokemonFormCategoryException.ThrowIfNotValid(this, form);
+
+    if (gender.HasValue)
     {
-      throw new InvalidPokemonFormCategoryException(this, form);
+      if (!Enum.IsDefined(gender.Value))
+      {
+        throw new ArgumentOutOfRangeException(nameof(gender));
+      }
+
+      InvalidPokemonGenderException.ThrowIfNotValid(this, variety, gender.Value);
+    }
+    else if (variety.GenderRatio is not null)
+    {
+      gender = randomizer.Gender(variety.GenderRatio);
+    }
+
+    if (teraType.HasValue && !Enum.IsDefined(teraType.Value))
+    {
+      throw new ArgumentOutOfRangeException(nameof(teraType));
+    }
+
+    if (abilitySlot.HasValue && !Enum.IsDefined(abilitySlot.Value))
+    {
+      throw new ArgumentOutOfRangeException(nameof(abilitySlot));
     }
 
     ArgumentOutOfRangeException.ThrowIfNegative(experience, nameof(experience));
@@ -121,10 +139,9 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     }
 
     key ??= species.Key;
-    gender = PokemonHelper.ResolveGender(randomizer, this, variety, gender);
     isShiny ??= randomizer.Shininess();
     teraType ??= randomizer.TeraType(form.Types);
-    abilitySlot = PokemonHelper.ResolveAbilitySlot(randomizer, this, form, abilitySlot);
+    abilitySlot ??= randomizer.AbilitySlot();
     size ??= randomizer.Size();
     nature ??= randomizer.Nature();
     individualValues ??= randomizer.IndividualValues();

@@ -14,4 +14,12 @@ public sealed class InvalidEggCyclesException : DomainException
     Data["AttemptedEggCycles"] = attemptedEggCycles;
     Data["PropertyName"] = nameof(Specimen.EggCycles);
   }
+
+  public static void ThrowIfNotValid(Specimen specimen, PokemonSpecies species, byte attemptedEggCycles)
+  {
+    if (attemptedEggCycles > species.Eggs.Cycles)
+    {
+      throw new InvalidEggCyclesException(specimen, species, attemptedEggCycles);
+    }
+  }
 }
