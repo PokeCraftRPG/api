@@ -1,6 +1,6 @@
-﻿using FluentValidation;
-using FluentValidation.Results;
+﻿using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
+using PokeGame.Core;
 using PokeGame.Core.Search;
 
 namespace PokeGame.Api.Models.Search;
@@ -67,7 +67,7 @@ public record SearchParameters
     }
     if (failures.Count > 0)
     {
-      throw new ValidationException(failures);
+      throw new InvalidQueryException(failures);
     }
 
     payload.Offset = Offset;

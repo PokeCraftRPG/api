@@ -10,7 +10,7 @@ public record SearchFormsPayload : SearchPayload<FormSort>
   public PokemonType? Type { get; set; }
   public string? Ability { get; set; }
 
-  public override void Validate() => new Validator().ValidateAndThrow(this);
+  public override void Validate() => new Validator().ValidateQueryAndThrow(this);
 
   private class Validator : AbstractValidator<SearchFormsPayload>
   {

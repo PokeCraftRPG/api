@@ -1,4 +1,3 @@
-using FluentValidation;
 using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
@@ -292,8 +291,8 @@ public class ItemIntegrationTests : IntegrationTests
     Assert.Equal(nameof(payload.Category), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Create_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the create/replace payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Create_Then_InvalidCommandException()
   {
     CreateOrReplaceItemPayload payload = new()
     {
@@ -301,18 +300,18 @@ public class ItemIntegrationTests : IntegrationTests
       Key = string.Empty
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _itemService.CreateOrReplaceAsync(payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _itemService.CreateOrReplaceAsync(payload));
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the update payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Update_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the update payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Update_Then_InvalidCommandException()
   {
     UpdateItemPayload payload = new()
     {
       Key = "not valid"
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _itemService.UpdateAsync(_item.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _itemService.UpdateAsync(_item.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw InvalidAssetKindException when the sprite is not an image.")]

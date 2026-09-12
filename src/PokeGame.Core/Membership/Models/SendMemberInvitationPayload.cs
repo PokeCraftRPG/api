@@ -7,7 +7,7 @@ public record SendMemberInvitationPayload
   public string EmailAddress { get; set; } = string.Empty;
   public string Locale { get; set; } = string.Empty;
 
-  public void Validate() => new Validator().ValidateAndThrow(this);
+  public void Validate() => new Validator().ValidateCommandAndThrow(this);
 
   private class Validator : AbstractValidator<SendMemberInvitationPayload>
   {

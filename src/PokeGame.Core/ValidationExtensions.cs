@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using Krakenar.Contracts.Settings;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Pokemon;
@@ -186,5 +187,23 @@ internal static class ValidationExtensions
   public static IRuleBuilderOptions<T, int> Weight<T>(this IRuleBuilder<T, int> ruleBuilder)
   {
     return ruleBuilder.GreaterThan(0);
+  }
+
+  public static void ValidateCommandAndThrow<T>(this IValidator<T> validator, T instance)
+  {
+    ValidationResult result = validator.Validate(instance);
+    if (!result.IsValid)
+    {
+      throw new InvalidCommandException(result.Errors);
+    }
+  }
+
+  public static void ValidateQueryAndThrow<T>(this IValidator<T> validator, T instance)
+  {
+    ValidationResult result = validator.Validate(instance);
+    if (!result.IsValid)
+    {
+      throw new InvalidQueryException(result.Errors);
+    }
   }
 }

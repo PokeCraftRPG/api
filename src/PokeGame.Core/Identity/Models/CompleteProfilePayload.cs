@@ -33,7 +33,7 @@ public record CompleteProfilePayload
     TimeZone = timeZone;
   }
 
-  public void Validate(IPasswordSettings passwordSettings) => new Validator(passwordSettings).ValidateAndThrow(this);
+  public void Validate(IPasswordSettings passwordSettings) => new Validator(passwordSettings).ValidateCommandAndThrow(this);
 
   private class Validator : AbstractValidator<CompleteProfilePayload>
   {

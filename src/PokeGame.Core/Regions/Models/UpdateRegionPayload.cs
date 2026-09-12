@@ -10,7 +10,7 @@ public record UpdateRegionPayload
   public Optional<string>? Summary { get; set; }
   public Optional<string>? Content { get; set; }
 
-  public void Validate() => new Validator().ValidateAndThrow(this);
+  public void Validate() => new Validator().ValidateCommandAndThrow(this);
 
   private class Validator : AbstractValidator<UpdateRegionPayload>
   {

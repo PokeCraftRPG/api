@@ -17,7 +17,7 @@ public record CreateOrReplaceVarietyPayload
   public byte? GenderRatio { get; set; }
   public string? Genus { get; set; }
 
-  public void Validate() => new Validator().ValidateAndThrow(this);
+  public void Validate() => new Validator().ValidateCommandAndThrow(this);
 
   private class Validator : AbstractValidator<CreateOrReplaceVarietyPayload>
   {

@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Krakenar.Contracts.Actors;
+﻿using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Krakenar.Contracts.Users;
 using Microsoft.EntityFrameworkCore;
@@ -250,12 +249,12 @@ public class MemberInvitationIntegrationTests : IntegrationTests
       It.IsAny<CancellationToken>()), Times.Once);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Invite_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Invite_Then_InvalidCommandException()
   {
     SendMemberInvitationPayload payload = new();
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _memberInvitationService.SendAsync(Context.WorldId.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _memberInvitationService.SendAsync(Context.WorldId.EntityId, payload));
     MessageGateway.Verify(x => x.SendMemberInvitationAsync(
       It.IsAny<MemberInvitation>(),
       It.IsAny<string>(),

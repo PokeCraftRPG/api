@@ -9,7 +9,7 @@ public record ReceivePokemonPayload
 
   public string Location { get; set; } = string.Empty;
 
-  public void Validate() => new Validator().ValidateAndThrow(this);
+  public void Validate() => new Validator().ValidateCommandAndThrow(this);
 
   private class Validator : AbstractValidator<ReceivePokemonPayload>
   {

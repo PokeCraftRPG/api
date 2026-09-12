@@ -1,4 +1,3 @@
-using FluentValidation;
 using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
@@ -377,15 +376,15 @@ public class InventoryIntegrationTests : IntegrationTests
     Assert.Equal(10, inventoryItem.Quantity);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the search payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Search_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidQueryException when the search payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Search_Then_InvalidQueryException()
   {
     SearchInventoryItemsPayload payload = new()
     {
       Limit = -1
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _inventoryService.SearchAsync(_trainer.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidQueryException>(async () => await _inventoryService.SearchAsync(_trainer.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the trainer does not exist.")]
@@ -422,17 +421,17 @@ public class InventoryIntegrationTests : IntegrationTests
     Assert.Equal("ItemId", exception.Data["PropertyName"]);
   }
 
-  [Theory(DisplayName = "It should throw ValidationException when the set payload is invalid.")]
+  [Theory(DisplayName = "It should throw InvalidCommandException when the set payload is invalid.")]
   [InlineData(-1)]
   [InlineData(1000)]
-  public async Task Given_InvalidPayload_When_Set_Then_ValidationException(int quantity)
+  public async Task Given_InvalidPayload_When_Set_Then_InvalidCommandException(int quantity)
   {
     SetInventoryItemPayload payload = new()
     {
       Quantity = quantity
     };
 
-    await Assert.ThrowsAsync<ValidationException>(
+    await Assert.ThrowsAsync<InvalidCommandException>(
       async () => await _inventoryService.SetAsync(_trainer.EntityId, _item.EntityId, payload));
   }
 
@@ -488,18 +487,18 @@ public class InventoryIntegrationTests : IntegrationTests
     Assert.Equal("ItemId", exception.Data["PropertyName"]);
   }
 
-  [Theory(DisplayName = "It should throw ValidationException when the adjust payload is invalid.")]
+  [Theory(DisplayName = "It should throw InvalidCommandException when the adjust payload is invalid.")]
   [InlineData(0)]
   [InlineData(1000)]
   [InlineData(-1000)]
-  public async Task Given_InvalidPayload_When_Adjust_Then_ValidationException(int delta)
+  public async Task Given_InvalidPayload_When_Adjust_Then_InvalidCommandException(int delta)
   {
     AdjustInventoryItemPayload payload = new()
     {
       Delta = delta
     };
 
-    await Assert.ThrowsAsync<ValidationException>(
+    await Assert.ThrowsAsync<InvalidCommandException>(
       async () => await _inventoryService.AdjustAsync(_trainer.EntityId, _item.EntityId, payload));
   }
 

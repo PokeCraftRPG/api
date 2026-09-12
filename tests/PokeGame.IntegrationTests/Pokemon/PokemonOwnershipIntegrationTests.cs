@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
@@ -239,8 +238,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(nameof(PokemonOwnership.PokeBallId), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Receive_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Receive_Then_InvalidCommandException()
   {
     PokemonDto created = await CreatePokemonAsync("invalid-payload");
     ReceivePokemonPayload payload = new()
@@ -250,7 +249,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
       Location = string.Empty
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _pokemonService.ReceiveAsync(created.Id, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _pokemonService.ReceiveAsync(created.Id, payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when receiving a Pokémon.")]
@@ -438,8 +437,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(nameof(PokemonOwnership.PokeBallId), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the catch payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Catch_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the catch payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Catch_Then_InvalidCommandException()
   {
     PokemonDto created = await CreatePokemonAsync("catch-invalid-payload");
     CatchPokemonPayload payload = new()
@@ -449,7 +448,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
       Location = string.Empty
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _pokemonService.CatchAsync(created.Id, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _pokemonService.CatchAsync(created.Id, payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when catching a Pokémon.")]

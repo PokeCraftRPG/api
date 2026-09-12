@@ -33,7 +33,7 @@ internal static class ErrorExtensions
 
   public static int GetStatusCode(this Exception exception)
   {
-    if (exception is ValidationException)
+    if (exception is InvalidQueryException)
     {
       return StatusCodes.Status400BadRequest;
     }
@@ -61,7 +61,7 @@ internal static class ErrorExtensions
     {
       return StatusCodes.Status415UnsupportedMediaType;
     }
-    if (exception is DomainException)
+    if (exception is DomainException || exception is InvalidCommandException || exception is ValidationException)
     {
       return StatusCodes.Status422UnprocessableEntity;
     }
@@ -73,6 +73,10 @@ internal static class ErrorExtensions
     if (exception is IdentityException)
     {
       return new InvalidCredentialsError();
+    }
+    if (exception is InvalidRequestException invalidRequest)
+    {
+      return new ValidationError(invalidRequest.Errors);
     }
     if (exception is PermissionDeniedException)
     {
@@ -95,8 +99,3 @@ internal static class ErrorExtensions
     return error;
   }
 }
-
-/* TODO(fpion): ValidationException
- * - if command: 422 Unprocessable Entity
- * - if query: 400 Bad Request
- */

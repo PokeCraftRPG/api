@@ -32,7 +32,7 @@ public record UpdatePokemonPayload
 
   public Optional<Guid?>? SpriteId { get; set; }
 
-  public void Validate() => new Validator().ValidateAndThrow(this);
+  public void Validate() => new Validator().ValidateCommandAndThrow(this);
 
   private class Validator : AbstractValidator<UpdatePokemonPayload>
   {

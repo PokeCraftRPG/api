@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Logitar.CQRS;
 using PokeGame.Core.Permissions;
 
@@ -12,7 +11,7 @@ internal class QueryBus : Logitar.CQRS.QueryBus
   }
 
   protected override bool ShouldRetry<TResult>(IQuery<TResult> query, Exception exception)
-    => exception is not PermissionDeniedException
-    && exception is not TooManyResultsException
-    && exception is not ValidationException;
+    => exception is not InvalidQueryException
+    && exception is not PermissionDeniedException
+    && exception is not TooManyResultsException;
 }

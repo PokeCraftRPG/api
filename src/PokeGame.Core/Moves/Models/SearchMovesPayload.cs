@@ -8,7 +8,7 @@ public record SearchMovesPayload : SearchPayload<MoveSort>
   public PokemonType? Type { get; set; }
   public MoveCategory? Category { get; set; }
 
-  public override void Validate() => new Validator().ValidateAndThrow(this);
+  public override void Validate() => new Validator().ValidateQueryAndThrow(this);
 
   private class Validator : AbstractValidator<SearchMovesPayload>
   {

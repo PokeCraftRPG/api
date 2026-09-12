@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
@@ -308,8 +307,8 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal(nameof(Specimen.Gender), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when egg cycles and experience are both set.")]
-  public async Task Given_EggAndExperience_When_Create_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when egg cycles and experience are both set.")]
+  public async Task Given_EggAndExperience_When_Create_Then_InvalidCommandException()
   {
     CreatePokemonPayload payload = new()
     {
@@ -318,7 +317,7 @@ public class PokemonIntegrationTests : IntegrationTests
       Experience = 100
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _pokemonService.CreateAsync(payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _pokemonService.CreateAsync(payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a Pokémon.")]
@@ -575,8 +574,8 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal(nameof(Specimen.Stamina), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the update payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Update_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the update payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Update_Then_InvalidCommandException()
   {
     PokemonDto created = await CreatePokemonAsync("invalid-update");
 
@@ -588,7 +587,7 @@ public class PokemonIntegrationTests : IntegrationTests
       Condition = new Optional<StatusCondition?>((StatusCondition)(-1))
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _pokemonService.UpdateAsync(created.Id, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _pokemonService.UpdateAsync(created.Id, payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a Pokémon.")]

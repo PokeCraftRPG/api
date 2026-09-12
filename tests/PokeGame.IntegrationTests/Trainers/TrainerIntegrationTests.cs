@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Krakenar.Contracts.Users;
@@ -360,8 +359,8 @@ public class TrainerIntegrationTests : IntegrationTests
     Assert.Equal(nameof(Trainer.License), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Create_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the create/replace payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Create_Then_InvalidCommandException()
   {
     CreateOrReplaceTrainerPayload payload = new()
     {
@@ -369,11 +368,11 @@ public class TrainerIntegrationTests : IntegrationTests
       Money = -1
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _trainerService.CreateOrReplaceAsync(payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _trainerService.CreateOrReplaceAsync(payload));
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the update payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Update_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the update payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Update_Then_InvalidCommandException()
   {
     UpdateTrainerPayload payload = new()
     {
@@ -381,7 +380,7 @@ public class TrainerIntegrationTests : IntegrationTests
       Money = -1
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _trainerService.UpdateAsync(_trainer.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _trainerService.UpdateAsync(_trainer.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw InvalidAssetKindException when the sprite is not an image.")]

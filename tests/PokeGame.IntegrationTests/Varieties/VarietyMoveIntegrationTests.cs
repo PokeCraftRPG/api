@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Moves;
@@ -242,8 +241,8 @@ public class VarietyMoveIntegrationTests : IntegrationTests
     Assert.Equal(nameof(payload.MoveId), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the payload is invalid.")]
-  public async Task Given_InvalidPayload_When_SetMove_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the payload is invalid.")]
+  public async Task Given_InvalidPayload_When_SetMove_Then_InvalidCommandException()
   {
     SetVarietyMovePayload payload = new()
     {
@@ -252,7 +251,7 @@ public class VarietyMoveIntegrationTests : IntegrationTests
       Level = null
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _varietyService.SetMoveAsync(_variety.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _varietyService.SetMoveAsync(_variety.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when setting a variety move.")]

@@ -9,7 +9,7 @@ public record SearchEvolutionsPayload : SearchPayload<EvolutionSort>
   public string? Target { get; set; }
   public EvolutionTrigger? Trigger { get; set; }
 
-  public override void Validate() => new Validator().ValidateAndThrow(this);
+  public override void Validate() => new Validator().ValidateQueryAndThrow(this);
 
   private class Validator : AbstractValidator<SearchEvolutionsPayload>
   {

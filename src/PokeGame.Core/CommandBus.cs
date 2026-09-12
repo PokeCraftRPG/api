@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using PokeGame.Core.Assets;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
@@ -17,10 +16,10 @@ internal class CommandBus : Logitar.CQRS.CommandBus
     => exception is not ConflictException
     && exception is not DomainException
     && exception is not IdentityException
+    && exception is not InvalidCommandException
     && exception is not MediaTypeNotSupportedException
     && exception is not MemberInvitationExpiredException
     && exception is not NotFoundException
     && exception is not PermissionDeniedException
-    && exception is not ValidationException
     && exception is not WorldMismatchException;
 }

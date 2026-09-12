@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
@@ -245,8 +244,8 @@ public class EvolutionIntegrationTests : IntegrationTests
     Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Create_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the create/replace payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Create_Then_InvalidCommandException()
   {
     CreateOrReplaceEvolutionPayload payload = new()
     {
@@ -255,18 +254,18 @@ public class EvolutionIntegrationTests : IntegrationTests
       Trigger = EvolutionTrigger.LeveledUp
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _evolutionService.CreateOrReplaceAsync(payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _evolutionService.CreateOrReplaceAsync(payload));
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the update payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Update_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the update payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Update_Then_InvalidCommandException()
   {
     UpdateEvolutionPayload payload = new()
     {
       Level = new Optional<int?>(0)
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _evolutionService.UpdateAsync(_evolution.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _evolutionService.UpdateAsync(_evolution.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating an evolution.")]
