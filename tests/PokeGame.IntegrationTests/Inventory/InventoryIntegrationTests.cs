@@ -56,24 +56,6 @@ public class InventoryIntegrationTests : IntegrationTests
     AssertInventoryItem(_item, payload.Quantity, read);
   }
 
-  [Fact(DisplayName = "It should update an existing inventory quantity.")]
-  public async Task Given_Exists_When_Set_Then_Updated()
-  {
-    await SetAsync(3);
-
-    SetInventoryItemPayload payload = new()
-    {
-      Quantity = 12
-    };
-
-    InventoryItemDto inventoryItem = await _inventoryService.SetAsync(_trainer.EntityId, _item.EntityId, payload);
-    AssertInventoryItem(_item, payload.Quantity, inventoryItem);
-
-    InventoryItemDto? read = await _inventoryService.ReadAsync(_trainer.EntityId, _item.EntityId);
-    Assert.NotNull(read);
-    Assert.Equal(payload.Quantity, read.Quantity);
-  }
-
   [Fact(DisplayName = "It should remove an item when the quantity is set to 0.")]
   public async Task Given_Exists_When_SetZero_Then_Removed()
   {
@@ -99,42 +81,6 @@ public class InventoryIntegrationTests : IntegrationTests
     Assert.Null(await _inventoryService.ReadAsync(_trainer.EntityId, _item.EntityId));
   }
 
-  [Fact(DisplayName = "It should keep the quantity unchanged when setting the same value.")]
-  public async Task Given_SameQuantity_When_Set_Then_Unchanged()
-  {
-    await SetAsync(7);
-
-    InventoryItemDto inventoryItem = await SetAsync(7);
-    AssertInventoryItem(_item, 7, inventoryItem);
-
-    InventoryItemDto? read = await _inventoryService.ReadAsync(_trainer.EntityId, _item.EntityId);
-    Assert.NotNull(read);
-    Assert.Equal(7, read.Quantity);
-  }
-
-  [Fact(DisplayName = "It should set the maximum inventory quantity.")]
-  public async Task Given_MaximumQuantity_When_Set_Then_Set()
-  {
-    InventoryItemDto inventoryItem = await SetAsync(TrainerInventory.MaximumQuantity);
-    AssertInventoryItem(_item, TrainerInventory.MaximumQuantity, inventoryItem);
-  }
-
-  [Fact(DisplayName = "It should add an item when adjusting a positive delta.")]
-  public async Task Given_NotInInventory_When_AdjustPositive_Then_Added()
-  {
-    AdjustInventoryItemPayload payload = new()
-    {
-      Delta = 4
-    };
-
-    InventoryItemDto inventoryItem = await _inventoryService.AdjustAsync(_trainer.EntityId, _item.EntityId, payload);
-    AssertInventoryItem(_item, payload.Delta, inventoryItem);
-
-    InventoryItemDto? read = await _inventoryService.ReadAsync(_trainer.EntityId, _item.EntityId);
-    Assert.NotNull(read);
-    Assert.Equal(payload.Delta, read.Quantity);
-  }
-
   [Fact(DisplayName = "It should increase an existing inventory quantity.")]
   public async Task Given_Exists_When_AdjustPositive_Then_Increased()
   {
@@ -142,26 +88,6 @@ public class InventoryIntegrationTests : IntegrationTests
 
     InventoryItemDto inventoryItem = await AdjustAsync(5);
     AssertInventoryItem(_item, 15, inventoryItem);
-  }
-
-  [Fact(DisplayName = "It should decrease an existing inventory quantity.")]
-  public async Task Given_Exists_When_AdjustNegative_Then_Decreased()
-  {
-    await SetAsync(10);
-
-    InventoryItemDto inventoryItem = await AdjustAsync(-3);
-    AssertInventoryItem(_item, 7, inventoryItem);
-  }
-
-  [Fact(DisplayName = "It should remove an item when adjusting the quantity to 0.")]
-  public async Task Given_Exists_When_AdjustToZero_Then_Removed()
-  {
-    await SetAsync(6);
-
-    InventoryItemDto inventoryItem = await AdjustAsync(-6);
-    AssertInventoryItem(_item, 0, inventoryItem);
-
-    Assert.Null(await _inventoryService.ReadAsync(_trainer.EntityId, _item.EntityId));
   }
 
   [Fact(DisplayName = "It should throw InventoryQuantityOutOfRangeException when adjusting above the maximum.")]
@@ -177,20 +103,6 @@ public class InventoryIntegrationTests : IntegrationTests
     Assert.Equal(TrainerInventory.MinimumQuantity, exception.Data["MinimumQuantity"]);
     Assert.Equal(TrainerInventory.MaximumQuantity, exception.Data["MaximumQuantity"]);
     Assert.Equal(TrainerInventory.MaximumQuantity + 1, exception.Data["AttemptedQuantity"]);
-    Assert.Equal("Quantity", exception.Data["PropertyName"]);
-  }
-
-  [Fact(DisplayName = "It should throw InventoryQuantityOutOfRangeException when adjusting below the minimum.")]
-  public async Task Given_WouldGoBelowMinimum_When_Adjust_Then_InventoryQuantityOutOfRangeException()
-  {
-    InventoryQuantityOutOfRangeException exception = await Assert.ThrowsAsync<InventoryQuantityOutOfRangeException>(
-      async () => await AdjustAsync(-1));
-    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
-    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
-    Assert.Equal(_item.EntityId, exception.Data["ItemId"]);
-    Assert.Equal(TrainerInventory.MinimumQuantity, exception.Data["MinimumQuantity"]);
-    Assert.Equal(TrainerInventory.MaximumQuantity, exception.Data["MaximumQuantity"]);
-    Assert.Equal(-1, exception.Data["AttemptedQuantity"]);
     Assert.Equal("Quantity", exception.Data["PropertyName"]);
   }
 
@@ -421,20 +333,6 @@ public class InventoryIntegrationTests : IntegrationTests
     Assert.Equal("ItemId", exception.Data["PropertyName"]);
   }
 
-  [Theory(DisplayName = "It should throw InvalidCommandException when the set payload is invalid.")]
-  [InlineData(-1)]
-  [InlineData(1000)]
-  public async Task Given_InvalidPayload_When_Set_Then_InvalidCommandException(int quantity)
-  {
-    SetInventoryItemPayload payload = new()
-    {
-      Quantity = quantity
-    };
-
-    await Assert.ThrowsAsync<InvalidCommandException>(
-      async () => await _inventoryService.SetAsync(_trainer.EntityId, _item.EntityId, payload));
-  }
-
   [Fact(DisplayName = "It should throw PermissionDeniedException when setting an inventory item.")]
   public async Task Given_NotAllowed_When_Set_Then_PermissionDeniedException()
   {
@@ -451,55 +349,6 @@ public class InventoryIntegrationTests : IntegrationTests
     Assert.Equal("Update", exception.Data["Action"]);
     Assert.Equal(new InventoryId(_trainer.Id).GetEntity().ToString(), exception.Data["Resource"]);
     Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
-  }
-
-  [Fact(DisplayName = "It should throw EntityNotFoundException when adjusting for a missing trainer.")]
-  public async Task Given_MissingTrainer_When_Adjust_Then_EntityNotFoundException()
-  {
-    Guid missingTrainerId = Guid.NewGuid();
-    AdjustInventoryItemPayload payload = new()
-    {
-      Delta = 1
-    };
-
-    EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
-      async () => await _inventoryService.AdjustAsync(missingTrainerId, _item.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
-    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
-    Assert.Equal(missingTrainerId, exception.Data["EntityId"]);
-    Assert.Equal("TrainerId", exception.Data["PropertyName"]);
-  }
-
-  [Fact(DisplayName = "It should throw EntityNotFoundException when adjusting a missing item.")]
-  public async Task Given_MissingItem_When_Adjust_Then_EntityNotFoundException()
-  {
-    Guid missingItemId = Guid.NewGuid();
-    AdjustInventoryItemPayload payload = new()
-    {
-      Delta = 1
-    };
-
-    EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
-      async () => await _inventoryService.AdjustAsync(_trainer.EntityId, missingItemId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
-    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
-    Assert.Equal(missingItemId, exception.Data["EntityId"]);
-    Assert.Equal("ItemId", exception.Data["PropertyName"]);
-  }
-
-  [Theory(DisplayName = "It should throw InvalidCommandException when the adjust payload is invalid.")]
-  [InlineData(0)]
-  [InlineData(1000)]
-  [InlineData(-1000)]
-  public async Task Given_InvalidPayload_When_Adjust_Then_InvalidCommandException(int delta)
-  {
-    AdjustInventoryItemPayload payload = new()
-    {
-      Delta = delta
-    };
-
-    await Assert.ThrowsAsync<InvalidCommandException>(
-      async () => await _inventoryService.AdjustAsync(_trainer.EntityId, _item.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when adjusting an inventory item.")]

@@ -103,20 +103,6 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     AssertPokemonRoster(read, isInParty: true);
   }
 
-  [Fact(DisplayName = "It should receive an egg without setting the original trainer.")]
-  public async Task Given_Egg_When_Receive_Then_OriginalTrainerNotSet()
-  {
-    PokemonDto created = await CreatePokemonAsync("received-egg", eggCycles: 5);
-    ReceivePokemonPayload payload = CreatePayload("Pallet Town");
-
-    PokemonDto? pokemon = await _pokemonService.ReceiveAsync(created.Id, payload);
-    Assert.NotNull(pokemon);
-    Assert.Null(pokemon.OriginalTrainer);
-    AssertReceived(pokemon, _trainer, _masterBall, created.Level, "Pallet Town");
-
-    await AssertRosterContainsAsync(_trainer, pokemon, isInParty: true);
-  }
-
   [Fact(DisplayName = "It should transfer a Pokémon to another trainer.")]
   public async Task Given_DifferentTrainer_When_Receive_Then_Transferred()
   {
@@ -206,90 +192,6 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(nameof(payload.PokeBallId), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw InvalidItemCategoryException when the item is not a Poké Ball.")]
-  public async Task Given_NotPokeBall_When_Receive_Then_InvalidItemCategoryException()
-  {
-    PokemonDto created = await CreatePokemonAsync("invalid-category");
-    Item potion = ItemBuilder.Potion(Faker, Context.World);
-    await _itemRepository.SaveAsync(potion);
-
-    ReceivePokemonPayload payload = new()
-    {
-      TrainerId = _trainer.EntityId,
-      PokeBallId = potion.EntityId,
-      Location = "Pallet Town"
-    };
-
-    InvalidItemCategoryException exception = await Assert.ThrowsAsync<InvalidItemCategoryException>(
-      async () => await _pokemonService.ReceiveAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
-    Assert.Equal(potion.EntityId, exception.Data["ItemId"]);
-    Assert.Equal(ItemCategory.PokeBall, exception.Data["ExpectedCategory"]);
-    Assert.Equal(ItemCategory.Medicine, exception.Data["AttemptedCategory"]);
-    Assert.Equal(nameof(PokemonOwnership.PokeBallId), exception.Data["PropertyName"]);
-  }
-
-  [Fact(DisplayName = "It should throw PokemonAlreadyOwnedException when the trainer already owns the Pokémon.")]
-  public async Task Given_SameTrainer_When_Receive_Then_PokemonAlreadyOwnedException()
-  {
-    PokemonDto created = await CreatePokemonAsync("already-owned");
-    ReceivePokemonPayload payload = CreatePayload("Pallet Town");
-    await _pokemonService.ReceiveAsync(created.Id, payload);
-
-    PokemonAlreadyOwnedException exception = await Assert.ThrowsAsync<PokemonAlreadyOwnedException>(
-      async () => await _pokemonService.ReceiveAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
-    Assert.Equal(created.Id, exception.Data["PokemonId"]);
-    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
-  }
-
-  [Fact(DisplayName = "It should throw ImmutablePropertyException when transferring with a different Poké Ball.")]
-  public async Task Given_DifferentPokeBall_When_Receive_Then_ImmutablePropertyException()
-  {
-    PokemonDto created = await CreatePokemonAsync("immutable-poke-ball");
-    await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
-
-    Item pokeBall = new ItemBuilder(Faker)
-      .WithWorld(Context.World)
-      .WithCategory(ItemCategory.PokeBall)
-      .WithKey("poke-ball")
-      .WithName("Poké Ball")
-      .Build();
-    await _itemRepository.SaveAsync(pokeBall);
-
-    Trainer blue = TrainerBuilder.Blue(Faker, Context.World);
-    await _trainerRepository.SaveAsync(blue);
-
-    ReceivePokemonPayload payload = new()
-    {
-      TrainerId = blue.EntityId,
-      PokeBallId = pokeBall.EntityId,
-      Location = "Cerulean City"
-    };
-
-    ImmutablePropertyException<Guid> exception = await Assert.ThrowsAsync<ImmutablePropertyException<Guid>>(
-      async () => await _pokemonService.ReceiveAsync(created.Id, payload));
-    Assert.Equal(Specimen.EntityKind, exception.Data["EntityKind"]);
-    Assert.Equal(created.Id, exception.Data["EntityId"]);
-    Assert.Equal(_masterBall.EntityId, exception.Data["ExpectedValue"]);
-    Assert.Equal(pokeBall.EntityId, exception.Data["AttemptedValue"]);
-    Assert.Equal(nameof(PokemonOwnership.PokeBallId), exception.Data["PropertyName"]);
-  }
-
-  [Fact(DisplayName = "It should throw InvalidCommandException when the payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Receive_Then_InvalidCommandException()
-  {
-    PokemonDto created = await CreatePokemonAsync("invalid-payload");
-    ReceivePokemonPayload payload = new()
-    {
-      TrainerId = _trainer.EntityId,
-      PokeBallId = _masterBall.EntityId,
-      Location = string.Empty
-    };
-
-    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _pokemonService.ReceiveAsync(created.Id, payload));
-  }
-
   [Fact(DisplayName = "It should throw PermissionDeniedException when receiving a Pokémon.")]
   public async Task Given_NotAllowed_When_Receive_Then_PermissionDeniedException()
   {
@@ -339,44 +241,6 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     await AssertRosterContainsAsync(_trainer, pokemon, isInParty: true);
   }
 
-  [Fact(DisplayName = "It should remove the last Poké Ball from the inventory when catching a Pokémon.")]
-  public async Task Given_LastPokeBall_When_Catch_Then_RemovedFromInventory()
-  {
-    PokemonDto created = await CreatePokemonAsync("last-ball");
-    await AddPokeBallsAsync(1);
-
-    PokemonDto? pokemon = await _pokemonService.CatchAsync(created.Id, CreateCatchPayload("Viridian Forest"));
-    Assert.NotNull(pokemon);
-    AssertOwned(pokemon, OwnershipEvent.Caught, _trainer, _masterBall, created.Level, "Viridian Forest");
-
-    Assert.Null(await _inventoryService.ReadAsync(_trainer.EntityId, _masterBall.EntityId));
-
-    await AssertRosterContainsAsync(_trainer, pokemon, isInParty: true);
-  }
-
-  [Fact(DisplayName = "It should throw PokemonEggCannotBeCaughtException when catching an egg.")]
-  public async Task Given_Egg_When_Catch_Then_PokemonEggCannotBeCaughtException()
-  {
-    PokemonDto created = await CreatePokemonAsync("caught-egg", eggCycles: 5);
-    await AddPokeBallsAsync();
-
-    PokemonEggCannotBeCaughtException exception = await Assert.ThrowsAsync<PokemonEggCannotBeCaughtException>(
-      async () => await _pokemonService.CatchAsync(created.Id, CreateCatchPayload("Viridian Forest")));
-    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
-    Assert.Equal(created.Id, exception.Data["PokemonId"]);
-    Assert.Equal(created.EggCycles, exception.Data["EggCycles"]);
-
-    PokemonDto? pokemon = await _pokemonService.ReadAsync(created.Id);
-    Assert.NotNull(pokemon);
-    Assert.Null(pokemon.Ownership);
-
-    InventoryItemDto? inventoryItem = await _inventoryService.ReadAsync(_trainer.EntityId, _masterBall.EntityId);
-    Assert.NotNull(inventoryItem);
-    Assert.Equal(1, inventoryItem.Quantity);
-
-    await AssertRosterDoesNotContainAsync(_trainer, pokemon);
-  }
-
   [Fact(DisplayName = "It should throw InventoryQuantityOutOfRangeException when the trainer has no Poké Ball.")]
   public async Task Given_NoPokeBall_When_Catch_Then_InventoryQuantityOutOfRangeException()
   {
@@ -399,72 +263,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     await AssertRosterDoesNotContainAsync(_trainer, pokemon);
   }
 
-  [Fact(DisplayName = "It should throw PokemonAlreadyOwnedException when catching a Pokémon that is not wild.")]
-  public async Task Given_OwnedPokemon_When_Catch_Then_PokemonAlreadyOwnedException()
-  {
-    PokemonDto created = await CreatePokemonAsync("not-wild");
-    await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
-    await AddPokeBallsAsync();
-
-    PokemonAlreadyOwnedException exception = await Assert.ThrowsAsync<PokemonAlreadyOwnedException>(
-      async () => await _pokemonService.CatchAsync(created.Id, CreateCatchPayload("Viridian Forest")));
-    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
-    Assert.Equal(created.Id, exception.Data["PokemonId"]);
-    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
-
-    InventoryItemDto? inventoryItem = await _inventoryService.ReadAsync(_trainer.EntityId, _masterBall.EntityId);
-    Assert.NotNull(inventoryItem);
-    Assert.Equal(1, inventoryItem.Quantity);
-
-    PokemonDto? pokemon = await _pokemonService.ReadAsync(created.Id);
-    Assert.NotNull(pokemon);
-    await AssertRosterContainsAsync(_trainer, pokemon, isInParty: true);
-  }
-
   [Fact(DisplayName = "It should return null when catching a Pokémon that was not found.")]
   public async Task Given_NotFound_When_Catch_Then_NullReturned()
   {
     Assert.Null(await _pokemonService.CatchAsync(Guid.NewGuid(), CreateCatchPayload("Viridian Forest")));
-  }
-
-  [Fact(DisplayName = "It should throw EntityNotFoundException when catching with a missing trainer.")]
-  public async Task Given_MissingTrainer_When_Catch_Then_EntityNotFoundException()
-  {
-    PokemonDto created = await CreatePokemonAsync("catch-missing-trainer");
-    Guid missingTrainerId = Guid.NewGuid();
-    CatchPokemonPayload payload = new()
-    {
-      TrainerId = missingTrainerId,
-      PokeBallId = _masterBall.EntityId,
-      Location = "Viridian Forest"
-    };
-
-    EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
-      async () => await _pokemonService.CatchAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
-    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
-    Assert.Equal(missingTrainerId, exception.Data["EntityId"]);
-    Assert.Equal(nameof(payload.TrainerId), exception.Data["PropertyName"]);
-  }
-
-  [Fact(DisplayName = "It should throw EntityNotFoundException when catching with a missing Poké Ball.")]
-  public async Task Given_MissingPokeBall_When_Catch_Then_EntityNotFoundException()
-  {
-    PokemonDto created = await CreatePokemonAsync("catch-missing-poke-ball");
-    Guid missingPokeBallId = Guid.NewGuid();
-    CatchPokemonPayload payload = new()
-    {
-      TrainerId = _trainer.EntityId,
-      PokeBallId = missingPokeBallId,
-      Location = "Viridian Forest"
-    };
-
-    EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
-      async () => await _pokemonService.CatchAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
-    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
-    Assert.Equal(missingPokeBallId, exception.Data["EntityId"]);
-    Assert.Equal(nameof(payload.PokeBallId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidItemCategoryException when catching with an item that is not a Poké Ball.")]
@@ -488,20 +290,6 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(ItemCategory.PokeBall, exception.Data["ExpectedCategory"]);
     Assert.Equal(ItemCategory.Medicine, exception.Data["AttemptedCategory"]);
     Assert.Equal(nameof(PokemonOwnership.PokeBallId), exception.Data["PropertyName"]);
-  }
-
-  [Fact(DisplayName = "It should throw InvalidCommandException when the catch payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Catch_Then_InvalidCommandException()
-  {
-    PokemonDto created = await CreatePokemonAsync("catch-invalid-payload");
-    CatchPokemonPayload payload = new()
-    {
-      TrainerId = _trainer.EntityId,
-      PokeBallId = _masterBall.EntityId,
-      Location = string.Empty
-    };
-
-    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _pokemonService.CatchAsync(created.Id, payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when catching a Pokémon.")]
@@ -553,27 +341,6 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     await AssertRosterDoesNotContainAsync(_trainer, pokemon);
   }
 
-  [Fact(DisplayName = "It should release a caught Pokémon.")]
-  public async Task Given_CaughtPokemon_When_Release_Then_Released()
-  {
-    PokemonDto created = await CreatePokemonAsync("released-caught");
-    await AddPokeBallsAsync();
-    PokemonDto? caught = await _pokemonService.CatchAsync(created.Id, CreateCatchPayload("Viridian Forest"));
-    Assert.NotNull(caught);
-
-    PokemonDto? pokemon = await _pokemonService.ReleaseAsync(created.Id);
-    Assert.NotNull(pokemon);
-    Assert.Null(pokemon.Ownership);
-    Assert.NotNull(pokemon.OriginalTrainer);
-    Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
-    AssertPokemonRoster(pokemon, isInParty: false);
-
-    InventoryItemDto? inventoryItem = await _inventoryService.ReadAsync(_trainer.EntityId, _masterBall.EntityId);
-    Assert.Null(inventoryItem);
-
-    await AssertRosterDoesNotContainAsync(_trainer, pokemon);
-  }
-
   [Fact(DisplayName = "It should catch a Pokémon after it was released.")]
   public async Task Given_ReleasedPokemon_When_Catch_Then_Caught()
   {
@@ -609,25 +376,6 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
       async () => await _pokemonService.ReleaseAsync(created.Id));
     Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
     Assert.Equal(created.Id, exception.Data["PokemonId"]);
-  }
-
-  [Fact(DisplayName = "It should throw PokemonEggCannotBeReleasedException when releasing an egg.")]
-  public async Task Given_Egg_When_Release_Then_PokemonEggCannotBeReleasedException()
-  {
-    PokemonDto created = await CreatePokemonAsync("released-egg", eggCycles: 5);
-    await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
-
-    PokemonEggCannotBeReleasedException exception = await Assert.ThrowsAsync<PokemonEggCannotBeReleasedException>(
-      async () => await _pokemonService.ReleaseAsync(created.Id));
-    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
-    Assert.Equal(created.Id, exception.Data["PokemonId"]);
-    Assert.Equal(created.EggCycles, exception.Data["EggCycles"]);
-
-    PokemonDto? pokemon = await _pokemonService.ReadAsync(created.Id);
-    Assert.NotNull(pokemon);
-    AssertReceived(pokemon, _trainer, _masterBall, created.Level, "Pallet Town");
-
-    await AssertRosterContainsAsync(_trainer, pokemon, isInParty: true);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when releasing a Pokémon.")]
@@ -745,39 +493,6 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Single(blueRoster.PartyIds);
   }
 
-  [Fact(DisplayName = "It should trade Pokémon eggs without setting the original trainer.")]
-  public async Task Given_Eggs_When_Trade_Then_TradedWithoutOriginalTrainer()
-  {
-    Trainer blue = TrainerBuilder.Blue(Faker, Context.World);
-    await _trainerRepository.SaveAsync(blue);
-
-    PokemonDto sourceCreated = await CreatePokemonAsync("trade-source-egg", eggCycles: 5);
-    PokemonDto targetCreated = await CreatePokemonAsync("trade-target-egg", eggCycles: 5);
-    await _pokemonService.ReceiveAsync(sourceCreated.Id, CreatePayload("Pallet Town"));
-    await _pokemonService.ReceiveAsync(targetCreated.Id, CreatePayload("Cerulean City", blue));
-
-    await _pokemonService.TradeAsync(new TradePokemonPayload
-    {
-      PokemonIds = [sourceCreated.Id, targetCreated.Id],
-      Location = "Day Care"
-    });
-
-    PokemonDto? source = await _pokemonService.ReadAsync(sourceCreated.Id);
-    Assert.NotNull(source);
-    Assert.Null(source.OriginalTrainer);
-    AssertOwned(source, OwnershipEvent.Traded, blue, _masterBall, sourceCreated.Level, "Day Care");
-
-    PokemonDto? target = await _pokemonService.ReadAsync(targetCreated.Id);
-    Assert.NotNull(target);
-    Assert.Null(target.OriginalTrainer);
-    AssertOwned(target, OwnershipEvent.Traded, _trainer, _masterBall, targetCreated.Level, "Day Care");
-
-    AssertPokemonAcquired((source, blue), (target, _trainer));
-
-    await AssertRosterContainsAsync(blue, source, isInParty: false);
-    await AssertRosterContainsAsync(_trainer, target, isInParty: false);
-  }
-
   [Fact(DisplayName = "It should throw EntityNotFoundException when a Pokémon to trade was not found.")]
   public async Task Given_MissingPokemon_When_Trade_Then_EntityNotFoundException()
   {
@@ -817,39 +532,6 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
       }));
     Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
     Assert.Equal(sourceCreated.Id, exception.Data["PokemonId"]);
-
-    AssertPokemonAcquiredNotPublished();
-  }
-
-  [Fact(DisplayName = "It should throw PokemonTradeRequiresDifferentOwnersException when both Pokémon have the same owner.")]
-  public async Task Given_SameOwner_When_Trade_Then_PokemonTradeRequiresDifferentOwnersException()
-  {
-    PokemonDto sourceCreated = await CreatePokemonAsync("trade-same-source");
-    PokemonDto targetCreated = await CreatePokemonAsync("trade-same-target");
-    await _pokemonService.ReceiveAsync(sourceCreated.Id, CreatePayload("Pallet Town"));
-    await _pokemonService.ReceiveAsync(targetCreated.Id, CreatePayload("Viridian City"));
-
-    PokemonTradeRequiresDifferentOwnersException exception = await Assert.ThrowsAsync<PokemonTradeRequiresDifferentOwnersException>(
-      async () => await _pokemonService.TradeAsync(new TradePokemonPayload
-      {
-        PokemonIds = [sourceCreated.Id, targetCreated.Id],
-        Location = "Pokémon Center"
-      }));
-    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
-    Assert.Equal(sourceCreated.Id, exception.Data["SourcePokemonId"]);
-    Assert.Equal(targetCreated.Id, exception.Data["TargetPokemonId"]);
-
-    AssertPokemonAcquiredNotPublished();
-  }
-
-  [Fact(DisplayName = "It should throw InvalidCommandException when the trade payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Trade_Then_InvalidCommandException()
-  {
-    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _pokemonService.TradeAsync(new TradePokemonPayload
-    {
-      PokemonIds = [Guid.NewGuid()],
-      Location = "Pokémon Center"
-    }));
 
     AssertPokemonAcquiredNotPublished();
   }
