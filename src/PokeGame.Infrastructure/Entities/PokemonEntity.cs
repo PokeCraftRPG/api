@@ -239,6 +239,13 @@ internal class PokemonEntity : AggregateEntity
     MetOn = null;
   }
 
+  public void Trade(int trainerId, int pokeBallId, PokemonTraded @event)
+  {
+    Update(@event);
+
+    SetOwnership(Core.Pokemon.OwnershipEvent.Traded, trainerId, pokeBallId, @event.Level, @event.Location, @event.OccurredOn);
+  }
+
   public void SetDetails(PokemonDetailsChanged @event)
   {
     Update(@event);

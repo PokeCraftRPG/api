@@ -70,6 +70,13 @@ public class PokemonController : ControllerBase
     return pokemon is null ? NotFound() : Ok(pokemon);
   }
 
+  [HttpPost("trades")]
+  public async Task<ActionResult> TradeAsync([FromBody] TradePokemonPayload payload, CancellationToken cancellationToken)
+  {
+    await _pokemonService.TradeAsync(payload, cancellationToken);
+    return NoContent();
+  }
+
   [HttpPatch("{id}")]
   public async Task<ActionResult<PokemonDto>> UpdateAsync(Guid id, [FromBody] UpdatePokemonPayload payload, CancellationToken cancellationToken)
   {

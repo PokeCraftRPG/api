@@ -14,6 +14,7 @@ public interface IPokemonService
   Task<PokemonDto?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
   Task<PokemonDto?> ReceiveAsync(Guid id, ReceivePokemonPayload payload, CancellationToken cancellationToken = default);
   Task<PokemonDto?> ReleaseAsync(Guid id, CancellationToken cancellationToken = default);
+  Task TradeAsync(TradePokemonPayload payload, CancellationToken cancellationToken = default);
   Task<PokemonDto?> UpdateAsync(Guid id, UpdatePokemonPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -29,6 +30,7 @@ internal class PokemonService : IPokemonService
     services.AddTransient<ICommandHandler<CreatePokemonCommand, PokemonDto>, CreatePokemonCommandHandler>();
     services.AddTransient<ICommandHandler<ReceivePokemonCommand, PokemonDto?>, ReceivePokemonCommandHandler>();
     services.AddTransient<ICommandHandler<ReleasePokemonCommand, PokemonDto?>, ReleasePokemonCommandHandler>();
+    services.AddTransient<ICommandHandler<TradePokemonCommand, Unit>, TradePokemonCommandHandler>();
     services.AddTransient<ICommandHandler<UpdatePokemonCommand, PokemonDto?>, UpdatePokemonCommandHandler>();
     services.AddTransient<IQueryHandler<ReadPokemonQuery, PokemonDto?>, ReadPokemonQueryHandler>();
   }
@@ -76,6 +78,12 @@ internal class PokemonService : IPokemonService
   {
     ReleasePokemonCommand command = new(id);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task TradeAsync(TradePokemonPayload payload, CancellationToken cancellationToken)
+  {
+    TradePokemonCommand command = new(payload);
+    await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
   public async Task<PokemonDto?> UpdateAsync(Guid id, UpdatePokemonPayload payload, CancellationToken cancellationToken)
