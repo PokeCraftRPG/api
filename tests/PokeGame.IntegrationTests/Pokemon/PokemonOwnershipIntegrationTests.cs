@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Logitar.EventSourcing;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
@@ -8,6 +10,7 @@ using PokeGame.Core.Inventory.Models;
 using PokeGame.Core.Items;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon;
+using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Species;
 using PokeGame.Core.Trainers;
@@ -84,6 +87,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     AssertReceived(pokemon, _trainer, _masterBall, created.Level, "Pallet Town");
     Assert.NotNull(pokemon.OriginalTrainer);
     Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
+
+    AssertPokemonAcquired(pokemon, _trainer);
 
     PokemonDto? read = await _pokemonService.ReadAsync(created.Id);
     Assert.NotNull(read);
@@ -294,6 +299,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     InventoryItemDto? inventoryItem = await _inventoryService.ReadAsync(_trainer.EntityId, _masterBall.EntityId);
     Assert.NotNull(inventoryItem);
     Assert.Equal(2, inventoryItem.Quantity);
+
+    AssertPokemonAcquired(pokemon, _trainer);
   }
 
   [Fact(DisplayName = "It should remove the last Poké Ball from the inventory when catching a Pokémon.")]
@@ -623,6 +630,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     AssertOwned(target, OwnershipEvent.Traded, _trainer, pokeBall, targetCreated.Level, "Pokémon Center");
     Assert.NotNull(target.OriginalTrainer);
     Assert.Equal(blue.EntityId, target.OriginalTrainer.Id);
+
+    AssertPokemonAcquired((source, blue), (target, _trainer));
   }
 
   [Fact(DisplayName = "It should trade Pokémon eggs without setting the original trainer.")]
@@ -651,6 +660,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.NotNull(target);
     Assert.Null(target.OriginalTrainer);
     AssertOwned(target, OwnershipEvent.Traded, _trainer, _masterBall, targetCreated.Level, "Day Care");
+
+    AssertPokemonAcquired((source, blue), (target, _trainer));
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when a Pokémon to trade was not found.")]
@@ -670,6 +681,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(Specimen.EntityKind, exception.Data["EntityKind"]);
     Assert.Equal(missingId, exception.Data["EntityId"]);
     Assert.Equal(nameof(TradePokemonPayload.PokemonIds), exception.Data["PropertyName"]);
+
+    AssertPokemonAcquiredNotPublished();
   }
 
   [Fact(DisplayName = "It should throw PokemonHasNoOwnerException when a Pokémon to trade is wild.")]
@@ -690,6 +703,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
       }));
     Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
     Assert.Equal(sourceCreated.Id, exception.Data["PokemonId"]);
+
+    AssertPokemonAcquiredNotPublished();
   }
 
   [Fact(DisplayName = "It should throw PokemonTradeRequiresDifferentOwnersException when both Pokémon have the same owner.")]
@@ -709,6 +724,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
     Assert.Equal(sourceCreated.Id, exception.Data["SourcePokemonId"]);
     Assert.Equal(targetCreated.Id, exception.Data["TargetPokemonId"]);
+
+    AssertPokemonAcquiredNotPublished();
   }
 
   [Fact(DisplayName = "It should throw InvalidCommandException when the trade payload is invalid.")]
@@ -719,6 +736,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
       PokemonIds = [Guid.NewGuid()],
       Location = "Pokémon Center"
     }));
+
+    AssertPokemonAcquiredNotPublished();
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when trading Pokémon.")]
@@ -751,6 +770,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     PokemonDto? target = await _pokemonService.ReadAsync(targetCreated.Id);
     Assert.NotNull(target);
     AssertReceived(target, blue, _masterBall, targetCreated.Level, "Cerulean City");
+
+    AssertPokemonAcquiredNotPublished();
   }
 
   private async Task<PokemonDto> CreatePokemonAsync(string key, byte eggCycles = 0)
@@ -802,4 +823,32 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(location, pokemon.Ownership.MetAt);
     Assert.Equal(DateTime.UtcNow, pokemon.Ownership.MetOn, TimeSpan.FromSeconds(10));
   }
+
+  private void AssertPokemonAcquired(PokemonDto pokemon, Trainer trainer)
+  {
+    PokemonAcquired expected = ToPokemonAcquired(pokemon, trainer);
+    MessagingManager.Verify(x => x.PublishAsync(expected, It.IsAny<CancellationToken>()), Times.Once);
+  }
+  private void AssertPokemonAcquired(params (PokemonDto Pokemon, Trainer Trainer)[] expected)
+  {
+    PokemonAcquired[] acquired = [.. expected.Select(item => ToPokemonAcquired(item.Pokemon, item.Trainer))];
+    MessagingManager.Verify(x => x.PublishAsync(
+      It.Is<IEnumerable<IEvent>>(events => MatchPokemonAcquired(events, acquired)),
+      It.IsAny<CancellationToken>()), Times.Once);
+  }
+  private void AssertPokemonAcquiredNotPublished()
+  {
+    MessagingManager.Verify(x => x.PublishAsync(It.IsAny<IEnumerable<IEvent>>(), It.IsAny<CancellationToken>()), Times.Never);
+  }
+
+  private static bool MatchPokemonAcquired(IEnumerable<IEvent> events, IReadOnlyCollection<PokemonAcquired> expected)
+  {
+    PokemonAcquired[] actual = [.. events.OfType<PokemonAcquired>()];
+    return actual.Length == expected.Count && expected.All(actual.Contains);
+  }
+
+  private PokemonAcquired ToPokemonAcquired(PokemonDto pokemon, Trainer trainer) => new(
+    new TrainerId(Context.WorldId, trainer.EntityId),
+    new PokemonId(Context.WorldId, pokemon.Id),
+    new VarietyId(Context.WorldId, pokemon.Form.Variety.Id));
 }

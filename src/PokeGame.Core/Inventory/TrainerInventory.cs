@@ -22,7 +22,15 @@ public sealed class TrainerInventory : AggregateRoot, IEntityProvider
   {
   }
 
-  public TrainerInventory(Trainer trainer) : base(new InventoryId(trainer.Id).StreamId)
+  public TrainerInventory(Trainer trainer) : this(trainer.Id)
+  {
+  }
+
+  public TrainerInventory(TrainerId trainerId) : this(new InventoryId(trainerId))
+  {
+  }
+
+  public TrainerInventory(InventoryId inventoryId) : base(inventoryId.StreamId)
   {
   }
 
