@@ -6,7 +6,7 @@ namespace PokeGame.Core.Pokemon;
 
 public interface IPokemonRandomizer
 {
-  AbilitySlot AbilitySlot(FormAbilities abilities);
+  AbilitySlot AbilitySlot();
   PokemonCharacteristic Characteristic(IIndividualValues individualValues);
   Gender Gender(GenderRatio ratio);
   IndividualValues IndividualValues();
@@ -20,9 +20,9 @@ internal class PokemonRandomizer : IPokemonRandomizer
 {
   private readonly Random _random = new();
 
-  public AbilitySlot AbilitySlot(FormAbilities abilities)
+  public AbilitySlot AbilitySlot()
   {
-    return abilities.SecondaryId.HasValue && _random.Next(2) == 1 ? Abilities.AbilitySlot.Secondary : Abilities.AbilitySlot.Primary;
+    return _random.Next(2) == 1 ? Abilities.AbilitySlot.Secondary : Abilities.AbilitySlot.Primary;
   }
 
   public PokemonCharacteristic Characteristic(IIndividualValues individualValues) => PokemonCharacteristics.Pick(individualValues, _random);

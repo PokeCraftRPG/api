@@ -14,4 +14,15 @@ public sealed class InvalidPokemonGenderException : DomainException
     Data["AttemptedGender"] = attemptedGender;
     Data["PropertyName"] = nameof(Specimen.Gender);
   }
+
+  public static void ThrowIfNotValid(Specimen specimen, Variety variety, Gender attemptedGender)
+  {
+    GenderRatio? ratio = variety.GenderRatio;
+    if (ratio is null
+      || (Equals(ratio, GenderRatio.AllFemale) && attemptedGender == Gender.Male)
+      || (Equals(ratio, GenderRatio.AllMale) && attemptedGender == Gender.Female))
+    {
+      throw new InvalidPokemonGenderException(specimen, variety, attemptedGender);
+    }
+  }
 }

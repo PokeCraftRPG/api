@@ -247,22 +247,23 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal(nameof(Specimen.FormId), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw InvalidAbilitySlotException when the ability slot is unavailable.")]
-  public async Task Given_HiddenAbilityMissing_When_Create_Then_InvalidAbilitySlotException()
+  [Theory(DisplayName = "It should create a Pokémon with any ability slot regardless of the form abilities.")]
+  [InlineData(AbilitySlot.Secondary)]
+  [InlineData(AbilitySlot.Hidden)]
+  public async Task Given_SlotWithoutFormAbility_When_Create_Then_Created(AbilitySlot slot)
   {
     CreatePokemonPayload payload = new()
     {
       FormId = _form.EntityId,
-      AbilitySlot = AbilitySlot.Hidden
+      AbilitySlot = slot
     };
 
-    InvalidAbilitySlotException exception = await Assert.ThrowsAsync<InvalidAbilitySlotException>(
-      async () => await _pokemonService.CreateAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
-    Assert.NotEqual(Guid.Empty, exception.Data["PokemonId"]);
-    Assert.Equal(_form.EntityId, exception.Data["FormId"]);
-    Assert.Equal(AbilitySlot.Hidden, exception.Data["AttemptedSlot"]);
-    Assert.Equal(nameof(Specimen.AbilitySlot), exception.Data["PropertyName"]);
+    PokemonDto pokemon = await _pokemonService.CreateAsync(payload);
+    Assert.Equal(slot, pokemon.AbilitySlot);
+
+    PokemonDto? read = await _pokemonService.ReadAsync(pokemon.Id);
+    Assert.NotNull(read);
+    Assert.Equal(slot, read.AbilitySlot);
   }
 
   [Fact(DisplayName = "It should throw InvalidPokemonGenderException when the gender is not allowed.")]

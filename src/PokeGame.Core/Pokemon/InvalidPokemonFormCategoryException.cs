@@ -13,4 +13,12 @@ public sealed class InvalidPokemonFormCategoryException : DomainException
     Data["AttemptedCategory"] = form.Category;
     Data["PropertyName"] = nameof(Specimen.FormId);
   }
+
+  public static void ThrowIfNotValid(Specimen specimen, Form form)
+  {
+    if (form.Category != FormCategory.Default && form.Category != FormCategory.Alternative)
+    {
+      throw new InvalidPokemonFormCategoryException(specimen, form);
+    }
+  }
 }
