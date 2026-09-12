@@ -417,5 +417,28 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     Friendship = @event.Friendship;
   }
 
+  public void Trade(Specimen specimen, Location location, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(this, specimen, nameof(specimen));
+    if (Equals(specimen))
+    {
+      throw new PokemonCannotBeTradedWithItselfException(this);
+    }
+
+    PokemonOwnership sourceOwnership = Ownership ?? throw new PokemonHasNoOwnerException(this);
+    PokemonOwnership targetOwnership = specimen.Ownership ?? throw new PokemonHasNoOwnerException(specimen);
+    if (sourceOwnership.TrainerId == targetOwnership.TrainerId)
+    {
+      throw new PokemonTradeRequiresDifferentOwnersException(this, specimen);
+    }
+
+    Raise(new PokemonTraded(targetOwnership.TrainerId, sourceOwnership.PokeBallId, new Level(Level), location), actorId);
+    specimen.Raise(new PokemonTraded(sourceOwnership.TrainerId, targetOwnership.PokeBallId, new Level(specimen.Level), location), actorId);
+  }
+  private void Handle(PokemonTraded @event)
+  {
+    Ownership = PokemonOwnership.Traded(@event);
+  }
+
   public override string ToString() => $"{Nickname?.Value ?? Key.Value} | {base.ToString()}";
 }

@@ -18,7 +18,8 @@ internal class PokemonEvents :
   IEventHandler<PokemonReceived>,
   IEventHandler<PokemonReleased>,
   IEventHandler<PokemonSpriteChanged>,
-  IEventHandler<PokemonStatusChanged>
+  IEventHandler<PokemonStatusChanged>,
+  IEventHandler<PokemonTraded>
 {
   public static void Register(IServiceCollection services)
   {
@@ -34,6 +35,7 @@ internal class PokemonEvents :
     services.AddTransient<IEventHandler<PokemonReleased>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonSpriteChanged>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonStatusChanged>, PokemonEvents>();
+    services.AddTransient<IEventHandler<PokemonTraded>, PokemonEvents>();
   }
 
   private readonly PokemonContext _pokemon;
@@ -190,6 +192,20 @@ internal class PokemonEvents :
     if (pokemon is not null && pokemon.Version == (@event.Version - 1))
     {
       pokemon.SetStatus(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(PokemonTraded @event, CancellationToken cancellationToken)
+  {
+    PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (pokemon is not null && pokemon.Version == (@event.Version - 1))
+    {
+      int trainerId = await _pokemon.FindTrainerIdAsync(@event.TrainerId, cancellationToken);
+      int pokeBallId = await _pokemon.FindItemIdAsync(@event.PokeBallId, cancellationToken);
+
+      pokemon.Trade(trainerId, pokeBallId, @event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

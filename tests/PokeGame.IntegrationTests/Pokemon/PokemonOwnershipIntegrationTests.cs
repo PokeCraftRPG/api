@@ -585,6 +585,174 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     AssertReceived(pokemon, _trainer, _masterBall, created.Level, "Pallet Town");
   }
 
+  [Fact(DisplayName = "It should trade two Pokémon owned by different trainers.")]
+  public async Task Given_DifferentOwners_When_Trade_Then_Traded()
+  {
+    Item pokeBall = new ItemBuilder(Faker)
+      .WithWorld(Context.World)
+      .WithCategory(ItemCategory.PokeBall)
+      .WithKey("poke-ball")
+      .WithName("Poké Ball")
+      .Build();
+    await _itemRepository.SaveAsync(pokeBall);
+
+    Trainer blue = TrainerBuilder.Blue(Faker, Context.World);
+    await _trainerRepository.SaveAsync(blue);
+
+    PokemonDto sourceCreated = await CreatePokemonAsync("trade-source");
+    PokemonDto targetCreated = await CreatePokemonAsync("trade-target");
+    await _pokemonService.ReceiveAsync(sourceCreated.Id, CreatePayload("Pallet Town"));
+    await _pokemonService.ReceiveAsync(targetCreated.Id, CreatePayload("Cerulean City", blue, pokeBall));
+
+    await _pokemonService.TradeAsync(new TradePokemonPayload
+    {
+      PokemonIds = [sourceCreated.Id, targetCreated.Id],
+      Location = " Pokémon Center "
+    });
+
+    PokemonDto? source = await _pokemonService.ReadAsync(sourceCreated.Id);
+    Assert.NotNull(source);
+    Assert.Equal(sourceCreated.Version + 2, source.Version);
+    AssertOwned(source, OwnershipEvent.Traded, blue, _masterBall, sourceCreated.Level, "Pokémon Center");
+    Assert.NotNull(source.OriginalTrainer);
+    Assert.Equal(_trainer.EntityId, source.OriginalTrainer.Id);
+
+    PokemonDto? target = await _pokemonService.ReadAsync(targetCreated.Id);
+    Assert.NotNull(target);
+    Assert.Equal(targetCreated.Version + 2, target.Version);
+    AssertOwned(target, OwnershipEvent.Traded, _trainer, pokeBall, targetCreated.Level, "Pokémon Center");
+    Assert.NotNull(target.OriginalTrainer);
+    Assert.Equal(blue.EntityId, target.OriginalTrainer.Id);
+  }
+
+  [Fact(DisplayName = "It should trade Pokémon eggs without setting the original trainer.")]
+  public async Task Given_Eggs_When_Trade_Then_TradedWithoutOriginalTrainer()
+  {
+    Trainer blue = TrainerBuilder.Blue(Faker, Context.World);
+    await _trainerRepository.SaveAsync(blue);
+
+    PokemonDto sourceCreated = await CreatePokemonAsync("trade-source-egg", eggCycles: 5);
+    PokemonDto targetCreated = await CreatePokemonAsync("trade-target-egg", eggCycles: 5);
+    await _pokemonService.ReceiveAsync(sourceCreated.Id, CreatePayload("Pallet Town"));
+    await _pokemonService.ReceiveAsync(targetCreated.Id, CreatePayload("Cerulean City", blue));
+
+    await _pokemonService.TradeAsync(new TradePokemonPayload
+    {
+      PokemonIds = [sourceCreated.Id, targetCreated.Id],
+      Location = "Day Care"
+    });
+
+    PokemonDto? source = await _pokemonService.ReadAsync(sourceCreated.Id);
+    Assert.NotNull(source);
+    Assert.Null(source.OriginalTrainer);
+    AssertOwned(source, OwnershipEvent.Traded, blue, _masterBall, sourceCreated.Level, "Day Care");
+
+    PokemonDto? target = await _pokemonService.ReadAsync(targetCreated.Id);
+    Assert.NotNull(target);
+    Assert.Null(target.OriginalTrainer);
+    AssertOwned(target, OwnershipEvent.Traded, _trainer, _masterBall, targetCreated.Level, "Day Care");
+  }
+
+  [Fact(DisplayName = "It should throw EntityNotFoundException when a Pokémon to trade was not found.")]
+  public async Task Given_MissingPokemon_When_Trade_Then_EntityNotFoundException()
+  {
+    PokemonDto created = await CreatePokemonAsync("trade-missing");
+    await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+    Guid missingId = Guid.NewGuid();
+
+    EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
+      async () => await _pokemonService.TradeAsync(new TradePokemonPayload
+      {
+        PokemonIds = [created.Id, missingId],
+        Location = "Pokémon Center"
+      }));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Specimen.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(TradePokemonPayload.PokemonIds), exception.Data["PropertyName"]);
+  }
+
+  [Fact(DisplayName = "It should throw PokemonHasNoOwnerException when a Pokémon to trade is wild.")]
+  public async Task Given_WildPokemon_When_Trade_Then_PokemonHasNoOwnerException()
+  {
+    Trainer blue = TrainerBuilder.Blue(Faker, Context.World);
+    await _trainerRepository.SaveAsync(blue);
+
+    PokemonDto sourceCreated = await CreatePokemonAsync("trade-wild-source");
+    PokemonDto targetCreated = await CreatePokemonAsync("trade-wild-target");
+    await _pokemonService.ReceiveAsync(targetCreated.Id, CreatePayload("Cerulean City", blue));
+
+    PokemonHasNoOwnerException exception = await Assert.ThrowsAsync<PokemonHasNoOwnerException>(
+      async () => await _pokemonService.TradeAsync(new TradePokemonPayload
+      {
+        PokemonIds = [sourceCreated.Id, targetCreated.Id],
+        Location = "Pokémon Center"
+      }));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(sourceCreated.Id, exception.Data["PokemonId"]);
+  }
+
+  [Fact(DisplayName = "It should throw PokemonTradeRequiresDifferentOwnersException when both Pokémon have the same owner.")]
+  public async Task Given_SameOwner_When_Trade_Then_PokemonTradeRequiresDifferentOwnersException()
+  {
+    PokemonDto sourceCreated = await CreatePokemonAsync("trade-same-source");
+    PokemonDto targetCreated = await CreatePokemonAsync("trade-same-target");
+    await _pokemonService.ReceiveAsync(sourceCreated.Id, CreatePayload("Pallet Town"));
+    await _pokemonService.ReceiveAsync(targetCreated.Id, CreatePayload("Viridian City"));
+
+    PokemonTradeRequiresDifferentOwnersException exception = await Assert.ThrowsAsync<PokemonTradeRequiresDifferentOwnersException>(
+      async () => await _pokemonService.TradeAsync(new TradePokemonPayload
+      {
+        PokemonIds = [sourceCreated.Id, targetCreated.Id],
+        Location = "Pokémon Center"
+      }));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(sourceCreated.Id, exception.Data["SourcePokemonId"]);
+    Assert.Equal(targetCreated.Id, exception.Data["TargetPokemonId"]);
+  }
+
+  [Fact(DisplayName = "It should throw InvalidCommandException when the trade payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Trade_Then_InvalidCommandException()
+  {
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _pokemonService.TradeAsync(new TradePokemonPayload
+    {
+      PokemonIds = [Guid.NewGuid()],
+      Location = "Pokémon Center"
+    }));
+  }
+
+  [Fact(DisplayName = "It should throw PermissionDeniedException when trading Pokémon.")]
+  public async Task Given_NotAllowed_When_Trade_Then_PermissionDeniedException()
+  {
+    Trainer blue = TrainerBuilder.Blue(Faker, Context.World);
+    await _trainerRepository.SaveAsync(blue);
+
+    PokemonDto sourceCreated = await CreatePokemonAsync("denied-trade-source");
+    PokemonDto targetCreated = await CreatePokemonAsync("denied-trade-target");
+    await _pokemonService.ReceiveAsync(sourceCreated.Id, CreatePayload("Pallet Town"));
+    await _pokemonService.ReceiveAsync(targetCreated.Id, CreatePayload("Cerulean City", blue));
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
+
+    PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
+      async () => await _pokemonService.TradeAsync(new TradePokemonPayload
+      {
+        PokemonIds = [sourceCreated.Id, targetCreated.Id],
+        Location = "Pokémon Center"
+      }));
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(new Entity(Specimen.EntityKind, sourceCreated.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
+
+    PokemonDto? source = await _pokemonService.ReadAsync(sourceCreated.Id);
+    Assert.NotNull(source);
+    AssertReceived(source, _trainer, _masterBall, sourceCreated.Level, "Pallet Town");
+
+    PokemonDto? target = await _pokemonService.ReadAsync(targetCreated.Id);
+    Assert.NotNull(target);
+    AssertReceived(target, blue, _masterBall, targetCreated.Level, "Cerulean City");
+  }
+
   private async Task<PokemonDto> CreatePokemonAsync(string key, byte eggCycles = 0)
   {
     CreatePokemonPayload payload = new()
@@ -596,10 +764,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     return await _pokemonService.CreateAsync(payload);
   }
 
-  private ReceivePokemonPayload CreatePayload(string location, Trainer? trainer = null) => new()
+  private ReceivePokemonPayload CreatePayload(string location, Trainer? trainer = null, Item? pokeBall = null) => new()
   {
     TrainerId = (trainer ?? _trainer).EntityId,
-    PokeBallId = _masterBall.EntityId,
+    PokeBallId = (pokeBall ?? _masterBall).EntityId,
     Location = location
   };
 
