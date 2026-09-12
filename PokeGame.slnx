@@ -11,6 +11,7 @@
   <Folder Name="/Tests/">
     <Project Path="tests/PokeGame.IntegrationTests/PokeGame.IntegrationTests.csproj" />
     <Project Path="tests/PokeGame.Tests/PokeGame.Tests.csproj" />
+    <Project Path="tests/PokeGame.UnitTests/PokeGame.UnitTests.csproj" Id="af230fa4-b8f2-4686-b257-7403500cde80" />
   </Folder>
   <Folder Name="/Tools/">
     <Project Path="tools/PokeGame.Seeding/PokeGame.Seeding.csproj" />
