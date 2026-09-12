@@ -49,5 +49,8 @@ public class PokemonDto : Aggregate
   public TrainerDto? OriginalTrainer { get; set; }
   public PokemonOwnershipDto? Ownership { get; set; }
 
+  public bool IsInParty { get; set; }
+  public int Priority { get; set; }
+
   public override string ToString() => $"{Nickname ?? Key} | {base.ToString()}";
 }

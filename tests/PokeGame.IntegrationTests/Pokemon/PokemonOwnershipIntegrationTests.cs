@@ -100,6 +100,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(_trainer.EntityId, read.OriginalTrainer.Id);
 
     await AssertRosterContainsAsync(_trainer, pokemon, isInParty: true);
+    AssertPokemonRoster(read, isInParty: true);
   }
 
   [Fact(DisplayName = "It should receive an egg without setting the original trainer.")]
@@ -327,6 +328,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     PokemonDto? read = await _pokemonService.ReadAsync(created.Id);
     Assert.NotNull(read);
     AssertOwned(read, OwnershipEvent.Caught, _trainer, _masterBall, created.Level, "Viridian Forest");
+    AssertPokemonRoster(read, isInParty: true);
 
     InventoryItemDto? inventoryItem = await _inventoryService.ReadAsync(_trainer.EntityId, _masterBall.EntityId);
     Assert.NotNull(inventoryItem);
@@ -545,6 +547,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Null(read.Ownership);
     Assert.NotNull(read.OriginalTrainer);
     Assert.Equal(_trainer.EntityId, read.OriginalTrainer.Id);
+    AssertPokemonRoster(pokemon, isInParty: false);
+    AssertPokemonRoster(read, isInParty: false);
 
     await AssertRosterDoesNotContainAsync(_trainer, pokemon);
   }
@@ -562,6 +566,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Null(pokemon.Ownership);
     Assert.NotNull(pokemon.OriginalTrainer);
     Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
+    AssertPokemonRoster(pokemon, isInParty: false);
 
     InventoryItemDto? inventoryItem = await _inventoryService.ReadAsync(_trainer.EntityId, _masterBall.EntityId);
     Assert.Null(inventoryItem);
@@ -769,8 +774,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     AssertPokemonAcquired((source, blue), (target, _trainer));
 
-    await AssertRosterContainsAsync(blue, source, isInParty: true);
-    await AssertRosterContainsAsync(_trainer, target, isInParty: true);
+    await AssertRosterContainsAsync(blue, source, isInParty: false);
+    await AssertRosterContainsAsync(_trainer, target, isInParty: false);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when a Pokémon to trade was not found.")]
@@ -891,7 +896,9 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
       Key = key,
       EggCycles = eggCycles
     };
-    return await _pokemonService.CreateAsync(payload);
+    PokemonDto created = await _pokemonService.CreateAsync(payload);
+    AssertPokemonRoster(created, isInParty: false);
+    return created;
   }
 
   private ReceivePokemonPayload CreatePayload(string location, Trainer? trainer = null, Item? pokeBall = null) => new()
@@ -961,12 +968,21 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     new PokemonId(Context.WorldId, pokemon.Id),
     new VarietyId(Context.WorldId, pokemon.Form.Variety.Id));
 
+  private static void AssertPokemonRoster(PokemonDto pokemon, bool isInParty)
+  {
+    Assert.Equal(isInParty, pokemon.IsInParty);
+    Assert.Equal(0, pokemon.Priority);
+  }
+
   private async Task AssertRosterContainsAsync(Trainer trainer, PokemonDto pokemon, bool isInParty)
   {
+    AssertPokemonRoster(pokemon, isInParty);
+
     Roster roster = await LoadRosterAsync(trainer);
     PokemonId pokemonId = new(Context.WorldId, pokemon.Id);
     Assert.True(roster.Entries.TryGetValue(pokemonId, out RosterEntry? entry));
     Assert.Equal(isInParty, entry.IsInParty);
+    Assert.Equal(0, entry.Priority);
     Assert.Equal(isInParty, roster.PartyIds.Contains(pokemonId));
   }
   private async Task AssertRosterDoesNotContainAsync(Trainer trainer, PokemonDto pokemon)

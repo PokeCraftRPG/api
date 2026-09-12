@@ -32,7 +32,8 @@ internal class RosterEvents :
     PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.PokemonId.Value, cancellationToken);
     if (pokemon is not null)
     {
-      pokemon.AddToRoster(@event);
+      pokemon.IsInParty = @event.IsInParty;
+      pokemon.Priority = 0;
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
@@ -43,7 +44,8 @@ internal class RosterEvents :
     PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.PokemonId.Value, cancellationToken);
     if (pokemon is not null)
     {
-      pokemon.RemoveFromRoster();
+      pokemon.IsInParty = false;
+      pokemon.Priority = 0;
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
@@ -51,17 +53,14 @@ internal class RosterEvents :
 
   public async Task HandleAsync(RosterEntryReplaced @event, CancellationToken cancellationToken)
   {
-    HashSet<string> streamIds = new([@event.SourceId.Value, @event.TargetId.Value]);
-    Dictionary<string, PokemonEntity> specimens = await _pokemon.Specimens
-      .Where(x => streamIds.Contains(x.StreamId))
-      .ToDictionaryAsync(x => x.StreamId, x => x, cancellationToken);
-    PokemonEntity? source = specimens.GetValueOrDefault(@event.SourceId.Value);
-    PokemonEntity? target = specimens.GetValueOrDefault(@event.TargetId.Value);
+    PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.TargetId.Value, cancellationToken);
+    if (pokemon is not null)
+    {
+      pokemon.IsInParty = @event.IsInParty;
+      pokemon.Priority = 0;
 
-    source?.RemoveFromRoster();
-    target?.AddToRoster(@event);
-
-    await _pokemon.SaveChangesAsync(cancellationToken);
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
   }
 
   public async Task HandleAsync(RosterEntriesSwapped @event, CancellationToken cancellationToken)
