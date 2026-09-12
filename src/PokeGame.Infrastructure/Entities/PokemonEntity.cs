@@ -227,6 +227,18 @@ internal class PokemonEntity : AggregateEntity
     SetOwnership(Core.Pokemon.OwnershipEvent.Received, trainerId, pokeBallId, @event.Level, @event.Location, @event.OccurredOn);
   }
 
+  public void Release(PokemonReleased @event)
+  {
+    Update(@event);
+
+    OwnershipEvent = null;
+    CurrentTrainerId = null;
+    PokeBallId = null;
+    MetLevel = null;
+    MetAt = null;
+    MetOn = null;
+  }
+
   public void SetDetails(PokemonDetailsChanged @event)
   {
     Update(@event);

@@ -10,7 +10,7 @@ using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Pokemon.Commands;
 
-internal record CatchPokemonCommand(Guid PokemonId, CatchPokemonPayload Payload) : ICommand<PokemonDto?>;
+internal record CatchPokemonCommand(Guid Id, CatchPokemonPayload Payload) : ICommand<PokemonDto?>;
 
 internal class CatchPokemonCommandHandler : ICommandHandler<CatchPokemonCommand, PokemonDto?>
 {
@@ -48,7 +48,7 @@ internal class CatchPokemonCommandHandler : ICommandHandler<CatchPokemonCommand,
     ActorId? actorId = _context.ActorId;
     WorldId worldId = _context.WorldId;
 
-    PokemonId pokemonId = new(worldId, command.PokemonId);
+    PokemonId pokemonId = new(worldId, command.Id);
     Specimen? specimen = await _pokemonRepository.LoadAsync(pokemonId, cancellationToken);
     if (specimen is null)
     {

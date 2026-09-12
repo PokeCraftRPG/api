@@ -470,6 +470,121 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(1, inventoryItem.Quantity);
   }
 
+  [Fact(DisplayName = "It should release a received Pokémon.")]
+  public async Task Given_ReceivedPokemon_When_Release_Then_Released()
+  {
+    PokemonDto created = await CreatePokemonAsync("released-received");
+    PokemonDto? received = await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+    Assert.NotNull(received);
+
+    PokemonDto? pokemon = await _pokemonService.ReleaseAsync(created.Id);
+    Assert.NotNull(pokemon);
+    Assert.Equal(created.Id, pokemon.Id);
+    Assert.Equal(received.Version + 1, pokemon.Version);
+    Assert.Equal(created.CreatedBy, pokemon.CreatedBy);
+    Assert.Equal(created.CreatedOn, pokemon.CreatedOn, TimeSpan.FromMilliseconds(1));
+    Assert.Equal(Actor, pokemon.UpdatedBy);
+    Assert.Equal(DateTime.UtcNow, pokemon.UpdatedOn, TimeSpan.FromSeconds(10));
+    Assert.Null(pokemon.Ownership);
+    Assert.NotNull(pokemon.OriginalTrainer);
+    Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
+
+    PokemonDto? read = await _pokemonService.ReadAsync(created.Id);
+    Assert.NotNull(read);
+    Assert.Null(read.Ownership);
+    Assert.NotNull(read.OriginalTrainer);
+    Assert.Equal(_trainer.EntityId, read.OriginalTrainer.Id);
+  }
+
+  [Fact(DisplayName = "It should release a caught Pokémon.")]
+  public async Task Given_CaughtPokemon_When_Release_Then_Released()
+  {
+    PokemonDto created = await CreatePokemonAsync("released-caught");
+    await AddPokeBallsAsync();
+    PokemonDto? caught = await _pokemonService.CatchAsync(created.Id, CreateCatchPayload("Viridian Forest"));
+    Assert.NotNull(caught);
+
+    PokemonDto? pokemon = await _pokemonService.ReleaseAsync(created.Id);
+    Assert.NotNull(pokemon);
+    Assert.Null(pokemon.Ownership);
+    Assert.NotNull(pokemon.OriginalTrainer);
+    Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
+
+    InventoryItemDto? inventoryItem = await _inventoryService.ReadAsync(_trainer.EntityId, _masterBall.EntityId);
+    Assert.Null(inventoryItem);
+  }
+
+  [Fact(DisplayName = "It should catch a Pokémon after it was released.")]
+  public async Task Given_ReleasedPokemon_When_Catch_Then_Caught()
+  {
+    PokemonDto created = await CreatePokemonAsync("recaught");
+    await AddPokeBallsAsync(2);
+    await _pokemonService.CatchAsync(created.Id, CreateCatchPayload("Viridian Forest"));
+    await _pokemonService.ReleaseAsync(created.Id);
+
+    PokemonDto? pokemon = await _pokemonService.CatchAsync(created.Id, CreateCatchPayload("Route 1"));
+    Assert.NotNull(pokemon);
+    AssertOwned(pokemon, OwnershipEvent.Caught, _trainer, _masterBall, created.Level, "Route 1");
+    Assert.NotNull(pokemon.OriginalTrainer);
+    Assert.Equal(_trainer.EntityId, pokemon.OriginalTrainer.Id);
+
+    InventoryItemDto? inventoryItem = await _inventoryService.ReadAsync(_trainer.EntityId, _masterBall.EntityId);
+    Assert.Null(inventoryItem);
+  }
+
+  [Fact(DisplayName = "It should return null when releasing a Pokémon that was not found.")]
+  public async Task Given_NotFound_When_Release_Then_NullReturned()
+  {
+    Assert.Null(await _pokemonService.ReleaseAsync(Guid.NewGuid()));
+  }
+
+  [Fact(DisplayName = "It should throw PokemonHasNoOwnerException when releasing a wild Pokémon.")]
+  public async Task Given_WildPokemon_When_Release_Then_PokemonHasNoOwnerException()
+  {
+    PokemonDto created = await CreatePokemonAsync("wild-release");
+
+    PokemonHasNoOwnerException exception = await Assert.ThrowsAsync<PokemonHasNoOwnerException>(
+      async () => await _pokemonService.ReleaseAsync(created.Id));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(created.Id, exception.Data["PokemonId"]);
+  }
+
+  [Fact(DisplayName = "It should throw PokemonEggCannotBeReleasedException when releasing an egg.")]
+  public async Task Given_Egg_When_Release_Then_PokemonEggCannotBeReleasedException()
+  {
+    PokemonDto created = await CreatePokemonAsync("released-egg", eggCycles: 5);
+    await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+
+    PokemonEggCannotBeReleasedException exception = await Assert.ThrowsAsync<PokemonEggCannotBeReleasedException>(
+      async () => await _pokemonService.ReleaseAsync(created.Id));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(created.Id, exception.Data["PokemonId"]);
+    Assert.Equal(created.EggCycles, exception.Data["EggCycles"]);
+
+    PokemonDto? pokemon = await _pokemonService.ReadAsync(created.Id);
+    Assert.NotNull(pokemon);
+    AssertReceived(pokemon, _trainer, _masterBall, created.Level, "Pallet Town");
+  }
+
+  [Fact(DisplayName = "It should throw PermissionDeniedException when releasing a Pokémon.")]
+  public async Task Given_NotAllowed_When_Release_Then_PermissionDeniedException()
+  {
+    PokemonDto created = await CreatePokemonAsync("denied-release");
+    await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
+
+    PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
+      async () => await _pokemonService.ReleaseAsync(created.Id));
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
+
+    PokemonDto? pokemon = await _pokemonService.ReadAsync(created.Id);
+    Assert.NotNull(pokemon);
+    AssertReceived(pokemon, _trainer, _masterBall, created.Level, "Pallet Town");
+  }
+
   private async Task<PokemonDto> CreatePokemonAsync(string key, byte eggCycles = 0)
   {
     CreatePokemonPayload payload = new()
