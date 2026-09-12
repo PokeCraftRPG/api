@@ -177,7 +177,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     }
     if (IsEgg)
     {
-      throw new CannotCatchEggPokemon(this);
+      throw new PokemonEggCannotBeCaughtException(this);
     }
     if (Ownership is not null)
     {
@@ -355,13 +355,13 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     ArgumentOutOfRangeException.ThrowIfNegative(vitality, nameof(vitality));
     if (vitality > statistics.HP)
     {
-      throw new ConstitutionOutOfRangeException(this, vitality, nameof(Vitality));
+      throw new ConstitutionOutOfRangeException(this, statistics.HP, vitality, nameof(Vitality));
     }
 
     ArgumentOutOfRangeException.ThrowIfNegative(stamina, nameof(stamina));
     if (stamina > statistics.HP)
     {
-      throw new ConstitutionOutOfRangeException(this, stamina, nameof(Stamina));
+      throw new ConstitutionOutOfRangeException(this, statistics.HP, stamina, nameof(Stamina));
     }
 
     if (condition.HasValue && !Enum.IsDefined(condition.Value))

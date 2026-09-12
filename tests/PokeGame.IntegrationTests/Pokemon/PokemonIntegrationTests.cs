@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
@@ -171,10 +170,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.CreateAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(missingFormId, exception.EntityId);
-    Assert.Equal(nameof(payload.FormId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingFormId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.FormId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when the key conflicts.")]
@@ -189,13 +188,13 @@ public class PokemonIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _pokemonService.CreateAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Specimen.EntityKind, exception.EntityKind);
-    Assert.NotEqual(created.Id, exception.EntityId);
-    Assert.NotEqual(Guid.Empty, exception.EntityId);
-    Assert.Equal(created.Id, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Specimen.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Specimen.EntityKind, exception.Data["EntityKind"]);
+    Assert.NotEqual(created.Id, exception.Data["EntityId"]);
+    Assert.NotEqual(Guid.Empty, exception.Data["EntityId"]);
+    Assert.Equal(created.Id, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Specimen.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidEggCyclesException when egg cycles exceed the species maximum.")]
@@ -209,12 +208,12 @@ public class PokemonIntegrationTests : IntegrationTests
 
     InvalidEggCyclesException exception = await Assert.ThrowsAsync<InvalidEggCyclesException>(
       async () => await _pokemonService.CreateAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.NotEqual(Guid.Empty, exception.PokemonId);
-    Assert.Equal(_species.EntityId, exception.SpeciesId);
-    Assert.Equal(_species.Eggs.Cycles, exception.MaximumEggCycles);
-    Assert.Equal(payload.EggCycles, exception.AttemptedEggCycles);
-    Assert.Equal(nameof(Specimen.EggCycles), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.NotEqual(Guid.Empty, exception.Data["PokemonId"]);
+    Assert.Equal(_species.EntityId, exception.Data["SpeciesId"]);
+    Assert.Equal(_species.Eggs.Cycles, exception.Data["MaximumEggCycles"]);
+    Assert.Equal(payload.EggCycles, exception.Data["AttemptedEggCycles"]);
+    Assert.Equal(nameof(Specimen.EggCycles), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidPokemonFormCategoryException when the form category is invalid.")]
@@ -241,11 +240,11 @@ public class PokemonIntegrationTests : IntegrationTests
 
     InvalidPokemonFormCategoryException exception = await Assert.ThrowsAsync<InvalidPokemonFormCategoryException>(
       async () => await _pokemonService.CreateAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.NotEqual(Guid.Empty, exception.PokemonId);
-    Assert.Equal(mega.EntityId, exception.FormId);
-    Assert.Equal(FormCategory.Mega, exception.AttemptedCategory);
-    Assert.Equal(nameof(Specimen.FormId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.NotEqual(Guid.Empty, exception.Data["PokemonId"]);
+    Assert.Equal(mega.EntityId, exception.Data["FormId"]);
+    Assert.Equal(FormCategory.Mega, exception.Data["AttemptedCategory"]);
+    Assert.Equal(nameof(Specimen.FormId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidAbilitySlotException when the ability slot is unavailable.")]
@@ -259,11 +258,11 @@ public class PokemonIntegrationTests : IntegrationTests
 
     InvalidAbilitySlotException exception = await Assert.ThrowsAsync<InvalidAbilitySlotException>(
       async () => await _pokemonService.CreateAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.NotEqual(Guid.Empty, exception.PokemonId);
-    Assert.Equal(_form.EntityId, exception.FormId);
-    Assert.Equal(AbilitySlot.Hidden, exception.AttemptedSlot);
-    Assert.Equal(nameof(Specimen.AbilitySlot), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.NotEqual(Guid.Empty, exception.Data["PokemonId"]);
+    Assert.Equal(_form.EntityId, exception.Data["FormId"]);
+    Assert.Equal(AbilitySlot.Hidden, exception.Data["AttemptedSlot"]);
+    Assert.Equal(nameof(Specimen.AbilitySlot), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidPokemonGenderException when the gender is not allowed.")]
@@ -300,16 +299,16 @@ public class PokemonIntegrationTests : IntegrationTests
 
     InvalidPokemonGenderException exception = await Assert.ThrowsAsync<InvalidPokemonGenderException>(
       async () => await _pokemonService.CreateAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.NotEqual(Guid.Empty, exception.PokemonId);
-    Assert.Equal(genderless.EntityId, exception.VarietyId);
-    Assert.Null(exception.FemaleRate);
-    Assert.Equal(Gender.Male, exception.AttemptedGender);
-    Assert.Equal(nameof(Specimen.Gender), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.NotEqual(Guid.Empty, exception.Data["PokemonId"]);
+    Assert.Equal(genderless.EntityId, exception.Data["VarietyId"]);
+    Assert.Null(exception.Data["FemaleRate"]);
+    Assert.Equal(Gender.Male, exception.Data["AttemptedGender"]);
+    Assert.Equal(nameof(Specimen.Gender), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when egg cycles and experience are both set.")]
-  public async Task Given_EggAndExperience_When_Create_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when egg cycles and experience are both set.")]
+  public async Task Given_EggAndExperience_When_Create_Then_InvalidCommandException()
   {
     CreatePokemonPayload payload = new()
     {
@@ -318,7 +317,7 @@ public class PokemonIntegrationTests : IntegrationTests
       Experience = 100
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _pokemonService.CreateAsync(payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _pokemonService.CreateAsync(payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a Pokémon.")]
@@ -333,10 +332,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _pokemonService.CreateAsync(payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("CreatePokemon", exception.Action);
-    Assert.Null(exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("CreatePokemon", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should return null when updating a Pokémon that does not exist.")]
@@ -469,12 +468,12 @@ public class PokemonIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _pokemonService.UpdateAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Specimen.EntityKind, exception.EntityKind);
-    Assert.Equal(created.Id, exception.EntityId);
-    Assert.Equal(existing.Id, exception.ConflictId);
-    Assert.Equal(existing.Key, exception.AttemptedKey);
-    Assert.Equal(nameof(Specimen.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Specimen.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(created.Id, exception.Data["EntityId"]);
+    Assert.Equal(existing.Id, exception.Data["ConflictId"]);
+    Assert.Equal(existing.Key, exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Specimen.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the held item does not exist.")]
@@ -490,10 +489,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.UpdateAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(missingItemId, exception.EntityId);
-    Assert.Equal(nameof(payload.HeldItemId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingItemId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.HeldItemId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the sprite does not exist.")]
@@ -509,10 +508,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.UpdateAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Asset.EntityKind, exception.EntityKind);
-    Assert.Equal(missingSpriteId, exception.EntityId);
-    Assert.Equal(nameof(payload.SpriteId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Asset.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingSpriteId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.SpriteId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidAssetKindException when the sprite is not an image.")]
@@ -528,11 +527,11 @@ public class PokemonIntegrationTests : IntegrationTests
 
     InvalidAssetKindException exception = await Assert.ThrowsAsync<InvalidAssetKindException>(
       async () => await _pokemonService.UpdateAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(video.Id, exception.AssetId);
-    Assert.Equal(AssetKind.Image, exception.ExpectedKind);
-    Assert.Equal(AssetKind.Video, exception.AttemptedKind);
-    Assert.Equal(nameof(Specimen.SpriteId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(video.Id, exception.Data["AssetId"]);
+    Assert.Equal(AssetKind.Image, exception.Data["ExpectedKind"]);
+    Assert.Equal(AssetKind.Video, exception.Data["AttemptedKind"]);
+    Assert.Equal(nameof(Specimen.SpriteId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ConstitutionOutOfRangeException when vitality exceeds HP.")]
@@ -548,11 +547,11 @@ public class PokemonIntegrationTests : IntegrationTests
 
     ConstitutionOutOfRangeException exception = await Assert.ThrowsAsync<ConstitutionOutOfRangeException>(
       async () => await _pokemonService.UpdateAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(created.Id, exception.PokemonId);
-    Assert.Equal(created.Statistics.HP.Total, exception.MaximumValue);
-    Assert.Equal(attemptedValue, exception.AttemptedValue);
-    Assert.Equal(nameof(Specimen.Vitality), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(created.Id, exception.Data["PokemonId"]);
+    Assert.Equal(created.Statistics.HP.Total, exception.Data["MaximumValue"]);
+    Assert.Equal(attemptedValue, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(Specimen.Vitality), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ConstitutionOutOfRangeException when stamina exceeds HP.")]
@@ -568,15 +567,15 @@ public class PokemonIntegrationTests : IntegrationTests
 
     ConstitutionOutOfRangeException exception = await Assert.ThrowsAsync<ConstitutionOutOfRangeException>(
       async () => await _pokemonService.UpdateAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(created.Id, exception.PokemonId);
-    Assert.Equal(created.Statistics.HP.Total, exception.MaximumValue);
-    Assert.Equal(attemptedValue, exception.AttemptedValue);
-    Assert.Equal(nameof(Specimen.Stamina), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(created.Id, exception.Data["PokemonId"]);
+    Assert.Equal(created.Statistics.HP.Total, exception.Data["MaximumValue"]);
+    Assert.Equal(attemptedValue, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(Specimen.Stamina), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the update payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Update_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the update payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Update_Then_InvalidCommandException()
   {
     PokemonDto created = await CreatePokemonAsync("invalid-update");
 
@@ -588,7 +587,7 @@ public class PokemonIntegrationTests : IntegrationTests
       Condition = new Optional<StatusCondition?>((StatusCondition)(-1))
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _pokemonService.UpdateAsync(created.Id, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _pokemonService.UpdateAsync(created.Id, payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a Pokémon.")]
@@ -601,10 +600,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _pokemonService.UpdateAsync(created.Id, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should return null when changing the form of a Pokémon that does not exist.")]
@@ -668,10 +667,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.ChangeFormAsync(created.Id, missingFormId));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(missingFormId, exception.EntityId);
-    Assert.Equal("FormId", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingFormId, exception.Data["EntityId"]);
+    Assert.Equal("FormId", exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidPokemonFormException when the form belongs to another variety.")]
@@ -688,12 +687,12 @@ public class PokemonIntegrationTests : IntegrationTests
 
     InvalidPokemonFormException exception = await Assert.ThrowsAsync<InvalidPokemonFormException>(
       async () => await _pokemonService.ChangeFormAsync(created.Id, form.EntityId));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(created.Id, exception.PokemonId);
-    Assert.Equal(_variety.EntityId, exception.VarietyId);
-    Assert.Equal(variety.EntityId, exception.AttemptedVarietyId);
-    Assert.Equal(form.EntityId, exception.AttemptedFormId);
-    Assert.Equal(nameof(Specimen.FormId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(created.Id, exception.Data["PokemonId"]);
+    Assert.Equal(_variety.EntityId, exception.Data["VarietyId"]);
+    Assert.Equal(variety.EntityId, exception.Data["AttemptedVarietyId"]);
+    Assert.Equal(form.EntityId, exception.Data["AttemptedFormId"]);
+    Assert.Equal(nameof(Specimen.FormId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when changing a Pokémon form.")]
@@ -704,10 +703,10 @@ public class PokemonIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _pokemonService.ChangeFormAsync(created.Id, _form.EntityId));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   private async Task<PokemonDto> CreatePokemonAsync(string key)

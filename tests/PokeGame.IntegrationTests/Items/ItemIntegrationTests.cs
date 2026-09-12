@@ -1,4 +1,3 @@
-using FluentValidation;
 using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
@@ -224,12 +223,12 @@ public class ItemIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _itemService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_item.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Item.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_item.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Item.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when replacing an item and the key conflicts.")]
@@ -247,12 +246,12 @@ public class ItemIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _itemService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_item.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Item.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_item.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Item.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating an item and the key conflicts.")]
@@ -269,12 +268,12 @@ public class ItemIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _itemService.UpdateAsync(id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_item.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Item.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_item.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Item.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ImmutablePropertyException when replacing an item with a different category.")]
@@ -285,15 +284,15 @@ public class ItemIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<ItemCategory> exception = await Assert.ThrowsAsync<ImmutablePropertyException<ItemCategory>>(
       async () => await _itemService.CreateOrReplaceAsync(payload, _item.EntityId));
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(_item.EntityId, exception.EntityId);
-    Assert.Equal(_seeded.Category, exception.ExpectedValue);
-    Assert.Equal(payload.Category, exception.AttemptedValue);
-    Assert.Equal(nameof(payload.Category), exception.PropertyName);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(_item.EntityId, exception.Data["EntityId"]);
+    Assert.Equal(_seeded.Category, exception.Data["ExpectedValue"]);
+    Assert.Equal(payload.Category, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(payload.Category), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Create_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the create/replace payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Create_Then_InvalidCommandException()
   {
     CreateOrReplaceItemPayload payload = new()
     {
@@ -301,18 +300,18 @@ public class ItemIntegrationTests : IntegrationTests
       Key = string.Empty
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _itemService.CreateOrReplaceAsync(payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _itemService.CreateOrReplaceAsync(payload));
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the update payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Update_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the update payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Update_Then_InvalidCommandException()
   {
     UpdateItemPayload payload = new()
     {
       Key = "not valid"
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _itemService.UpdateAsync(_item.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _itemService.UpdateAsync(_item.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw InvalidAssetKindException when the sprite is not an image.")]
@@ -324,11 +323,11 @@ public class ItemIntegrationTests : IntegrationTests
 
     InvalidAssetKindException exception = await Assert.ThrowsAsync<InvalidAssetKindException>(
       async () => await _itemService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(video.Id, exception.AssetId);
-    Assert.Equal(AssetKind.Image, exception.ExpectedKind);
-    Assert.Equal(AssetKind.Video, exception.AttemptedKind);
-    Assert.Equal(nameof(Item.SpriteId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(video.Id, exception.Data["AssetId"]);
+    Assert.Equal(AssetKind.Image, exception.Data["ExpectedKind"]);
+    Assert.Equal(AssetKind.Video, exception.Data["AttemptedKind"]);
+    Assert.Equal(nameof(Item.SpriteId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating an item.")]
@@ -340,10 +339,10 @@ public class ItemIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _itemService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("CreateItem", exception.Action);
-    Assert.Null(exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("CreateItem", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing an item.")]
@@ -355,10 +354,10 @@ public class ItemIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _itemService.CreateOrReplaceAsync(payload, _item.EntityId));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_item.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_item.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating an item.")]
@@ -370,10 +369,10 @@ public class ItemIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _itemService.UpdateAsync(_item.EntityId, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_item.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_item.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should update an existing item.")]

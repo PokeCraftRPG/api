@@ -1,4 +1,3 @@
-using FluentValidation;
 using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
@@ -172,13 +171,13 @@ public class InventoryIntegrationTests : IntegrationTests
 
     InventoryQuantityOutOfRangeException exception = await Assert.ThrowsAsync<InventoryQuantityOutOfRangeException>(
       async () => await AdjustAsync(1));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(_trainer.EntityId, exception.TrainerId);
-    Assert.Equal(_item.EntityId, exception.ItemId);
-    Assert.Equal(TrainerInventory.MinimumQuantity, exception.MinimumQuantity);
-    Assert.Equal(TrainerInventory.MaximumQuantity, exception.MaximumQuantity);
-    Assert.Equal(TrainerInventory.MaximumQuantity + 1, exception.AttemptedQuantity);
-    Assert.Equal("Quantity", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(_item.EntityId, exception.Data["ItemId"]);
+    Assert.Equal(TrainerInventory.MinimumQuantity, exception.Data["MinimumQuantity"]);
+    Assert.Equal(TrainerInventory.MaximumQuantity, exception.Data["MaximumQuantity"]);
+    Assert.Equal(TrainerInventory.MaximumQuantity + 1, exception.Data["AttemptedQuantity"]);
+    Assert.Equal("Quantity", exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InventoryQuantityOutOfRangeException when adjusting below the minimum.")]
@@ -186,13 +185,13 @@ public class InventoryIntegrationTests : IntegrationTests
   {
     InventoryQuantityOutOfRangeException exception = await Assert.ThrowsAsync<InventoryQuantityOutOfRangeException>(
       async () => await AdjustAsync(-1));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(_trainer.EntityId, exception.TrainerId);
-    Assert.Equal(_item.EntityId, exception.ItemId);
-    Assert.Equal(TrainerInventory.MinimumQuantity, exception.MinimumQuantity);
-    Assert.Equal(TrainerInventory.MaximumQuantity, exception.MaximumQuantity);
-    Assert.Equal(-1, exception.AttemptedQuantity);
-    Assert.Equal("Quantity", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(_item.EntityId, exception.Data["ItemId"]);
+    Assert.Equal(TrainerInventory.MinimumQuantity, exception.Data["MinimumQuantity"]);
+    Assert.Equal(TrainerInventory.MaximumQuantity, exception.Data["MaximumQuantity"]);
+    Assert.Equal(-1, exception.Data["AttemptedQuantity"]);
+    Assert.Equal("Quantity", exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should read an inventory item.")]
@@ -377,15 +376,15 @@ public class InventoryIntegrationTests : IntegrationTests
     Assert.Equal(10, inventoryItem.Quantity);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the search payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Search_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidQueryException when the search payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Search_Then_InvalidQueryException()
   {
     SearchInventoryItemsPayload payload = new()
     {
       Limit = -1
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _inventoryService.SearchAsync(_trainer.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidQueryException>(async () => await _inventoryService.SearchAsync(_trainer.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the trainer does not exist.")]
@@ -399,10 +398,10 @@ public class InventoryIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _inventoryService.SetAsync(missingTrainerId, _item.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Trainer.EntityKind, exception.EntityKind);
-    Assert.Equal(missingTrainerId, exception.EntityId);
-    Assert.Equal("TrainerId", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingTrainerId, exception.Data["EntityId"]);
+    Assert.Equal("TrainerId", exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the item does not exist.")]
@@ -416,23 +415,23 @@ public class InventoryIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _inventoryService.SetAsync(_trainer.EntityId, missingItemId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(missingItemId, exception.EntityId);
-    Assert.Equal("ItemId", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingItemId, exception.Data["EntityId"]);
+    Assert.Equal("ItemId", exception.Data["PropertyName"]);
   }
 
-  [Theory(DisplayName = "It should throw ValidationException when the set payload is invalid.")]
+  [Theory(DisplayName = "It should throw InvalidCommandException when the set payload is invalid.")]
   [InlineData(-1)]
   [InlineData(1000)]
-  public async Task Given_InvalidPayload_When_Set_Then_ValidationException(int quantity)
+  public async Task Given_InvalidPayload_When_Set_Then_InvalidCommandException(int quantity)
   {
     SetInventoryItemPayload payload = new()
     {
       Quantity = quantity
     };
 
-    await Assert.ThrowsAsync<ValidationException>(
+    await Assert.ThrowsAsync<InvalidCommandException>(
       async () => await _inventoryService.SetAsync(_trainer.EntityId, _item.EntityId, payload));
   }
 
@@ -448,10 +447,10 @@ public class InventoryIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _inventoryService.SetAsync(_trainer.EntityId, _item.EntityId, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(new InventoryId(_trainer.Id).GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(new InventoryId(_trainer.Id).GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when adjusting for a missing trainer.")]
@@ -465,10 +464,10 @@ public class InventoryIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _inventoryService.AdjustAsync(missingTrainerId, _item.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Trainer.EntityKind, exception.EntityKind);
-    Assert.Equal(missingTrainerId, exception.EntityId);
-    Assert.Equal("TrainerId", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingTrainerId, exception.Data["EntityId"]);
+    Assert.Equal("TrainerId", exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when adjusting a missing item.")]
@@ -482,24 +481,24 @@ public class InventoryIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _inventoryService.AdjustAsync(_trainer.EntityId, missingItemId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(missingItemId, exception.EntityId);
-    Assert.Equal("ItemId", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingItemId, exception.Data["EntityId"]);
+    Assert.Equal("ItemId", exception.Data["PropertyName"]);
   }
 
-  [Theory(DisplayName = "It should throw ValidationException when the adjust payload is invalid.")]
+  [Theory(DisplayName = "It should throw InvalidCommandException when the adjust payload is invalid.")]
   [InlineData(0)]
   [InlineData(1000)]
   [InlineData(-1000)]
-  public async Task Given_InvalidPayload_When_Adjust_Then_ValidationException(int delta)
+  public async Task Given_InvalidPayload_When_Adjust_Then_InvalidCommandException(int delta)
   {
     AdjustInventoryItemPayload payload = new()
     {
       Delta = delta
     };
 
-    await Assert.ThrowsAsync<ValidationException>(
+    await Assert.ThrowsAsync<InvalidCommandException>(
       async () => await _inventoryService.AdjustAsync(_trainer.EntityId, _item.EntityId, payload));
   }
 
@@ -515,10 +514,10 @@ public class InventoryIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _inventoryService.AdjustAsync(_trainer.EntityId, _item.EntityId, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(new InventoryId(_trainer.Id).GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(new InventoryId(_trainer.Id).GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   private Task<InventoryItemDto> SetAsync(int quantity, Item? item = null)

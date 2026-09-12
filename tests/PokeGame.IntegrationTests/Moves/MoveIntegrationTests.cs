@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
@@ -185,12 +184,12 @@ public class MoveIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _moveService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Move.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_move.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Move.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Move.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_move.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Move.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when replacing a move and the key conflicts.")]
@@ -209,12 +208,12 @@ public class MoveIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _moveService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Move.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_move.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Move.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Move.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_move.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Move.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating a move and the key conflicts.")]
@@ -231,16 +230,16 @@ public class MoveIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _moveService.UpdateAsync(id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Move.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_move.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Move.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Move.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_move.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Move.Key), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Create_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the create/replace payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Create_Then_InvalidCommandException()
   {
     CreateOrReplaceMovePayload payload = new()
     {
@@ -249,18 +248,18 @@ public class MoveIntegrationTests : IntegrationTests
       Key = string.Empty
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _moveService.CreateOrReplaceAsync(payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _moveService.CreateOrReplaceAsync(payload));
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the update payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Update_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the update payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Update_Then_InvalidCommandException()
   {
     UpdateMovePayload payload = new()
     {
       Key = "not valid"
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _moveService.UpdateAsync(_move.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _moveService.UpdateAsync(_move.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw InvalidMovePowerException when creating a status move with power.")]
@@ -277,10 +276,10 @@ public class MoveIntegrationTests : IntegrationTests
 
     InvalidMovePowerException exception = await Assert.ThrowsAsync<InvalidMovePowerException>(
       async () => await _moveService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(id, exception.MoveId);
-    Assert.Equal(payload.Power!.Value, exception.AttemptedPower);
-    Assert.Equal(nameof(Move.Power), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(id, exception.Data["MoveId"]);
+    Assert.Equal(payload.Power!.Value, exception.Data["AttemptedPower"]);
+    Assert.Equal(nameof(Move.Power), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidMovePowerException when updating a status move with power.")]
@@ -304,10 +303,10 @@ public class MoveIntegrationTests : IntegrationTests
 
     InvalidMovePowerException exception = await Assert.ThrowsAsync<InvalidMovePowerException>(
       async () => await _moveService.UpdateAsync(growl.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(growl.EntityId, exception.MoveId);
-    Assert.Equal((byte)40, exception.AttemptedPower);
-    Assert.Equal(nameof(Move.Power), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(growl.EntityId, exception.Data["MoveId"]);
+    Assert.Equal((byte)40, exception.Data["AttemptedPower"]);
+    Assert.Equal(nameof(Move.Power), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a move.")]
@@ -319,10 +318,10 @@ public class MoveIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _moveService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("CreateMove", exception.Action);
-    Assert.Null(exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("CreateMove", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a move.")]
@@ -334,10 +333,10 @@ public class MoveIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _moveService.CreateOrReplaceAsync(payload, _move.EntityId));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_move.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_move.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a move.")]
@@ -349,10 +348,10 @@ public class MoveIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _moveService.UpdateAsync(_move.EntityId, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_move.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_move.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should update an existing move.")]

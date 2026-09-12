@@ -1,6 +1,5 @@
-﻿using FluentValidation;
-using Microsoft.Extensions.DependencyInjection;
-using PokeGame.Builders;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PokeGame.Core;
 using PokeGame.Core.Assets;
 using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Permissions;
@@ -17,32 +16,32 @@ public class AssetIntegrationTests : IntegrationTests
     _assetService = ServiceProvider.GetRequiredService<IAssetService>();
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the stream is null.")]
-  public async Task Given_NullStream_When_Upload_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the stream is null.")]
+  public async Task Given_NullStream_When_Upload_Then_InvalidCommandException()
   {
     UploadAssetPayload payload = new("photo.jpg", fileSize: 1, stream: null);
 
-    var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _assetService.UploadAsync(payload));
+    var exception = await Assert.ThrowsAsync<InvalidCommandException>(async () => await _assetService.UploadAsync(payload));
     Assert.Contains(exception.Errors, error => error.PropertyName == nameof(UploadAssetPayload.Stream));
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the stream is not readable.")]
-  public async Task Given_UnreadableStream_When_Upload_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the stream is not readable.")]
+  public async Task Given_UnreadableStream_When_Upload_Then_InvalidCommandException()
   {
     await using NonReadableStream stream = new();
     UploadAssetPayload payload = new("photo.jpg", fileSize: 1, stream);
 
-    var exception = await Assert.ThrowsAsync<ValidationException>(async () => await _assetService.UploadAsync(payload));
+    var exception = await Assert.ThrowsAsync<InvalidCommandException>(async () => await _assetService.UploadAsync(payload));
     Assert.Contains(exception.Errors, error => error.PropertyName == nameof(UploadAssetPayload.Stream) && error.ErrorCode == "StreamValidator");
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Upload_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Upload_Then_InvalidCommandException()
   {
     await using MemoryStream stream = new([0x00]);
     UploadAssetPayload payload = new(string.Empty, fileSize: 0, stream);
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _assetService.UploadAsync(payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _assetService.UploadAsync(payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when uploading an asset.")]
@@ -54,10 +53,10 @@ public class AssetIntegrationTests : IntegrationTests
     UploadAssetPayload payload = new("denied.bmp", stream.Length, stream);
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _assetService.UploadAsync(payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Upload", exception.Action);
-    Assert.Null(exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Upload", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw MediaTypeNotSupportedException when the media type is not supported.")]
@@ -67,7 +66,7 @@ public class AssetIntegrationTests : IntegrationTests
     UploadAssetPayload payload = new("unsupported.bmp", stream.Length, stream);
 
     var exception = await Assert.ThrowsAsync<MediaTypeNotSupportedException>(async () => await _assetService.UploadAsync(payload));
-    Assert.Equal("image/bmp", exception.MediaType);
+    Assert.Equal("image/bmp", exception.Data["MediaType"]);
   }
 
   [Fact(DisplayName = "It should upload an image asset.")]

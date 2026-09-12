@@ -1,8 +1,6 @@
-﻿using Krakenar.Contracts;
+﻿namespace PokeGame.Core;
 
-namespace PokeGame.Core;
-
-public abstract class NotFoundException : ErrorException
+public abstract class NotFoundException : Exception
 {
   protected NotFoundException(string? message, Exception? innerException = null)
     : base(message, innerException)

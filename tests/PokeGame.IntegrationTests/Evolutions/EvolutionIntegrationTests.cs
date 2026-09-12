@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
@@ -204,11 +203,11 @@ public class EvolutionIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<EvolutionTrigger> exception = await Assert.ThrowsAsync<ImmutablePropertyException<EvolutionTrigger>>(
       async () => await _evolutionService.CreateOrReplaceAsync(payload, _evolution.EntityId));
-    Assert.Equal(Evolution.EntityKind, exception.EntityKind);
-    Assert.Equal(_evolution.EntityId, exception.EntityId);
-    Assert.Equal(_seeded.Trigger, exception.ExpectedValue);
-    Assert.Equal(payload.Trigger, exception.AttemptedValue);
-    Assert.Equal(nameof(payload.Trigger), exception.PropertyName);
+    Assert.Equal(Evolution.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(_evolution.EntityId, exception.Data["EntityId"]);
+    Assert.Equal(_seeded.Trigger, exception.Data["ExpectedValue"]);
+    Assert.Equal(payload.Trigger, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(payload.Trigger), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the source form does not exist.")]
@@ -218,8 +217,8 @@ public class EvolutionIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _evolutionService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(nameof(payload.SourceId), exception.PropertyName);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(nameof(payload.SourceId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the item does not exist.")]
@@ -229,8 +228,8 @@ public class EvolutionIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _evolutionService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(nameof(payload.ItemId), exception.PropertyName);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(nameof(payload.ItemId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EvolutionItemRequiredException when creating an item-triggered evolution without item.")]
@@ -242,11 +241,11 @@ public class EvolutionIntegrationTests : IntegrationTests
 
     EvolutionItemRequiredException exception = await Assert.ThrowsAsync<EvolutionItemRequiredException>(
       async () => await _evolutionService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Create_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the create/replace payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Create_Then_InvalidCommandException()
   {
     CreateOrReplaceEvolutionPayload payload = new()
     {
@@ -255,18 +254,18 @@ public class EvolutionIntegrationTests : IntegrationTests
       Trigger = EvolutionTrigger.LeveledUp
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _evolutionService.CreateOrReplaceAsync(payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _evolutionService.CreateOrReplaceAsync(payload));
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the update payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Update_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the update payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Update_Then_InvalidCommandException()
   {
     UpdateEvolutionPayload payload = new()
     {
       Level = new Optional<int?>(0)
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _evolutionService.UpdateAsync(_evolution.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _evolutionService.UpdateAsync(_evolution.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating an evolution.")]
@@ -276,8 +275,8 @@ public class EvolutionIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _evolutionService.CreateOrReplaceAsync(CreateUpdatedLevelPayload(_source.EntityId, _target.EntityId)));
-    Assert.Equal("CreateEvolution", exception.Action);
-    Assert.Null(exception.Resource);
+    Assert.Equal("CreateEvolution", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing an evolution.")]
@@ -287,8 +286,8 @@ public class EvolutionIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _evolutionService.CreateOrReplaceAsync(CreateUpdatedLevelPayload(_source.EntityId, _target.EntityId), _evolution.EntityId));
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_evolution.GetEntity().ToString(), exception.Resource);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_evolution.GetEntity().ToString(), exception.Data["Resource"]);
   }
 
   [Fact(DisplayName = "It should update an existing evolution.")]

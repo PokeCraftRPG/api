@@ -17,7 +17,7 @@ public record UpdateTrainerPayload
 
   public Optional<Guid?>? MemberId { get; set; }
 
-  public void Validate() => new Validator().ValidateAndThrow(this);
+  public void Validate() => new Validator().ValidateCommandAndThrow(this);
 
   private class Validator : AbstractValidator<UpdateTrainerPayload>
   {

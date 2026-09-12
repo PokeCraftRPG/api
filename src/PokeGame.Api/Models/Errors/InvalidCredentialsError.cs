@@ -1,8 +1,8 @@
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 
-namespace PokeGame.Core.Identity;
+namespace PokeGame.Api.Models.Errors;
 
-public record InvalidCredentialsError : Error
+internal sealed record InvalidCredentialsError : Error
 {
   public InvalidCredentialsError() : base("InvalidCredentials", "The specified credentials did not match.")
   {

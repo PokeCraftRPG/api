@@ -6,7 +6,7 @@ public record SetRegionalNumberPayload
 {
   public int Number { get; set; }
 
-  public void Validate() => new Validator().ValidateAndThrow(this);
+  public void Validate() => new Validator().ValidateCommandAndThrow(this);
 
   private class Validator : AbstractValidator<SetRegionalNumberPayload>
   {

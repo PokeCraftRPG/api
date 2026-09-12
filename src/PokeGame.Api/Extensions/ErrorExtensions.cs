@@ -4,11 +4,13 @@ using Logitar;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using PokeGame.Api.Models.Errors;
 using PokeGame.Core;
 using PokeGame.Core.Assets;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Permissions;
+using KrakenarClientException = Krakenar.Client.KrakenarClientException;
 
 namespace PokeGame.Api.Extensions;
 
@@ -31,11 +33,11 @@ internal static class ErrorExtensions
 
   public static int GetStatusCode(this Exception exception)
   {
-    if (exception is ValidationException)
+    if (exception is InvalidQueryException)
     {
       return StatusCodes.Status400BadRequest;
     }
-    if (exception is InvalidOneTimePasswordException || exception is OneTimePasswordNotFoundException)
+    if (exception is KrakenarClientException || exception is InvalidOneTimePasswordException || exception is OneTimePasswordNotFoundException)
     {
       return StatusCodes.Status401Unauthorized;
     }
@@ -59,7 +61,7 @@ internal static class ErrorExtensions
     {
       return StatusCodes.Status415UnsupportedMediaType;
     }
-    if (exception is DomainException)
+    if (exception is DomainException || exception is InvalidCommandException || exception is ValidationException)
     {
       return StatusCodes.Status422UnprocessableEntity;
     }
@@ -72,16 +74,28 @@ internal static class ErrorExtensions
     {
       return new InvalidCredentialsError();
     }
-    if (exception is ErrorException errorException)
+    if (exception is InvalidRequestException invalidRequest)
     {
-      return errorException.Error;
+      return new ValidationError(invalidRequest.Errors);
+    }
+    if (exception is PermissionDeniedException)
+    {
+      return new PermissionDeniedError();
     }
     if (exception is ValidationException validation)
     {
-      Error error = new(exception.GetErrorCode(), "Validation failed.");
-      error.Data["Failures"] = validation.Errors;
-      return error;
+      return new ValidationError(validation.Errors);
     }
-    return new Error(exception);
+
+    Error error = new(exception.GetErrorCode(), exception.Message);
+    foreach (DictionaryEntry data in exception.Data)
+    {
+      string? key = data.Key.ToString();
+      if (key is not null)
+      {
+        error.Data[key] = data.Value;
+      }
+    }
+    return error;
   }
 }

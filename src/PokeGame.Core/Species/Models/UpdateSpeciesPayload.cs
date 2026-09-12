@@ -15,7 +15,7 @@ public record UpdateSpeciesPayload
   public GrowthRate? GrowthRate { get; set; }
   public SpeciesEggsDto? Eggs { get; set; }
 
-  public void Validate() => new Validator().ValidateAndThrow(this);
+  public void Validate() => new Validator().ValidateCommandAndThrow(this);
 
   private class Validator : AbstractValidator<UpdateSpeciesPayload>
   {

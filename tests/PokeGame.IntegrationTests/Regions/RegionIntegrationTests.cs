@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
@@ -182,11 +181,11 @@ public class RegionIntegrationTests : IntegrationTests
     Guid id = Guid.NewGuid();
 
     var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _regionService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Region.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_region.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Region.Key), exception.PropertyName);
+    Assert.Equal(Region.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_region.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Region.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when replacing a region and the key conflicts.")]
@@ -202,11 +201,11 @@ public class RegionIntegrationTests : IntegrationTests
     Guid id = johto.EntityId;
 
     var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _regionService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Region.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_region.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Region.Key), exception.PropertyName);
+    Assert.Equal(Region.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_region.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Region.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating a region and the key conflicts.")]
@@ -222,33 +221,33 @@ public class RegionIntegrationTests : IntegrationTests
     Guid id = johto.EntityId;
 
     var exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(async () => await _regionService.UpdateAsync(id, payload));
-    Assert.Equal(Region.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_region.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Region.Key), exception.PropertyName);
+    Assert.Equal(Region.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_region.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Region.Key), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Create_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the create/replace payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Create_Then_InvalidCommandException()
   {
     CreateOrReplaceRegionPayload payload = new()
     {
       Key = string.Empty
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _regionService.CreateOrReplaceAsync(payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _regionService.CreateOrReplaceAsync(payload));
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the update payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Update_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the update payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Update_Then_InvalidCommandException()
   {
     UpdateRegionPayload payload = new()
     {
       Key = "not valid"
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _regionService.UpdateAsync(_region.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _regionService.UpdateAsync(_region.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a region.")]
@@ -259,10 +258,10 @@ public class RegionIntegrationTests : IntegrationTests
     CreateOrReplaceRegionPayload payload = CreateJohtoPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _regionService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("CreateRegion", exception.Action);
-    Assert.Null(exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("CreateRegion", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a region.")]
@@ -273,10 +272,10 @@ public class RegionIntegrationTests : IntegrationTests
     CreateOrReplaceRegionPayload payload = CreateJohtoPayload();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _regionService.CreateOrReplaceAsync(payload, _region.EntityId));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_region.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_region.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a region.")]
@@ -287,10 +286,10 @@ public class RegionIntegrationTests : IntegrationTests
     UpdateRegionPayload payload = new();
 
     var exception = await Assert.ThrowsAsync<PermissionDeniedException>(async () => await _regionService.UpdateAsync(_region.EntityId, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_region.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_region.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should update an existing region.")]

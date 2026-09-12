@@ -12,7 +12,7 @@ public record SearchPayload<T> where T : struct, Enum
   public int Offset { get; set; }
   public int Limit { get; set; }
 
-  public virtual void Validate() => new SearchValidator<T>().ValidateAndThrow(this);
+  public virtual void Validate() => new SearchValidator<T>().ValidateQueryAndThrow(this);
 }
 
 internal class SearchValidator<T> : AbstractValidator<SearchPayload<T>> where T : struct, Enum

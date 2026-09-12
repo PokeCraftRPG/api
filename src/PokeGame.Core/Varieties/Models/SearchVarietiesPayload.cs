@@ -9,7 +9,7 @@ public record SearchVarietiesPayload : SearchPayload<VarietySort>
   public bool? IsDefault { get; set; }
   public bool? CanChangeForm { get; set; }
 
-  public override void Validate() => new Validator().ValidateAndThrow(this);
+  public override void Validate() => new Validator().ValidateQueryAndThrow(this);
 
   private class Validator : AbstractValidator<SearchVarietiesPayload>
   {

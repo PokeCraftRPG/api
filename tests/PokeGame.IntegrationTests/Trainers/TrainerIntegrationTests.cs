@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Krakenar.Contracts.Users;
@@ -272,12 +271,12 @@ public class TrainerIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _trainerService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Trainer.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_trainer.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Trainer.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Trainer.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when replacing a trainer and the key conflicts.")]
@@ -294,12 +293,12 @@ public class TrainerIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _trainerService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Trainer.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_trainer.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Trainer.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Trainer.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating a trainer and the key conflicts.")]
@@ -316,12 +315,12 @@ public class TrainerIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _trainerService.UpdateAsync(id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Trainer.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_trainer.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Trainer.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Trainer.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw LicenseAlreadyUsedException when creating a trainer and the license conflicts.")]
@@ -333,11 +332,11 @@ public class TrainerIntegrationTests : IntegrationTests
 
     LicenseAlreadyUsedException exception = await Assert.ThrowsAsync<LicenseAlreadyUsedException>(
       async () => await _trainerService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(id, exception.TrainerId);
-    Assert.Equal(_trainer.EntityId, exception.ConflictId);
-    Assert.Equal(License.Format(payload.License!), exception.AttemptedLicense);
-    Assert.Equal(nameof(Trainer.License), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(id, exception.Data["TrainerId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(License.Format(payload.License!), exception.Data["AttemptedLicense"]);
+    Assert.Equal(nameof(Trainer.License), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw LicenseAlreadyUsedException when updating a trainer and the license conflicts.")]
@@ -353,15 +352,15 @@ public class TrainerIntegrationTests : IntegrationTests
 
     LicenseAlreadyUsedException exception = await Assert.ThrowsAsync<LicenseAlreadyUsedException>(
       async () => await _trainerService.UpdateAsync(misty.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(misty.EntityId, exception.TrainerId);
-    Assert.Equal(_trainer.EntityId, exception.ConflictId);
-    Assert.Equal(_seeded.License, exception.AttemptedLicense);
-    Assert.Equal(nameof(Trainer.License), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(misty.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(_seeded.License, exception.Data["AttemptedLicense"]);
+    Assert.Equal(nameof(Trainer.License), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Create_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the create/replace payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Create_Then_InvalidCommandException()
   {
     CreateOrReplaceTrainerPayload payload = new()
     {
@@ -369,11 +368,11 @@ public class TrainerIntegrationTests : IntegrationTests
       Money = -1
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _trainerService.CreateOrReplaceAsync(payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _trainerService.CreateOrReplaceAsync(payload));
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the update payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Update_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the update payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Update_Then_InvalidCommandException()
   {
     UpdateTrainerPayload payload = new()
     {
@@ -381,7 +380,7 @@ public class TrainerIntegrationTests : IntegrationTests
       Money = -1
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _trainerService.UpdateAsync(_trainer.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _trainerService.UpdateAsync(_trainer.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw InvalidAssetKindException when the sprite is not an image.")]
@@ -393,11 +392,11 @@ public class TrainerIntegrationTests : IntegrationTests
 
     InvalidAssetKindException exception = await Assert.ThrowsAsync<InvalidAssetKindException>(
       async () => await _trainerService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(video.Id, exception.AssetId);
-    Assert.Equal(AssetKind.Image, exception.ExpectedKind);
-    Assert.Equal(AssetKind.Video, exception.AttemptedKind);
-    Assert.Equal(nameof(Trainer.SpriteId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(video.Id, exception.Data["AssetId"]);
+    Assert.Equal(AssetKind.Image, exception.Data["ExpectedKind"]);
+    Assert.Equal(AssetKind.Video, exception.Data["AttemptedKind"]);
+    Assert.Equal(nameof(Trainer.SpriteId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a trainer.")]
@@ -409,10 +408,10 @@ public class TrainerIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _trainerService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("CreateTrainer", exception.Action);
-    Assert.Null(exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("CreateTrainer", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a trainer.")]
@@ -424,10 +423,10 @@ public class TrainerIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _trainerService.CreateOrReplaceAsync(payload, _trainer.EntityId));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_trainer.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_trainer.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a trainer.")]
@@ -439,10 +438,10 @@ public class TrainerIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _trainerService.UpdateAsync(_trainer.EntityId, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_trainer.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_trainer.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw UserIsNotMemberException when the member is not in the world.")]
@@ -454,8 +453,8 @@ public class TrainerIntegrationTests : IntegrationTests
 
     UserIsNotMemberException exception = await Assert.ThrowsAsync<UserIsNotMemberException>(
       async () => await _trainerService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(user.Id, exception.UserId);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(user.Id, exception.Data["UserId"]);
   }
 
   [Fact(DisplayName = "It should update an existing trainer.")]

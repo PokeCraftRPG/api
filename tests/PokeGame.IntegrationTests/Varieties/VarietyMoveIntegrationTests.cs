@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Moves;
@@ -169,11 +168,11 @@ public class VarietyMoveIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<Guid> exception = await Assert.ThrowsAsync<ImmutablePropertyException<Guid>>(
       async () => await _varietyService.SetMoveAsync(_variety.EntityId, payload, existing.Id));
-    Assert.Equal(Variety.EntityKind, exception.EntityKind);
-    Assert.Equal(_variety.EntityId, exception.EntityId);
-    Assert.Equal(_tackle.EntityId, exception.ExpectedValue);
-    Assert.Equal(_ember.EntityId, exception.AttemptedValue);
-    Assert.Equal(nameof(payload.MoveId), exception.PropertyName);
+    Assert.Equal(Variety.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(_variety.EntityId, exception.Data["EntityId"]);
+    Assert.Equal(_tackle.EntityId, exception.Data["ExpectedValue"]);
+    Assert.Equal(_ember.EntityId, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(payload.MoveId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw DuplicateVarietyMoveException when the move already exists.")]
@@ -196,12 +195,12 @@ public class VarietyMoveIntegrationTests : IntegrationTests
 
     DuplicateVarietyMoveException exception = await Assert.ThrowsAsync<DuplicateVarietyMoveException>(
       async () => await _varietyService.SetMoveAsync(_variety.EntityId, payload, duplicateId));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(_variety.EntityId, exception.VarietyId);
-    Assert.Equal(duplicateId, exception.VarietyMoveId);
-    Assert.Equal(payload.MoveId, exception.MoveId);
-    Assert.Equal(payload.LearningMethod, exception.LearningMethod);
-    Assert.Equal(payload.Level, exception.Level);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(_variety.EntityId, exception.Data["VarietyId"]);
+    Assert.Equal(duplicateId, exception.Data["VarietyMoveId"]);
+    Assert.Equal(payload.MoveId, exception.Data["MoveId"]);
+    Assert.Equal(payload.LearningMethod, exception.Data["LearningMethod"]);
+    Assert.Equal(payload.Level, exception.Data["Level"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the variety does not exist.")]
@@ -217,10 +216,10 @@ public class VarietyMoveIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _varietyService.SetMoveAsync(missingVarietyId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Variety.EntityKind, exception.EntityKind);
-    Assert.Equal(missingVarietyId, exception.EntityId);
-    Assert.Equal("VarietyId", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Variety.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingVarietyId, exception.Data["EntityId"]);
+    Assert.Equal("VarietyId", exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the move does not exist.")]
@@ -236,14 +235,14 @@ public class VarietyMoveIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _varietyService.SetMoveAsync(_variety.EntityId, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Move.EntityKind, exception.EntityKind);
-    Assert.Equal(missingMoveId, exception.EntityId);
-    Assert.Equal(nameof(payload.MoveId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Move.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingMoveId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.MoveId), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the payload is invalid.")]
-  public async Task Given_InvalidPayload_When_SetMove_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the payload is invalid.")]
+  public async Task Given_InvalidPayload_When_SetMove_Then_InvalidCommandException()
   {
     SetVarietyMovePayload payload = new()
     {
@@ -252,7 +251,7 @@ public class VarietyMoveIntegrationTests : IntegrationTests
       Level = null
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _varietyService.SetMoveAsync(_variety.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _varietyService.SetMoveAsync(_variety.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when setting a variety move.")]
@@ -269,10 +268,10 @@ public class VarietyMoveIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _varietyService.SetMoveAsync(_variety.EntityId, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_variety.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_variety.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when removing a variety move.")]
@@ -290,9 +289,9 @@ public class VarietyMoveIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _varietyService.RemoveMoveAsync(_variety.EntityId, existing.Id));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_variety.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_variety.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 }

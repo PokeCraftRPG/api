@@ -1,5 +1,4 @@
-using FluentValidation;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
@@ -143,10 +142,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.ReceiveAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Trainer.EntityKind, exception.EntityKind);
-    Assert.Equal(missingTrainerId, exception.EntityId);
-    Assert.Equal(nameof(payload.TrainerId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingTrainerId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.TrainerId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the Poké Ball does not exist.")]
@@ -163,10 +162,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.ReceiveAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(missingPokeBallId, exception.EntityId);
-    Assert.Equal(nameof(payload.PokeBallId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingPokeBallId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.PokeBallId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidItemCategoryException when the item is not a Poké Ball.")]
@@ -185,11 +184,11 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     InvalidItemCategoryException exception = await Assert.ThrowsAsync<InvalidItemCategoryException>(
       async () => await _pokemonService.ReceiveAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(potion.EntityId, exception.ItemId);
-    Assert.Equal(ItemCategory.PokeBall, exception.ExpectedCategory);
-    Assert.Equal(ItemCategory.Medicine, exception.AttemptedCategory);
-    Assert.Equal(nameof(PokemonOwnership.PokeBallId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(potion.EntityId, exception.Data["ItemId"]);
+    Assert.Equal(ItemCategory.PokeBall, exception.Data["ExpectedCategory"]);
+    Assert.Equal(ItemCategory.Medicine, exception.Data["AttemptedCategory"]);
+    Assert.Equal(nameof(PokemonOwnership.PokeBallId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw PokemonAlreadyOwnedException when the trainer already owns the Pokémon.")]
@@ -201,9 +200,9 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     PokemonAlreadyOwnedException exception = await Assert.ThrowsAsync<PokemonAlreadyOwnedException>(
       async () => await _pokemonService.ReceiveAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(created.Id, exception.PokemonId);
-    Assert.Equal(_trainer.EntityId, exception.TrainerId);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(created.Id, exception.Data["PokemonId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
   }
 
   [Fact(DisplayName = "It should throw ImmutablePropertyException when transferring with a different Poké Ball.")]
@@ -232,15 +231,15 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<Guid> exception = await Assert.ThrowsAsync<ImmutablePropertyException<Guid>>(
       async () => await _pokemonService.ReceiveAsync(created.Id, payload));
-    Assert.Equal(Specimen.EntityKind, exception.EntityKind);
-    Assert.Equal(created.Id, exception.EntityId);
-    Assert.Equal(_masterBall.EntityId, exception.ExpectedValue);
-    Assert.Equal(pokeBall.EntityId, exception.AttemptedValue);
-    Assert.Equal(nameof(PokemonOwnership.PokeBallId), exception.PropertyName);
+    Assert.Equal(Specimen.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(created.Id, exception.Data["EntityId"]);
+    Assert.Equal(_masterBall.EntityId, exception.Data["ExpectedValue"]);
+    Assert.Equal(pokeBall.EntityId, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(PokemonOwnership.PokeBallId), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Receive_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Receive_Then_InvalidCommandException()
   {
     PokemonDto created = await CreatePokemonAsync("invalid-payload");
     ReceivePokemonPayload payload = new()
@@ -250,7 +249,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
       Location = string.Empty
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _pokemonService.ReceiveAsync(created.Id, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _pokemonService.ReceiveAsync(created.Id, payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when receiving a Pokémon.")]
@@ -261,10 +260,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town")));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should catch a wild Pokémon and remove a Poké Ball from the inventory.")]
@@ -310,17 +309,17 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Null(await _inventoryService.ReadAsync(_trainer.EntityId, _masterBall.EntityId));
   }
 
-  [Fact(DisplayName = "It should throw CannotCatchEggPokemon when catching an egg.")]
-  public async Task Given_Egg_When_Catch_Then_CannotCatchEggPokemon()
+  [Fact(DisplayName = "It should throw PokemonEggCannotBeCaughtException when catching an egg.")]
+  public async Task Given_Egg_When_Catch_Then_PokemonEggCannotBeCaughtException()
   {
     PokemonDto created = await CreatePokemonAsync("caught-egg", eggCycles: 5);
     await AddPokeBallsAsync();
 
-    CannotCatchEggPokemon exception = await Assert.ThrowsAsync<CannotCatchEggPokemon>(
+    PokemonEggCannotBeCaughtException exception = await Assert.ThrowsAsync<PokemonEggCannotBeCaughtException>(
       async () => await _pokemonService.CatchAsync(created.Id, CreateCatchPayload("Viridian Forest")));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(created.Id, exception.PokemonId);
-    Assert.Equal(created.EggCycles, exception.EggCycles);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(created.Id, exception.Data["PokemonId"]);
+    Assert.Equal(created.EggCycles, exception.Data["EggCycles"]);
 
     PokemonDto? pokemon = await _pokemonService.ReadAsync(created.Id);
     Assert.NotNull(pokemon);
@@ -338,13 +337,13 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     InventoryQuantityOutOfRangeException exception = await Assert.ThrowsAsync<InventoryQuantityOutOfRangeException>(
       async () => await _pokemonService.CatchAsync(created.Id, CreateCatchPayload("Viridian Forest")));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(_trainer.EntityId, exception.TrainerId);
-    Assert.Equal(_masterBall.EntityId, exception.ItemId);
-    Assert.Equal(TrainerInventory.MinimumQuantity, exception.MinimumQuantity);
-    Assert.Equal(TrainerInventory.MaximumQuantity, exception.MaximumQuantity);
-    Assert.Equal(-1, exception.AttemptedQuantity);
-    Assert.Equal("Quantity", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(_masterBall.EntityId, exception.Data["ItemId"]);
+    Assert.Equal(TrainerInventory.MinimumQuantity, exception.Data["MinimumQuantity"]);
+    Assert.Equal(TrainerInventory.MaximumQuantity, exception.Data["MaximumQuantity"]);
+    Assert.Equal(-1, exception.Data["AttemptedQuantity"]);
+    Assert.Equal("Quantity", exception.Data["PropertyName"]);
 
     PokemonDto? pokemon = await _pokemonService.ReadAsync(created.Id);
     Assert.NotNull(pokemon);
@@ -360,9 +359,9 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     PokemonAlreadyOwnedException exception = await Assert.ThrowsAsync<PokemonAlreadyOwnedException>(
       async () => await _pokemonService.CatchAsync(created.Id, CreateCatchPayload("Viridian Forest")));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(created.Id, exception.PokemonId);
-    Assert.Equal(_trainer.EntityId, exception.TrainerId);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(created.Id, exception.Data["PokemonId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
 
     InventoryItemDto? inventoryItem = await _inventoryService.ReadAsync(_trainer.EntityId, _masterBall.EntityId);
     Assert.NotNull(inventoryItem);
@@ -389,10 +388,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.CatchAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Trainer.EntityKind, exception.EntityKind);
-    Assert.Equal(missingTrainerId, exception.EntityId);
-    Assert.Equal(nameof(payload.TrainerId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Trainer.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingTrainerId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.TrainerId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when catching with a missing Poké Ball.")]
@@ -409,10 +408,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _pokemonService.CatchAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Item.EntityKind, exception.EntityKind);
-    Assert.Equal(missingPokeBallId, exception.EntityId);
-    Assert.Equal(nameof(payload.PokeBallId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Item.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingPokeBallId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.PokeBallId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidItemCategoryException when catching with an item that is not a Poké Ball.")]
@@ -431,15 +430,15 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     InvalidItemCategoryException exception = await Assert.ThrowsAsync<InvalidItemCategoryException>(
       async () => await _pokemonService.CatchAsync(created.Id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(potion.EntityId, exception.ItemId);
-    Assert.Equal(ItemCategory.PokeBall, exception.ExpectedCategory);
-    Assert.Equal(ItemCategory.Medicine, exception.AttemptedCategory);
-    Assert.Equal(nameof(PokemonOwnership.PokeBallId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(potion.EntityId, exception.Data["ItemId"]);
+    Assert.Equal(ItemCategory.PokeBall, exception.Data["ExpectedCategory"]);
+    Assert.Equal(ItemCategory.Medicine, exception.Data["AttemptedCategory"]);
+    Assert.Equal(nameof(PokemonOwnership.PokeBallId), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the catch payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Catch_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the catch payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Catch_Then_InvalidCommandException()
   {
     PokemonDto created = await CreatePokemonAsync("catch-invalid-payload");
     CatchPokemonPayload payload = new()
@@ -449,7 +448,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
       Location = string.Empty
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _pokemonService.CatchAsync(created.Id, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _pokemonService.CatchAsync(created.Id, payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when catching a Pokémon.")]
@@ -461,10 +460,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _pokemonService.CatchAsync(created.Id, CreateCatchPayload("Viridian Forest")));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
 
     InventoryItemDto? inventoryItem = await _inventoryService.ReadAsync(_trainer.EntityId, _masterBall.EntityId);
     Assert.NotNull(inventoryItem);

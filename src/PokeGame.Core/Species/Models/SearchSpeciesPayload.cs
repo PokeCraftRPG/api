@@ -10,7 +10,7 @@ public record SearchSpeciesPayload : SearchPayload<SpeciesSort>
   public EggGroup? EggGroup { get; set; }
   public string? Region { get; set; }
 
-  public override void Validate() => new Validator().ValidateAndThrow(this);
+  public override void Validate() => new Validator().ValidateQueryAndThrow(this);
 
   private class Validator : AbstractValidator<SearchSpeciesPayload>
   {

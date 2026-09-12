@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
@@ -364,12 +363,12 @@ public class FormIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _formService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_form.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Form.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_form.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Form.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when replacing a form and the key conflicts.")]
@@ -393,12 +392,12 @@ public class FormIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _formService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_form.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Form.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_form.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Form.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating a form and the key conflicts.")]
@@ -424,12 +423,12 @@ public class FormIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _formService.UpdateAsync(id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_form.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(Form.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_form.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(Form.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ImmutablePropertyException when replacing a form with a different variety.")]
@@ -445,11 +444,11 @@ public class FormIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<Guid> exception = await Assert.ThrowsAsync<ImmutablePropertyException<Guid>>(
       async () => await _formService.CreateOrReplaceAsync(payload, _form.EntityId));
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(_form.EntityId, exception.EntityId);
-    Assert.Equal(_variety.EntityId, exception.ExpectedValue);
-    Assert.Equal(payload.VarietyId, exception.AttemptedValue);
-    Assert.Equal(nameof(payload.VarietyId), exception.PropertyName);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(_form.EntityId, exception.Data["EntityId"]);
+    Assert.Equal(_variety.EntityId, exception.Data["ExpectedValue"]);
+    Assert.Equal(payload.VarietyId, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(payload.VarietyId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ImmutablePropertyException when replacing a form with a different category.")]
@@ -460,11 +459,11 @@ public class FormIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<FormCategory> exception = await Assert.ThrowsAsync<ImmutablePropertyException<FormCategory>>(
       async () => await _formService.CreateOrReplaceAsync(payload, _form.EntityId));
-    Assert.Equal(Form.EntityKind, exception.EntityKind);
-    Assert.Equal(_form.EntityId, exception.EntityId);
-    Assert.Equal(_form.Category, exception.ExpectedValue);
-    Assert.Equal(payload.Category, exception.AttemptedValue);
-    Assert.Equal(nameof(payload.Category), exception.PropertyName);
+    Assert.Equal(Form.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(_form.EntityId, exception.Data["EntityId"]);
+    Assert.Equal(_form.Category, exception.Data["ExpectedValue"]);
+    Assert.Equal(payload.Category, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(payload.Category), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the variety does not exist.")]
@@ -475,10 +474,10 @@ public class FormIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _formService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Variety.EntityKind, exception.EntityKind);
-    Assert.Equal(missingVarietyId, exception.EntityId);
-    Assert.Equal(nameof(payload.VarietyId), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Variety.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingVarietyId, exception.Data["EntityId"]);
+    Assert.Equal(nameof(payload.VarietyId), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when the ability does not exist.")]
@@ -489,14 +488,14 @@ public class FormIntegrationTests : IntegrationTests
 
     EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
       async () => await _formService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(Ability.EntityKind, exception.EntityKind);
-    Assert.Equal(missingAbilityId, exception.EntityId);
-    Assert.Equal($"{nameof(payload.Abilities)}.{nameof(payload.Abilities.PrimaryId)}", exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Ability.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingAbilityId, exception.Data["EntityId"]);
+    Assert.Equal($"{nameof(payload.Abilities)}.{nameof(payload.Abilities.PrimaryId)}", exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Create_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the create/replace payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Create_Then_InvalidCommandException()
   {
     CreateOrReplaceFormPayload payload = new()
     {
@@ -504,18 +503,18 @@ public class FormIntegrationTests : IntegrationTests
       Key = string.Empty
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _formService.CreateOrReplaceAsync(payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _formService.CreateOrReplaceAsync(payload));
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the update payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Update_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the update payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Update_Then_InvalidCommandException()
   {
     UpdateFormPayload payload = new()
     {
       Key = "not valid"
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _formService.UpdateAsync(_form.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _formService.UpdateAsync(_form.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw InvalidAssetKindException when a form sprite is not an image.")]
@@ -531,11 +530,11 @@ public class FormIntegrationTests : IntegrationTests
 
     InvalidAssetKindException exception = await Assert.ThrowsAsync<InvalidAssetKindException>(
       async () => await _formService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(video.Id, exception.AssetId);
-    Assert.Equal(AssetKind.Image, exception.ExpectedKind);
-    Assert.Equal(AssetKind.Video, exception.AttemptedKind);
-    Assert.Equal(nameof(FormSpriteAssets.Default), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(video.Id, exception.Data["AssetId"]);
+    Assert.Equal(AssetKind.Image, exception.Data["ExpectedKind"]);
+    Assert.Equal(AssetKind.Video, exception.Data["AttemptedKind"]);
+    Assert.Equal(nameof(FormSpriteAssets.Default), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a form.")]
@@ -547,10 +546,10 @@ public class FormIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _formService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("CreateForm", exception.Action);
-    Assert.Null(exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("CreateForm", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a form.")]
@@ -562,10 +561,10 @@ public class FormIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _formService.CreateOrReplaceAsync(payload, _form.EntityId));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_form.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_form.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a form.")]
@@ -577,10 +576,10 @@ public class FormIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _formService.UpdateAsync(_form.EntityId, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_form.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_form.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should update an existing form.")]

@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using Krakenar.Contracts;
+﻿using Krakenar.Contracts;
 using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
@@ -299,12 +298,12 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _speciesService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(PokemonSpecies.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_species.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(PokemonSpecies.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(PokemonSpecies.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_species.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(PokemonSpecies.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw NumberAlreadyUsedException when creating a species and the number conflicts.")]
@@ -316,12 +315,12 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     NumberAlreadyUsedException exception = await Assert.ThrowsAsync<NumberAlreadyUsedException>(
       async () => await _speciesService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(id, exception.SpeciesId);
-    Assert.Equal(_species.EntityId, exception.ConflictId);
-    Assert.Null(exception.RegionId);
-    Assert.Equal(payload.Number, exception.AttemptedNumber);
-    Assert.Equal(nameof(PokemonSpecies.Number), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(id, exception.Data["SpeciesId"]);
+    Assert.Equal(_species.EntityId, exception.Data["ConflictId"]);
+    Assert.Null(exception.Data["RegionId"]);
+    Assert.Equal(payload.Number, exception.Data["AttemptedNumber"]);
+    Assert.Equal(nameof(PokemonSpecies.Number), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw NumberAlreadyUsedException when the regional number conflicts.")]
@@ -334,12 +333,12 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     NumberAlreadyUsedException exception = await Assert.ThrowsAsync<NumberAlreadyUsedException>(
       async () => await _speciesService.SetRegionalNumberAsync(charmander.EntityId, _region.EntityId, new SetRegionalNumberPayload { Number = 1 }));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(charmander.EntityId, exception.SpeciesId);
-    Assert.Equal(_species.EntityId, exception.ConflictId);
-    Assert.Equal(_region.EntityId, exception.RegionId);
-    Assert.Equal(charmander.Number.Value, exception.AttemptedNumber);
-    Assert.Equal(nameof(PokemonSpecies.Number), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(charmander.EntityId, exception.Data["SpeciesId"]);
+    Assert.Equal(_species.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(_region.EntityId, exception.Data["RegionId"]);
+    Assert.Equal(charmander.Number.Value, exception.Data["AttemptedNumber"]);
+    Assert.Equal(nameof(PokemonSpecies.Number), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when replacing a species and the key conflicts.")]
@@ -354,12 +353,12 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _speciesService.CreateOrReplaceAsync(payload, id));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(PokemonSpecies.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_species.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(PokemonSpecies.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(PokemonSpecies.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_species.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(PokemonSpecies.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw KeyAlreadyUsedException when updating a species and the key conflicts.")]
@@ -376,12 +375,12 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     KeyAlreadyUsedException exception = await Assert.ThrowsAsync<KeyAlreadyUsedException>(
       async () => await _speciesService.UpdateAsync(id, payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal(PokemonSpecies.EntityKind, exception.EntityKind);
-    Assert.Equal(id, exception.EntityId);
-    Assert.Equal(_species.EntityId, exception.ConflictId);
-    Assert.Equal(SlugHelper.Format(payload.Key), exception.AttemptedKey);
-    Assert.Equal(nameof(PokemonSpecies.Key), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(PokemonSpecies.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(id, exception.Data["EntityId"]);
+    Assert.Equal(_species.EntityId, exception.Data["ConflictId"]);
+    Assert.Equal(SlugHelper.Format(payload.Key), exception.Data["AttemptedKey"]);
+    Assert.Equal(nameof(PokemonSpecies.Key), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ImmutablePropertyException when replacing a species with a different number.")]
@@ -392,11 +391,11 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<int> exception = await Assert.ThrowsAsync<ImmutablePropertyException<int>>(
       async () => await _speciesService.CreateOrReplaceAsync(payload, _species.EntityId));
-    Assert.Equal(PokemonSpecies.EntityKind, exception.EntityKind);
-    Assert.Equal(_species.EntityId, exception.EntityId);
-    Assert.Equal(_seeded.Number, exception.ExpectedValue);
-    Assert.Equal(payload.Number, exception.AttemptedValue);
-    Assert.Equal(nameof(payload.Number), exception.PropertyName);
+    Assert.Equal(PokemonSpecies.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(_species.EntityId, exception.Data["EntityId"]);
+    Assert.Equal(_seeded.Number, exception.Data["ExpectedValue"]);
+    Assert.Equal(payload.Number, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(payload.Number), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw ImmutablePropertyException when replacing a species with a different category.")]
@@ -407,11 +406,11 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     ImmutablePropertyException<SpeciesCategory> exception = await Assert.ThrowsAsync<ImmutablePropertyException<SpeciesCategory>>(
       async () => await _speciesService.CreateOrReplaceAsync(payload, _species.EntityId));
-    Assert.Equal(PokemonSpecies.EntityKind, exception.EntityKind);
-    Assert.Equal(_species.EntityId, exception.EntityId);
-    Assert.Equal(_seeded.Category, exception.ExpectedValue);
-    Assert.Equal(payload.Category, exception.AttemptedValue);
-    Assert.Equal(nameof(payload.Category), exception.PropertyName);
+    Assert.Equal(PokemonSpecies.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(_species.EntityId, exception.Data["EntityId"]);
+    Assert.Equal(_seeded.Category, exception.Data["ExpectedValue"]);
+    Assert.Equal(payload.Category, exception.Data["AttemptedValue"]);
+    Assert.Equal(nameof(payload.Category), exception.Data["PropertyName"]);
   }
 
   [Fact(DisplayName = "It should throw RegionsNotFoundException when a regional region does not exist.")]
@@ -427,13 +426,13 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     RegionsNotFoundException exception = await Assert.ThrowsAsync<RegionsNotFoundException>(
       async () => await _speciesService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
-    Assert.Equal([missingRegionId], exception.RegionIds);
-    Assert.Equal(nameof(payload.RegionalNumbers), exception.PropertyName);
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal([missingRegionId], Assert.IsAssignableFrom<IReadOnlyCollection<Guid>>(exception.Data["RegionIds"]));
+    Assert.Equal(nameof(payload.RegionalNumbers), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the create/replace payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Create_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the create/replace payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Create_Then_InvalidCommandException()
   {
     CreateOrReplaceSpeciesPayload payload = new()
     {
@@ -442,18 +441,18 @@ public class SpeciesIntegrationTests : IntegrationTests
       Eggs = new SpeciesEggsDto { Cycles = 20, PrimaryGroup = EggGroup.Monster }
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _speciesService.CreateOrReplaceAsync(payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _speciesService.CreateOrReplaceAsync(payload));
   }
 
-  [Fact(DisplayName = "It should throw ValidationException when the update payload is invalid.")]
-  public async Task Given_InvalidPayload_When_Update_Then_ValidationException()
+  [Fact(DisplayName = "It should throw InvalidCommandException when the update payload is invalid.")]
+  public async Task Given_InvalidPayload_When_Update_Then_InvalidCommandException()
   {
     UpdateSpeciesPayload payload = new()
     {
       Key = "not valid"
     };
 
-    await Assert.ThrowsAsync<ValidationException>(async () => await _speciesService.UpdateAsync(_species.EntityId, payload));
+    await Assert.ThrowsAsync<InvalidCommandException>(async () => await _speciesService.UpdateAsync(_species.EntityId, payload));
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when creating a species.")]
@@ -465,10 +464,10 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _speciesService.CreateOrReplaceAsync(payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("CreateSpecies", exception.Action);
-    Assert.Null(exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("CreateSpecies", exception.Data["Action"]);
+    Assert.Null(exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when replacing a species.")]
@@ -480,10 +479,10 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _speciesService.CreateOrReplaceAsync(payload, _species.EntityId));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_species.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_species.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should throw PermissionDeniedException when updating a species.")]
@@ -495,10 +494,10 @@ public class SpeciesIntegrationTests : IntegrationTests
 
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _speciesService.UpdateAsync(_species.EntityId, payload));
-    Assert.Equal(Context.ActorId?.Value, exception.Principal);
-    Assert.Equal("Update", exception.Action);
-    Assert.Equal(_species.GetEntity().ToString(), exception.Resource);
-    Assert.Equal(Context.WorldId.EntityId, exception.WorldId);
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(_species.GetEntity().ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should update an existing species.")]
