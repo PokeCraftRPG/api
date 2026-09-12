@@ -274,6 +274,24 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     Ownership = PokemonOwnership.Received(@event);
   }
 
+  public void Release(ActorId? actorId = null)
+  {
+    if (IsEgg)
+    {
+      throw new PokemonEggCannotBeReleasedException(this);
+    }
+    if (Ownership is null)
+    {
+      throw new PokemonHasNoOwnerException(this);
+    }
+
+    Raise(new PokemonReleased(), actorId);
+  }
+  private void Handle(PokemonReleased _)
+  {
+    Ownership = null;
+  }
+
   public void SetDetails(Summary? summary, Content? content, ActorId? actorId = null)
   {
     if (!Equals(Summary, summary) || !Equals(Content, content))
