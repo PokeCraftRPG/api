@@ -83,7 +83,7 @@ internal class CatchPokemonCommandHandler : ICommandHandler<CatchPokemonCommand,
 
     specimen.Catch(trainer, pokeBall, location, actorId);
     inventory.AdjustQuantity(pokeBall, delta: -1, actorId);
-    roster.Add(specimen, actorId);
+    roster.Add(specimen, trainer, actorId);
 
     await _pokemonRepository.SaveAsync(specimen, cancellationToken);
     await _inventoryRepository.SaveAsync(inventory, cancellationToken);

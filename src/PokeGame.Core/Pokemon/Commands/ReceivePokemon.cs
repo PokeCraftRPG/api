@@ -89,7 +89,7 @@ internal class ReceivePokemonCommandHandler : ICommandHandler<ReceivePokemonComm
 
     specimen.Receive(trainer, pokeBall, location, actorId);
     sourceRoster?.Remove(specimen, actorId);
-    targetRoster.Add(specimen, actorId);
+    targetRoster.Add(specimen, trainer, actorId);
 
     await _pokemonRepository.SaveAsync(specimen, cancellationToken);
     await _rosterRepository.SaveAsync(rosters, cancellationToken);

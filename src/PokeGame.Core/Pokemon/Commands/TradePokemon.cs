@@ -65,8 +65,8 @@ internal class TradePokemonCommandHandler : ICommandHandler<TradePokemonCommand,
     Location location = new(payload.Location);
 
     source.Trade(target, location, actorId);
-    sourceRoster.Swap(source, target, actorId);
-    targetRoster.Swap(target, source, actorId);
+    sourceRoster.Replace(source, target, actorId);
+    targetRoster.Replace(target, source, actorId);
 
     await _pokemonRepository.SaveAsync([source, target], cancellationToken);
     await _rosterRepository.SaveAsync([sourceRoster, targetRoster], cancellationToken);
