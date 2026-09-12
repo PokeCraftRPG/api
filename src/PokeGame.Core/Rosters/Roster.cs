@@ -117,7 +117,7 @@ public sealed class Roster : AggregateRoot, IEntityProvider
       throw new ArgumentException($"The Pokémon 'Id={target.Id}' should not be in trainer’s 'Id={TrainerId}' roster.", nameof(target));
     }
 
-    Raise(new RosterEntryReplaced(source.Id, target.Id, sourceEntry.IsInParty), actorId);
+    Raise(new RosterEntryReplaced(source.Id, target.Id, sourceEntry.IsInParty && !target.IsEgg), actorId);
   }
   private void Handle(RosterEntryReplaced @event)
   {
@@ -159,6 +159,8 @@ public sealed class Roster : AggregateRoot, IEntityProvider
     {
       throw new NotImplementedException(); // TODO(fpion): 409 Conflict
     }
+
+    // TODO(fpion): handle egg Pokémon
 
     Raise(new RosterEntriesSwapped(source.Id, targetEntry.IsInParty, target.Id, sourceEntry.IsInParty), actorId);
   }

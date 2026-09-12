@@ -7,6 +7,7 @@ using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Rosters.Events;
 using PokeGame.Core.Species;
 
 namespace PokeGame.Infrastructure.Entities;
@@ -85,6 +86,9 @@ internal class PokemonEntity : AggregateEntity
   public string? MetAt { get; private set; }
   public DateTime? MetOn { get; private set; }
 
+  public bool IsInParty { get; set; }
+  public int Priority { get; private set; }
+
   public PokemonEntity(int worldId, int speciesId, int varietyId, int formId, PokemonCreated @event) : base(@event)
   {
     WorldId = worldId;
@@ -131,6 +135,17 @@ internal class PokemonEntity : AggregateEntity
 
   private PokemonEntity()
   {
+  }
+
+  public void AddToRoster(RosterEntryAdded @event)
+  {
+    IsInParty = @event.IsInParty;
+    Priority = 0;
+  }
+  public void AddToRoster(RosterEntryReplaced @event)
+  {
+    IsInParty = @event.IsInParty;
+    Priority = 0;
   }
 
   public override IReadOnlyCollection<ActorId> GetActorIds()
@@ -237,6 +252,12 @@ internal class PokemonEntity : AggregateEntity
     MetLevel = null;
     MetAt = null;
     MetOn = null;
+  }
+
+  public void RemoveFromRoster()
+  {
+    IsInParty = false;
+    Priority = 0;
   }
 
   public void Trade(int trainerId, int pokeBallId, PokemonTraded @event)
