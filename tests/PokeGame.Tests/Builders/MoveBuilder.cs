@@ -116,9 +116,8 @@ public class MoveBuilder : IMoveBuilder
     ActorId actorId = world.OwnerId.ActorId;
     Key key = new(_key);
 
-    Move move = _moveId.HasValue
-      ? new(_moveId.Value, _type, _category, key, actorId)
-      : new(world, _type, _category, key, actorId);
+    MoveId moveId = _moveId ?? MoveId.NewId(world.Id);
+    Move move = new(moveId, _type, _category, key, actorId);
 
     move.SetDetails(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
     move.SetMechanics(Accuracy.TryCreate(_accuracy), Power.TryCreate(_power), PowerPoints.TryCreate(_powerPoints), actorId);

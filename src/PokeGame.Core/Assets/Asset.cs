@@ -23,11 +23,6 @@ public sealed class Asset : AggregateRoot, IEntityProvider
   {
   }
 
-  public Asset(World world, AssetKind kind, AssetFile file, Dimensions? dimensions = null, TimeSpan? duration = null, ActorId? actorId = null)
-    : this(AssetId.NewId(world.Id), kind, file, dimensions, duration, actorId)
-  {
-  }
-
   public Asset(AssetId assetId, AssetKind kind, AssetFile file, Dimensions? dimensions = null, TimeSpan? duration = null, ActorId? actorId = null)
     : base(assetId.StreamId)
   {

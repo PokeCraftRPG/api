@@ -76,9 +76,8 @@ public class AbilityBuilder : IAbilityBuilder
     ActorId actorId = world.OwnerId.ActorId;
     Key key = new(_key);
 
-    Ability ability = _abilityId.HasValue
-      ? new(_abilityId.Value, key, actorId)
-      : new(world, key, actorId);
+    AbilityId abilityId = _abilityId ?? AbilityId.NewId(world.Id);
+    Ability ability = new(abilityId, key, actorId);
 
     ability.SetDetails(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
 

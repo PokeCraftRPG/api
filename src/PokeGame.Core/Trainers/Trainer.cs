@@ -33,11 +33,6 @@ public sealed class Trainer : AggregateRoot, IEntityProvider
   {
   }
 
-  public Trainer(World world, Key key, ActorId? actorId = null)
-    : this(TrainerId.NewId(world.Id), key, actorId)
-  {
-  }
-
   public Trainer(TrainerId trainerId, Key key, ActorId? actorId = null)
     : base(trainerId.StreamId)
   {

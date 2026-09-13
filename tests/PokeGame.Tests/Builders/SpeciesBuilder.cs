@@ -132,9 +132,8 @@ public class SpeciesBuilder : ISpeciesBuilder
     CatchRate catchRate = new(_catchRate);
     SpeciesEggs eggs = new(_eggCycles, _primaryEggGroup, _secondaryEggGroup);
 
-    PokemonSpecies species = _speciesId.HasValue
-      ? new(_speciesId.Value, number, _category, key, baseFriendship, catchRate, _growthRate, eggs, actorId)
-      : new(world, number, _category, key, baseFriendship, catchRate, _growthRate, eggs, actorId);
+    SpeciesId speciesId = _speciesId ?? SpeciesId.NewId(world.Id);
+    PokemonSpecies species = new(speciesId, number, _category, key, baseFriendship, catchRate, _growthRate, eggs, actorId);
 
     species.SetDetails(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
 

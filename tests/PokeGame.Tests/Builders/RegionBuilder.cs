@@ -76,9 +76,8 @@ public class RegionBuilder : IRegionBuilder
     ActorId actorId = world.OwnerId.ActorId;
     Key key = new(_key);
 
-    Region region = _regionId.HasValue
-      ? new(_regionId.Value, key, actorId)
-      : new(world, key, actorId);
+    RegionId regionId = _regionId ?? RegionId.NewId(world.Id);
+    Region region = new(regionId, key, actorId);
 
     region.SetDetails(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
 

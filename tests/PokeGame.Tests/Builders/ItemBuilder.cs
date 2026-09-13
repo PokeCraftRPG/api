@@ -109,9 +109,8 @@ public class ItemBuilder : IItemBuilder
     ActorId actorId = world.OwnerId.ActorId;
     Key key = new(_key);
 
-    Item item = _itemId.HasValue
-      ? new(_itemId.Value, _category, key, actorId)
-      : new(world, _category, key, actorId);
+    ItemId itemId = _itemId ?? ItemId.NewId(world.Id);
+    Item item = new(itemId, _category, key, actorId);
 
     item.SetDetails(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
     item.SetCharacteristics(Price.TryCreate(_price), Weight.TryCreate(_weight), actorId);

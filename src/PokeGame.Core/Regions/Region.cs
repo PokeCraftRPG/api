@@ -23,11 +23,6 @@ public sealed class Region : AggregateRoot, IEntityProvider
   {
   }
 
-  public Region(World world, Key key, ActorId? actorId = null)
-    : this(RegionId.NewId(world.Id), key, actorId)
-  {
-  }
-
   public Region(RegionId regionId, Key key, ActorId? actorId = null)
     : base(regionId.StreamId)
   {

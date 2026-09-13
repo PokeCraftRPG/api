@@ -31,11 +31,6 @@ public sealed class Item : AggregateRoot, IEntityProvider
   {
   }
 
-  public Item(World world, ItemCategory category, Key key, ActorId? actorId = null)
-    : this(ItemId.NewId(world.Id), category, key, actorId)
-  {
-  }
-
   public Item(ItemId itemId, ItemCategory category, Key key, ActorId? actorId = null)
     : base(itemId.StreamId)
   {
