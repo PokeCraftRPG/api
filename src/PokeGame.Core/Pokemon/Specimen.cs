@@ -1,6 +1,7 @@
 ﻿using Logitar.EventSourcing;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Assets;
+using PokeGame.Core.Evolutions;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Items;
 using PokeGame.Core.Pokemon.Events;
@@ -250,6 +251,59 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     {
       Raise(new PokemonDeleted(), actorId);
     }
+  }
+
+  public void Evolve(Evolution evolution, Form form, Variety variety, Location? location = null, TimeOfDay? timeOfDay = null, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(this, evolution, nameof(evolution));
+    WorldMismatchException.ThrowIfMismatch(this, form, nameof(form));
+    WorldMismatchException.ThrowIfMismatch(this, variety, nameof(variety));
+
+    if (timeOfDay.HasValue && !Enum.IsDefined(timeOfDay.Value))
+    {
+      throw new ArgumentOutOfRangeException(nameof(timeOfDay));
+    }
+
+    if (FormId != evolution.SourceId)
+    {
+      throw new InvalidEvolutionSourceException(this, evolution);
+    }
+    if (form.Id != evolution.TargetId)
+    {
+      throw new ArgumentException($"The target form '{form}' was not expected ({evolution.TargetId}).", nameof(form));
+    }
+    if (variety.Id != form.VarietyId)
+    {
+      throw new ArgumentException($"The variety '{variety}' was not expected ({form.VarietyId}).", nameof(variety));
+    }
+
+    // TODO(fpion): Trigger (ItemUsed/Traded)
+
+    // TODO(fpion): Level
+    // TODO(fpion): Gender
+    // TODO(fpion): Friendship
+    // TODO(fpion): HeldItemId
+    // TODO(fpion): KnownMoveId
+    // TODO(fpion): Location
+    // TODO(fpion): TimeOfDay
+
+    PokemonStatistics current = new(this);
+    PokemonStatistics changed = new(form.BaseStatistics, IndividualValues, EffortValues, Level, Nature);
+    int delta = changed.HP - current.HP;
+    int vitality = Math.Clamp(Vitality + delta, 0, changed.HP);
+    int stamina = Math.Clamp(Stamina + delta, 0, changed.HP);
+
+    Raise(new PokemonEvolved(variety.SpeciesId, variety.Id, form.Id, form.BaseStatistics, vitality, stamina), actorId);
+  }
+  private void Handle(PokemonEvolved @event)
+  {
+    SpeciesId = @event.SpeciesId;
+    VarietyId = @event.VarietyId;
+    FormId = @event.FormId;
+
+    _baseStatistics = @event.BaseStatistics;
+    Vitality = @event.Vitality;
+    Stamina = @event.Stamina;
   }
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId);
