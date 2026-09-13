@@ -1,5 +1,6 @@
 ﻿using Logitar.EventSourcing;
 using PokeGame.Core.Forms.Events;
+using PokeGame.Core.Species;
 using PokeGame.Core.Varieties;
 using PokeGame.Core.Worlds;
 
@@ -13,6 +14,7 @@ public sealed class Form : AggregateRoot, IEntityProvider
   public WorldId WorldId => Id.WorldId;
   public Guid EntityId => Id.EntityId;
 
+  public SpeciesId SpeciesId { get; private set; }
   public VarietyId VarietyId { get; private set; }
   public FormCategory Category { get; private set; }
 
@@ -40,6 +42,7 @@ public sealed class Form : AggregateRoot, IEntityProvider
   }
 
   public Form(
+    FormId formId,
     Variety variety,
     FormCategory category,
     Key key,
@@ -48,23 +51,9 @@ public sealed class Form : AggregateRoot, IEntityProvider
     BaseStatistics statistics,
     FormYield yield,
     FormSize size,
-    ActorId? actorId = null) : this(FormId.NewId(variety.WorldId), category, variety.Id, key, types, abilities, statistics, yield, size, actorId)
-  {
-  }
-
-  public Form(
-    FormId formId,
-    FormCategory category,
-    VarietyId varietyId,
-    Key key,
-    FormTypes types,
-    FormAbilities abilities,
-    BaseStatistics statistics,
-    FormYield yield,
-    FormSize size,
     ActorId? actorId = null) : base(formId.StreamId)
   {
-    WorldMismatchException.ThrowIfMismatch(this, varietyId, nameof(varietyId));
+    WorldMismatchException.ThrowIfMismatch(this, variety, nameof(variety));
     EnsureSameWorld(abilities, nameof(abilities));
 
     if (!Enum.IsDefined(category))
@@ -72,10 +61,11 @@ public sealed class Form : AggregateRoot, IEntityProvider
       throw new ArgumentOutOfRangeException(nameof(category));
     }
 
-    Raise(new FormCreated(varietyId, category, key, types, abilities, statistics, yield, size), actorId);
+    Raise(new FormCreated(variety.SpeciesId, variety.Id, category, key, types, abilities, statistics, yield, size), actorId);
   }
   private void Handle(FormCreated @event)
   {
+    SpeciesId = @event.SpeciesId;
     VarietyId = @event.VarietyId;
     Category = @event.Category;
 
@@ -155,8 +145,6 @@ public sealed class Form : AggregateRoot, IEntityProvider
     Sprites = @event.Sprites;
   }
 
-  public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";
-
   private void EnsureSameWorld(FormAbilities abilities, string paramName)
   {
     WorldMismatchException.ThrowIfMismatch(this, abilities.PrimaryId, paramName);
@@ -169,4 +157,6 @@ public sealed class Form : AggregateRoot, IEntityProvider
       WorldMismatchException.ThrowIfMismatch(this, abilities.HiddenId.Value, paramName);
     }
   }
+
+  public override string ToString() => $"{Name?.Value ?? Key.Value} | {base.ToString()}";
 }

@@ -64,7 +64,7 @@ internal class CreateOrReplaceFormCommandHandler : ICommandHandler<CreateOrRepla
       Variety variety = await _varietyRepository.LoadAsync(varietyId, cancellationToken)
         ?? throw new EntityNotFoundException(varietyId, nameof(payload.VarietyId));
 
-      form = new Form(formId, payload.Category, variety.Id, key, types, abilities, baseStatistics, yield, size, actorId);
+      form = new Form(formId, variety, payload.Category, key, types, abilities, baseStatistics, yield, size, actorId);
       created = true;
     }
     else
