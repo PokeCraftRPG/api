@@ -20,13 +20,13 @@ public sealed class Evolution : AggregateRoot, IEntityProvider
   public FormId TargetId { get; private set; }
   public EvolutionTrigger Trigger { get; private set; }
 
-  public Level? Level { get; private set; } // TODO(fpion): >=
-  public bool Friendship { get; private set; } // TODO(fpion): 170 or more.
-  public Gender? Gender { get; private set; } // TODO(fpion): ==
-  public ItemId? ItemId { get; private set; } // TODO(fpion): used or held.
-  public MoveId? MoveId { get; private set; } // TODO(fpion): in the moveset.
-  public Location? Location { get; private set; } // TODO(fpion): from the payload.
-  public TimeOfDay? TimeOfDay { get; private set; } // TODO(fpion): from the payload.
+  public Level? Level { get; private set; }
+  public bool Friendship { get; private set; }
+  public Gender? Gender { get; private set; }
+  public ItemId? ItemId { get; private set; }
+  public MoveId? MoveId { get; private set; }
+  public Location? Location { get; private set; }
+  public TimeOfDay? TimeOfDay { get; private set; }
 
   public Evolution() : base()
   {

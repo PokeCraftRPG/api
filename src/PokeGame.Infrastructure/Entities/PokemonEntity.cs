@@ -235,6 +235,11 @@ internal class PokemonEntity : AggregateEntity
 
     Vitality = @event.Vitality;
     Stamina = @event.Stamina;
+
+    if (@event.ConsumeHeldItem)
+    {
+      HeldItemId = null;
+    }
   }
 
   public void Receive(int trainerId, int pokeBallId, PokemonReceived @event)

@@ -277,17 +277,21 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
       throw new ArgumentException($"The variety '{variety}' was not expected ({form.VarietyId}).", nameof(variety));
     }
 
+    if (IsEgg)
+    {
+      throw new PokemonEggCannotEvolveException(this);
+    }
     if (Ownership is null)
     {
       throw new PokemonHasNoOwnerException(this);
     }
 
     List<EvolutionConditionFailure> failures = new(capacity: 8);
-    if (evolution.Trigger == EvolutionTrigger.Traded && OriginalTrainerId != Ownership.TrainerId)
+    if (evolution.Trigger == EvolutionTrigger.Traded && OriginalTrainerId == Ownership.TrainerId)
     {
       failures.Add(new EvolutionConditionFailure(EvolutionCondition.Trade, Required: true, Actual: false));
     }
-    if (evolution.Level is not null && evolution.Level.Value < Level)
+    if (evolution.Level is not null && evolution.Level.Value > Level)
     {
       failures.Add(new EvolutionConditionFailure(EvolutionCondition.Level, evolution.Level.Value, Level));
     }
@@ -323,7 +327,9 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     int vitality = Math.Clamp(Vitality + delta, 0, changed.HP);
     int stamina = Math.Clamp(Stamina + delta, 0, changed.HP);
 
-    Raise(new PokemonEvolved(variety.SpeciesId, variety.Id, form.Id, form.BaseStatistics, vitality, stamina), actorId);
+    bool consumeHeldItem = evolution.Trigger != EvolutionTrigger.ItemUsed && evolution.ItemId.HasValue;
+
+    Raise(new PokemonEvolved(variety.SpeciesId, variety.Id, form.Id, form.BaseStatistics, vitality, stamina, consumeHeldItem), actorId);
   }
   private void Handle(PokemonEvolved @event)
   {
@@ -334,6 +340,11 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     _baseStatistics = @event.BaseStatistics;
     Vitality = @event.Vitality;
     Stamina = @event.Stamina;
+
+    if (@event.ConsumeHeldItem)
+    {
+      HeldItemId = null;
+    }
   }
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId);

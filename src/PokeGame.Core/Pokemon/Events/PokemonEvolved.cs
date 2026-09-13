@@ -11,4 +11,5 @@ public sealed record PokemonEvolved(
   FormId FormId,
   BaseStatistics BaseStatistics,
   int Vitality,
-  int Stamina) : DomainEvent;
+  int Stamina,
+  bool ConsumeHeldItem) : DomainEvent;
