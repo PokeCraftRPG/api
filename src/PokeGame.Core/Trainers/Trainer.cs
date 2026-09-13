@@ -1,6 +1,7 @@
 ﻿using Logitar.EventSourcing;
 using PokeGame.Core.Assets;
 using PokeGame.Core.Identity;
+using PokeGame.Core.Rosters;
 using PokeGame.Core.Trainers.Events;
 using PokeGame.Core.Worlds;
 
@@ -26,8 +27,8 @@ public sealed class Trainer : AggregateRoot, IEntityProvider
   public Money Money { get; private set; } = new();
   public AssetId? SpriteId { get; private set; }
 
-  public int? PartyLimit { get; private set; } // TODO(fpion): mutate this value
   public UserId? MemberId { get; private set; }
+  public int? PartyLimit { get; private set; }
 
   public Trainer() : base()
   {
@@ -130,6 +131,23 @@ public sealed class Trainer : AggregateRoot, IEntityProvider
   private void Handle(TrainerMoneyChanged @event)
   {
     Money = @event.Money;
+  }
+
+  public void SetPartyLimit(int? partyLimit, ActorId? actorId = null)
+  {
+    if (partyLimit < 0 || partyLimit > Roster.PartyLimit)
+    {
+      throw new ArgumentOutOfRangeException(nameof(partyLimit));
+    }
+
+    if (!Equals(PartyLimit, partyLimit))
+    {
+      Raise(new TrainerPartyLimitChanged(partyLimit), actorId);
+    }
+  }
+  private void Handle(TrainerPartyLimitChanged @event)
+  {
+    PartyLimit = @event.PartyLimit;
   }
 
   public void SetSprite(Asset? sprite, ActorId? actorId = null)

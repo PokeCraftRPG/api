@@ -29,6 +29,8 @@ internal class TrainerEntity : AggregateEntity
 
   public MemberEntity? Member { get; private set; }
   public string? MemberId { get; private set; }
+  public int PartyCount { get; private set; }
+  public int? PartyLimit { get; private set; }
 
   public TrainerEntity(int worldId, TrainerCreated @event) : base(@event)
   {
@@ -98,6 +100,13 @@ internal class TrainerEntity : AggregateEntity
     Update(@event);
 
     Money = @event.Money.Value;
+  }
+
+  public void SetPartyLimit(TrainerPartyLimitChanged @event)
+  {
+    Update(@event);
+
+    PartyLimit = @event.PartyLimit;
   }
 
   public void SetSprite(int? spriteId, TrainerSpriteChanged @event)
