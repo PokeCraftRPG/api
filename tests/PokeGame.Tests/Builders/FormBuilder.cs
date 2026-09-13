@@ -179,9 +179,8 @@ public class FormBuilder : IFormBuilder
     FormYield yield = new(_yieldExperience, _yieldHp, _yieldAttack, _yieldDefense, _yieldSpecialAttack, _yieldSpecialDefense, _yieldSpeed);
     FormSize size = new(_height ?? 7, _weight ?? 69);
 
-    Form form = _formId.HasValue
-      ? new(_formId.Value, _category, variety.Id, key, types, abilities, baseStatistics, yield, size, actorId)
-      : new(variety, _category, key, types, abilities, baseStatistics, yield, size, actorId);
+    FormId formId = _formId ?? FormId.NewId(variety.WorldId);
+    Form form = new(formId, variety, _category, key, types, abilities, baseStatistics, yield, size, actorId);
 
     form.SetDetails(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
     form.SetSprites(_sprites, actorId);

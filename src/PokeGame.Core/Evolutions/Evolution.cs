@@ -42,10 +42,10 @@ public sealed class Evolution : AggregateRoot, IEntityProvider
   {
     WorldMismatchException.ThrowIfMismatch(this, source, nameof(source));
     WorldMismatchException.ThrowIfMismatch(this, target, nameof(target));
-    if (source.Equals(target) || source.VarietyId == target.VarietyId)
+
+    if (source.SpeciesId == target.SpeciesId)
     {
-      // TODO(fpion): they should even be from different Pokémon species.
-      throw new ArgumentException("The source and target forms must be different and from different Pokémon varieties.", nameof(target));
+      throw new InvalidEvolutionFormsException(source, target);
     }
 
     if (!Enum.IsDefined(trigger))
