@@ -1,6 +1,6 @@
-﻿using PokeGame.Core.Evolutions;
+﻿using PokeGame.Core.Pokemon;
 
-namespace PokeGame.Core.Pokemon;
+namespace PokeGame.Core.Evolutions;
 
 public sealed class InvalidEvolutionSourceException : DomainException
 {

@@ -277,19 +277,44 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
       throw new ArgumentException($"The variety '{variety}' was not expected ({form.VarietyId}).", nameof(variety));
     }
 
-    // TODO(fpion): Trigger (ItemUsed/Traded)
-
-    // TODO(fpion): Level
-    // TODO(fpion): Gender
-    // TODO(fpion): Friendship
-    // TODO(fpion): HeldItemId
-    // TODO(fpion): KnownMoveId
-    // TODO(fpion): Location
-    // TODO(fpion): TimeOfDay
-
     if (Ownership is null)
     {
       throw new PokemonHasNoOwnerException(this);
+    }
+
+    List<EvolutionConditionFailure> failures = new(capacity: 8);
+    if (evolution.Trigger == EvolutionTrigger.Traded && OriginalTrainerId != Ownership.TrainerId)
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.Trade, Required: true, Actual: false));
+    }
+    if (evolution.Level is not null && evolution.Level.Value < Level)
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.Level, evolution.Level.Value, Level));
+    }
+    if (evolution.Gender.HasValue && evolution.Gender.Value != Gender)
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.Gender, evolution.Gender, Gender));
+    }
+    if (evolution.Friendship && !Friendship.IsHigh())
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.Friendship, Friendship.HighValue, Friendship.Value));
+    }
+    if (evolution.Trigger != EvolutionTrigger.ItemUsed && evolution.ItemId.HasValue && evolution.ItemId.Value != HeldItemId)
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.HeldItem, evolution.ItemId?.EntityId, HeldItemId?.EntityId));
+    }
+    // TODO(fpion): KnownMoveId
+    if (evolution.Location is not null && !evolution.Location.Equals(location))
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.Location, evolution.Location.Value, location?.Value));
+    }
+    if (evolution.TimeOfDay.HasValue && evolution.TimeOfDay.Value != timeOfDay)
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.TimeOfDay, evolution.TimeOfDay, timeOfDay));
+    }
+    if (failures.Count > 0)
+    {
+      throw new EvolutionRequirementsNotMetException(failures);
     }
 
     PokemonStatistics current = new(this);
