@@ -34,11 +34,6 @@ public sealed class Variety : AggregateRoot, IEntityProvider
   {
   }
 
-  public Variety(PokemonSpecies species, Key key, ActorId? actorId = null)
-    : this(VarietyId.NewId(species.WorldId), species.Id, key, actorId)
-  {
-  }
-
   public Variety(VarietyId varietyId, SpeciesId speciesId, Key key, ActorId? actorId = null)
     : base(varietyId.StreamId)
   {
