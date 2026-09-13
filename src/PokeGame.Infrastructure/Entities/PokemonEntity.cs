@@ -218,6 +218,25 @@ internal class PokemonEntity : AggregateEntity
     Stamina = @event.Stamina;
   }
 
+  public void Evolve(int speciesId, int varietyId, int formId, PokemonEvolved @event)
+  {
+    Update(@event);
+
+    SpeciesId = speciesId;
+    VarietyId = varietyId;
+    FormId = formId;
+
+    BaseHP = @event.BaseStatistics.HP;
+    BaseAttack = @event.BaseStatistics.Attack;
+    BaseDefense = @event.BaseStatistics.Defense;
+    BaseSpecialAttack = @event.BaseStatistics.SpecialAttack;
+    BaseSpecialDefense = @event.BaseStatistics.SpecialDefense;
+    BaseSpeed = @event.BaseStatistics.Speed;
+
+    Vitality = @event.Vitality;
+    Stamina = @event.Stamina;
+  }
+
   public void Receive(int trainerId, int pokeBallId, PokemonReceived @event)
   {
     Update(@event);
