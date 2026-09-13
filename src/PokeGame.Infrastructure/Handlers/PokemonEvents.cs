@@ -11,6 +11,7 @@ internal class PokemonEvents :
   IEventHandler<PokemonCreated>,
   IEventHandler<PokemonDeleted>,
   IEventHandler<PokemonDetailsChanged>,
+  IEventHandler<PokemonEvolved>,
   IEventHandler<PokemonFormChanged>,
   IEventHandler<PokemonHeldItemChanged>,
   IEventHandler<PokemonKeyChanged>,
@@ -27,6 +28,7 @@ internal class PokemonEvents :
     services.AddTransient<IEventHandler<PokemonCreated>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonDeleted>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonDetailsChanged>, PokemonEvents>();
+    services.AddTransient<IEventHandler<PokemonEvolved>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonFormChanged>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonHeldItemChanged>, PokemonEvents>();
     services.AddTransient<IEventHandler<PokemonKeyChanged>, PokemonEvents>();
@@ -95,6 +97,23 @@ internal class PokemonEvents :
     if (pokemon is not null && pokemon.Version == (@event.Version - 1))
     {
       pokemon.SetDetails(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(PokemonEvolved @event, CancellationToken cancellationToken)
+  {
+    PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (pokemon is not null && pokemon.Version == (@event.Version - 1))
+    {
+      var data = await _pokemon.Forms
+        .Where(x => x.StreamId == @event.FormId.Value)
+        .Select(x => new { x.FormId, x.VarietyId, x.Variety!.SpeciesId })
+        .SingleOrDefaultAsync(cancellationToken)
+        ?? throw new InvalidOperationException($"The form entity 'StreamId={@event.FormId}' was not found.");
+
+      pokemon.Evolve(data.SpeciesId, data.VarietyId, data.FormId, @event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

@@ -44,6 +44,7 @@ public sealed class Evolution : AggregateRoot, IEntityProvider
     WorldMismatchException.ThrowIfMismatch(this, target, nameof(target));
     if (source.Equals(target) || source.VarietyId == target.VarietyId)
     {
+      // TODO(fpion): they should even be from different Pokémon species.
       throw new ArgumentException("The source and target forms must be different and from different Pokémon varieties.", nameof(target));
     }
 

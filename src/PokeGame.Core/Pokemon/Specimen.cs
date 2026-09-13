@@ -1,6 +1,7 @@
 ﻿using Logitar.EventSourcing;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Assets;
+using PokeGame.Core.Evolutions;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Items;
 using PokeGame.Core.Pokemon.Events;
@@ -132,7 +133,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
       throw new ArgumentOutOfRangeException(nameof(abilitySlot));
     }
 
-    ArgumentOutOfRangeException.ThrowIfNegative(experience, nameof(experience));
+    ArgumentOutOfRangeException.ThrowIfNegative(experience);
     if (eggCycles > 0 && experience > 0)
     {
       throw new InvalidOperationException("Egg cycles and experience cannot both be greater than zero.");
@@ -249,6 +250,100 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     if (!IsDeleted)
     {
       Raise(new PokemonDeleted(), actorId);
+    }
+  }
+
+  public void Evolve(Evolution evolution, Form form, Variety variety, Location? location = null, TimeOfDay? timeOfDay = null, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(this, evolution, nameof(evolution));
+    WorldMismatchException.ThrowIfMismatch(this, form, nameof(form));
+    WorldMismatchException.ThrowIfMismatch(this, variety, nameof(variety));
+
+    if (timeOfDay.HasValue && !Enum.IsDefined(timeOfDay.Value))
+    {
+      throw new ArgumentOutOfRangeException(nameof(timeOfDay));
+    }
+
+    if (FormId != evolution.SourceId)
+    {
+      throw new InvalidEvolutionSourceException(this, evolution);
+    }
+    if (form.Id != evolution.TargetId)
+    {
+      throw new ArgumentException($"The target form '{form}' was not expected ({evolution.TargetId}).", nameof(form));
+    }
+    if (variety.Id != form.VarietyId)
+    {
+      throw new ArgumentException($"The variety '{variety}' was not expected ({form.VarietyId}).", nameof(variety));
+    }
+
+    if (IsEgg)
+    {
+      throw new PokemonEggCannotEvolveException(this);
+    }
+    if (Ownership is null)
+    {
+      throw new PokemonHasNoOwnerException(this);
+    }
+
+    List<EvolutionConditionFailure> failures = new(capacity: 8);
+    if (evolution.Trigger == EvolutionTrigger.Traded && OriginalTrainerId == Ownership.TrainerId)
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.Trade, Required: true, Actual: false));
+    }
+    if (evolution.Level is not null && evolution.Level.Value > Level)
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.Level, evolution.Level.Value, Level));
+    }
+    if (evolution.Gender.HasValue && evolution.Gender.Value != Gender)
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.Gender, evolution.Gender, Gender));
+    }
+    if (evolution.Friendship && !Friendship.IsHigh())
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.Friendship, Friendship.HighValue, Friendship.Value));
+    }
+    if (evolution.Trigger != EvolutionTrigger.ItemUsed && evolution.ItemId.HasValue && evolution.ItemId.Value != HeldItemId)
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.HeldItem, evolution.ItemId?.EntityId, HeldItemId?.EntityId));
+    }
+    // TODO(fpion): KnownMoveId
+    if (evolution.Location is not null && !evolution.Location.Equals(location))
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.Location, evolution.Location.Value, location?.Value));
+    }
+    if (evolution.TimeOfDay.HasValue && evolution.TimeOfDay.Value != timeOfDay)
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.TimeOfDay, evolution.TimeOfDay, timeOfDay));
+    }
+    if (failures.Count > 0)
+    {
+      throw new EvolutionRequirementsNotMetException(failures);
+    }
+
+    PokemonStatistics current = new(this);
+    PokemonStatistics changed = new(form.BaseStatistics, IndividualValues, EffortValues, Level, Nature);
+    int delta = changed.HP - current.HP;
+    int vitality = Math.Clamp(Vitality + delta, 0, changed.HP);
+    int stamina = Math.Clamp(Stamina + delta, 0, changed.HP);
+
+    bool consumeHeldItem = evolution.Trigger != EvolutionTrigger.ItemUsed && evolution.ItemId.HasValue;
+
+    Raise(new PokemonEvolved(variety.SpeciesId, variety.Id, form.Id, form.BaseStatistics, vitality, stamina, consumeHeldItem), actorId);
+  }
+  private void Handle(PokemonEvolved @event)
+  {
+    SpeciesId = @event.SpeciesId;
+    VarietyId = @event.VarietyId;
+    FormId = @event.FormId;
+
+    _baseStatistics = @event.BaseStatistics;
+    Vitality = @event.Vitality;
+    Stamina = @event.Stamina;
+
+    if (@event.ConsumeHeldItem)
+    {
+      HeldItemId = null;
     }
   }
 
@@ -387,13 +482,13 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   {
     PokemonStatistics statistics = new(this);
 
-    ArgumentOutOfRangeException.ThrowIfNegative(vitality, nameof(vitality));
+    ArgumentOutOfRangeException.ThrowIfNegative(vitality);
     if (vitality > statistics.HP)
     {
       throw new ConstitutionOutOfRangeException(this, statistics.HP, vitality, nameof(Vitality));
     }
 
-    ArgumentOutOfRangeException.ThrowIfNegative(stamina, nameof(stamina));
+    ArgumentOutOfRangeException.ThrowIfNegative(stamina);
     if (stamina > statistics.HP)
     {
       throw new ConstitutionOutOfRangeException(this, statistics.HP, stamina, nameof(Stamina));

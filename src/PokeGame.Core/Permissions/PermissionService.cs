@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
+using PokeGame.Core.Pokemon;
 using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Permissions;
@@ -129,6 +130,8 @@ internal class PermissionService : IPermissionService
   {
     switch (action)
     {
+      case Actions.Evolve:
+        return _context.IsWorldOwner && entity.WorldId == _context.TryGetWorldId() && entity.Kind == Specimen.EntityKind;
       case Actions.Update:
         return _context.IsWorldOwner && entity.WorldId == _context.TryGetWorldId();
       default:

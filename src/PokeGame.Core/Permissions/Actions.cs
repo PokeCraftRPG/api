@@ -16,6 +16,7 @@ internal static class Actions
   public const string CreateVariety = "CreateVariety";
   public const string CreateWorld = "CreateWorld";
   public const string Decline = "Decline";
+  public const string Evolve = "Evolve";
   public const string InviteMember = "InviteMember";
   public const string LeaveMembership = "LeaveMembership";
   public const string RevokeMembership = "RevokeMembership";

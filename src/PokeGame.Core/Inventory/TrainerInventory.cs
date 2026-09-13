@@ -53,6 +53,14 @@ public sealed class TrainerInventory : AggregateRoot, IEntityProvider
     ChangeQuantity(item.Id, quantity, actorId);
   }
 
+  public void UseItem(ItemId itemId, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(this, itemId, nameof(itemId));
+
+    int quantity = _quantities.GetValueOrDefault(itemId) - 1;
+    ChangeQuantity(itemId, quantity, actorId);
+  }
+
   private void ChangeQuantity(ItemId itemId, int quantity, ActorId? actorId)
   {
     if (quantity < MinimumQuantity || quantity > MaximumQuantity)
