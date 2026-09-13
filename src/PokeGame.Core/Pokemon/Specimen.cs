@@ -287,6 +287,11 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     // TODO(fpion): Location
     // TODO(fpion): TimeOfDay
 
+    if (Ownership is null)
+    {
+      throw new PokemonHasNoOwnerException(this);
+    }
+
     PokemonStatistics current = new(this);
     PokemonStatistics changed = new(form.BaseStatistics, IndividualValues, EffortValues, Level, Nature);
     int delta = changed.HP - current.HP;

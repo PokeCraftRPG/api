@@ -3,7 +3,9 @@ using Logitar.EventSourcing;
 using PokeGame.Core.Evolutions;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Inventory;
+using PokeGame.Core.Messaging;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Varieties;
@@ -20,6 +22,7 @@ internal class EvolvePokemonCommandHandler : ICommandHandler<EvolvePokemonComman
   private readonly IFormRepository _formRepository;
   private readonly IInventoryManager _inventoryManager;
   private readonly IInventoryRepository _inventoryRepository;
+  private readonly IMessagingManager _messagingManager;
   private readonly IPermissionService _permissionService;
   private readonly IPokemonQuerier _pokemonQuerier;
   private readonly IPokemonRepository _pokemonRepository;
@@ -31,6 +34,7 @@ internal class EvolvePokemonCommandHandler : ICommandHandler<EvolvePokemonComman
     IFormRepository formRepository,
     IInventoryManager inventoryManager,
     IInventoryRepository inventoryRepository,
+    IMessagingManager messagingManager,
     IPermissionService permissionService,
     IPokemonQuerier pokemonQuerier,
     IPokemonRepository pokemonRepository,
@@ -41,6 +45,7 @@ internal class EvolvePokemonCommandHandler : ICommandHandler<EvolvePokemonComman
     _formRepository = formRepository;
     _inventoryManager = inventoryManager;
     _inventoryRepository = inventoryRepository;
+    _messagingManager = messagingManager;
     _permissionService = permissionService;
     _pokemonQuerier = pokemonQuerier;
     _pokemonRepository = pokemonRepository;
@@ -76,6 +81,9 @@ internal class EvolvePokemonCommandHandler : ICommandHandler<EvolvePokemonComman
     specimen.Evolve(evolution, form, variety, location, payload.TimeOfDay, actorId);
 
     await _pokemonRepository.SaveAsync(specimen, cancellationToken);
+
+    PokemonAcquired acquired = PokemonAcquired.From(specimen);
+    await _messagingManager.PublishAsync(acquired, cancellationToken);
 
     return await _pokemonQuerier.ReadAsync(specimen, cancellationToken);
   }
