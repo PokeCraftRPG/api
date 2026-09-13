@@ -10,7 +10,7 @@ public class EvolutionTests : UnitTests
   [Fact(DisplayName = "It should create an evolution between forms of different species.")]
   public void Given_DifferentSpecies_When_ctor_Then_Created()
   {
-    Evolution evolution = new(Catalog.World, Catalog.Form, Catalog.CharmanderForm, EvolutionTrigger.LeveledUp);
+    Evolution evolution = new(EvolutionId.NewId(Catalog.World.Id), Catalog.Form, Catalog.CharmanderForm, EvolutionTrigger.LeveledUp);
 
     Assert.Equal(Catalog.Form.Id, evolution.SourceId);
     Assert.Equal(Catalog.CharmanderForm.Id, evolution.TargetId);
@@ -21,7 +21,7 @@ public class EvolutionTests : UnitTests
   public void Given_SameForm_When_ctor_Then_InvalidEvolutionFormsException()
   {
     InvalidEvolutionFormsException exception = Assert.Throws<InvalidEvolutionFormsException>(
-      () => new Evolution(Catalog.World, Catalog.Form, Catalog.Form, EvolutionTrigger.LeveledUp));
+      () => new Evolution(EvolutionId.NewId(Catalog.World.Id), Catalog.Form, Catalog.Form, EvolutionTrigger.LeveledUp));
 
     AssertInvalidEvolutionForms(exception, Catalog.Form, Catalog.Form);
   }
@@ -45,7 +45,7 @@ public class EvolutionTests : UnitTests
       .Build();
 
     InvalidEvolutionFormsException exception = Assert.Throws<InvalidEvolutionFormsException>(
-      () => new Evolution(Catalog.World, Catalog.Form, otherForm, EvolutionTrigger.LeveledUp));
+      () => new Evolution(EvolutionId.NewId(Catalog.World.Id), Catalog.Form, otherForm, EvolutionTrigger.LeveledUp));
 
     AssertInvalidEvolutionForms(exception, Catalog.Form, otherForm);
   }

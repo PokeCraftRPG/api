@@ -32,11 +32,6 @@ public sealed class Evolution : AggregateRoot, IEntityProvider
   {
   }
 
-  public Evolution(World world, Form source, Form target, EvolutionTrigger trigger, Item? item = null, ActorId? actorId = null)
-    : this(EvolutionId.NewId(world.Id), source, target, trigger, item, actorId)
-  {
-  }
-
   public Evolution(EvolutionId evolutionId, Form source, Form target, EvolutionTrigger trigger, Item? item = null, ActorId? actorId = null)
     : base(evolutionId.StreamId)
   {

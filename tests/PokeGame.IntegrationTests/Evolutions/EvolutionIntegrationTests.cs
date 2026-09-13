@@ -55,7 +55,7 @@ public class EvolutionIntegrationTests : IntegrationTests
     await _itemRepository.SaveAsync(_item);
     await _moveRepository.SaveAsync(_move);
 
-    _evolution = new Evolution(Context.World!, _source, _target, EvolutionTrigger.LeveledUp, actorId: Context.ActorId);
+    _evolution = new Evolution(EvolutionId.NewId(Context.WorldId), _source, _target, EvolutionTrigger.LeveledUp, actorId: Context.ActorId);
     _evolution.SetConditions(new Level(16), friendship: true, Gender.Female, item: null, _move, Location.TryCreate("Route 1"), TimeOfDay.Day, Context.ActorId);
     await _evolutionRepository.SaveAsync(_evolution);
 
@@ -146,7 +146,7 @@ public class EvolutionIntegrationTests : IntegrationTests
     (_, _, Form squirtle) = await CreateFormAsync("squirtle");
     Item item = ItemBuilder.Antidote(Faker, Context.World);
     await _itemRepository.SaveAsync(item);
-    Evolution extra = new Evolution(Context.World!, _target, squirtle, EvolutionTrigger.ItemUsed, item, Context.ActorId);
+    Evolution extra = new Evolution(EvolutionId.NewId(Context.WorldId), _target, squirtle, EvolutionTrigger.ItemUsed, item, Context.ActorId);
     extra.SetConditions(new Level(36), friendship: false, Gender.Male, item, move: null, Location.TryCreate("Mt Moon"), TimeOfDay.Night, Context.ActorId);
     await _evolutionRepository.SaveAsync(extra);
 

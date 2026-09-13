@@ -40,19 +40,6 @@ public sealed class PokemonSpecies : AggregateRoot, IEntityProvider
   }
 
   public PokemonSpecies(
-    World world,
-    Number number,
-    SpeciesCategory category,
-    Key key,
-    Friendship baseFriendship,
-    CatchRate catchRate,
-    GrowthRate growthRate,
-    SpeciesEggs eggs,
-    ActorId? actorId = null) : this(SpeciesId.NewId(world.Id), number, category, key, baseFriendship, catchRate, growthRate, eggs, actorId)
-  {
-  }
-
-  public PokemonSpecies(
     SpeciesId speciesId,
     Number number,
     SpeciesCategory category,

@@ -54,7 +54,7 @@ public class SpecimenEvolveTests : UnitTests
     Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Red);
     pokemon.SetHeldItem(Catalog.Potion);
 
-    Evolution evolution = new(Catalog.World, Catalog.Form, Catalog.CharmanderForm, EvolutionTrigger.ItemUsed, Catalog.MasterBall);
+    Evolution evolution = new(EvolutionId.NewId(Catalog.World.Id), Catalog.Form, Catalog.CharmanderForm, EvolutionTrigger.ItemUsed, Catalog.MasterBall);
 
     pokemon.Evolve(evolution, Catalog.CharmanderForm, Catalog.CharmanderVariety);
 
@@ -106,7 +106,7 @@ public class SpecimenEvolveTests : UnitTests
   public void Given_WrongSourceForm_When_Evolve_Then_InvalidEvolutionSourceException()
   {
     Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Red);
-    Evolution evolution = new(Catalog.World, Catalog.CharmanderForm, Catalog.Form, EvolutionTrigger.LeveledUp);
+    Evolution evolution = new(EvolutionId.NewId(Catalog.World.Id), Catalog.CharmanderForm, Catalog.Form, EvolutionTrigger.LeveledUp);
 
     InvalidEvolutionSourceException exception = Assert.Throws<InvalidEvolutionSourceException>(
       () => pokemon.Evolve(evolution, Catalog.Form, Catalog.Variety));
@@ -243,14 +243,14 @@ public class SpecimenEvolveTests : UnitTests
   {
     Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Red);
     DomainCatalog other = new(Faker);
-    Evolution evolution = new(other.World, other.Form, other.CharmanderForm, EvolutionTrigger.LeveledUp);
+    Evolution evolution = new(EvolutionId.NewId(other.World.Id), other.Form, other.CharmanderForm, EvolutionTrigger.LeveledUp);
 
     Assert.Throws<WorldMismatchException>(
       () => pokemon.Evolve(evolution, Catalog.CharmanderForm, Catalog.CharmanderVariety));
   }
 
   private Evolution CreateEvolution(EvolutionTrigger trigger = EvolutionTrigger.LeveledUp)
-    => new(Catalog.World, Catalog.Form, Catalog.CharmanderForm, trigger);
+    => new(EvolutionId.NewId(Catalog.World.Id), Catalog.Form, Catalog.CharmanderForm, trigger);
 
   private Specimen CreateOwnedAtLevel(int level)
   {

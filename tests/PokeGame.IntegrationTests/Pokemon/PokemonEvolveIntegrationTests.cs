@@ -99,7 +99,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should evolve a Pokémon by using an item and consume it from the inventory.")]
   public async Task Given_ItemUsed_When_Evolve_Then_EvolvedAndItemConsumed()
   {
-    Evolution evolution = new(Context.World!, _source, _target, EvolutionTrigger.ItemUsed, _leafStone, Context.ActorId);
+    Evolution evolution = new(EvolutionId.NewId(Context.WorldId), _source, _target, EvolutionTrigger.ItemUsed, _leafStone, Context.ActorId);
     await _evolutionRepository.SaveAsync(evolution);
     await _inventoryService.SetAsync(_trainer.EntityId, _leafStone.EntityId, new SetInventoryItemPayload { Quantity = 2 });
 
@@ -140,7 +140,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should consume the held item when a level-up evolution requires it.")]
   public async Task Given_HeldItemEvolution_When_Evolve_Then_HeldItemConsumed()
   {
-    Evolution evolution = new(Context.World!, _source, _target, EvolutionTrigger.LeveledUp, actorId: Context.ActorId);
+    Evolution evolution = new(EvolutionId.NewId(Context.WorldId), _source, _target, EvolutionTrigger.LeveledUp, actorId: Context.ActorId);
     evolution.SetConditions(level: null, friendship: false, gender: null, _leafStone, move: null, location: null, timeOfDay: null, Context.ActorId);
     await _evolutionRepository.SaveAsync(evolution);
 
@@ -235,7 +235,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw EvolutionRequirementsNotMetException when the conditions are not met.")]
   public async Task Given_RequirementsNotMet_When_Evolve_Then_EvolutionRequirementsNotMetException()
   {
-    Evolution evolution = new(Context.World!, _source, _target, EvolutionTrigger.LeveledUp, actorId: Context.ActorId);
+    Evolution evolution = new(EvolutionId.NewId(Context.WorldId), _source, _target, EvolutionTrigger.LeveledUp, actorId: Context.ActorId);
     evolution.SetConditions(level: null, friendship: false, Gender.Female, item: null, move: null, location: null, timeOfDay: null, Context.ActorId);
     await _evolutionRepository.SaveAsync(evolution);
 
@@ -266,7 +266,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw InventoryQuantityOutOfRangeException when the evolution item is missing.")]
   public async Task Given_MissingInventoryItem_When_Evolve_Then_InventoryQuantityOutOfRangeException()
   {
-    Evolution evolution = new(Context.World!, _source, _target, EvolutionTrigger.ItemUsed, _leafStone, Context.ActorId);
+    Evolution evolution = new(EvolutionId.NewId(Context.WorldId), _source, _target, EvolutionTrigger.ItemUsed, _leafStone, Context.ActorId);
     await _evolutionRepository.SaveAsync(evolution);
     PokemonDto created = await CreateOwnedPokemonAsync("no-stone");
 
@@ -286,7 +286,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     string? location = null,
     TimeOfDay? timeOfDay = null)
   {
-    Evolution evolution = new(Context.World!, _source, _target, trigger, actorId: Context.ActorId);
+    Evolution evolution = new(EvolutionId.NewId(Context.WorldId), _source, _target, trigger, actorId: Context.ActorId);
     if (level is not null || location is not null || timeOfDay.HasValue)
     {
       evolution.SetConditions(level, friendship: false, gender: null, item: null, move: null, Location.TryCreate(location), timeOfDay, Context.ActorId);

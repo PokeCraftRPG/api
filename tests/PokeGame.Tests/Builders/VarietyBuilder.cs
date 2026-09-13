@@ -118,9 +118,8 @@ public class VarietyBuilder : IVarietyBuilder
     ActorId actorId = world.OwnerId.ActorId;
     Key key = new(_key);
 
-    Variety variety = _varietyId.HasValue
-      ? new(_varietyId.Value, species.Id, key, actorId)
-      : new(species, key, actorId);
+    VarietyId varietyId = _varietyId ?? VarietyId.NewId(species.WorldId);
+    Variety variety = new(varietyId, species.Id, key, actorId);
 
     variety.SetDefault(_isDefault, actorId);
     variety.SetDetails(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);

@@ -23,11 +23,6 @@ public sealed class Ability : AggregateRoot, IEntityProvider
   {
   }
 
-  public Ability(World world, Key key, ActorId? actorId = null)
-    : this(AbilityId.NewId(world.Id), key, actorId)
-  {
-  }
-
   public Ability(AbilityId abilityId, Key key, ActorId? actorId = null)
     : base(abilityId.StreamId)
   {

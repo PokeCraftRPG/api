@@ -30,11 +30,6 @@ public sealed class Move : AggregateRoot, IEntityProvider
   {
   }
 
-  public Move(World world, PokemonType type, MoveCategory category, Key key, ActorId? actorId = null)
-    : this(MoveId.NewId(world.Id), type, category, key, actorId)
-  {
-  }
-
   public Move(MoveId moveId, PokemonType type, MoveCategory category, Key key, ActorId? actorId = null)
     : base(moveId.StreamId)
   {

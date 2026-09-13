@@ -118,9 +118,8 @@ public class TrainerBuilder : ITrainerBuilder
     ActorId actorId = world.OwnerId.ActorId;
     Key key = new(_key);
 
-    Trainer trainer = _trainerId.HasValue
-      ? new(_trainerId.Value, key, actorId)
-      : new(world, key, actorId);
+    TrainerId trainerId = _trainerId ?? TrainerId.NewId(world.Id);
+    Trainer trainer = new(trainerId, key, actorId);
 
     trainer.SetDetails(Name.TryCreate(_name), Summary.TryCreate(_summary), Content.TryCreate(_content), actorId);
     trainer.SetLicense(License.TryCreate(_license), actorId);
