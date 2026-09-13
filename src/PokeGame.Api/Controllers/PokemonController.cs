@@ -42,6 +42,13 @@ public class PokemonController : ControllerBase
     return CreatedAtRoute(GetByIdRoute, new { id = pokemon.Id }, pokemon);
   }
 
+  [HttpPost("{id}/evolve")]
+  public async Task<ActionResult<PokemonDto>> EvolveAsync(Guid id, [FromBody] EvolvePokemonPayload payload, CancellationToken cancellationToken)
+  {
+    PokemonDto? pokemon = await _pokemonService.EvolveAsync(id, payload, cancellationToken);
+    return pokemon is null ? NotFound() : Ok(pokemon);
+  }
+
   [HttpGet("{id}", Name = GetByIdRoute)]
   public async Task<ActionResult<PokemonDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {

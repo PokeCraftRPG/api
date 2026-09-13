@@ -71,4 +71,27 @@ public class PokemonPayloadTests : UnitTests
       Location = "Pokémon Center"
     }.Validate();
   }
+
+  [Fact(DisplayName = "It should throw InvalidCommandException when the evolve time of day is invalid.")]
+  public void Given_InvalidTimeOfDay_When_ValidateEvolve_Then_InvalidCommandException()
+  {
+    EvolvePokemonPayload payload = new()
+    {
+      EvolutionId = Guid.NewGuid(),
+      TimeOfDay = (TimeOfDay)99
+    };
+
+    Assert.Throws<InvalidCommandException>(payload.Validate);
+  }
+
+  [Fact(DisplayName = "It should accept a valid evolve payload.")]
+  public void Given_ValidPayload_When_ValidateEvolve_Then_Valid()
+  {
+    new EvolvePokemonPayload
+    {
+      EvolutionId = Guid.NewGuid(),
+      Location = "Route 1",
+      TimeOfDay = TimeOfDay.Night
+    }.Validate();
+  }
 }

@@ -33,6 +33,10 @@ public sealed class DomainCatalog
     Species = SpeciesBuilder.Bulbasaur(Faker, World);
     Variety = VarietyBuilder.Bulbasaur(Faker, Species, World);
     Form = FormBuilder.Bulbasaur(Faker, Variety, Ability, World);
+    Blaze = AbilityBuilder.Blaze(Faker, World);
+    CharmanderSpecies = SpeciesBuilder.Charmander(Faker, World);
+    CharmanderVariety = VarietyBuilder.Charmander(Faker, CharmanderSpecies, World);
+    CharmanderForm = FormBuilder.Charmander(Faker, CharmanderVariety, Blaze, World);
   }
 
   public Faker Faker { get; }
@@ -46,20 +50,24 @@ public sealed class DomainCatalog
   public PokemonSpecies Species { get; }
   public Variety Variety { get; }
   public Form Form { get; }
+  public Ability Blaze { get; }
+  public PokemonSpecies CharmanderSpecies { get; }
+  public Variety CharmanderVariety { get; }
+  public Form CharmanderForm { get; }
   public IPokemonRandomizer Randomizer { get; } = new DeterministicPokemonRandomizer();
   public Location PalletTown { get; } = new("Pallet Town");
   public Location CeruleanCity { get; } = new("Cerulean City");
   public Location PokemonCenter { get; } = new("Pokémon Center");
 
-  public Specimen CreatePokemon(string? key = null, byte eggCycles = 0, AbilitySlot? abilitySlot = null, Gender? gender = null)
+  public Specimen CreatePokemon(string? key = null, byte eggCycles = 0, AbilitySlot? abilitySlot = null, Gender? gender = null, int experience = 0)
   {
     Key? pokemonKey = string.IsNullOrWhiteSpace(key) ? null : new Key(key);
-    return new Specimen(Randomizer, PokemonId.NewId(World.Id), Species, Variety, Form, pokemonKey, gender, abilitySlot: abilitySlot, eggCycles: eggCycles);
+    return new Specimen(Randomizer, PokemonId.NewId(World.Id), Species, Variety, Form, pokemonKey, gender, abilitySlot: abilitySlot, eggCycles: eggCycles, experience: experience);
   }
 
-  public Specimen CreateOwnedPokemon(Trainer trainer, string? key = null, byte eggCycles = 0, Item? pokeBall = null)
+  public Specimen CreateOwnedPokemon(Trainer trainer, string? key = null, byte eggCycles = 0, Item? pokeBall = null, int experience = 0, Gender? gender = null)
   {
-    Specimen pokemon = CreatePokemon(key, eggCycles);
+    Specimen pokemon = CreatePokemon(key, eggCycles, gender: gender, experience: experience);
     pokemon.Receive(trainer, pokeBall ?? MasterBall, PalletTown);
     return pokemon;
   }
