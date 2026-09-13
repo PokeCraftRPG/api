@@ -133,7 +133,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
       throw new ArgumentOutOfRangeException(nameof(abilitySlot));
     }
 
-    ArgumentOutOfRangeException.ThrowIfNegative(experience, nameof(experience));
+    ArgumentOutOfRangeException.ThrowIfNegative(experience);
     if (eggCycles > 0 && experience > 0)
     {
       throw new InvalidOperationException("Egg cycles and experience cannot both be greater than zero.");
@@ -471,13 +471,13 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   {
     PokemonStatistics statistics = new(this);
 
-    ArgumentOutOfRangeException.ThrowIfNegative(vitality, nameof(vitality));
+    ArgumentOutOfRangeException.ThrowIfNegative(vitality);
     if (vitality > statistics.HP)
     {
       throw new ConstitutionOutOfRangeException(this, statistics.HP, vitality, nameof(Vitality));
     }
 
-    ArgumentOutOfRangeException.ThrowIfNegative(stamina, nameof(stamina));
+    ArgumentOutOfRangeException.ThrowIfNegative(stamina);
     if (stamina > statistics.HP)
     {
       throw new ConstitutionOutOfRangeException(this, statistics.HP, stamina, nameof(Stamina));

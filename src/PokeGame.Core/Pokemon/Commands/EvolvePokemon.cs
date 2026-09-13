@@ -76,11 +76,24 @@ internal class EvolvePokemonCommandHandler : ICommandHandler<EvolvePokemonComman
     Variety variety = await _varietyRepository.LoadAsync(form.VarietyId, cancellationToken)
       ?? throw new InvalidOperationException($"The variety 'Id={form.VarietyId}' was not loaded.");
 
+    TrainerInventory? inventory = null;
+    if (evolution.Trigger == EvolutionTrigger.ItemUsed && evolution.ItemId.HasValue)
+    {
+      PokemonOwnership ownership = specimen.Ownership ?? throw new PokemonHasNoOwnerException(specimen);
+      InventoryId inventoryId = new(ownership.TrainerId);
+      inventory = await _inventoryRepository.LoadAsync(inventoryId, cancellationToken) ?? new(inventoryId);
+      inventory.UseItem(evolution.ItemId.Value, actorId);
+    }
+
     Location? location = Location.TryCreate(payload.Location);
 
     specimen.Evolve(evolution, form, variety, location, payload.TimeOfDay, actorId);
 
     await _pokemonRepository.SaveAsync(specimen, cancellationToken);
+    if (inventory is not null)
+    {
+      await _inventoryRepository.SaveAsync(inventory, cancellationToken);
+    }
 
     PokemonAcquired acquired = PokemonAcquired.From(specimen);
     await _messagingManager.PublishAsync(acquired, cancellationToken);
