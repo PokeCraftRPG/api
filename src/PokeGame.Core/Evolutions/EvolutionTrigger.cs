@@ -1,6 +1,6 @@
 ﻿namespace PokeGame.Core.Evolutions;
 
-public enum EvolutionTrigger // TODO(fpion): rename to EvolutionMethod.
+public enum EvolutionTrigger
 {
   LeveledUp = 0,
   ItemUsed = 1,
