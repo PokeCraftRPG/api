@@ -105,9 +105,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     await AssertRosterContainsAsync(_trainer, pokemon, isInParty: true);
     AssertPokemonRoster(read, isInParty: true);
 
-    TrainerDto? trainer = await _trainerService.ReadAsync(_trainer.EntityId);
-    Assert.NotNull(trainer);
-    Assert.Null(trainer.PartyLimit);
+    await AssertPartyCountAsync(_trainer, expected: 1);
   }
 
   [Fact(DisplayName = "It should transfer a Pokémon to another trainer.")]
@@ -129,6 +127,9 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     await AssertRosterDoesNotContainAsync(_trainer, pokemon);
     await AssertRosterContainsAsync(blue, pokemon, isInParty: true);
+
+    await AssertPartyCountAsync(_trainer, expected: 0);
+    await AssertPartyCountAsync(blue, expected: 1);
   }
 
   [Fact(DisplayName = "It should send a received Pokémon to the box when the party is full.")]
@@ -151,6 +152,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Roster roster = await LoadRosterAsync(_trainer);
     Assert.Equal(Roster.PartyLimit + 1, roster.Entries.Count);
     Assert.Equal(Roster.PartyLimit, roster.PartyIds.Count);
+
+    await AssertPartyCountAsync(_trainer, expected: Roster.PartyLimit);
   }
 
   [Fact(DisplayName = "It should respect a custom trainer party limit when receiving Pokémon.")]
@@ -172,6 +175,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     TrainerDto? trainer = await _trainerService.ReadAsync(_trainer.EntityId);
     Assert.NotNull(trainer);
     Assert.Equal(1, trainer.PartyLimit);
+    Assert.Equal(1, trainer.PartyCount);
   }
 
   [Fact(DisplayName = "It should return null when the Pokémon was not found.")]
@@ -267,6 +271,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     AssertPokemonAcquired(pokemon, _trainer);
 
     await AssertRosterContainsAsync(_trainer, pokemon, isInParty: true);
+    await AssertPartyCountAsync(_trainer, expected: 1);
   }
 
   [Fact(DisplayName = "It should throw InventoryQuantityOutOfRangeException when the trainer has no Poké Ball.")]
@@ -367,6 +372,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     AssertPokemonRoster(read, isInParty: false);
 
     await AssertRosterDoesNotContainAsync(_trainer, pokemon);
+
+    await AssertPartyCountAsync(_trainer, expected: 0);
   }
 
   [Fact(DisplayName = "It should catch a Pokémon after it was released.")]
@@ -387,6 +394,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Null(inventoryItem);
 
     await AssertRosterContainsAsync(_trainer, pokemon, isInParty: true);
+    await AssertPartyCountAsync(_trainer, expected: 1);
   }
 
   [Fact(DisplayName = "It should return null when releasing a Pokémon that was not found.")]
@@ -472,6 +480,9 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     await AssertRosterDoesNotContainAsync(_trainer, source);
     await AssertRosterContainsAsync(_trainer, target, isInParty: true);
     await AssertRosterDoesNotContainAsync(blue, target);
+
+    await AssertPartyCountAsync(_trainer, expected: 1);
+    await AssertPartyCountAsync(blue, expected: 1);
   }
 
   [Fact(DisplayName = "It should preserve party slots when trading a boxed Pokémon.")]
@@ -519,6 +530,9 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Roster blueRoster = await LoadRosterAsync(blue);
     Assert.Single(blueRoster.Entries);
     Assert.Single(blueRoster.PartyIds);
+
+    await AssertPartyCountAsync(_trainer, expected: Roster.PartyLimit);
+    await AssertPartyCountAsync(blue, expected: 1);
   }
 
   [Fact(DisplayName = "It should throw EntityNotFoundException when a Pokémon to trade was not found.")]
@@ -682,6 +696,13 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
   {
     Assert.Equal(isInParty, pokemon.IsInParty);
     Assert.Equal(0, pokemon.Priority);
+  }
+
+  private async Task AssertPartyCountAsync(Trainer trainer, int expected)
+  {
+    TrainerDto? dto = await _trainerService.ReadAsync(trainer.EntityId);
+    Assert.NotNull(dto);
+    Assert.Equal(expected, dto.PartyCount);
   }
 
   private async Task AssertRosterContainsAsync(Trainer trainer, PokemonDto pokemon, bool isInParty)

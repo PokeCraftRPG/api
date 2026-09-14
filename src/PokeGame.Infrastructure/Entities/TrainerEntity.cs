@@ -32,6 +32,9 @@ internal class TrainerEntity : AggregateEntity
   public int PartyCount { get; private set; }
   public int? PartyLimit { get; private set; }
 
+  public List<PokemonEntity> CurrentPokemon { get; private set; } = [];
+  public List<PokemonEntity> OriginalPokemon { get; private set; } = [];
+
   public TrainerEntity(int worldId, TrainerCreated @event) : base(@event)
   {
     WorldId = worldId;

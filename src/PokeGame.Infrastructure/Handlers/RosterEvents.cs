@@ -1,7 +1,9 @@
 ﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using PokeGame.Core.Rosters;
 using PokeGame.Core.Rosters.Events;
+using PokeGame.Core.Trainers;
 using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Handlers;
@@ -32,10 +34,17 @@ internal class RosterEvents :
     PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.PokemonId.Value, cancellationToken);
     if (pokemon is not null)
     {
+      bool updatePartyCount = @event.IsInParty;
+
       pokemon.IsInParty = @event.IsInParty;
       pokemon.Priority = 0;
 
       await _pokemon.SaveChangesAsync(cancellationToken);
+
+      if (updatePartyCount)
+      {
+        await UpdatePartyCountAsync(@event, cancellationToken);
+      }
     }
   }
 
@@ -44,10 +53,17 @@ internal class RosterEvents :
     PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.PokemonId.Value, cancellationToken);
     if (pokemon is not null)
     {
+      bool updatePartyCount = pokemon.IsInParty;
+
       pokemon.IsInParty = false;
       pokemon.Priority = 0;
 
       await _pokemon.SaveChangesAsync(cancellationToken);
+
+      if (updatePartyCount)
+      {
+        await UpdatePartyCountAsync(@event, cancellationToken);
+      }
     }
   }
 
@@ -56,10 +72,17 @@ internal class RosterEvents :
     PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.TargetId.Value, cancellationToken);
     if (pokemon is not null)
     {
+      bool updatePartyCount = pokemon.IsInParty != @event.IsInParty;
+
       pokemon.IsInParty = @event.IsInParty;
       pokemon.Priority = 0;
 
       await _pokemon.SaveChangesAsync(cancellationToken);
+
+      if (updatePartyCount)
+      {
+        await UpdatePartyCountAsync(@event, cancellationToken);
+      }
     }
   }
 
@@ -77,5 +100,19 @@ internal class RosterEvents :
     target?.IsInParty = @event.IsTargetInParty;
 
     await _pokemon.SaveChangesAsync(cancellationToken);
+    await UpdatePartyCountAsync(@event, cancellationToken);
+  }
+
+  private async Task UpdatePartyCountAsync(DomainEvent @event, CancellationToken cancellationToken)
+  {
+    TrainerId trainerId = new RosterId(@event.StreamId).TrainerId;
+
+    await _pokemon.Trainers
+      .Where(trainer => trainer.StreamId == trainerId.Value)
+      .ExecuteUpdateAsync(
+        setters => setters.SetProperty(
+          trainer => trainer.PartyCount,
+          _pokemon.Specimens.Count(pokemon => pokemon.CurrentTrainer!.StreamId == trainerId.Value && pokemon.IsInParty)),
+        cancellationToken);
   }
 }
