@@ -12,15 +12,15 @@ public sealed record EffortValues
   public byte SpecialDefense { get; }
   public byte Speed { get; }
 
-  public EffortValues(IReadOnlyDictionary<PokemonSkill, byte> skillRanks)
+  public EffortValues(IReadOnlyDictionary<PokemonSkill, PokemonSkillTraining> skillTraining)
   {
     HP = 0; // TODO(fpion): implement
-    Attack = CalculateEffortValue(skillRanks.GetValueOrDefault(PokemonSkill.Melee));
-    Defense = CalculateEffortValue(skillRanks.GetValueOrDefault(PokemonSkill.Resistance));
-    SpecialAttack = CalculateEffortValue(skillRanks.GetValueOrDefault(PokemonSkill.Occultism));
-    SpecialDefense = CalculateEffortValue(skillRanks.GetValueOrDefault(PokemonSkill.Discipline));
-    Speed = CalculateEffortValue(skillRanks.GetValueOrDefault(PokemonSkill.Acrobatics));
+    Attack = CalculateEffortValue(skillTraining.GetValueOrDefault(PokemonSkill.Melee)?.GetEffectiveRank() ?? 0);
+    Defense = CalculateEffortValue(skillTraining.GetValueOrDefault(PokemonSkill.Resistance)?.GetEffectiveRank() ?? 0);
+    SpecialAttack = CalculateEffortValue(skillTraining.GetValueOrDefault(PokemonSkill.Occultism)?.GetEffectiveRank() ?? 0);
+    SpecialDefense = CalculateEffortValue(skillTraining.GetValueOrDefault(PokemonSkill.Discipline)?.GetEffectiveRank() ?? 0);
+    Speed = CalculateEffortValue(skillTraining.GetValueOrDefault(PokemonSkill.Acrobatics)?.GetEffectiveRank() ?? 0);
   }
 
-  private static byte CalculateEffortValue(byte rank) => (byte)(Math.Max(rank, MaximumSkillRank) * EffortValuePerSkillRank);
+  private static byte CalculateEffortValue(int rank) => (byte)(Math.Min(rank, MaximumSkillRank) * EffortValuePerSkillRank);
 }

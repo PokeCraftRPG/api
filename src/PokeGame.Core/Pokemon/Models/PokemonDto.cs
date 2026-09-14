@@ -33,8 +33,8 @@ public class PokemonDto : Aggregate
   public int Tier { get; set; }
 
   public PokemonAttributesDto Attributes { get; set; } = new();
-  public List<SkillRankDto> SkillRanks { get; set; } = [];
   public PokemonStatisticsDto Statistics { get; set; } = new();
+  public PokemonSkillsDto Skills { get; set; } = new();
 
   public int Vitality { get; set; }
   public int Stamina { get; set; }

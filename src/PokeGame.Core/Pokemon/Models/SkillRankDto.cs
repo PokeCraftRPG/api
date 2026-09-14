@@ -3,13 +3,13 @@
 public record SkillRankDto
 {
   public PokemonSkill Skill { get; set; }
-  public byte Rank { get; set; }
+  public int Rank { get; set; }
 
   public SkillRankDto()
   {
   }
 
-  public SkillRankDto(PokemonSkill skill, byte rank)
+  public SkillRankDto(PokemonSkill skill, int rank)
   {
     Skill = skill;
     Rank = rank;
