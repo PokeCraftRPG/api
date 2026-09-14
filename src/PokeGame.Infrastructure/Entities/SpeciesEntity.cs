@@ -60,10 +60,7 @@ internal class SpeciesEntity : AggregateEntity
     HashSet<ActorId> actorIds = new(base.GetActorIds());
     foreach (RegionalNumberEntity regionalNumber in RegionalNumbers)
     {
-      if (regionalNumber.Region is not null)
-      {
-        actorIds.AddRange(regionalNumber.GetActorIds());
-      }
+      actorIds.AddRange(regionalNumber.GetActorIds());
     }
     return actorIds;
   }
