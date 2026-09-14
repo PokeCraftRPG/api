@@ -20,7 +20,7 @@ internal class ExceptionHandler : IExceptionHandler
     _problemDetailsService = problemDetailsService;
   }
 
-  public virtual async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+  public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
   {
     int statusCode = exception.GetStatusCode();
     if (statusCode == StatusCodes.Status500InternalServerError && !_apiSettings.ExposeErrorDetail)

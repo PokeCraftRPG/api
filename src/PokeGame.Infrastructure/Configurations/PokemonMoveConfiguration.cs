@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Logitar.EventSourcing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PokeGame.Core.Moves;
@@ -17,5 +18,7 @@ internal class PokemonMoveConfiguration : IEntityTypeConfiguration<PokemonMoveEn
     builder.HasIndex(x => new { x.PokemonId, x.Slot });
 
     builder.Property(x => x.LearningMethod).HasMaxLength(16).HasConversion(new EnumToStringConverter<LearningMethod>());
+    builder.Property(x => x.CreatedBy).HasMaxLength(ActorId.MaximumLength);
+    builder.Property(x => x.UpdatedBy).HasMaxLength(ActorId.MaximumLength);
   }
 }

@@ -15,13 +15,7 @@ internal class VarietyMoveConfiguration : IEntityTypeConfiguration<VarietyMoveEn
     builder.HasKey(x => x.VarietyMoveId);
 
     builder.HasIndex(x => new { x.VarietyId, x.Id }).IsUnique();
-    builder.HasIndex(x => new { x.MoveId });
-    builder.HasIndex(x => new { x.LearningMethod });
-    builder.HasIndex(x => new { x.Level });
-    builder.HasIndex(x => new { x.CreatedBy });
-    builder.HasIndex(x => new { x.CreatedOn });
-    builder.HasIndex(x => new { x.UpdatedBy });
-    builder.HasIndex(x => new { x.UpdatedOn });
+    builder.HasIndex(x => x.MoveId);
 
     builder.Property(x => x.LearningMethod).HasMaxLength(16).HasConversion(new EnumToStringConverter<LearningMethod>());
     builder.Property(x => x.CreatedBy).HasMaxLength(ActorId.MaximumLength);

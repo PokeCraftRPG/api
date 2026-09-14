@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PokeGame.Api.Models.Search;
 using PokeGame.Core;
 using PokeGame.Core.Forms;
@@ -20,7 +20,7 @@ public record SearchFormsParameters : SearchParameters
   [FromQuery(Name = "ability")]
   public string? Ability { get; set; }
 
-  public virtual SearchFormsPayload ToPayload()
+  public SearchFormsPayload ToPayload()
   {
     SearchFormsPayload payload = new();
     payload.Variety = Variety;

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PokeGame.Api.Models.Search;
 using PokeGame.Core.Items;
 using PokeGame.Core.Items.Models;
@@ -10,7 +10,7 @@ public record SearchItemsParameters : SearchParameters
   [FromQuery(Name = "category")]
   public ItemCategory? Category { get; set; }
 
-  public virtual SearchItemsPayload ToPayload()
+  public SearchItemsPayload ToPayload()
   {
     SearchItemsPayload payload = new();
     payload.Category = Category;

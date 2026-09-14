@@ -407,7 +407,11 @@ internal class Mapper
       LearningMethod = source.LearningMethod,
       IsMastered = source.IsMastered,
       PowerPointUpgrades = source.PowerPointUpgrades,
-      Slot = source.Slot
+      Slot = source.Slot,
+      CreatedBy = FindActor(source.CreatedBy),
+      CreatedOn = source.CreatedOn.AsUniversalTime(),
+      UpdatedBy = FindActor(source.UpdatedBy),
+      UpdatedOn = source.UpdatedOn.AsUniversalTime()
     };
   }
 

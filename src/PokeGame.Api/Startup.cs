@@ -103,7 +103,7 @@ internal class Startup : StartupBase
       Configure(application);
     }
   }
-  public virtual void Configure(WebApplication application)
+  public void Configure(WebApplication application)
   {
     ApiSettings apiSettings = application.Services.GetRequiredService<ApiSettings>();
     if (apiSettings.EnableSwagger)

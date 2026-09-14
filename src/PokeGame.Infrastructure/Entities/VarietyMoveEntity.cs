@@ -45,7 +45,7 @@ internal class VarietyMoveEntity
 
   public IReadOnlyCollection<ActorId> GetActorIds()
   {
-    HashSet<ActorId> actorIds = new();
+    HashSet<ActorId> actorIds = [];
     if (Move is not null)
     {
       actorIds.AddRange(Move.GetActorIds());

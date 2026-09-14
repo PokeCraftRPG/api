@@ -13,7 +13,7 @@ public record SearchMemberInvitationsParameters : SearchParameters
   [FromQuery(Name = "expired")]
   public bool? IsExpired { get; set; }
 
-  public virtual SearchMemberInvitationsPayload ToPayload()
+  public SearchMemberInvitationsPayload ToPayload()
   {
     SearchMemberInvitationsPayload payload = new();
     payload.Status = Status;

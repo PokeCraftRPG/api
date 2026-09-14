@@ -62,7 +62,7 @@ internal class SpeciesEntity : AggregateEntity
     {
       if (regionalNumber.Region is not null)
       {
-        actorIds.AddRange(regionalNumber.Region.GetActorIds());
+        actorIds.AddRange(regionalNumber.GetActorIds());
       }
     }
     return actorIds;

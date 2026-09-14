@@ -5,7 +5,7 @@ namespace PokeGame.Api.Models.Region;
 
 public record SearchRegionsParameters : SearchParameters
 {
-  public virtual SearchRegionsPayload ToPayload()
+  public SearchRegionsPayload ToPayload()
   {
     SearchRegionsPayload payload = new();
     Fill(payload);

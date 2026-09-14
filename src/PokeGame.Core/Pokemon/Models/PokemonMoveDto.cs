@@ -1,4 +1,5 @@
-﻿using PokeGame.Core.Moves;
+﻿using Krakenar.Contracts.Actors;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Moves.Models;
 
 namespace PokeGame.Core.Pokemon.Models;
@@ -14,4 +15,10 @@ public record PokemonMoveDto
   public int PowerPointUpgrades { get; set; }
 
   public int? Slot { get; set; }
+
+  public Actor CreatedBy { get; set; } = new();
+  public DateTime CreatedOn { get; set; }
+
+  public Actor UpdatedBy { get; set; } = new();
+  public DateTime UpdatedOn { get; set; }
 }

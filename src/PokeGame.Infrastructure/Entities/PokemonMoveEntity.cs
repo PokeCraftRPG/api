@@ -1,4 +1,6 @@
-﻿using PokeGame.Core.Moves;
+﻿using Logitar;
+using Logitar.EventSourcing;
+using PokeGame.Core.Moves;
 
 namespace PokeGame.Infrastructure.Entities;
 
@@ -18,13 +20,13 @@ internal class PokemonMoveEntity
 
   public int? Slot { get; private set; }
 
-  // TODO(fpion): CreatedBy
-  // TODO(fpion): CreatedOn
+  public string? CreatedBy { get; private set; }
+  public DateTime CreatedOn { get; private set; }
 
-  // TODO(fpion): UpdatedBy
-  // TODO(fpion): UpdatedOn
+  public string? UpdatedBy { get; private set; }
+  public DateTime UpdatedOn { get; private set; }
 
-  public PokemonMoveEntity(PokemonEntity pokemon, int moveId, LearningMethod learningMethod, int? slot = null)
+  public PokemonMoveEntity(PokemonEntity pokemon, int moveId, LearningMethod learningMethod, int? slot, DomainEvent @event)
   {
     Pokemon = pokemon;
     PokemonId = pokemon.PokemonId;
@@ -35,10 +37,39 @@ internal class PokemonMoveEntity
     LearningMethod = learningMethod;
 
     Slot = slot;
+
+    CreatedBy = @event.ActorId?.Value;
+    CreatedOn = @event.OccurredOn.AsUniversalTime();
+
+    Update(@event);
   }
 
   private PokemonMoveEntity()
   {
+  }
+
+  public IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = [];
+    if (Move is not null)
+    {
+      actorIds.AddRange(Move.GetActorIds());
+    }
+    if (CreatedBy is not null)
+    {
+      actorIds.Add(new ActorId(CreatedBy));
+    }
+    if (UpdatedBy is not null)
+    {
+      actorIds.Add(new ActorId(UpdatedBy));
+    }
+    return actorIds;
+  }
+
+  private void Update(DomainEvent @event)
+  {
+    UpdatedBy = @event.ActorId?.Value;
+    UpdatedOn = @event.OccurredOn.AsUniversalTime();
   }
 
   public override bool Equals(object? obj) => obj is PokemonMoveEntity entity && entity.PokemonId == PokemonId && entity.MoveId == MoveId;

@@ -15,7 +15,7 @@ public record SearchVarietiesParameters : SearchParameters
   [FromQuery(Name = "metamorph")]
   public bool? CanChangeForm { get; set; }
 
-  public virtual SearchVarietiesPayload ToPayload()
+  public SearchVarietiesPayload ToPayload()
   {
     SearchVarietiesPayload payload = new();
     payload.Species = Species;
