@@ -30,6 +30,7 @@ public class PokemonDto : Aggregate
   public GrowthRate GrowthRate { get; set; }
   public int Experience { get; set; }
   public int Level { get; set; }
+  public int Tier { get; set; }
 
   // TODO(fpion): Attributes
   public List<SkillRankDto> SkillRanks { get; set; } = [];

@@ -105,6 +105,7 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal((byte)0, pokemon.EggCycles);
     Assert.Equal(0, pokemon.Experience);
     Assert.Equal(1, pokemon.Level);
+    Assert.Equal(0, pokemon.Tier);
     Assert.Equal((byte)10, pokemon.Statistics.HP.Individual);
     Assert.Equal((byte)11, pokemon.Statistics.Attack.Individual);
     Assert.Equal((byte)12, pokemon.Statistics.Defense.Individual);
@@ -122,8 +123,33 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.NotNull(read);
     Assert.Equal(pokemon.Id, read.Id);
     Assert.Equal(pokemon.Key, read.Key);
+    Assert.Equal(0, read.Tier);
     Assert.False(read.IsInParty);
     Assert.Equal(0, read.Priority);
+  }
+
+  [Theory(DisplayName = "It should persist the Pokémon tier for the given experience.")]
+  [InlineData(1, 0)]
+  [InlineData(5, 1)]
+  [InlineData(20, 2)]
+  [InlineData(50, 3)]
+  public async Task Given_Experience_When_Create_Then_TierPersisted(int level, int expectedTier)
+  {
+    CreatePokemonPayload payload = new()
+    {
+      FormId = _form.EntityId,
+      Key = $"tier-{level}",
+      Experience = ExperienceForLevel(level)
+    };
+
+    PokemonDto pokemon = await _pokemonService.CreateAsync(payload);
+    Assert.Equal(level, pokemon.Level);
+    Assert.Equal(expectedTier, pokemon.Tier);
+
+    PokemonDto? read = await _pokemonService.ReadAsync(pokemon.Id);
+    Assert.NotNull(read);
+    Assert.Equal(level, read.Level);
+    Assert.Equal(expectedTier, read.Tier);
   }
 
   [Fact(DisplayName = "It should read a Pokémon by key.")]
@@ -155,6 +181,7 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal((byte)10, pokemon.EggCycles);
     Assert.Equal(0, pokemon.Experience);
     Assert.Equal(1, pokemon.Level);
+    Assert.Equal(0, pokemon.Tier);
     Assert.False(pokemon.IsInParty);
     Assert.Equal(0, pokemon.Priority);
   }
@@ -610,6 +637,9 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
     Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
+
+  private static int ExperienceForLevel(int level)
+    => level <= 1 ? 0 : ExperienceTable.GetThreshold(GrowthRate.MediumSlow, level - 1);
 
   private async Task<PokemonDto> CreatePokemonAsync(string key)
   {

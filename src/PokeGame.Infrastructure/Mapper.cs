@@ -321,6 +321,7 @@ internal class Mapper
       GrowthRate = source.GrowthRate,
       Experience = source.Experience,
       Level = source.Level,
+      Tier = source.Tier,
       Vitality = source.Vitality,
       Stamina = source.Stamina,
       Condition = source.Condition,

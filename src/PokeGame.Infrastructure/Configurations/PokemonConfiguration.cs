@@ -28,11 +28,14 @@ internal class PokemonConfiguration : AggregateConfiguration<PokemonEntity>, IEn
     builder.HasIndex(x => new { x.WorldId, x.Summary });
     builder.HasIndex(x => new { x.WorldId, x.Gender });
     builder.HasIndex(x => new { x.WorldId, x.IsShiny });
+    builder.HasIndex(x => new { x.WorldId, x.Level });
+    builder.HasIndex(x => new { x.WorldId, x.Tier });
     builder.HasIndex(x => new { x.WorldId, x.HeldItemId });
     builder.HasIndex(x => new { x.WorldId, x.OriginalTrainerId });
     builder.HasIndex(x => new { x.WorldId, x.OwnershipEvent });
     builder.HasIndex(x => new { x.WorldId, x.CurrentTrainerId });
     builder.HasIndex(x => new { x.WorldId, x.PokeBallId });
+    builder.HasIndex(x => new { x.WorldId, x.MetOn });
     builder.HasIndex(x => new { x.WorldId, x.IsInParty });
     builder.HasIndex(x => new { x.WorldId, x.Priority });
 

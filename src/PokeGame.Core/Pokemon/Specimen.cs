@@ -49,6 +49,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   public GrowthRate GrowthRate { get; private set; }
   public int Experience { get; private set; }
   public int Level => ExperienceTable.GetLevel(GrowthRate, Experience);
+  public int Tier => ExperienceTable.GetTier(Level);
 
   private readonly Dictionary<PokemonSkill, byte> _skillRanks = [];
   public IReadOnlyDictionary<PokemonSkill, byte> SkillRanks => _skillRanks.AsReadOnly();
