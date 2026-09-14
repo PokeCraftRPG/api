@@ -12,7 +12,7 @@ public record PokemonNatureDto : IPokemonNature
   {
   }
 
-  public PokemonNatureDto(PokemonNature nature)
+  public PokemonNatureDto(IPokemonNature nature)
   {
     Name = nature.Name;
     IncreasedStatistic = nature.IncreasedStatistic;

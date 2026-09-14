@@ -127,11 +127,12 @@ internal class Mapper
       Key = source.Key,
       Name = source.Name,
       Summary = source.Summary,
-      Content = source.Content
+      Content = source.Content,
+      Types = ToTypes(source),
+      BaseStatistics = ToBaseStatistics(source),
+      Yield = ToYield(source),
+      Size = ToSize(source)
     };
-
-    destination.Types.Primary = source.PrimaryType;
-    destination.Types.Secondary = source.SecondaryType;
 
     bool primaryFound = false;
     foreach (FormAbilityEntity entity in source.Abilities)
@@ -155,24 +156,6 @@ internal class Mapper
     {
       throw new ArgumentException("The primary ability is required.", nameof(source));
     }
-
-    destination.BaseStatistics.HP = source.BaseHP;
-    destination.BaseStatistics.Attack = source.BaseAttack;
-    destination.BaseStatistics.Defense = source.BaseDefense;
-    destination.BaseStatistics.SpecialAttack = source.BaseSpecialAttack;
-    destination.BaseStatistics.SpecialDefense = source.BaseSpecialDefense;
-    destination.BaseStatistics.Speed = source.BaseSpeed;
-
-    destination.Yield.Experience = source.YieldExperience;
-    destination.Yield.HP = source.YieldHP;
-    destination.Yield.Attack = source.YieldAttack;
-    destination.Yield.Defense = source.YieldDefense;
-    destination.Yield.SpecialAttack = source.YieldSpecialAttack;
-    destination.Yield.SpecialDefense = source.YieldSpecialDefense;
-    destination.Yield.Speed = source.YieldSpeed;
-
-    destination.Size.Height = source.Height;
-    destination.Size.Weight = source.Weight;
 
     bool defaultFound = false;
     FormSpritesDto sprites = new();
@@ -207,11 +190,17 @@ internal class Mapper
 
     return destination;
   }
+  private static BaseStatisticsDto ToBaseStatistics(FormEntity form)
+    => new(form.BaseHP, form.BaseAttack, form.BaseDefense, form.BaseSpecialAttack, form.BaseSpecialDefense, form.BaseSpeed);
+  private static FormSizeDto ToSize(FormEntity form) => new(form.Height, form.Weight);
+  private static FormTypesDto ToTypes(FormEntity form) => new(form.PrimaryType, form.SecondaryType);
+  private static FormYieldDto ToYield(FormEntity form)
+    => new(form.YieldExperience, form.YieldHP, form.YieldAttack, form.YieldDefense, form.YieldSpecialAttack, form.YieldSpecialDefense, form.YieldSpeed);
 
-  public InventoryItemDto ToInventoryItem(InventoryItemEntity source) => new()
+  public InventoryItemDto ToInventoryItem(InventoryItemEntity inventory) => new()
   {
-    Item = ToItem(source.Item ?? throw new ArgumentException("The item is required.", nameof(source))),
-    Quantity = source.Quantity
+    Item = ToItem(inventory.Item ?? throw new ArgumentException("The item is required.", nameof(inventory))),
+    Quantity = inventory.Quantity
   };
 
   public ItemDto ToItem(ItemEntity source)
@@ -242,11 +231,11 @@ internal class Mapper
     return destination;
   }
 
-  public MemberDto ToMember(MemberEntity source) => new()
+  public MemberDto ToMember(MemberEntity member) => new()
   {
-    User = FindActor(source.UserId),
-    GrantedBy = FindActor(source.GrantedBy),
-    GrantedOn = source.GrantedOn.AsUniversalTime()
+    User = FindActor(member.UserId),
+    GrantedBy = FindActor(member.GrantedBy),
+    GrantedOn = member.GrantedOn.AsUniversalTime()
   };
 
   public MemberInvitationDto ToMemberInvitation(MemberInvitationEntity source, UserId? userId)
@@ -331,15 +320,21 @@ internal class Mapper
       Priority = source.Priority
     };
 
+    BaseStatisticsDto baseStatistics = source.ToBaseStatistics();
+    IndividualValuesDto individualValues = source.ToIndividualValues();
+
+    destination.Attributes = source.CalculateAttributes(baseStatistics, individualValues, nature);
+
+    #region TODO(fpion): skills
     IReadOnlyDictionary<PokemonSkill, byte> skillRanks = source.GetSkillRanks();
     foreach (KeyValuePair<PokemonSkill, byte> skillRank in skillRanks)
     {
       destination.SkillRanks.Add(new SkillRankDto(skillRank.Key, skillRank.Value));
     }
-
-    BaseStatisticsDto baseStatistics = source.GetBaseStatistics();
-    IndividualValuesDto individualValues = source.GetIndividualValues();
     EffortValues effortValues = new(skillRanks);
+    #endregion
+
+    #region TOD(fpion): statistics
     PokemonStatistics statistics = new(baseStatistics, individualValues, effortValues, source.Level, nature);
     destination.Statistics.HP = new PokemonStatisticDto(baseStatistics.HP, individualValues.HP, effortValues.HP, statistics.HP);
     destination.Statistics.Attack = new PokemonStatisticDto(baseStatistics.Attack, individualValues.Attack, effortValues.Attack, statistics.Attack);
@@ -347,6 +342,7 @@ internal class Mapper
     destination.Statistics.SpecialAttack = new PokemonStatisticDto(baseStatistics.SpecialAttack, individualValues.SpecialAttack, effortValues.SpecialAttack, statistics.SpecialAttack);
     destination.Statistics.SpecialDefense = new PokemonStatisticDto(baseStatistics.SpecialDefense, individualValues.SpecialDefense, effortValues.SpecialDefense, statistics.SpecialDefense);
     destination.Statistics.Speed = new PokemonStatisticDto(baseStatistics.Speed, individualValues.Speed, effortValues.Speed, statistics.Speed);
+    #endregion
 
     if (source.HeldItem is not null)
     {
@@ -494,12 +490,9 @@ internal class Mapper
       Content = source.Content,
       BaseFriendship = source.BaseFriendship,
       CatchRate = source.CatchRate,
-      GrowthRate = source.GrowthRate
+      GrowthRate = source.GrowthRate,
+      Eggs = ToSpeciesEggs(source)
     };
-
-    destination.Eggs.Cycles = source.EggCycles;
-    destination.Eggs.PrimaryGroup = source.PrimaryEggGroup;
-    destination.Eggs.SecondaryGroup = source.SecondaryEggGroup;
 
     foreach (RegionalNumberEntity regionalNumber in source.RegionalNumbers)
     {
@@ -510,6 +503,7 @@ internal class Mapper
 
     return destination;
   }
+  private static SpeciesEggsDto ToSpeciesEggs(SpeciesEntity species) => new(species.EggCycles, species.PrimaryEggGroup, species.SecondaryEggGroup);
 
   public VarietyDto ToVariety(VarietyEntity source)
   {
