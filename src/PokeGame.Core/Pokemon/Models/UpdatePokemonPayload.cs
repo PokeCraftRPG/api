@@ -11,16 +11,6 @@ public record UpdatePokemonPayload
   public Optional<string>? Summary { get; set; }
   public Optional<string>? Content { get; set; }
 
-  // TODO(fpion): Gender, IsShiny, Size and Characteristic should never change.
-  // TODO(fpion): TeraType (shards), AbilitySlot (patch/capsule) and Nature (mints) can change via complex processes.
-
-  // TODO(fpion): EggCycles can be decreased (how?).
-  // TODO(fpion): Experience can only be gained.
-
-  // TODO(fpion): SkillRanks should have their own dedicated endpoint.
-
-  // TODO(fpion): IndividualValues can never change. Hyper Training acts as an override and does not replace the actual IVs.
-
   public int? Vitality { get; set; }
   public int? Stamina { get; set; }
   public Optional<StatusCondition?>? Condition { get; set; }
