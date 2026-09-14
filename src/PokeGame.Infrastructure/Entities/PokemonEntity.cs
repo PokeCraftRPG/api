@@ -134,15 +134,16 @@ internal class PokemonEntity : AggregateEntity
 
     Characteristic = @event.Characteristic;
 
-    int? slot = null;
+    int slot = 0;
     foreach (LearnedMove move in @event.Moves)
     {
       int moveId = moveIds[move.MoveId.Value];
+      Moves.Add(new PokemonMoveEntity(this, moveId, LearningMethod.LevelUp, move.IsInMoveset ? slot : null));
+
       if (move.IsInMoveset)
       {
-        slot = slot.HasValue ? (slot.Value + 1) : 0;
+        slot++;
       }
-      Moves.Add(new PokemonMoveEntity(this, moveId, LearningMethod.LevelUp, slot));
     }
   }
 
@@ -255,11 +256,16 @@ internal class PokemonEntity : AggregateEntity
       HeldItemId = null;
     }
 
+    int slot = Moves.Count(m => m.Slot.HasValue);
     foreach (LearnedMove move in @event.Moves)
     {
       int moveId = moveIds[move.MoveId.Value];
-      int? slot = move.IsInMoveset ? Moves.Count(m => m.Slot.HasValue) : null;
-      Moves.Add(new PokemonMoveEntity(this, moveId, LearningMethod.Evolution, slot));
+      Moves.Add(new PokemonMoveEntity(this, moveId, LearningMethod.Evolution, move.IsInMoveset ? slot : null));
+
+      if (move.IsInMoveset)
+      {
+        slot++;
+      }
     }
   }
 
