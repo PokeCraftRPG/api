@@ -79,6 +79,8 @@ internal class EvolvePokemonCommandHandler : ICommandHandler<EvolvePokemonComman
       PokemonOwnership ownership = specimen.Ownership ?? throw new PokemonHasNoOwnerException(specimen);
       InventoryId inventoryId = new(ownership.TrainerId);
       inventory = await _inventoryRepository.LoadAsync(inventoryId, cancellationToken) ?? new(inventoryId);
+      await _permissionService.CheckAsync(Actions.Update, inventory, cancellationToken);
+
       inventory.UseItem(evolution.ItemId.Value, actorId);
     }
 

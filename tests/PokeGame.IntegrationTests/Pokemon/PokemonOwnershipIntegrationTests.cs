@@ -233,7 +233,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town")));
     Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
-    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal("Receive", exception.Data["Action"]);
     Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
     Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
@@ -335,7 +335,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _pokemonService.CatchAsync(created.Id, CreateCatchPayload("Viridian Forest")));
     Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
-    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal("Catch", exception.Data["Action"]);
     Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
     Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
 
@@ -634,7 +634,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _pokemonService.ReleaseAsync(created.Id));
     Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
-    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal("Release", exception.Data["Action"]);
     Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
     Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
 
@@ -807,7 +807,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
         PokemonIds = [boxedCreated.Id, partyCreated.Id]
       }));
     Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
-    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal("Swap", exception.Data["Action"]);
     Assert.Equal(new Entity(Specimen.EntityKind, boxedCreated.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
     Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
@@ -974,7 +974,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
         Location = "Pokémon Center"
       }));
     Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
-    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal("Trade", exception.Data["Action"]);
     Assert.Equal(new Entity(Specimen.EntityKind, sourceCreated.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
     Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
 

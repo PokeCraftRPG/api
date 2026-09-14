@@ -55,6 +55,8 @@ internal class WithdrawPokemonCommandHandler : ICommandHandler<WithdrawPokemonCo
     RosterId rosterId = new(trainer.Id);
     Roster roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken)
       ?? throw new InvalidOperationException($"The trainer 'Id={rosterId.TrainerId}' roster was not loaded.");
+    await _permissionService.CheckAsync(Actions.Update, roster, cancellationToken);
+
     roster.Withdraw(specimen, trainer, actorId);
 
     await _rosterRepository.SaveAsync(roster, cancellationToken);

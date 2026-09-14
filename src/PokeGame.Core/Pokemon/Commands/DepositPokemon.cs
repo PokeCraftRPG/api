@@ -48,6 +48,8 @@ internal class DepositPokemonCommandHandler : ICommandHandler<DepositPokemonComm
     RosterId rosterId = new(ownership.TrainerId);
     Roster roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken)
       ?? throw new InvalidOperationException($"The trainer 'Id={rosterId.TrainerId}' roster was not loaded.");
+    await _permissionService.CheckAsync(Actions.Update, roster, cancellationToken);
+
     roster.Deposit(specimen, actorId);
 
     await _rosterRepository.SaveAsync(roster, cancellationToken);

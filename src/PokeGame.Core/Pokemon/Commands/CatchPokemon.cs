@@ -63,7 +63,7 @@ internal class CatchPokemonCommandHandler : ICommandHandler<CatchPokemonCommand,
     {
       return null;
     }
-    await _permissionService.CheckAsync(Actions.Update, specimen, cancellationToken);
+    await _permissionService.CheckAsync(Actions.Catch, specimen, cancellationToken);
 
     TrainerId trainerId = new(worldId, payload.TrainerId);
     Trainer trainer = await _trainerRepository.LoadAsync(trainerId, cancellationToken) ?? throw new EntityNotFoundException(trainerId, nameof(payload.TrainerId));

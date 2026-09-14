@@ -606,7 +606,7 @@ public class PokemonIntegrationTests : IntegrationTests
     PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
       async () => await _pokemonService.ChangeFormAsync(created.Id, _form.EntityId));
     Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
-    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal("ChangeForm", exception.Data["Action"]);
     Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
     Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
