@@ -84,7 +84,14 @@ public class PokemonController : ControllerBase
     return pokemon is null ? NotFound() : Ok(pokemon);
   }
 
-  [HttpPost("trades")]
+  [HttpPost("swap")]
+  public async Task<ActionResult> SwapAsync([FromBody] SwapPokemonPayload payload, CancellationToken cancellationToken)
+  {
+    await _pokemonService.SwapAsync(payload, cancellationToken);
+    return NoContent();
+  }
+
+  [HttpPost("trade")]
   public async Task<ActionResult> TradeAsync([FromBody] TradePokemonPayload payload, CancellationToken cancellationToken)
   {
     await _pokemonService.TradeAsync(payload, cancellationToken);

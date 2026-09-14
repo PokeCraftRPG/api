@@ -54,6 +54,19 @@ public class RosterAddTests : UnitTests
     Assert.Single(roster.PartyIds);
   }
 
+  [Fact(DisplayName = "It should add an egg to the box even when the party has room.")]
+  public void Given_Egg_When_Add_Then_AddedToBox()
+  {
+    Roster roster = new(Catalog.Red);
+    Specimen egg = Catalog.CreateOwnedPokemon(Catalog.Red, "egg", eggCycles: 5);
+
+    roster.Add(egg, Catalog.Red);
+
+    Assert.False(roster.Entries[egg.Id].IsInParty);
+    Assert.DoesNotContain(egg.Id, roster.PartyIds);
+    Assert.False(roster.LastChange<RosterEntryAdded>().IsInParty);
+  }
+
   [Fact(DisplayName = "It should throw ArgumentException when the Pokémon is already in the roster.")]
   public void Given_AlreadyInRoster_When_Add_Then_ArgumentException()
   {

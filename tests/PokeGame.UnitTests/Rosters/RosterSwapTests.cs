@@ -1,4 +1,4 @@
-using PokeGame.Core.Pokemon;
+﻿using PokeGame.Core.Pokemon;
 using PokeGame.Core.Rosters;
 using PokeGame.Core.Rosters.Events;
 
@@ -62,8 +62,8 @@ public class RosterSwapTests : UnitTests
     Assert.Equal("target", exception.ParamName);
   }
 
-  [Fact(DisplayName = "It should throw NotImplementedException when swapping two party Pokémon.")]
-  public void Given_PartyAndParty_When_Swap_Then_NotImplementedException()
+  [Fact(DisplayName = "It should throw InvalidRosterSwapException when swapping two party Pokémon.")]
+  public void Given_PartyAndParty_When_Swap_Then_InvalidRosterSwapException()
   {
     Roster roster = new(Catalog.Red);
     Specimen first = Catalog.CreateOwnedPokemon(Catalog.Red, "first");
@@ -71,17 +71,43 @@ public class RosterSwapTests : UnitTests
     roster.Add(first, Catalog.Red);
     roster.Add(second, Catalog.Red);
 
-    Assert.Throws<NotImplementedException>(() => roster.Swap(first, second));
+    InvalidRosterSwapException exception = Assert.Throws<InvalidRosterSwapException>(() => roster.Swap(first, second));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(first.EntityId, exception.Data["SourcePokemonId"]);
+    Assert.Equal(second.EntityId, exception.Data["TargetPokemonId"]);
   }
 
-  [Fact(DisplayName = "It should throw NotImplementedException when swapping two boxed Pokémon.")]
-  public void Given_BoxAndBox_When_Swap_Then_NotImplementedException()
+  [Fact(DisplayName = "It should throw InvalidRosterSwapException when swapping two boxed Pokémon.")]
+  public void Given_BoxAndBox_When_Swap_Then_InvalidRosterSwapException()
   {
     (Roster roster, _, Specimen firstBoxed) = CreatePartyAndBoxed();
     Specimen secondBoxed = Catalog.CreateOwnedPokemon(Catalog.Red, "boxed-2");
     roster.Add(secondBoxed, Catalog.Red);
 
-    Assert.Throws<NotImplementedException>(() => roster.Swap(firstBoxed, secondBoxed));
+    InvalidRosterSwapException exception = Assert.Throws<InvalidRosterSwapException>(
+      () => roster.Swap(firstBoxed, secondBoxed));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(firstBoxed.EntityId, exception.Data["SourcePokemonId"]);
+    Assert.Equal(secondBoxed.EntityId, exception.Data["TargetPokemonId"]);
+  }
+
+  [Fact(DisplayName = "It should throw PokemonEggCannotBeWithdrawnException when withdrawing an egg into the party.")]
+  public void Given_BoxedEgg_When_Swap_Then_PokemonEggCannotBeWithdrawnException()
+  {
+    Roster roster = new(Catalog.Red);
+    Specimen party = Catalog.CreateOwnedPokemon(Catalog.Red, "party");
+    Specimen egg = Catalog.CreateOwnedPokemon(Catalog.Red, "egg", eggCycles: 5);
+    roster.Add(party, Catalog.Red);
+    roster.Add(egg, Catalog.Red);
+    Assert.False(roster.Entries[egg.Id].IsInParty);
+
+    PokemonEggCannotBeWithdrawnException exception = Assert.Throws<PokemonEggCannotBeWithdrawnException>(
+      () => roster.Swap(party, egg));
+    Assert.Equal(egg.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(egg.EntityId, exception.Data["PokemonId"]);
+    Assert.Equal((byte)5, exception.Data["EggCycles"]);
   }
 
   private (Roster Roster, Specimen Party, Specimen Boxed) CreatePartyAndBoxed()

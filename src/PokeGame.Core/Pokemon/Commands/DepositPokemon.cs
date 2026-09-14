@@ -46,7 +46,8 @@ internal class DepositPokemonCommandHandler : ICommandHandler<DepositPokemonComm
 
     PokemonOwnership ownership = specimen.Ownership ?? throw new PokemonHasNoOwnerException(specimen);
     RosterId rosterId = new(ownership.TrainerId);
-    Roster roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken) ?? new(rosterId); // TODO(fpion): this should be an error.
+    Roster roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken)
+      ?? throw new InvalidOperationException($"The trainer 'Id={rosterId.TrainerId}' roster was not loaded.");
     roster.Deposit(specimen, actorId);
 
     await _rosterRepository.SaveAsync(roster, cancellationToken);

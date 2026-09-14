@@ -53,7 +53,8 @@ internal class WithdrawPokemonCommandHandler : ICommandHandler<WithdrawPokemonCo
       ?? throw new InvalidOperationException($"The trainer 'Id={ownership.TrainerId}' was not loaded.");
 
     RosterId rosterId = new(trainer.Id);
-    Roster roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken) ?? new(trainer); // TODO(fpion): this should be an error.
+    Roster roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken)
+      ?? throw new InvalidOperationException($"The trainer 'Id={rosterId.TrainerId}' roster was not loaded.");
     roster.Withdraw(specimen, trainer, actorId);
 
     await _rosterRepository.SaveAsync(roster, cancellationToken);

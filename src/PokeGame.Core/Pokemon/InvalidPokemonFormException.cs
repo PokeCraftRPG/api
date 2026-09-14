@@ -5,7 +5,7 @@ namespace PokeGame.Core.Pokemon;
 public sealed class InvalidPokemonFormException : DomainException
 {
   public InvalidPokemonFormException(Specimen specimen, Form form)
-    : base("The specified Pokémon form does not belong to the Pokémon’s variety.")
+    : base("The specified Pokémon form does not belong to the Pokémon variety.")
   {
     Data["WorldId"] = specimen.WorldId.EntityId;
     Data["PokemonId"] = specimen.EntityId;

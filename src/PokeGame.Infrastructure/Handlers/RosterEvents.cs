@@ -117,7 +117,6 @@ internal class RosterEvents :
     target?.IsInParty = @event.IsTargetInParty;
 
     await _pokemon.SaveChangesAsync(cancellationToken);
-    await UpdatePartyCountAsync(@event, cancellationToken); // TODO(fpion): is this necessary?
   }
 
   public async Task HandleAsync(RosterEntryWithdrawn @event, CancellationToken cancellationToken)

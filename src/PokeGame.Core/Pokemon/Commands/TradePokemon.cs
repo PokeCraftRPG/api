@@ -56,10 +56,12 @@ internal class TradePokemonCommandHandler : ICommandHandler<TradePokemonCommand,
     HashSet<RosterId> rosterIds = new([sourceRosterId, targetRosterId]);
     Dictionary<RosterId, Roster> rosters = (await _rosterRepository.LoadAsync(rosterIds, cancellationToken)).ToDictionary(x => x.Id, x => x);
 
-    Roster sourceRoster = rosters.GetValueOrDefault(sourceRosterId) ?? new(sourceRosterId); // TODO(fpion): this should be an error.
+    Roster sourceRoster = rosters.GetValueOrDefault(sourceRosterId)
+      ?? throw new InvalidOperationException($"The trainer 'Id={sourceRosterId.TrainerId}' roster was not loaded.");
     await _permissionService.CheckAsync(Actions.Update, sourceRoster, cancellationToken);
 
-    Roster targetRoster = rosters.GetValueOrDefault(targetRosterId) ?? new(targetRosterId); // TODO(fpion): this should be an error.
+    Roster targetRoster = rosters.GetValueOrDefault(targetRosterId)
+      ?? throw new InvalidOperationException($"The trainer 'Id={targetRosterId.TrainerId}' roster was not loaded.");
     await _permissionService.CheckAsync(Actions.Update, targetRoster, cancellationToken);
 
     Location location = new(payload.Location);

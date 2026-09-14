@@ -5,7 +5,7 @@ namespace PokeGame.Core.Trainers;
 public sealed class PokemonPartyFullException : ConflictException
 {
   public PokemonPartyFullException(Trainer trainer, Roster roster)
-    : base("The trainer’s Pokémon party is full.")
+    : base("The trainer Pokémon party is full.")
   {
     Data["WorldId"] = trainer.WorldId.EntityId;
     Data["TrainerId"] = trainer.EntityId;

@@ -72,16 +72,10 @@ internal class ReceivePokemonCommandHandler : ICommandHandler<ReceivePokemonComm
     if (specimen.Ownership is not null)
     {
       RosterId sourceRosterId = new(specimen.Ownership.TrainerId);
-      sourceRoster = await _rosterRepository.LoadAsync(sourceRosterId, cancellationToken);
-      if (sourceRoster is not null)
-      {
-        await _permissionService.CheckAsync(Actions.Update, sourceRoster, cancellationToken);
-        rosters.Add(sourceRoster);
-      }
-      else
-      {
-        // TODO(fpion): this should be an error.
-      }
+      sourceRoster = await _rosterRepository.LoadAsync(sourceRosterId, cancellationToken)
+        ?? throw new InvalidOperationException($"The trainer 'Id={sourceRosterId.TrainerId}' roster was not loaded.");
+      await _permissionService.CheckAsync(Actions.Update, sourceRoster, cancellationToken);
+      rosters.Add(sourceRoster);
     }
 
     RosterId targetRosterId = new(trainer.Id);
