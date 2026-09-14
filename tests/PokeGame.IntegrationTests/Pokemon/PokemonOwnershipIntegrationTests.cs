@@ -400,6 +400,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     PokemonNotInPartyException exception = await Assert.ThrowsAsync<PokemonNotInPartyException>(
       async () => await _pokemonService.DepositAsync(boxedCreated.Id));
     Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
     Assert.Equal(boxedCreated.Id, exception.Data["PokemonId"]);
 
     await AssertRosterContainsAsync(_trainer, boxed, isInParty: false);
@@ -477,6 +478,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     PokemonAlreadyInPartyException exception = await Assert.ThrowsAsync<PokemonAlreadyInPartyException>(
       async () => await _pokemonService.WithdrawAsync(created.Id));
     Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
     Assert.Equal(created.Id, exception.Data["PokemonId"]);
 
     await AssertRosterContainsAsync(_trainer, received, isInParty: true);
@@ -526,6 +528,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     PokemonEggCannotBeWithdrawnException exception = await Assert.ThrowsAsync<PokemonEggCannotBeWithdrawnException>(
       async () => await _pokemonService.WithdrawAsync(eggCreated.Id));
     Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
     Assert.Equal(eggCreated.Id, exception.Data["PokemonId"]);
     Assert.Equal((byte)5, exception.Data["EggCycles"]);
 
@@ -740,6 +743,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
         PokemonIds = [partyCreated.Id, eggCreated.Id]
       }));
     Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
     Assert.Equal(eggCreated.Id, exception.Data["PokemonId"]);
     Assert.Equal((byte)5, exception.Data["EggCycles"]);
   }

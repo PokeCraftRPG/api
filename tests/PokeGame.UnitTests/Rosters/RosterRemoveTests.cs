@@ -1,3 +1,4 @@
+using PokeGame.Core;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Rosters;
 using PokeGame.Core.Rosters.Events;
@@ -40,25 +41,40 @@ public class RosterRemoveTests : UnitTests
     Assert.Equal(Roster.PartyLimit, roster.PartyIds.Count);
   }
 
-  [Fact(DisplayName = "It should throw ArgumentException when the Pokémon is still owned by the trainer.")]
-  public void Given_StillOwned_When_Remove_Then_ArgumentException()
+  [Fact(DisplayName = "It should throw UnexpectedPokemonOwnerException when the Pokémon is still owned by the trainer.")]
+  public void Given_StillOwned_When_Remove_Then_UnexpectedPokemonOwnerException()
   {
     Roster roster = new(Catalog.Red);
     Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Red);
     roster.Add(pokemon, Catalog.Red);
 
-    ArgumentException exception = Assert.Throws<ArgumentException>(() => roster.Remove(pokemon));
-    Assert.Equal("specimen", exception.ParamName);
+    UnexpectedPokemonOwnerException exception = Assert.Throws<UnexpectedPokemonOwnerException>(() => roster.Remove(pokemon));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(pokemon.EntityId, exception.Data["PokemonId"]);
   }
 
-  [Fact(DisplayName = "It should throw ArgumentException when the Pokémon is not in the roster.")]
-  public void Given_NotInRoster_When_Remove_Then_ArgumentException()
+  [Fact(DisplayName = "It should throw PokemonNotInRosterException when the Pokémon is not in the roster.")]
+  public void Given_NotInRoster_When_Remove_Then_PokemonNotInRosterException()
   {
     Roster roster = new(Catalog.Red);
     Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Blue);
     pokemon.Release();
 
-    ArgumentException exception = Assert.Throws<ArgumentException>(() => roster.Remove(pokemon));
-    Assert.Equal("specimen", exception.ParamName);
+    PokemonNotInRosterException exception = Assert.Throws<PokemonNotInRosterException>(() => roster.Remove(pokemon));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(pokemon.EntityId, exception.Data["PokemonId"]);
+  }
+
+  [Fact(DisplayName = "It should throw WorldMismatchException when the Pokémon belongs to another world.")]
+  public void Given_DifferentWorld_When_Remove_Then_WorldMismatchException()
+  {
+    Roster roster = new(Catalog.Red);
+    DomainCatalog other = new(Faker);
+    Specimen pokemon = other.CreateOwnedPokemon(other.Red);
+    pokemon.Release();
+
+    Assert.Throws<WorldMismatchException>(() => roster.Remove(pokemon));
   }
 }

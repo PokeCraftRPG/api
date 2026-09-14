@@ -1,4 +1,5 @@
-﻿using PokeGame.Core.Pokemon;
+﻿using PokeGame.Core;
+using PokeGame.Core.Pokemon;
 using PokeGame.Core.Rosters;
 using PokeGame.Core.Rosters.Events;
 
@@ -38,28 +39,34 @@ public class RosterSwapTests : UnitTests
     Assert.Throws<InvalidOperationException>(() => roster.Swap(pokemon, pokemon));
   }
 
-  [Fact(DisplayName = "It should throw ArgumentException when a Pokémon is not in the roster.")]
-  public void Given_MissingPokemon_When_Swap_Then_ArgumentException()
+  [Fact(DisplayName = "It should throw PokemonNotInRosterException when a Pokémon is not in the roster.")]
+  public void Given_MissingPokemon_When_Swap_Then_PokemonNotInRosterException()
   {
     Roster roster = new(Catalog.Red);
     Specimen party = Catalog.CreateOwnedPokemon(Catalog.Red, "party");
     Specimen missing = Catalog.CreateOwnedPokemon(Catalog.Red, "missing");
     roster.Add(party, Catalog.Red);
 
-    ArgumentException exception = Assert.Throws<ArgumentException>(() => roster.Swap(party, missing));
-    Assert.Equal("target", exception.ParamName);
+    PokemonNotInRosterException exception = Assert.Throws<PokemonNotInRosterException>(() => roster.Swap(party, missing));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(missing.EntityId, exception.Data["PokemonId"]);
   }
 
-  [Fact(DisplayName = "It should throw ArgumentException when a Pokémon belongs to another trainer.")]
-  public void Given_OtherTrainer_When_Swap_Then_ArgumentException()
+  [Fact(DisplayName = "It should throw InvalidPokemonOwnerException when a Pokémon belongs to another trainer.")]
+  public void Given_OtherTrainer_When_Swap_Then_InvalidPokemonOwnerException()
   {
     Roster roster = new(Catalog.Red);
     Specimen redPokemon = Catalog.CreateOwnedPokemon(Catalog.Red, "red");
     Specimen bluePokemon = Catalog.CreateOwnedPokemon(Catalog.Blue, "blue");
     roster.Add(redPokemon, Catalog.Red);
 
-    ArgumentException exception = Assert.Throws<ArgumentException>(() => roster.Swap(redPokemon, bluePokemon));
-    Assert.Equal("target", exception.ParamName);
+    InvalidPokemonOwnerException exception = Assert.Throws<InvalidPokemonOwnerException>(
+      () => roster.Swap(redPokemon, bluePokemon));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(bluePokemon.EntityId, exception.Data["PokemonId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["ExpectedTrainerId"]);
+    Assert.Equal(Catalog.Blue.EntityId, exception.Data["AttemptedTrainerId"]);
   }
 
   [Fact(DisplayName = "It should throw InvalidRosterSwapException when swapping two party Pokémon.")]
@@ -105,9 +112,21 @@ public class RosterSwapTests : UnitTests
 
     PokemonEggCannotBeWithdrawnException exception = Assert.Throws<PokemonEggCannotBeWithdrawnException>(
       () => roster.Swap(party, egg));
-    Assert.Equal(egg.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["TrainerId"]);
     Assert.Equal(egg.EntityId, exception.Data["PokemonId"]);
     Assert.Equal((byte)5, exception.Data["EggCycles"]);
+  }
+
+  [Fact(DisplayName = "It should throw WorldMismatchException when a Pokémon belongs to another world.")]
+  public void Given_DifferentWorld_When_Swap_Then_WorldMismatchException()
+  {
+    Roster roster = new(Catalog.Red);
+    Specimen party = Catalog.CreateOwnedPokemon(Catalog.Red, "party");
+    roster.Add(party, Catalog.Red);
+    DomainCatalog other = new(Faker);
+
+    Assert.Throws<WorldMismatchException>(() => roster.Swap(party, other.CreateOwnedPokemon(other.Red)));
   }
 
   private (Roster Roster, Specimen Party, Specimen Boxed) CreatePartyAndBoxed()

@@ -1,3 +1,4 @@
+using PokeGame.Core;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Rosters;
 using PokeGame.Core.Rosters.Events;
@@ -61,20 +62,23 @@ public class RosterReplaceTests : UnitTests
     Assert.Throws<InvalidOperationException>(() => roster.Replace(pokemon, pokemon));
   }
 
-  [Fact(DisplayName = "It should throw ArgumentException when the source is still owned by the trainer.")]
-  public void Given_SourceStillOwned_When_Replace_Then_ArgumentException()
+  [Fact(DisplayName = "It should throw UnexpectedPokemonOwnerException when the source is still owned by the trainer.")]
+  public void Given_SourceStillOwned_When_Replace_Then_UnexpectedPokemonOwnerException()
   {
     Roster roster = new(Catalog.Red);
     Specimen source = Catalog.CreateOwnedPokemon(Catalog.Red, "source");
     Specimen target = Catalog.CreateOwnedPokemon(Catalog.Red, "target");
     roster.Add(source, Catalog.Red);
 
-    ArgumentException exception = Assert.Throws<ArgumentException>(() => roster.Replace(source, target));
-    Assert.Equal("source", exception.ParamName);
+    UnexpectedPokemonOwnerException exception = Assert.Throws<UnexpectedPokemonOwnerException>(
+      () => roster.Replace(source, target));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(source.EntityId, exception.Data["PokemonId"]);
   }
 
-  [Fact(DisplayName = "It should throw ArgumentException when the target is not owned by the trainer.")]
-  public void Given_TargetNotOwned_When_Replace_Then_ArgumentException()
+  [Fact(DisplayName = "It should throw InvalidPokemonOwnerException when the target is not owned by the trainer.")]
+  public void Given_TargetNotOwned_When_Replace_Then_InvalidPokemonOwnerException()
   {
     Roster roster = new(Catalog.Red);
     Specimen source = Catalog.CreateOwnedPokemon(Catalog.Red, "source");
@@ -82,24 +86,31 @@ public class RosterReplaceTests : UnitTests
     roster.Add(source, Catalog.Red);
     source.Release();
 
-    ArgumentException exception = Assert.Throws<ArgumentException>(() => roster.Replace(source, target));
-    Assert.Equal("target", exception.ParamName);
+    InvalidPokemonOwnerException exception = Assert.Throws<InvalidPokemonOwnerException>(
+      () => roster.Replace(source, target));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(target.EntityId, exception.Data["PokemonId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["ExpectedTrainerId"]);
+    Assert.Null(exception.Data["AttemptedTrainerId"]);
   }
 
-  [Fact(DisplayName = "It should throw ArgumentException when the source is not in the roster.")]
-  public void Given_SourceMissing_When_Replace_Then_ArgumentException()
+  [Fact(DisplayName = "It should throw PokemonNotInRosterException when the source is not in the roster.")]
+  public void Given_SourceMissing_When_Replace_Then_PokemonNotInRosterException()
   {
     Specimen source = Catalog.CreateOwnedPokemon(Catalog.Red, "source");
     Specimen target = Catalog.CreateOwnedPokemon(Catalog.Blue, "target");
     source.Trade(target, Catalog.PokemonCenter);
     Roster roster = new(Catalog.Red);
 
-    ArgumentException exception = Assert.Throws<ArgumentException>(() => roster.Replace(source, target));
-    Assert.Equal("source", exception.ParamName);
+    PokemonNotInRosterException exception = Assert.Throws<PokemonNotInRosterException>(
+      () => roster.Replace(source, target));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(source.EntityId, exception.Data["PokemonId"]);
   }
 
-  [Fact(DisplayName = "It should throw ArgumentException when the target is already in the roster.")]
-  public void Given_TargetAlreadyInRoster_When_Replace_Then_ArgumentException()
+  [Fact(DisplayName = "It should throw UnexpectedPokemonRosterException when the target is already in the roster.")]
+  public void Given_TargetAlreadyInRoster_When_Replace_Then_UnexpectedPokemonRosterException()
   {
     Specimen source = Catalog.CreateOwnedPokemon(Catalog.Red, "source");
     Specimen target = Catalog.CreateOwnedPokemon(Catalog.Red, "target");
@@ -108,8 +119,23 @@ public class RosterReplaceTests : UnitTests
     roster.Add(target, Catalog.Red);
     source.Release();
 
-    ArgumentException exception = Assert.Throws<ArgumentException>(() => roster.Replace(source, target));
-    Assert.Equal("target", exception.ParamName);
+    UnexpectedPokemonRosterException exception = Assert.Throws<UnexpectedPokemonRosterException>(
+      () => roster.Replace(source, target));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(target.EntityId, exception.Data["PokemonId"]);
+  }
+
+  [Fact(DisplayName = "It should throw WorldMismatchException when a Pokémon belongs to another world.")]
+  public void Given_DifferentWorld_When_Replace_Then_WorldMismatchException()
+  {
+    Roster roster = new(Catalog.Red);
+    Specimen source = Catalog.CreateOwnedPokemon(Catalog.Red, "source");
+    roster.Add(source, Catalog.Red);
+    source.Release();
+    DomainCatalog other = new(Faker);
+
+    Assert.Throws<WorldMismatchException>(() => roster.Replace(source, other.CreateOwnedPokemon(other.Red)));
   }
 
   private (Roster Roster, Specimen Source, Specimen Target) CreateTradedPair(bool fillParty)
