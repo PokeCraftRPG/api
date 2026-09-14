@@ -45,6 +45,7 @@ internal class PokemonEntity : AggregateEntity
   public GrowthRate GrowthRate { get; private set; }
   public int Experience { get; private set; }
   public int Level { get; private set; }
+  public int Tier { get; private set; }
 
   public string? SkillRanks { get; private set; }
 
@@ -113,6 +114,7 @@ internal class PokemonEntity : AggregateEntity
     GrowthRate = @event.GrowthRate;
     Experience = @event.Experience;
     Level = ExperienceTable.GetLevel(GrowthRate, Experience);
+    Tier = ExperienceTable.GetTier(Level);
 
     BaseHP = @event.BaseStatistics.HP;
     BaseAttack = @event.BaseStatistics.Attack;

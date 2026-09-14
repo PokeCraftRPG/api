@@ -8,6 +8,7 @@ public static class ExperienceTable
   private const int MaximumLevel = Level.MaximumValue;
 
   private static readonly Dictionary<GrowthRate, int[]> _thresholds = new(capacity: 6);
+  private static readonly int[] _tiers = [5, 20, 50];
 
   static ExperienceTable()
   {
@@ -104,6 +105,19 @@ public static class ExperienceTable
 
     return MaximumLevel;
   }
+
+  public static int GetTier(int level)
+  {
+    for (int tier = 0; tier < _tiers.Length; tier++)
+    {
+      if (level < _tiers[tier])
+      {
+        return tier;
+      }
+    }
+    return _tiers.Length;
+  }
+
   public static int GetThreshold(GrowthRate growthRate, int level)
   {
     if (!_thresholds.TryGetValue(growthRate, out int[]? thresholds))
