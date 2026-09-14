@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Using Include="System.Diagnostics.CodeAnalysis" />
     <Using Include="System.Globalization" />
     <Using Include="System.Linq.Expressions" />
     <Using Include="System.Net.Mime" />
