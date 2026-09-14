@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Logitar.EventSourcing;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Logitar.EventSourcing;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
@@ -643,6 +643,173 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     AssertReceived(pokemon, _trainer, _masterBall, created.Level, "Pallet Town");
 
     await AssertRosterContainsAsync(_trainer, pokemon, isInParty: true);
+  }
+
+  [Fact(DisplayName = "It should swap a party Pokémon with a boxed Pokémon.")]
+  public async Task Given_PartyAndBox_When_Swap_Then_SlotsExchanged()
+  {
+    PokemonDto partyCreated = await CreatePokemonAsync("swap-party");
+    PokemonDto? party = await _pokemonService.ReceiveAsync(partyCreated.Id, CreatePayload("Pallet Town"));
+    Assert.NotNull(party);
+    Assert.True(party.IsInParty);
+
+    for (int index = 1; index < Roster.PartyLimit; index++)
+    {
+      PokemonDto created = await CreatePokemonAsync($"swap-fill-{index}");
+      await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+    }
+
+    PokemonDto boxedCreated = await CreatePokemonAsync("swap-boxed");
+    PokemonDto? boxed = await _pokemonService.ReceiveAsync(boxedCreated.Id, CreatePayload("Pallet Town"));
+    Assert.NotNull(boxed);
+    Assert.False(boxed.IsInParty);
+
+    await _pokemonService.SwapAsync(new SwapPokemonPayload
+    {
+      PokemonIds = [partyCreated.Id, boxedCreated.Id]
+    });
+
+    PokemonDto? swappedParty = await _pokemonService.ReadAsync(partyCreated.Id);
+    Assert.NotNull(swappedParty);
+    Assert.False(swappedParty.IsInParty);
+
+    PokemonDto? swappedBoxed = await _pokemonService.ReadAsync(boxedCreated.Id);
+    Assert.NotNull(swappedBoxed);
+    Assert.True(swappedBoxed.IsInParty);
+
+    await AssertRosterContainsAsync(_trainer, swappedParty, isInParty: false);
+    await AssertRosterContainsAsync(_trainer, swappedBoxed, isInParty: true);
+    await AssertPartyCountAsync(_trainer, expected: Roster.PartyLimit);
+  }
+
+  [Fact(DisplayName = "It should throw PokemonSwapRequiresSameOwnerException when Pokémon have different owners.")]
+  public async Task Given_DifferentOwners_When_Swap_Then_PokemonSwapRequiresSameOwnerException()
+  {
+    Trainer blue = TrainerBuilder.Blue(Faker, Context.World);
+    await _trainerRepository.SaveAsync(blue);
+
+    PokemonDto sourceCreated = await CreatePokemonAsync("swap-owner-source");
+    PokemonDto targetCreated = await CreatePokemonAsync("swap-owner-target");
+    await _pokemonService.ReceiveAsync(sourceCreated.Id, CreatePayload("Pallet Town"));
+    await _pokemonService.ReceiveAsync(targetCreated.Id, CreatePayload("Cerulean City", blue));
+
+    PokemonSwapRequiresSameOwnerException exception = await Assert.ThrowsAsync<PokemonSwapRequiresSameOwnerException>(
+      async () => await _pokemonService.SwapAsync(new SwapPokemonPayload
+      {
+        PokemonIds = [sourceCreated.Id, targetCreated.Id]
+      }));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(sourceCreated.Id, exception.Data["SourcePokemonId"]);
+    Assert.Equal(targetCreated.Id, exception.Data["TargetPokemonId"]);
+  }
+
+  [Fact(DisplayName = "It should throw InvalidRosterSwapException when swapping two party Pokémon.")]
+  public async Task Given_PartyAndParty_When_Swap_Then_InvalidRosterSwapException()
+  {
+    PokemonDto firstCreated = await CreatePokemonAsync("swap-party-1");
+    PokemonDto secondCreated = await CreatePokemonAsync("swap-party-2");
+    await _pokemonService.ReceiveAsync(firstCreated.Id, CreatePayload("Pallet Town"));
+    await _pokemonService.ReceiveAsync(secondCreated.Id, CreatePayload("Pallet Town"));
+
+    InvalidRosterSwapException exception = await Assert.ThrowsAsync<InvalidRosterSwapException>(
+      async () => await _pokemonService.SwapAsync(new SwapPokemonPayload
+      {
+        PokemonIds = [firstCreated.Id, secondCreated.Id]
+      }));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(firstCreated.Id, exception.Data["SourcePokemonId"]);
+    Assert.Equal(secondCreated.Id, exception.Data["TargetPokemonId"]);
+  }
+
+  [Fact(DisplayName = "It should throw PokemonEggCannotBeWithdrawnException when swapping an egg into the party.")]
+  public async Task Given_BoxedEgg_When_Swap_Then_PokemonEggCannotBeWithdrawnException()
+  {
+    PokemonDto partyCreated = await CreatePokemonAsync("swap-egg-party");
+    await _pokemonService.ReceiveAsync(partyCreated.Id, CreatePayload("Pallet Town"));
+
+    PokemonDto eggCreated = await CreatePokemonAsync("swap-egg", eggCycles: 5);
+    PokemonDto? egg = await _pokemonService.ReceiveAsync(eggCreated.Id, CreatePayload("Pallet Town"));
+    Assert.NotNull(egg);
+    Assert.False(egg.IsInParty);
+    Assert.Equal((byte)5, egg.EggCycles);
+
+    PokemonEggCannotBeWithdrawnException exception = await Assert.ThrowsAsync<PokemonEggCannotBeWithdrawnException>(
+      async () => await _pokemonService.SwapAsync(new SwapPokemonPayload
+      {
+        PokemonIds = [partyCreated.Id, eggCreated.Id]
+      }));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(eggCreated.Id, exception.Data["PokemonId"]);
+    Assert.Equal((byte)5, exception.Data["EggCycles"]);
+  }
+
+  [Fact(DisplayName = "It should receive an egg into the box even when the party has room.")]
+  public async Task Given_Egg_When_Receive_Then_AddedToBox()
+  {
+    PokemonDto created = await CreatePokemonAsync("received-egg", eggCycles: 5);
+    PokemonDto? pokemon = await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+    Assert.NotNull(pokemon);
+    Assert.Equal((byte)5, pokemon.EggCycles);
+    Assert.False(pokemon.IsInParty);
+
+    await AssertRosterContainsAsync(_trainer, pokemon, isInParty: false);
+    await AssertPartyCountAsync(_trainer, expected: 0);
+  }
+
+  [Fact(DisplayName = "It should throw EntityNotFoundException when a swapped Pokémon was not found.")]
+  public async Task Given_MissingPokemon_When_Swap_Then_EntityNotFoundException()
+  {
+    PokemonDto created = await CreatePokemonAsync("swap-missing");
+    await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+    Guid missingId = Guid.NewGuid();
+
+    EntityNotFoundException exception = await Assert.ThrowsAsync<EntityNotFoundException>(
+      async () => await _pokemonService.SwapAsync(new SwapPokemonPayload
+      {
+        PokemonIds = [created.Id, missingId]
+      }));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Specimen.EntityKind, exception.Data["EntityKind"]);
+    Assert.Equal(missingId, exception.Data["EntityId"]);
+  }
+
+  [Fact(DisplayName = "It should throw PokemonHasNoOwnerException when swapping a wild Pokémon.")]
+  public async Task Given_WildPokemon_When_Swap_Then_PokemonHasNoOwnerException()
+  {
+    PokemonDto ownedCreated = await CreatePokemonAsync("swap-owned");
+    await _pokemonService.ReceiveAsync(ownedCreated.Id, CreatePayload("Pallet Town"));
+    PokemonDto wildCreated = await CreatePokemonAsync("swap-wild");
+
+    PokemonHasNoOwnerException exception = await Assert.ThrowsAsync<PokemonHasNoOwnerException>(
+      async () => await _pokemonService.SwapAsync(new SwapPokemonPayload
+      {
+        PokemonIds = [ownedCreated.Id, wildCreated.Id]
+      }));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(wildCreated.Id, exception.Data["PokemonId"]);
+  }
+
+  [Fact(DisplayName = "It should throw PermissionDeniedException when swapping Pokémon.")]
+  public async Task Given_NotAllowed_When_Swap_Then_PermissionDeniedException()
+  {
+    PokemonDto partyCreated = await CreatePokemonAsync("denied-swap-party");
+    await _pokemonService.ReceiveAsync(partyCreated.Id, CreatePayload("Pallet Town"));
+    await _pokemonService.DepositAsync(partyCreated.Id);
+
+    PokemonDto boxedCreated = await CreatePokemonAsync("denied-swap-boxed");
+    await _pokemonService.ReceiveAsync(boxedCreated.Id, CreatePayload("Pallet Town"));
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
+
+    PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
+      async () => await _pokemonService.SwapAsync(new SwapPokemonPayload
+      {
+        PokemonIds = [boxedCreated.Id, partyCreated.Id]
+      }));
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Update", exception.Data["Action"]);
+    Assert.Equal(new Entity(Specimen.EntityKind, boxedCreated.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
   [Fact(DisplayName = "It should trade two Pokémon owned by different trainers.")]

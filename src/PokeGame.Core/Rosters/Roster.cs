@@ -55,7 +55,7 @@ public sealed class Roster : AggregateRoot, IEntityProvider
     }
 
     int partyLimit = trainer.PartyLimit ?? PartyLimit;
-    bool isInParty = _partyIds.Count < partyLimit; // TODO(fpion): eggs should never be in the party!
+    bool isInParty = _partyIds.Count < partyLimit && !specimen.IsEgg;
 
     Raise(new RosterEntryAdded(specimen.Id, isInParty), actorId);
   }
@@ -182,10 +182,14 @@ public sealed class Roster : AggregateRoot, IEntityProvider
 
     if (sourceEntry.IsInParty == targetEntry.IsInParty)
     {
-      throw new NotImplementedException(); // TODO(fpion): 409 Conflict
+      throw new InvalidRosterSwapException(this, source, target);
     }
 
-    // TODO(fpion): handle egg Pokémon
+    Specimen withdrawn = sourceEntry.IsInParty ? target : source;
+    if (withdrawn.IsEgg)
+    {
+      throw new PokemonEggCannotBeWithdrawnException(withdrawn);
+    }
 
     Raise(new RosterEntriesSwapped(source.Id, targetEntry.IsInParty, target.Id, sourceEntry.IsInParty), actorId);
   }

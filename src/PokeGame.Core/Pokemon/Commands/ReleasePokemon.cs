@@ -44,29 +44,17 @@ internal class ReleasePokemonCommandHandler : ICommandHandler<ReleasePokemonComm
     }
     await _permissionService.CheckAsync(Actions.Update, specimen, cancellationToken);
 
-    Roster? roster = null;
-    if (specimen.Ownership is not null)
-    {
-      RosterId rosterId = new(specimen.Ownership.TrainerId);
-      roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken);
-      if (roster is not null)
-      {
-        await _permissionService.CheckAsync(Actions.Update, roster, cancellationToken);
-      }
-      else
-      {
-        // TODO(fpion): this should be an error.
-      }
-    }
+    PokemonOwnership ownership = specimen.Ownership ?? throw new PokemonHasNoOwnerException(specimen);
+    RosterId rosterId = new(ownership.TrainerId);
+    Roster roster = await _rosterRepository.LoadAsync(rosterId, cancellationToken)
+      ?? throw new InvalidOperationException($"The trainer 'Id={rosterId.TrainerId}' roster was not loaded.");
+    await _permissionService.CheckAsync(Actions.Update, roster, cancellationToken);
 
     specimen.Release(actorId);
-    roster?.Remove(specimen, actorId);
+    roster.Remove(specimen, actorId);
 
     await _pokemonRepository.SaveAsync(specimen, cancellationToken);
-    if (roster is not null)
-    {
-      await _rosterRepository.SaveAsync(roster, cancellationToken);
-    }
+    await _rosterRepository.SaveAsync(roster, cancellationToken);
 
     return await _pokemonQuerier.ReadAsync(specimen, cancellationToken);
   }

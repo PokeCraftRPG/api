@@ -39,6 +39,37 @@ public class PokemonPayloadTests : UnitTests
     Assert.Throws<InvalidCommandException>(payload.Validate);
   }
 
+  [Theory(DisplayName = "It should throw InvalidCommandException when the swap Pokémon IDs are invalid.")]
+  [InlineData(0)]
+  [InlineData(1)]
+  [InlineData(2)]
+  public void Given_InvalidPokemonIds_When_ValidateSwap_Then_InvalidCommandException(int count)
+  {
+    Guid id = Guid.NewGuid();
+    List<Guid> pokemonIds = count switch
+    {
+      0 => [],
+      1 => [id],
+      _ => [id, id]
+    };
+
+    SwapPokemonPayload payload = new()
+    {
+      PokemonIds = pokemonIds
+    };
+
+    Assert.Throws<InvalidCommandException>(payload.Validate);
+  }
+
+  [Fact(DisplayName = "It should accept a valid swap payload.")]
+  public void Given_TwoDistinctIds_When_ValidateSwap_Then_Valid()
+  {
+    new SwapPokemonPayload
+    {
+      PokemonIds = [Guid.NewGuid(), Guid.NewGuid()]
+    }.Validate();
+  }
+
   [Theory(DisplayName = "It should throw InvalidCommandException when the trade Pokémon IDs are invalid.")]
   [InlineData(0)]
   [InlineData(1)]

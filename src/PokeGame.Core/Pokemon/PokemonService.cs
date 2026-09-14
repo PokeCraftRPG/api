@@ -16,6 +16,7 @@ public interface IPokemonService
   Task<PokemonDto?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
   Task<PokemonDto?> ReceiveAsync(Guid id, ReceivePokemonPayload payload, CancellationToken cancellationToken = default);
   Task<PokemonDto?> ReleaseAsync(Guid id, CancellationToken cancellationToken = default);
+  Task SwapAsync(SwapPokemonPayload payload, CancellationToken cancellationToken = default);
   Task TradeAsync(TradePokemonPayload payload, CancellationToken cancellationToken = default);
   Task<PokemonDto?> UpdateAsync(Guid id, UpdatePokemonPayload payload, CancellationToken cancellationToken = default);
   Task<PokemonDto?> WithdrawAsync(Guid id, CancellationToken cancellationToken = default);
@@ -35,6 +36,7 @@ internal class PokemonService : IPokemonService
     services.AddTransient<ICommandHandler<EvolvePokemonCommand, PokemonDto?>, EvolvePokemonCommandHandler>();
     services.AddTransient<ICommandHandler<ReceivePokemonCommand, PokemonDto?>, ReceivePokemonCommandHandler>();
     services.AddTransient<ICommandHandler<ReleasePokemonCommand, PokemonDto?>, ReleasePokemonCommandHandler>();
+    services.AddTransient<ICommandHandler<SwapPokemonCommand, Unit>, SwapPokemonCommandHandler>();
     services.AddTransient<ICommandHandler<TradePokemonCommand, Unit>, TradePokemonCommandHandler>();
     services.AddTransient<ICommandHandler<UpdatePokemonCommand, PokemonDto?>, UpdatePokemonCommandHandler>();
     services.AddTransient<ICommandHandler<WithdrawPokemonCommand, PokemonDto?>, WithdrawPokemonCommandHandler>();
@@ -96,6 +98,12 @@ internal class PokemonService : IPokemonService
   {
     ReleasePokemonCommand command = new(id);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task SwapAsync(SwapPokemonPayload payload, CancellationToken cancellationToken)
+  {
+    SwapPokemonCommand command = new(payload);
+    await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
   public async Task TradeAsync(TradePokemonPayload payload, CancellationToken cancellationToken)
