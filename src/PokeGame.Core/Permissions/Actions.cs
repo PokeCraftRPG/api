@@ -4,6 +4,8 @@ internal static class Actions
 {
   public const string Accept = "Accept";
   public const string Cancel = "Cancel";
+  public const string Catch = "Catch";
+  public const string ChangeForm = "ChangeForm";
   public const string CreateAbility = "CreateAbility";
   public const string CreateEvolution = "CreateEvolution";
   public const string CreateForm = "CreateForm";
@@ -20,7 +22,11 @@ internal static class Actions
   public const string Evolve = "Evolve";
   public const string InviteMember = "InviteMember";
   public const string LeaveMembership = "LeaveMembership";
+  public const string Receive = "Receive";
+  public const string Release = "Release";
   public const string RevokeMembership = "RevokeMembership";
+  public const string Swap = "Swap";
+  public const string Trade = "Trade";
   public const string TransferOwnership = "TransferOwnership";
   public const string Update = "Update";
   public const string Upload = "Upload";

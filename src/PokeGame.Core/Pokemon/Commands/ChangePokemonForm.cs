@@ -40,7 +40,7 @@ internal class ChangePokemonFormCommandHandler : ICommandHandler<ChangePokemonFo
     {
       return null;
     }
-    await _permissionService.CheckAsync(Actions.Update, specimen, cancellationToken);
+    await _permissionService.CheckAsync(Actions.ChangeForm, specimen, cancellationToken);
 
     FormId formId = new(worldId, command.FormId);
     Form form = await _formRepository.LoadAsync(formId, cancellationToken) ?? throw new EntityNotFoundException(formId, nameof(command.FormId));

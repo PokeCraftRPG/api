@@ -42,7 +42,7 @@ internal class ReleasePokemonCommandHandler : ICommandHandler<ReleasePokemonComm
     {
       return null;
     }
-    await _permissionService.CheckAsync(Actions.Update, specimen, cancellationToken);
+    await _permissionService.CheckAsync(Actions.Release, specimen, cancellationToken);
 
     PokemonOwnership ownership = specimen.Ownership ?? throw new PokemonHasNoOwnerException(specimen);
     RosterId rosterId = new(ownership.TrainerId);

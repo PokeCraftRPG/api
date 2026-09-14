@@ -40,11 +40,11 @@ internal class SwapPokemonCommandHandler : ICommandHandler<SwapPokemonCommand, U
     Dictionary<PokemonId, Specimen> specimens = (await _pokemonRepository.LoadAsync(pokemonIds, cancellationToken)).ToDictionary(x => x.Id, x => x);
 
     Specimen source = specimens.GetValueOrDefault(pokemonIds[0]) ?? throw new EntityNotFoundException(pokemonIds[0], nameof(payload.PokemonIds));
-    await _permissionService.CheckAsync(Actions.Update, source, cancellationToken);
+    await _permissionService.CheckAsync(Actions.Swap, source, cancellationToken);
     PokemonOwnership sourceOwnership = source.Ownership ?? throw new PokemonHasNoOwnerException(source);
 
     Specimen target = specimens.GetValueOrDefault(pokemonIds[1]) ?? throw new EntityNotFoundException(pokemonIds[1], nameof(payload.PokemonIds));
-    await _permissionService.CheckAsync(Actions.Update, target, cancellationToken);
+    await _permissionService.CheckAsync(Actions.Swap, target, cancellationToken);
     PokemonOwnership targetOwnership = target.Ownership ?? throw new PokemonHasNoOwnerException(target);
 
     if (sourceOwnership.TrainerId != targetOwnership.TrainerId)
