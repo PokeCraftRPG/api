@@ -24,7 +24,7 @@ internal class PokemonMoveEntity
   // TODO(fpion): UpdatedBy
   // TODO(fpion): UpdatedOn
 
-  public PokemonMoveEntity(PokemonEntity pokemon, int moveId, int? slot = null)
+  public PokemonMoveEntity(PokemonEntity pokemon, int moveId, LearningMethod learningMethod, int? slot = null)
   {
     Pokemon = pokemon;
     PokemonId = pokemon.PokemonId;
@@ -32,6 +32,7 @@ internal class PokemonMoveEntity
     MoveId = moveId;
 
     LearnedAtLevel = pokemon.Level;
+    LearningMethod = learningMethod;
 
     Slot = slot;
   }

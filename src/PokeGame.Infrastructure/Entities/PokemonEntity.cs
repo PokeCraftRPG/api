@@ -3,6 +3,7 @@ using Logitar.EventSourcing;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms.Models;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Pokemon.Models;
@@ -134,14 +135,14 @@ internal class PokemonEntity : AggregateEntity
     Characteristic = @event.Characteristic;
 
     int? slot = null;
-    foreach (InitialPokemonMove move in @event.Moves)
+    foreach (LearnedMove move in @event.Moves)
     {
       int moveId = moveIds[move.MoveId.Value];
       if (move.IsInMoveset)
       {
         slot = slot.HasValue ? (slot.Value + 1) : 0;
       }
-      Moves.Add(new PokemonMoveEntity(this, moveId, slot));
+      Moves.Add(new PokemonMoveEntity(this, moveId, LearningMethod.LevelUp, slot));
     }
   }
 
@@ -231,7 +232,7 @@ internal class PokemonEntity : AggregateEntity
     Stamina = @event.Stamina;
   }
 
-  public void Evolve(int speciesId, int varietyId, int formId, PokemonEvolved @event)
+  public void Evolve(int speciesId, int varietyId, int formId, IReadOnlyDictionary<string, int> moveIds, PokemonEvolved @event)
   {
     Update(@event);
 
@@ -252,6 +253,13 @@ internal class PokemonEntity : AggregateEntity
     if (@event.ConsumeHeldItem)
     {
       HeldItemId = null;
+    }
+
+    foreach (LearnedMove move in @event.Moves)
+    {
+      int moveId = moveIds[move.MoveId.Value];
+      int? slot = move.IsInMoveset ? Moves.Count(m => m.Slot.HasValue) : null;
+      Moves.Add(new PokemonMoveEntity(this, moveId, LearningMethod.Evolution, slot));
     }
   }
 

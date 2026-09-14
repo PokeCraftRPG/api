@@ -160,15 +160,15 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
 
     VarietyMove[] varietyMoves = variety.Moves.Values
       .Where(x => x.LearningMethod == LearningMethod.LevelUp && x.Level is not null && x.Level.Value <= level)
-      .OrderBy(x => x.Level!.Value)
+      .OrderBy(x => x.Level!.Value).ThenBy(x => x.MoveId.Value)
       .ToArray();
     int firstMovesetIndex = varietyMoves.Length < MoveLimit ? 0 : varietyMoves.Length - MoveLimit;
-    List<InitialPokemonMove> moves = new(capacity: varietyMoves.Length);
+    List<LearnedMove> moves = new(capacity: varietyMoves.Length);
     for (int index = 0; index < varietyMoves.Length; index++)
     {
       VarietyMove varietyMove = varietyMoves[index];
       bool isInMoveset = index >= firstMovesetIndex;
-      moves.Add(new InitialPokemonMove(varietyMove.MoveId, isInMoveset));
+      moves.Add(new LearnedMove(varietyMove.MoveId, isInMoveset));
     }
 
     PokemonCreated @event = new(species.Id, variety.Id, form.Id, key, gender, isShiny.Value, teraType.Value, abilitySlot.Value, size, nature, eggCycles,
@@ -204,7 +204,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     Characteristic = @event.Characteristic;
 
     Level level = new(Level);
-    foreach (InitialPokemonMove move in @event.Moves)
+    foreach (LearnedMove move in @event.Moves)
     {
       _movepool[move.MoveId] = new PokemonMove(level, LearningMethod.LevelUp);
       if (move.IsInMoveset)
@@ -362,7 +362,23 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
 
     bool consumeHeldItem = evolution.Trigger != EvolutionTrigger.ItemUsed && evolution.ItemId.HasValue;
 
-    Raise(new PokemonEvolved(variety.SpeciesId, variety.Id, form.Id, form.BaseStatistics, vitality, stamina, consumeHeldItem), actorId);
+    int remainingSlots = MoveLimit - _moveset.Count;
+    VarietyMove[] varietyMoves = variety.Moves.Values
+      .Where(x => x.LearningMethod == LearningMethod.Evolution && !_movepool.ContainsKey(x.MoveId))
+      .OrderBy(x => x.MoveId.Value)
+      .ToArray();
+    List<LearnedMove> moves = new(capacity: varietyMoves.Length);
+    foreach (VarietyMove move in varietyMoves)
+    {
+      bool isInMoveset = remainingSlots > 0;
+      if (isInMoveset)
+      {
+        remainingSlots--;
+      }
+      moves.Add(new LearnedMove(move.MoveId, isInMoveset));
+    }
+
+    Raise(new PokemonEvolved(variety.SpeciesId, variety.Id, form.Id, form.BaseStatistics, vitality, stamina, consumeHeldItem, moves), actorId);
   }
   private void Handle(PokemonEvolved @event)
   {
@@ -377,6 +393,16 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     if (@event.ConsumeHeldItem)
     {
       HeldItemId = null;
+    }
+
+    Level level = new(Level);
+    foreach (LearnedMove move in @event.Moves)
+    {
+      _movepool[move.MoveId] = new PokemonMove(level, LearningMethod.Evolution);
+      if (move.IsInMoveset)
+      {
+        _moveset.Add(move.MoveId);
+      }
     }
   }
 

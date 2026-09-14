@@ -5,6 +5,7 @@ using PokeGame.Core.Moves;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Varieties;
 
 namespace PokeGame.Pokemon;
 
@@ -310,6 +311,127 @@ public class SpecimenEvolveTests : UnitTests
       () => pokemon.Evolve(evolution, Catalog.CharmanderForm, Catalog.CharmanderVariety));
   }
 
+  [Fact(DisplayName = "It should learn evolution moves into the movepool and moveset when slots remain.")]
+  public void Given_EvolutionMovesAndRoom_When_Evolve_Then_MovesAddedToMoveset()
+  {
+    Move ember = MoveBuilder.Ember(Faker, Catalog.World);
+    Move tackle = MoveBuilder.Tackle(Faker, Catalog.World);
+    Catalog.CharmanderVariety.AddMove(new VarietyMove(ember.Id, LearningMethod.Evolution));
+    Catalog.CharmanderVariety.AddMove(new VarietyMove(tackle.Id, LearningMethod.Evolution));
+    Move[] expectedOrder = new[] { ember, tackle }.OrderBy(move => move.Id.Value).ToArray();
+
+    Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Red);
+    Evolution evolution = CreateEvolution();
+
+    pokemon.Evolve(evolution, Catalog.CharmanderForm, Catalog.CharmanderVariety);
+
+    PokemonEvolved @event = pokemon.LastChange<PokemonEvolved>();
+    Assert.Equal(expectedOrder.Select(move => move.Id), @event.Moves.Select(move => move.MoveId));
+    Assert.All(@event.Moves, move => Assert.True(move.IsInMoveset));
+
+    Assert.Equal(expectedOrder.Select(move => move.Id), pokemon.Moveset);
+    foreach (Move move in expectedOrder)
+    {
+      AssertEvolutionMove(pokemon.Movepool[move.Id], pokemon.Level);
+    }
+  }
+
+  [Fact(DisplayName = "It should add evolution moves only to the movepool when the moveset is full.")]
+  public void Given_FullMoveset_When_Evolve_Then_EvolutionMovesOnlyInMovepool()
+  {
+    Move evolutionMove = MoveBuilder.Ember(Faker, Catalog.World);
+    Catalog.CharmanderVariety.AddMove(new VarietyMove(evolutionMove.Id, LearningMethod.Evolution));
+
+    Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Red);
+    for (int index = 0; index < Specimen.MoveLimit; index++)
+    {
+      Move filler = new MoveBuilder(Faker)
+        .WithWorld(Catalog.World)
+        .WithKey($"filler-{index}")
+        .WithName($"Filler {index}")
+        .Build();
+      pokemon.LearnMove(filler.Id, LearningMethod.LevelUp);
+    }
+    Assert.Equal(Specimen.MoveLimit, pokemon.Moveset.Count);
+
+    Evolution evolution = CreateEvolution();
+    pokemon.Evolve(evolution, Catalog.CharmanderForm, Catalog.CharmanderVariety);
+
+    PokemonEvolved @event = pokemon.LastChange<PokemonEvolved>();
+    LearnedMove learned = Assert.Single(@event.Moves);
+    Assert.Equal(evolutionMove.Id, learned.MoveId);
+    Assert.False(learned.IsInMoveset);
+
+    Assert.DoesNotContain(evolutionMove.Id, pokemon.Moveset);
+    AssertEvolutionMove(pokemon.Movepool[evolutionMove.Id], pokemon.Level);
+  }
+
+  [Fact(DisplayName = "It should fill remaining moveset slots then put extra evolution moves in the movepool only.")]
+  public void Given_OneMovesetSlot_When_Evolve_Then_FirstEvolutionMoveInMoveset()
+  {
+    Move first = MoveBuilder.Ember(Faker, Catalog.World);
+    Move second = MoveBuilder.Tackle(Faker, Catalog.World);
+    Catalog.CharmanderVariety.AddMove(new VarietyMove(first.Id, LearningMethod.Evolution));
+    Catalog.CharmanderVariety.AddMove(new VarietyMove(second.Id, LearningMethod.Evolution));
+    Move[] expectedOrder = new[] { first, second }.OrderBy(move => move.Id.Value).ToArray();
+
+    Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Red);
+    for (int index = 0; index < Specimen.MoveLimit - 1; index++)
+    {
+      Move filler = new MoveBuilder(Faker)
+        .WithWorld(Catalog.World)
+        .WithKey($"slot-filler-{index}")
+        .WithName($"Slot Filler {index}")
+        .Build();
+      pokemon.LearnMove(filler.Id, LearningMethod.LevelUp);
+    }
+
+    Evolution evolution = CreateEvolution();
+    pokemon.Evolve(evolution, Catalog.CharmanderForm, Catalog.CharmanderVariety);
+
+    Assert.Contains(expectedOrder[0].Id, pokemon.Moveset);
+    Assert.DoesNotContain(expectedOrder[1].Id, pokemon.Moveset);
+    AssertEvolutionMove(pokemon.Movepool[expectedOrder[0].Id], pokemon.Level);
+    AssertEvolutionMove(pokemon.Movepool[expectedOrder[1].Id], pokemon.Level);
+
+    PokemonEvolved @event = pokemon.LastChange<PokemonEvolved>();
+    Assert.Equal(2, @event.Moves.Count);
+    Assert.True(@event.Moves.ElementAt(0).IsInMoveset);
+    Assert.False(@event.Moves.ElementAt(1).IsInMoveset);
+  }
+
+  [Fact(DisplayName = "It should not re-learn an evolution move already in the movepool.")]
+  public void Given_AlreadyKnownEvolutionMove_When_Evolve_Then_NotAddedAgain()
+  {
+    Move ember = MoveBuilder.Ember(Faker, Catalog.World);
+    Catalog.CharmanderVariety.AddMove(new VarietyMove(ember.Id, LearningMethod.Evolution));
+
+    Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Red);
+    pokemon.LearnMove(ember.Id, LearningMethod.LevelUp);
+
+    Evolution evolution = CreateEvolution();
+    pokemon.Evolve(evolution, Catalog.CharmanderForm, Catalog.CharmanderVariety);
+
+    PokemonEvolved @event = pokemon.LastChange<PokemonEvolved>();
+    Assert.Empty(@event.Moves);
+    Assert.Equal(LearningMethod.LevelUp, pokemon.Movepool[ember.Id].LearningMethod);
+  }
+
+  [Fact(DisplayName = "It should ignore Level-Up variety moves when evolving.")]
+  public void Given_LevelUpTargetMoves_When_Evolve_Then_NotLearned()
+  {
+    Move tackle = MoveBuilder.Tackle(Faker, Catalog.World);
+    Catalog.CharmanderVariety.AddMove(new VarietyMove(tackle.Id, LearningMethod.LevelUp, new Level(1)));
+
+    Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Red);
+    Evolution evolution = CreateEvolution();
+
+    pokemon.Evolve(evolution, Catalog.CharmanderForm, Catalog.CharmanderVariety);
+
+    Assert.Empty(pokemon.LastChange<PokemonEvolved>().Moves);
+    Assert.DoesNotContain(tackle.Id, pokemon.Movepool.Keys);
+  }
+
   private Evolution CreateEvolution(EvolutionTrigger trigger = EvolutionTrigger.LeveledUp)
     => new(EvolutionId.NewId(Catalog.World.Id), Catalog.Form, Catalog.CharmanderForm, trigger);
 
@@ -331,6 +453,14 @@ public class SpecimenEvolveTests : UnitTests
     int delta = changed.HP - previous.HP;
     Assert.Equal(Math.Clamp(previousVitality + delta, 0, changed.HP), pokemon.Vitality);
     Assert.Equal(Math.Clamp(previousVitality + delta, 0, changed.HP), pokemon.Stamina);
+  }
+
+  private static void AssertEvolutionMove(PokemonMove move, int learnedAtLevel)
+  {
+    Assert.Equal(learnedAtLevel, move.LearnedAtLevel.Value);
+    Assert.Equal(LearningMethod.Evolution, move.LearningMethod);
+    Assert.False(move.IsMastered);
+    Assert.Equal(0, move.PowerPointUpgrades);
   }
 
   private static EvolutionConditionFailure AssertSingleFailure(EvolutionRequirementsNotMetException exception, EvolutionCondition condition)

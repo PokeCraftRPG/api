@@ -84,7 +84,7 @@ internal class EvolvePokemonCommandHandler : ICommandHandler<EvolvePokemonComman
 
     Location? location = Location.TryCreate(payload.Location);
 
-    specimen.Evolve(evolution, form, variety, location, payload.TimeOfDay, actorId); // TODO(fpion): evolution moves
+    specimen.Evolve(evolution, form, variety, location, payload.TimeOfDay, actorId);
 
     await _pokemonRepository.SaveAsync(specimen, cancellationToken);
     if (inventory is not null)

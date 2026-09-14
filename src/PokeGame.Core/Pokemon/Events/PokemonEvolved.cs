@@ -12,4 +12,5 @@ public sealed record PokemonEvolved(
   BaseStatistics BaseStatistics,
   int Vitality,
   int Stamina,
-  bool ConsumeHeldItem) : DomainEvent;
+  bool ConsumeHeldItem,
+  IReadOnlyCollection<LearnedMove> Moves) : DomainEvent;

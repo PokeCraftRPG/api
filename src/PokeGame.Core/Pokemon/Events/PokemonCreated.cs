@@ -26,4 +26,4 @@ public sealed record PokemonCreated(
   int Stamina,
   Friendship Friendship,
   PokemonCharacteristic Characteristic,
-  IReadOnlyCollection<InitialPokemonMove> Moves) : DomainEvent;
+  IReadOnlyCollection<LearnedMove> Moves) : DomainEvent;

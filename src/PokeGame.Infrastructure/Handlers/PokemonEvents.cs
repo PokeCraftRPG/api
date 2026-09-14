@@ -1,6 +1,7 @@
 ﻿using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Events;
 using PokeGame.Infrastructure.Entities;
 
@@ -72,23 +73,7 @@ internal class PokemonEvents :
         .SingleOrDefaultAsync(cancellationToken)
         ?? throw new InvalidOperationException($"The form entity 'StreamId={@event.FormId}' was not found.");
 
-      HashSet<string> moveStreamIds = @event.Moves.Select(move => move.MoveId.Value).ToHashSet();
-      Dictionary<string, int> moveIds = await _pokemon.Moves
-        .Where(x => moveStreamIds.Contains(x.StreamId))
-        .ToDictionaryAsync(x => x.StreamId, x => x.MoveId, cancellationToken);
-
-      IEnumerable<string> missingIds = moveStreamIds.Except(moveIds.Keys);
-      if (missingIds.Any())
-      {
-        StringBuilder message = new();
-        message.AppendLine("The move entities were not found.");
-        message.AppendLine("StreamIds:");
-        foreach (string missingId in missingIds)
-        {
-          message.Append(" - ").AppendLine(missingId);
-        }
-        throw new InvalidOperationException(message.ToString());
-      }
+      IReadOnlyDictionary<string, int> moveIds = await FindMoveIdsAsync(@event.Moves, cancellationToken);
 
       pokemon = new PokemonEntity(data.WorldId, data.SpeciesId, data.VarietyId, data.FormId, moveIds, @event);
 
@@ -122,7 +107,9 @@ internal class PokemonEvents :
 
   public async Task HandleAsync(PokemonEvolved @event, CancellationToken cancellationToken)
   {
-    PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    PokemonEntity? pokemon = await _pokemon.Specimens
+      .Include(x => x.Moves)
+      .SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
     if (pokemon is not null && pokemon.Version == (@event.Version - 1))
     {
       var data = await _pokemon.Forms
@@ -131,7 +118,9 @@ internal class PokemonEvents :
         .SingleOrDefaultAsync(cancellationToken)
         ?? throw new InvalidOperationException($"The form entity 'StreamId={@event.FormId}' was not found.");
 
-      pokemon.Evolve(data.SpeciesId, data.VarietyId, data.FormId, @event);
+      IReadOnlyDictionary<string, int> moveIds = await FindMoveIdsAsync(@event.Moves, cancellationToken);
+
+      pokemon.Evolve(data.SpeciesId, data.VarietyId, data.FormId, moveIds, @event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
@@ -246,5 +235,28 @@ internal class PokemonEvents :
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
+  }
+
+  private async Task<IReadOnlyDictionary<string, int>> FindMoveIdsAsync(IEnumerable<LearnedMove> learnedMoves, CancellationToken cancellationToken)
+  {
+    HashSet<string> moveStreamIds = learnedMoves.Select(move => move.MoveId.Value).ToHashSet();
+    Dictionary<string, int> moveIds = await _pokemon.Moves
+      .Where(x => moveStreamIds.Contains(x.StreamId))
+      .ToDictionaryAsync(x => x.StreamId, x => x.MoveId, cancellationToken);
+
+    IEnumerable<string> missingIds = moveStreamIds.Except(moveIds.Keys);
+    if (missingIds.Any())
+    {
+      StringBuilder message = new();
+      message.AppendLine("The move entities were not found.");
+      message.AppendLine("StreamIds:");
+      foreach (string missingId in missingIds)
+      {
+        message.Append(" - ").AppendLine(missingId);
+      }
+      throw new InvalidOperationException(message.ToString());
+    }
+
+    return moveIds.AsReadOnly();
   }
 }

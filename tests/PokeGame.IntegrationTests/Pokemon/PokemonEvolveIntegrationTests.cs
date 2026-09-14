@@ -326,6 +326,85 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     Assert.Equal(_source.EntityId, pokemon.Form.Id);
   }
 
+  [Fact(DisplayName = "It should learn evolution moves into the moveset when slots remain.")]
+  public async Task Given_EvolutionMovesAndRoom_When_Evolve_Then_MovesAdded()
+  {
+    Move ember = MoveBuilder.Ember(Faker, Context.World);
+    Move waterGun = MoveBuilder.WaterGun(Faker, Context.World);
+    await _moveRepository.SaveAsync([ember, waterGun]);
+
+    Variety targetVariety = await _varietyRepository.LoadAsync(_target.VarietyId)
+      ?? throw new InvalidOperationException("The target variety was not found.");
+    targetVariety.AddMove(new VarietyMove(ember.Id, LearningMethod.Evolution), Context.ActorId);
+    targetVariety.AddMove(new VarietyMove(waterGun.Id, LearningMethod.Evolution), Context.ActorId);
+    await _varietyRepository.SaveAsync(targetVariety);
+
+    Evolution evolution = await CreateEvolutionAsync();
+    PokemonDto created = await CreateOwnedPokemonAsync("learn-on-evolve");
+    Assert.Empty(created.Moves);
+
+    PokemonDto? pokemon = await _pokemonService.EvolveAsync(created.Id, new EvolvePokemonPayload { EvolutionId = evolution.EntityId });
+    Assert.NotNull(pokemon);
+    Assert.Equal(_target.EntityId, pokemon.Form.Id);
+
+    Assert.Equal(2, pokemon.Moves.Count);
+    HashSet<int> slots = [];
+    foreach (Move expected in new[] { ember, waterGun })
+    {
+      PokemonMoveDto move = Assert.Single(pokemon.Moves, dto => dto.Move.Id == expected.EntityId);
+      Assert.NotNull(move.Slot);
+      Assert.InRange(move.Slot.Value, 0, 1);
+      Assert.True(slots.Add(move.Slot.Value));
+      Assert.Equal(pokemon.Level, move.LearnedAtLevel);
+      Assert.Equal(LearningMethod.Evolution, move.LearningMethod);
+      Assert.False(move.IsMastered);
+      Assert.Equal(0, move.PowerPointUpgrades);
+    }
+    Assert.Equal(2, slots.Count);
+  }
+
+  [Fact(DisplayName = "It should add evolution moves only to the movepool when the moveset is full.")]
+  public async Task Given_FullMoveset_When_Evolve_Then_EvolutionMoveOnlyInMovepool()
+  {
+    Move[] fillers = Enumerable.Range(0, Specimen.MoveLimit)
+      .Select(index => new MoveBuilder(Faker)
+        .WithWorld(Context.World)
+        .WithKey($"evolve-filler-{index}")
+        .WithName($"Evolve Filler {index}")
+        .Build())
+      .ToArray();
+    Move evolutionMove = MoveBuilder.Ember(Faker, Context.World);
+    await _moveRepository.SaveAsync([.. fillers, evolutionMove]);
+
+    Variety sourceVariety = await _varietyRepository.LoadAsync(_source.VarietyId)
+      ?? throw new InvalidOperationException("The source variety was not found.");
+    for (int index = 0; index < fillers.Length; index++)
+    {
+      sourceVariety.AddMove(new VarietyMove(fillers[index].Id, LearningMethod.LevelUp, new Level(1)), Context.ActorId);
+    }
+    await _varietyRepository.SaveAsync(sourceVariety);
+
+    Variety targetVariety = await _varietyRepository.LoadAsync(_target.VarietyId)
+      ?? throw new InvalidOperationException("The target variety was not found.");
+    targetVariety.AddMove(new VarietyMove(evolutionMove.Id, LearningMethod.Evolution), Context.ActorId);
+    await _varietyRepository.SaveAsync(targetVariety);
+
+    Evolution evolution = await CreateEvolutionAsync();
+    PokemonDto created = await CreateOwnedPokemonAsync("full-moveset");
+    Assert.Equal(Specimen.MoveLimit, created.Moves.Count(move => move.Slot.HasValue));
+
+    PokemonDto? pokemon = await _pokemonService.EvolveAsync(created.Id, new EvolvePokemonPayload { EvolutionId = evolution.EntityId });
+    Assert.NotNull(pokemon);
+
+    PokemonMoveDto learned = Assert.Single(pokemon.Moves, move => move.Move.Id == evolutionMove.EntityId);
+    Assert.Null(learned.Slot);
+    Assert.Equal(pokemon.Level, learned.LearnedAtLevel);
+    Assert.Equal(LearningMethod.Evolution, learned.LearningMethod);
+    Assert.False(learned.IsMastered);
+    Assert.Equal(0, learned.PowerPointUpgrades);
+    Assert.Equal(Specimen.MoveLimit, pokemon.Moves.Count(move => move.Slot.HasValue));
+  }
+
   private async Task<Evolution> CreateEvolutionAsync(
     EvolutionTrigger trigger = EvolutionTrigger.LeveledUp,
     Level? level = null,
