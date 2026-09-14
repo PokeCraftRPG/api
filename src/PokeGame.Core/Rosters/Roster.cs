@@ -47,11 +47,11 @@ public sealed class Roster : AggregateRoot, IEntityProvider
 
     if (specimen.Ownership?.TrainerId != TrainerId)
     {
-      throw new ArgumentException($"The Pokémon 'Id={specimen.Id}' should be owned by trainer 'Id={TrainerId}'.", nameof(specimen));
+      throw new InvalidPokemonOwnerException(this, specimen);
     }
     if (_entries.ContainsKey(specimen.Id))
     {
-      throw new ArgumentException($"The Pokémon 'Id={specimen.Id}' is already in trainer’s 'Id={TrainerId}' roster.", nameof(specimen));
+      throw new PokemonAlreadyInRosterException(this, specimen);
     }
 
     int partyLimit = trainer.PartyLimit ?? PartyLimit;
@@ -74,15 +74,15 @@ public sealed class Roster : AggregateRoot, IEntityProvider
 
     if (specimen.Ownership?.TrainerId != TrainerId)
     {
-      throw new ArgumentException($"The Pokémon 'Id={specimen.Id}' should be owned by trainer 'Id={TrainerId}'.", nameof(specimen));
+      throw new InvalidPokemonOwnerException(this, specimen);
     }
     if (!_entries.ContainsKey(specimen.Id))
     {
-      throw new ArgumentException($"The Pokémon 'Id={specimen.Id}' is not in trainer’s 'Id={TrainerId}' roster.", nameof(specimen));
+      throw new PokemonNotInRosterException(this, specimen);
     }
     if (!_partyIds.Contains(specimen.Id))
     {
-      throw new PokemonNotInPartyException(specimen);
+      throw new PokemonNotInPartyException(this, specimen);
     }
 
     Raise(new RosterEntryDeposited(specimen.Id), actorId);
@@ -101,11 +101,11 @@ public sealed class Roster : AggregateRoot, IEntityProvider
 
     if (specimen.Ownership?.TrainerId == TrainerId)
     {
-      throw new ArgumentException($"The Pokémon 'Id={specimen.Id}' should not be owned by trainer 'Id={TrainerId}'.", nameof(specimen));
+      throw new UnexpectedPokemonOwnerException(this, specimen);
     }
     if (!_entries.ContainsKey(specimen.Id))
     {
-      throw new ArgumentException($"The Pokémon 'Id={specimen.Id}' is not in trainer’s 'Id={TrainerId}' roster.", nameof(specimen));
+      throw new PokemonNotInRosterException(this, specimen);
     }
 
     Raise(new RosterEntryRemoved(specimen.Id), actorId);
@@ -128,18 +128,17 @@ public sealed class Roster : AggregateRoot, IEntityProvider
 
     if (source.Ownership?.TrainerId == TrainerId)
     {
-      throw new ArgumentException($"The Pokémon 'Id={source.Id}' should not be owned by trainer 'Id={TrainerId}'.", nameof(source));
+      throw new UnexpectedPokemonOwnerException(this, source);
     }
     if (target.Ownership?.TrainerId != TrainerId)
     {
-      throw new ArgumentException($"The Pokémon 'Id={target.Id}' should be owned by trainer 'Id={TrainerId}'.", nameof(target));
+      throw new InvalidPokemonOwnerException(this, target);
     }
 
-    RosterEntry sourceEntry = _entries.GetValueOrDefault(source.Id)
-      ?? throw new ArgumentException($"The Pokémon 'Id={source.Id}' is not in trainer’s 'Id={TrainerId}' roster.", nameof(source));
+    RosterEntry sourceEntry = _entries.GetValueOrDefault(source.Id) ?? throw new PokemonNotInRosterException(this, source);
     if (_entries.ContainsKey(target.Id))
     {
-      throw new ArgumentException($"The Pokémon 'Id={target.Id}' should not be in trainer’s 'Id={TrainerId}' roster.", nameof(target));
+      throw new UnexpectedPokemonRosterException(this, target);
     }
 
     Raise(new RosterEntryReplaced(source.Id, target.Id, sourceEntry.IsInParty && !target.IsEgg), actorId);
@@ -168,17 +167,15 @@ public sealed class Roster : AggregateRoot, IEntityProvider
 
     if (source.Ownership?.TrainerId != TrainerId)
     {
-      throw new ArgumentException($"The Pokémon 'Id={source.Id}' should be owned by trainer 'Id={TrainerId}'.", nameof(source));
+      throw new InvalidPokemonOwnerException(this, source);
     }
     if (target.Ownership?.TrainerId != TrainerId)
     {
-      throw new ArgumentException($"The Pokémon 'Id={target.Id}' should be owned by trainer 'Id={TrainerId}'.", nameof(target));
+      throw new InvalidPokemonOwnerException(this, target);
     }
 
-    RosterEntry sourceEntry = _entries.GetValueOrDefault(source.Id)
-      ?? throw new ArgumentException($"The Pokémon 'Id={source.Id}' is not in trainer’s 'Id={TrainerId}' roster.", nameof(source));
-    RosterEntry targetEntry = _entries.GetValueOrDefault(target.Id)
-      ?? throw new ArgumentException($"The Pokémon 'Id={target.Id}' is not in trainer’s 'Id={TrainerId}' roster.", nameof(target));
+    RosterEntry sourceEntry = _entries.GetValueOrDefault(source.Id) ?? throw new PokemonNotInRosterException(this, source);
+    RosterEntry targetEntry = _entries.GetValueOrDefault(target.Id) ?? throw new PokemonNotInRosterException(this, target);
 
     if (sourceEntry.IsInParty == targetEntry.IsInParty)
     {
@@ -188,7 +185,7 @@ public sealed class Roster : AggregateRoot, IEntityProvider
     Specimen withdrawn = sourceEntry.IsInParty ? target : source;
     if (withdrawn.IsEgg)
     {
-      throw new PokemonEggCannotBeWithdrawnException(withdrawn);
+      throw new PokemonEggCannotBeWithdrawnException(this, withdrawn);
     }
 
     Raise(new RosterEntriesSwapped(source.Id, targetEntry.IsInParty, target.Id, sourceEntry.IsInParty), actorId);
@@ -228,25 +225,25 @@ public sealed class Roster : AggregateRoot, IEntityProvider
 
     if (specimen.Ownership?.TrainerId != TrainerId)
     {
-      throw new ArgumentException($"The Pokémon 'Id={specimen.Id}' should be owned by trainer 'Id={TrainerId}'.", nameof(specimen));
+      throw new InvalidPokemonOwnerException(this, specimen);
     }
     if (specimen.IsEgg)
     {
-      throw new PokemonEggCannotBeWithdrawnException(specimen);
+      throw new PokemonEggCannotBeWithdrawnException(this, specimen);
     }
     if (!_entries.ContainsKey(specimen.Id))
     {
-      throw new ArgumentException($"The Pokémon 'Id={specimen.Id}' is not in trainer’s 'Id={TrainerId}' roster.", nameof(specimen));
+      throw new PokemonNotInRosterException(this, specimen);
     }
     if (_partyIds.Contains(specimen.Id))
     {
-      throw new PokemonAlreadyInPartyException(specimen);
+      throw new PokemonAlreadyInPartyException(this, specimen);
     }
 
     int partyLimit = trainer.PartyLimit ?? PartyLimit;
     if (_partyIds.Count >= partyLimit)
     {
-      throw new PokemonPartyFullException(trainer, this);
+      throw new PokemonPartyFullException(this, trainer);
     }
 
     Raise(new RosterEntryWithdrawn(specimen.Id), actorId);

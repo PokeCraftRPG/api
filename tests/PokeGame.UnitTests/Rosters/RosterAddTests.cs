@@ -67,36 +67,46 @@ public class RosterAddTests : UnitTests
     Assert.False(roster.LastChange<RosterEntryAdded>().IsInParty);
   }
 
-  [Fact(DisplayName = "It should throw ArgumentException when the Pokémon is already in the roster.")]
-  public void Given_AlreadyInRoster_When_Add_Then_ArgumentException()
+  [Fact(DisplayName = "It should throw PokemonAlreadyInRosterException when the Pokémon is already in the roster.")]
+  public void Given_AlreadyInRoster_When_Add_Then_PokemonAlreadyInRosterException()
   {
     Roster roster = new(Catalog.Red);
     Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Red);
-
     roster.Add(pokemon, Catalog.Red);
 
-    ArgumentException exception = Assert.Throws<ArgumentException>(() => roster.Add(pokemon, Catalog.Red));
-    Assert.Equal("specimen", exception.ParamName);
+    PokemonAlreadyInRosterException exception = Assert.Throws<PokemonAlreadyInRosterException>(
+      () => roster.Add(pokemon, Catalog.Red));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(pokemon.EntityId, exception.Data["PokemonId"]);
   }
 
-  [Fact(DisplayName = "It should throw ArgumentException when the Pokémon is not owned by the trainer.")]
-  public void Given_NotOwned_When_Add_Then_ArgumentException()
+  [Fact(DisplayName = "It should throw InvalidPokemonOwnerException when the Pokémon is not owned by the trainer.")]
+  public void Given_NotOwned_When_Add_Then_InvalidPokemonOwnerException()
   {
     Roster roster = new(Catalog.Red);
     Specimen pokemon = Catalog.CreatePokemon("wild");
 
-    ArgumentException exception = Assert.Throws<ArgumentException>(() => roster.Add(pokemon, Catalog.Red));
-    Assert.Equal("specimen", exception.ParamName);
+    InvalidPokemonOwnerException exception = Assert.Throws<InvalidPokemonOwnerException>(
+      () => roster.Add(pokemon, Catalog.Red));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(pokemon.EntityId, exception.Data["PokemonId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["ExpectedTrainerId"]);
+    Assert.Null(exception.Data["AttemptedTrainerId"]);
   }
 
-  [Fact(DisplayName = "It should throw ArgumentException when the Pokémon is owned by another trainer.")]
-  public void Given_OwnedByOtherTrainer_When_Add_Then_ArgumentException()
+  [Fact(DisplayName = "It should throw InvalidPokemonOwnerException when the Pokémon is owned by another trainer.")]
+  public void Given_OwnedByOtherTrainer_When_Add_Then_InvalidPokemonOwnerException()
   {
     Roster roster = new(Catalog.Red);
     Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Blue, "blue");
 
-    ArgumentException exception = Assert.Throws<ArgumentException>(() => roster.Add(pokemon, Catalog.Red));
-    Assert.Equal("specimen", exception.ParamName);
+    InvalidPokemonOwnerException exception = Assert.Throws<InvalidPokemonOwnerException>(
+      () => roster.Add(pokemon, Catalog.Red));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(pokemon.EntityId, exception.Data["PokemonId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["ExpectedTrainerId"]);
+    Assert.Equal(Catalog.Blue.EntityId, exception.Data["AttemptedTrainerId"]);
   }
 
   [Fact(DisplayName = "It should throw ArgumentException when the trainer does not match the roster.")]

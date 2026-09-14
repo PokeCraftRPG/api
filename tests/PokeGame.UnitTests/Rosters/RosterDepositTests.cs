@@ -1,4 +1,4 @@
-using PokeGame.Core;
+﻿using PokeGame.Core;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Rosters;
 using PokeGame.Core.Rosters.Events;
@@ -30,28 +30,34 @@ public class RosterDepositTests : UnitTests
     roster.Add(boxed, Catalog.Red);
 
     PokemonNotInPartyException exception = Assert.Throws<PokemonNotInPartyException>(() => roster.Deposit(boxed));
-    Assert.Equal(boxed.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["TrainerId"]);
     Assert.Equal(boxed.EntityId, exception.Data["PokemonId"]);
   }
 
-  [Fact(DisplayName = "It should throw ArgumentException when the Pokémon is not in the roster.")]
-  public void Given_NotInRoster_When_Deposit_Then_ArgumentException()
+  [Fact(DisplayName = "It should throw PokemonNotInRosterException when the Pokémon is not in the roster.")]
+  public void Given_NotInRoster_When_Deposit_Then_PokemonNotInRosterException()
   {
     Roster roster = new(Catalog.Red);
     Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Red);
 
-    ArgumentException exception = Assert.Throws<ArgumentException>(() => roster.Deposit(pokemon));
-    Assert.Equal("specimen", exception.ParamName);
+    PokemonNotInRosterException exception = Assert.Throws<PokemonNotInRosterException>(() => roster.Deposit(pokemon));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(pokemon.EntityId, exception.Data["PokemonId"]);
   }
 
-  [Fact(DisplayName = "It should throw ArgumentException when the Pokémon belongs to another trainer.")]
-  public void Given_OtherTrainer_When_Deposit_Then_ArgumentException()
+  [Fact(DisplayName = "It should throw InvalidPokemonOwnerException when the Pokémon belongs to another trainer.")]
+  public void Given_OtherTrainer_When_Deposit_Then_InvalidPokemonOwnerException()
   {
     Roster roster = new(Catalog.Red);
     Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Blue);
 
-    ArgumentException exception = Assert.Throws<ArgumentException>(() => roster.Deposit(pokemon));
-    Assert.Equal("specimen", exception.ParamName);
+    InvalidPokemonOwnerException exception = Assert.Throws<InvalidPokemonOwnerException>(() => roster.Deposit(pokemon));
+    Assert.Equal(Catalog.Red.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(pokemon.EntityId, exception.Data["PokemonId"]);
+    Assert.Equal(Catalog.Red.EntityId, exception.Data["ExpectedTrainerId"]);
+    Assert.Equal(Catalog.Blue.EntityId, exception.Data["AttemptedTrainerId"]);
   }
 
   [Fact(DisplayName = "It should throw WorldMismatchException when the Pokémon belongs to another world.")]
