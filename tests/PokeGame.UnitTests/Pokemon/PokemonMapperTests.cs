@@ -94,6 +94,99 @@ public class PokemonMapperTests : UnitTests
     AssertAttribute(attributes.Dexterity, expectedBase: 0, expectedIndividual: -1, expectedNature: 0);
   }
 
+  [Fact(DisplayName = "It should calculate a skill from training and an attribute.")]
+  public void Given_TrainingAndAttribute_When_CalculateSkill_Then_SkillBuilt()
+  {
+    PokemonAttributeDto attribute = new() { Base = 2, Individual = 1, Nature = 1 };
+    PokemonSkillDto skill = PokemonMapper.CalculateSkill(new PokemonSkillTraining(1, 4), attribute, null!);
+
+    Assert.Equal(1, skill.Training);
+    Assert.Equal(4, skill.Rank);
+    Assert.Equal(4, skill.Attribute);
+    Assert.Equal(0, skill.Modifiers);
+    Assert.Equal(4 + 4, skill.Total); // effective rank (1+2+1) + attribute
+  }
+
+  [Fact(DisplayName = "It should treat a missing attribute as zero for Performance.")]
+  public void Given_NullAttribute_When_CalculateSkill_Then_AttributeZero()
+  {
+    PokemonSkillDto skill = PokemonMapper.CalculateSkill(new PokemonSkillTraining(2, 5), attribute: null, null!);
+
+    Assert.Equal(2, skill.Training);
+    Assert.Equal(5, skill.Rank);
+    Assert.Equal(0, skill.Attribute);
+    Assert.Equal(0, skill.Modifiers);
+    Assert.Equal(7, skill.Total);
+  }
+
+  [Fact(DisplayName = "It should map attributes to Pokémon skills.")]
+  public void Given_Attributes_When_CalculateSkills_Then_Mapped()
+  {
+    PokemonAttributesDto attributes = new()
+    {
+      Vigor = new() { Base = 1, Individual = 1, Nature = 1 },
+      Fortitude = new() { Base = 0, Individual = 0, Nature = 0 },
+      Mind = new() { Base = 2, Individual = 1, Nature = -1 },
+      Spirit = new() { Base = 2, Individual = 0, Nature = 0 },
+      Dexterity = new() { Base = 0, Individual = -1, Nature = 0 }
+    };
+    Dictionary<PokemonSkill, PokemonSkillTraining> training = new()
+    {
+      [PokemonSkill.Acrobatics] = new(0, 2),
+      [PokemonSkill.Athletics] = new(1, 2),
+      [PokemonSkill.Discipline] = new(2, 5),
+      [PokemonSkill.Melee] = new(1, 0),
+      [PokemonSkill.Occultism] = new(0, 0),
+      [PokemonSkill.Perception] = new(3, 9),
+      [PokemonSkill.Performance] = new(4, 10),
+      [PokemonSkill.Resistance] = new(0, 1),
+      [PokemonSkill.Stealth] = new(1, 4),
+      [PokemonSkill.Survival] = new(2, 7)
+    };
+
+    PokemonSkillsDto skills = PokemonMapper.CalculateSkills(null!, training, attributes);
+
+    AssertSkill(skills.Acrobatics, training: 0, rank: 2, attribute: attributes.Dexterity.Total);
+    AssertSkill(skills.Athletics, training: 1, rank: 2, attribute: attributes.Vigor.Total);
+    AssertSkill(skills.Discipline, training: 2, rank: 5, attribute: attributes.Spirit.Total);
+    AssertSkill(skills.Melee, training: 1, rank: 0, attribute: attributes.Vigor.Total);
+    AssertSkill(skills.Occultism, training: 0, rank: 0, attribute: attributes.Mind.Total);
+    AssertSkill(skills.Perception, training: 3, rank: 9, attribute: attributes.Spirit.Total);
+    AssertSkill(skills.Performance, training: 4, rank: 10, attribute: 0);
+    AssertSkill(skills.Resistance, training: 0, rank: 1, attribute: attributes.Fortitude.Total);
+    AssertSkill(skills.Stealth, training: 1, rank: 4, attribute: attributes.Dexterity.Total);
+    AssertSkill(skills.Survival, training: 2, rank: 7, attribute: attributes.Fortitude.Total);
+  }
+
+  [Fact(DisplayName = "It should default missing skill training to zero.")]
+  public void Given_MissingTraining_When_CalculateSkills_Then_Defaulted()
+  {
+    PokemonAttributesDto attributes = new()
+    {
+      Vigor = new() { Base = 1 },
+      Fortitude = new() { Base = 2 },
+      Mind = new() { Base = 3 },
+      Spirit = new() { Base = 4 },
+      Dexterity = new() { Base = 5 }
+    };
+
+    PokemonSkillsDto skills = PokemonMapper.CalculateSkills(
+      null!,
+      new Dictionary<PokemonSkill, PokemonSkillTraining>(),
+      attributes);
+
+    AssertSkill(skills.Acrobatics, training: 0, rank: 0, attribute: 5);
+    AssertSkill(skills.Athletics, training: 0, rank: 0, attribute: 1);
+    AssertSkill(skills.Discipline, training: 0, rank: 0, attribute: 4);
+    AssertSkill(skills.Melee, training: 0, rank: 0, attribute: 1);
+    AssertSkill(skills.Occultism, training: 0, rank: 0, attribute: 3);
+    AssertSkill(skills.Perception, training: 0, rank: 0, attribute: 4);
+    AssertSkill(skills.Performance, training: 0, rank: 0, attribute: 0);
+    AssertSkill(skills.Resistance, training: 0, rank: 0, attribute: 2);
+    AssertSkill(skills.Stealth, training: 0, rank: 0, attribute: 5);
+    AssertSkill(skills.Survival, training: 0, rank: 0, attribute: 2);
+  }
+
   private static void AssertAttribute(PokemonAttributeDto attribute, int expectedBase, int expectedIndividual, int expectedNature)
   {
     Assert.Equal(expectedBase, attribute.Base);
@@ -101,5 +194,14 @@ public class PokemonMapperTests : UnitTests
     Assert.Equal(expectedNature, attribute.Nature);
     Assert.Equal(0, attribute.Modifiers);
     Assert.Equal(expectedBase + expectedIndividual + expectedNature, attribute.Total);
+  }
+
+  private static void AssertSkill(PokemonSkillDto skill, int training, int rank, int attribute)
+  {
+    Assert.Equal(training, skill.Training);
+    Assert.Equal(rank, skill.Rank);
+    Assert.Equal(attribute, skill.Attribute);
+    Assert.Equal(0, skill.Modifiers);
+    Assert.Equal(new PokemonSkillTraining(training, rank).GetEffectiveRank() + attribute, skill.Total);
   }
 }

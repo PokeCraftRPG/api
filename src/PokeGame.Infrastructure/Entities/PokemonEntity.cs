@@ -12,6 +12,10 @@ namespace PokeGame.Infrastructure.Entities;
 
 internal class PokemonEntity : AggregateEntity
 {
+  private const char PairSeparator = ':';
+  private const char TrainingSeparator = ',';
+  private const char ValueSeparator = '|';
+
   public int PokemonId { get; private set; }
 
   public WorldEntity? World { get; private set; }
@@ -45,8 +49,6 @@ internal class PokemonEntity : AggregateEntity
   public int Level { get; private set; }
   public int Tier { get; private set; }
 
-  public string? SkillRanks { get; private set; }
-
   public byte BaseHP { get; private set; }
   public byte BaseAttack { get; private set; }
   public byte BaseDefense { get; private set; }
@@ -60,6 +62,8 @@ internal class PokemonEntity : AggregateEntity
   public byte IndividualSpecialAttack { get; private set; }
   public byte IndividualSpecialDefense { get; private set; }
   public byte IndividualSpeed { get; private set; }
+
+  public string? Skills { get; private set; }
 
   public int Vitality { get; private set; }
   public int Stamina { get; private set; }
@@ -185,24 +189,28 @@ internal class PokemonEntity : AggregateEntity
     return actorIds;
   }
 
-  public IReadOnlyDictionary<PokemonSkill, byte> GetSkillRanks()
+  public IReadOnlyDictionary<PokemonSkill, PokemonSkillTraining> GetSkills()
   {
-    if (SkillRanks is null)
+    if (Skills is null)
     {
-      return new Dictionary<PokemonSkill, byte>();
+      return new Dictionary<PokemonSkill, PokemonSkillTraining>();
     }
 
-    string[] values = SkillRanks.Split('|');
-    Dictionary<PokemonSkill, byte> skillRanks = new(capacity: values.Length);
+    string[] values = Skills.Split(ValueSeparator);
+    Dictionary<PokemonSkill, PokemonSkillTraining> skills = new(capacity: values.Length);
     foreach (string value in values)
     {
-      string[] pair = value.Split(':');
-      if (pair.Length == 2 && Enum.TryParse(pair[0], out PokemonSkill skill) && Enum.IsDefined(skill) && byte.TryParse(pair[1], out byte rank))
+      string[] pair = value.Split(PairSeparator);
+      if (pair.Length == 2 && Enum.TryParse(pair[0], out PokemonSkill skill))
       {
-        skillRanks[skill] = rank;
+        string[] training = pair[1].Split(TrainingSeparator);
+        if (training.Length == 2 && int.TryParse(training[0], out int level) && int.TryParse(training[1], out int rank))
+        {
+          skills[skill] = new PokemonSkillTraining(level, rank);
+        }
       }
     }
-    return skillRanks.AsReadOnly();
+    return skills.AsReadOnly();
   }
 
   public void Catch(int trainerId, int pokeBallId, PokemonCaught @event)

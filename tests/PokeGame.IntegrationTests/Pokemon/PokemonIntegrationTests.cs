@@ -108,6 +108,7 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal(1, pokemon.Level);
     Assert.Equal(0, pokemon.Tier);
     AssertAttributes(pokemon, _form.BaseStatistics, payload.IndividualValues!, PokemonNatures.Hardy);
+    AssertSkills(pokemon, emptyTraining: true);
     Assert.Equal((byte)10, pokemon.Statistics.HP.Individual);
     Assert.Equal((byte)11, pokemon.Statistics.Attack.Individual);
     Assert.Equal((byte)12, pokemon.Statistics.Defense.Individual);
@@ -179,6 +180,33 @@ public class PokemonIntegrationTests : IntegrationTests
     PokemonDto? read = await _pokemonService.ReadAsync(pokemon.Id);
     Assert.NotNull(read);
     AssertAttributes(read, _form.BaseStatistics, payload.IndividualValues!, PokemonNatures.Adamant);
+  }
+
+  [Fact(DisplayName = "It should calculate Pokémon skills from attributes when training is empty.")]
+  public async Task Given_NoSkillTraining_When_Create_Then_SkillsFromAttributes()
+  {
+    CreatePokemonPayload payload = new()
+    {
+      FormId = _form.EntityId,
+      Key = "default-skills",
+      Nature = "Adamant",
+      IndividualValues = new IndividualValuesDto
+      {
+        HP = 0,
+        Attack = 31,
+        Defense = 0,
+        SpecialAttack = 31,
+        SpecialDefense = 15,
+        Speed = 7
+      }
+    };
+
+    PokemonDto pokemon = await _pokemonService.CreateAsync(payload);
+    AssertSkills(pokemon);
+
+    PokemonDto? read = await _pokemonService.ReadAsync(pokemon.Id);
+    Assert.NotNull(read);
+    AssertSkills(read);
   }
 
   [Fact(DisplayName = "It should read a Pokémon by key.")]
@@ -690,6 +718,47 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal(expected.Base, actual.Base);
     Assert.Equal(expected.Individual, actual.Individual);
     Assert.Equal(expected.Nature, actual.Nature);
+    Assert.Equal(expected.Modifiers, actual.Modifiers);
+    Assert.Equal(expected.Total, actual.Total);
+  }
+
+  private static void AssertSkills(PokemonDto pokemon, bool emptyTraining = false)
+  {
+    PokemonSkillsDto expected = PokemonMapper.CalculateSkills(
+      null!,
+      new Dictionary<PokemonSkill, PokemonSkillTraining>(),
+      pokemon.Attributes);
+
+    AssertSkill(pokemon.Skills.Acrobatics, expected.Acrobatics);
+    AssertSkill(pokemon.Skills.Athletics, expected.Athletics);
+    AssertSkill(pokemon.Skills.Discipline, expected.Discipline);
+    AssertSkill(pokemon.Skills.Melee, expected.Melee);
+    AssertSkill(pokemon.Skills.Occultism, expected.Occultism);
+    AssertSkill(pokemon.Skills.Perception, expected.Perception);
+    AssertSkill(pokemon.Skills.Performance, expected.Performance);
+    AssertSkill(pokemon.Skills.Resistance, expected.Resistance);
+    AssertSkill(pokemon.Skills.Stealth, expected.Stealth);
+    AssertSkill(pokemon.Skills.Survival, expected.Survival);
+
+    if (emptyTraining)
+    {
+      Assert.Equal(0, pokemon.Skills.Acrobatics.Training);
+      Assert.Equal(0, pokemon.Skills.Acrobatics.Rank);
+      Assert.Equal(pokemon.Attributes.Dexterity.Total, pokemon.Skills.Acrobatics.Attribute);
+      Assert.Equal(pokemon.Attributes.Dexterity.Total, pokemon.Skills.Acrobatics.Total);
+
+      Assert.Equal(0, pokemon.Skills.Performance.Training);
+      Assert.Equal(0, pokemon.Skills.Performance.Rank);
+      Assert.Equal(0, pokemon.Skills.Performance.Attribute);
+      Assert.Equal(0, pokemon.Skills.Performance.Total);
+    }
+  }
+
+  private static void AssertSkill(PokemonSkillDto actual, PokemonSkillDto expected)
+  {
+    Assert.Equal(expected.Training, actual.Training);
+    Assert.Equal(expected.Rank, actual.Rank);
+    Assert.Equal(expected.Attribute, actual.Attribute);
     Assert.Equal(expected.Modifiers, actual.Modifiers);
     Assert.Equal(expected.Total, actual.Total);
   }

@@ -51,13 +51,14 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   public int Level => ExperienceTable.GetLevel(GrowthRate, Experience);
   public int Tier => ExperienceTable.GetTier(Level);
 
-  private readonly Dictionary<PokemonSkill, byte> _skillRanks = [];
-  public IReadOnlyDictionary<PokemonSkill, byte> SkillRanks => _skillRanks.AsReadOnly();
+  private readonly Dictionary<PokemonSkill, PokemonSkillTraining> _skills = [];
+  public IReadOnlyDictionary<PokemonSkill, PokemonSkillTraining> Skills => _skills.AsReadOnly();
 
   private BaseStatistics? _baseStatistics = null;
   public BaseStatistics BaseStatistics => _baseStatistics ?? throw new InvalidOperationException("The base statistics were not initialized.");
   public IndividualValues IndividualValues { get; private set; } = new();
-  public EffortValues EffortValues => new(SkillRanks);
+  public EffortValues EffortValues => new(Skills);
+  public PokemonStatistics Statistics => new(this);
 
   public int Vitality { get; private set; }
   public int Stamina { get; private set; }
@@ -259,7 +260,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     FormId formId = form.Id;
     if (!Equals(FormId, formId))
     {
-      PokemonStatistics current = new(this);
+      PokemonStatistics current = Statistics;
       PokemonStatistics changed = new(form.BaseStatistics, IndividualValues, EffortValues, Level, Nature);
       int delta = changed.HP - current.HP;
       int vitality = Math.Clamp(Vitality + delta, 0, changed.HP);
@@ -355,7 +356,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
       throw new EvolutionRequirementsNotMetException(failures);
     }
 
-    PokemonStatistics current = new(this);
+    PokemonStatistics current = Statistics;
     PokemonStatistics changed = new(form.BaseStatistics, IndividualValues, EffortValues, Level, Nature);
     int delta = changed.HP - current.HP;
     int vitality = Math.Clamp(Vitality + delta, 0, changed.HP);

@@ -83,6 +83,41 @@ internal static class PokemonMapper
     };
   }
 
+  public static PokemonSkillDto CalculateSkill(PokemonSkillTraining training, PokemonAttributeDto? attribute, PokemonEntity _)
+  {
+    return new PokemonSkillDto
+    {
+      Training = training.Level,
+      Rank = training.Rank,
+      Attribute = attribute?.Total ?? 0,
+      Modifiers = 0
+    };
+  }
+
+  public static PokemonSkillsDto CalculateSkills(
+    this PokemonEntity pokemon,
+    IReadOnlyDictionary<PokemonSkill, PokemonSkillTraining> training,
+    PokemonAttributesDto attributes)
+  {
+    return new PokemonSkillsDto
+    {
+      Acrobatics = CalculateSkill(GetSkillTraining(training, PokemonSkill.Acrobatics), attributes.Dexterity, pokemon),
+      Athletics = CalculateSkill(GetSkillTraining(training, PokemonSkill.Athletics), attributes.Vigor, pokemon),
+      Discipline = CalculateSkill(GetSkillTraining(training, PokemonSkill.Discipline), attributes.Spirit, pokemon),
+      Melee = CalculateSkill(GetSkillTraining(training, PokemonSkill.Melee), attributes.Vigor, pokemon),
+      Occultism = CalculateSkill(GetSkillTraining(training, PokemonSkill.Occultism), attributes.Mind, pokemon),
+      Perception = CalculateSkill(GetSkillTraining(training, PokemonSkill.Perception), attributes.Spirit, pokemon),
+      Performance = CalculateSkill(GetSkillTraining(training, PokemonSkill.Performance), attribute: null, pokemon),
+      Resistance = CalculateSkill(GetSkillTraining(training, PokemonSkill.Resistance), attributes.Fortitude, pokemon),
+      Stealth = CalculateSkill(GetSkillTraining(training, PokemonSkill.Stealth), attributes.Dexterity, pokemon),
+      Survival = CalculateSkill(GetSkillTraining(training, PokemonSkill.Survival), attributes.Fortitude, pokemon)
+    };
+  }
+  private static PokemonSkillTraining GetSkillTraining(IReadOnlyDictionary<PokemonSkill, PokemonSkillTraining> training, PokemonSkill skill)
+  {
+    return training.TryGetValue(skill, out PokemonSkillTraining? skillTraining) ? skillTraining : new PokemonSkillTraining(level: 0, rank: 0);
+  }
+
   public static BaseStatisticsDto ToBaseStatistics(this PokemonEntity pokemon) => new(
     pokemon.BaseHP,
     pokemon.BaseAttack,
