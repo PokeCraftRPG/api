@@ -132,6 +132,7 @@ internal class PermissionService : IPermissionService
     {
       case Actions.Deposit:
       case Actions.Evolve:
+      case Actions.Withdraw:
         return _context.IsWorldOwner && entity.WorldId == _context.TryGetWorldId() && entity.Kind == Specimen.EntityKind;
       case Actions.Update:
         return _context.IsWorldOwner && entity.WorldId == _context.TryGetWorldId();

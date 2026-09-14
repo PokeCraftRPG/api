@@ -78,6 +78,10 @@ internal class ReceivePokemonCommandHandler : ICommandHandler<ReceivePokemonComm
         await _permissionService.CheckAsync(Actions.Update, sourceRoster, cancellationToken);
         rosters.Add(sourceRoster);
       }
+      else
+      {
+        // TODO(fpion): this should be an error.
+      }
     }
 
     RosterId targetRosterId = new(trainer.Id);

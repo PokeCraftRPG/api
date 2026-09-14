@@ -53,6 +53,10 @@ internal class ReleasePokemonCommandHandler : ICommandHandler<ReleasePokemonComm
       {
         await _permissionService.CheckAsync(Actions.Update, roster, cancellationToken);
       }
+      else
+      {
+        // TODO(fpion): this should be an error.
+      }
     }
 
     specimen.Release(actorId);

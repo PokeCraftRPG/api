@@ -40,6 +40,11 @@ public sealed class Roster : AggregateRoot, IEntityProvider
     WorldMismatchException.ThrowIfMismatch(this, specimen, nameof(specimen));
     WorldMismatchException.ThrowIfMismatch(this, trainer, nameof(trainer));
 
+    if (trainer.Id != TrainerId)
+    {
+      throw new ArgumentException($"The trainer '{trainer}' was not expected (Id={TrainerId}).", nameof(trainer));
+    }
+
     if (specimen.Ownership?.TrainerId != TrainerId)
     {
       throw new ArgumentException($"The Pokémon 'Id={specimen.Id}' should be owned by trainer 'Id={TrainerId}'.", nameof(specimen));
@@ -49,13 +54,8 @@ public sealed class Roster : AggregateRoot, IEntityProvider
       throw new ArgumentException($"The Pokémon 'Id={specimen.Id}' is already in trainer’s 'Id={TrainerId}' roster.", nameof(specimen));
     }
 
-    if (trainer.Id != TrainerId)
-    {
-      throw new ArgumentException($"The trainer '{trainer}' was not expected (Id={TrainerId}).", nameof(trainer));
-    }
-
     int partyLimit = trainer.PartyLimit ?? PartyLimit;
-    bool isInParty = _partyIds.Count < partyLimit;
+    bool isInParty = _partyIds.Count < partyLimit; // TODO(fpion): eggs should never be in the party!
 
     Raise(new RosterEntryAdded(specimen.Id, isInParty), actorId);
   }
@@ -210,5 +210,46 @@ public sealed class Roster : AggregateRoot, IEntityProvider
     {
       _partyIds.Remove(@event.TargetId);
     }
+  }
+
+  public void Withdraw(Specimen specimen, Trainer trainer, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(this, specimen, nameof(specimen));
+    WorldMismatchException.ThrowIfMismatch(this, trainer, nameof(trainer));
+
+    if (trainer.Id != TrainerId)
+    {
+      throw new ArgumentException($"The trainer '{trainer}' was not expected (Id={TrainerId}).", nameof(trainer));
+    }
+
+    if (specimen.Ownership?.TrainerId != TrainerId)
+    {
+      throw new ArgumentException($"The Pokémon 'Id={specimen.Id}' should be owned by trainer 'Id={TrainerId}'.", nameof(specimen));
+    }
+    if (specimen.IsEgg)
+    {
+      throw new PokemonEggCannotBeWithdrawnException(specimen);
+    }
+    if (!_entries.ContainsKey(specimen.Id))
+    {
+      throw new ArgumentException($"The Pokémon 'Id={specimen.Id}' is not in trainer’s 'Id={TrainerId}' roster.", nameof(specimen));
+    }
+    if (_partyIds.Contains(specimen.Id))
+    {
+      throw new PokemonAlreadyInPartyException(specimen);
+    }
+
+    int partyLimit = trainer.PartyLimit ?? PartyLimit;
+    if (_partyIds.Count >= partyLimit)
+    {
+      throw new PokemonPartyFullException(trainer, this);
+    }
+
+    Raise(new RosterEntryWithdrawn(specimen.Id), actorId);
+  }
+  private void Handle(RosterEntryWithdrawn @event)
+  {
+    _entries[@event.PokemonId] = _entries[@event.PokemonId] with { IsInParty = true };
+    _partyIds.Add(@event.PokemonId);
   }
 }

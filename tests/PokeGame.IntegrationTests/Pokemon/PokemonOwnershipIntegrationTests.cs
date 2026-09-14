@@ -427,6 +427,133 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     await AssertRosterContainsAsync(_trainer, pokemon, isInParty: true);
   }
 
+  [Fact(DisplayName = "It should withdraw a boxed Pokémon into the party.")]
+  public async Task Given_BoxedPokemon_When_Withdraw_Then_MovedToParty()
+  {
+    PokemonDto created = await CreatePokemonAsync("withdrawn");
+    PokemonDto? received = await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+    Assert.NotNull(received);
+    await _pokemonService.DepositAsync(created.Id);
+
+    PokemonDto? pokemon = await _pokemonService.WithdrawAsync(created.Id);
+    Assert.NotNull(pokemon);
+    Assert.Equal(created.Id, pokemon.Id);
+    Assert.True(pokemon.IsInParty);
+    AssertReceived(pokemon, _trainer, _masterBall, created.Level, "Pallet Town");
+
+    PokemonDto? read = await _pokemonService.ReadAsync(created.Id);
+    Assert.NotNull(read);
+    Assert.True(read.IsInParty);
+
+    await AssertRosterContainsAsync(_trainer, pokemon, isInParty: true);
+    await AssertPartyCountAsync(_trainer, expected: 1);
+  }
+
+  [Fact(DisplayName = "It should return null when withdrawing a Pokémon that was not found.")]
+  public async Task Given_NotFound_When_Withdraw_Then_NullReturned()
+  {
+    Assert.Null(await _pokemonService.WithdrawAsync(Guid.NewGuid()));
+  }
+
+  [Fact(DisplayName = "It should throw PokemonHasNoOwnerException when withdrawing a wild Pokémon.")]
+  public async Task Given_WildPokemon_When_Withdraw_Then_PokemonHasNoOwnerException()
+  {
+    PokemonDto created = await CreatePokemonAsync("wild-withdraw");
+
+    PokemonHasNoOwnerException exception = await Assert.ThrowsAsync<PokemonHasNoOwnerException>(
+      async () => await _pokemonService.WithdrawAsync(created.Id));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(created.Id, exception.Data["PokemonId"]);
+  }
+
+  [Fact(DisplayName = "It should throw PokemonAlreadyInPartyException when withdrawing a party Pokémon.")]
+  public async Task Given_PartyPokemon_When_Withdraw_Then_PokemonAlreadyInPartyException()
+  {
+    PokemonDto created = await CreatePokemonAsync("already-in-party");
+    PokemonDto? received = await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+    Assert.NotNull(received);
+    Assert.True(received.IsInParty);
+
+    PokemonAlreadyInPartyException exception = await Assert.ThrowsAsync<PokemonAlreadyInPartyException>(
+      async () => await _pokemonService.WithdrawAsync(created.Id));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(created.Id, exception.Data["PokemonId"]);
+
+    await AssertRosterContainsAsync(_trainer, received, isInParty: true);
+    await AssertPartyCountAsync(_trainer, expected: 1);
+  }
+
+  [Fact(DisplayName = "It should throw PokemonPartyFullException when withdrawing into a full party.")]
+  public async Task Given_PartyIsFull_When_Withdraw_Then_PokemonPartyFullException()
+  {
+    for (int index = 0; index < Roster.PartyLimit; index++)
+    {
+      PokemonDto created = await CreatePokemonAsync($"party-withdraw-{index}");
+      await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+    }
+
+    PokemonDto boxedCreated = await CreatePokemonAsync("boxed-withdraw");
+    PokemonDto? boxed = await _pokemonService.ReceiveAsync(boxedCreated.Id, CreatePayload("Pallet Town"));
+    Assert.NotNull(boxed);
+    Assert.False(boxed.IsInParty);
+
+    PokemonPartyFullException exception = await Assert.ThrowsAsync<PokemonPartyFullException>(
+      async () => await _pokemonService.WithdrawAsync(boxedCreated.Id));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
+    Assert.Equal(Roster.PartyLimit, exception.Data["PartyLimit"]);
+    Assert.Equal(Roster.PartyLimit, exception.Data["PartyCount"]);
+
+    await AssertRosterContainsAsync(_trainer, boxed, isInParty: false);
+    await AssertPartyCountAsync(_trainer, expected: Roster.PartyLimit);
+  }
+
+  [Fact(DisplayName = "It should throw PokemonEggCannotBeWithdrawnException when withdrawing an egg.")]
+  public async Task Given_Egg_When_Withdraw_Then_PokemonEggCannotBeWithdrawnException()
+  {
+    for (int index = 0; index < Roster.PartyLimit; index++)
+    {
+      PokemonDto created = await CreatePokemonAsync($"party-egg-withdraw-{index}");
+      await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+    }
+
+    PokemonDto eggCreated = await CreatePokemonAsync("egg-withdraw", eggCycles: 5);
+    PokemonDto? egg = await _pokemonService.ReceiveAsync(eggCreated.Id, CreatePayload("Pallet Town"));
+    Assert.NotNull(egg);
+    Assert.False(egg.IsInParty);
+    Assert.Equal((byte)5, egg.EggCycles);
+
+    PokemonEggCannotBeWithdrawnException exception = await Assert.ThrowsAsync<PokemonEggCannotBeWithdrawnException>(
+      async () => await _pokemonService.WithdrawAsync(eggCreated.Id));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(eggCreated.Id, exception.Data["PokemonId"]);
+    Assert.Equal((byte)5, exception.Data["EggCycles"]);
+
+    await AssertRosterContainsAsync(_trainer, egg, isInParty: false);
+  }
+
+  [Fact(DisplayName = "It should throw PermissionDeniedException when withdrawing a Pokémon.")]
+  public async Task Given_NotAllowed_When_Withdraw_Then_PermissionDeniedException()
+  {
+    PokemonDto created = await CreatePokemonAsync("denied-withdraw");
+    await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+    await _pokemonService.DepositAsync(created.Id);
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
+
+    PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
+      async () => await _pokemonService.WithdrawAsync(created.Id));
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Withdraw", exception.Data["Action"]);
+    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
+
+    PokemonDto? pokemon = await _pokemonService.ReadAsync(created.Id);
+    Assert.NotNull(pokemon);
+    AssertReceived(pokemon, _trainer, _masterBall, created.Level, "Pallet Town");
+
+    await AssertRosterContainsAsync(_trainer, pokemon, isInParty: false);
+  }
+
   [Fact(DisplayName = "It should release a received Pokémon.")]
   public async Task Given_ReceivedPokemon_When_Release_Then_Released()
   {
