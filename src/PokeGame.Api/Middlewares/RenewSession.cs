@@ -1,7 +1,7 @@
-using Krakenar.Contracts.Sessions;
+﻿using Krakenar.Contracts.Sessions;
 using PokeGame.Api.Constants;
-using PokeGame.Core.Identity;
 using PokeGame.Api.Extensions;
+using PokeGame.Core.Identity;
 
 namespace PokeGame.Api.Middlewares;
 
@@ -14,7 +14,7 @@ internal class RenewSession
     _next = next;
   }
 
-  public virtual async Task InvokeAsync(HttpContext context, ISessionGateway sessionGateway)
+  public async Task InvokeAsync(HttpContext context, ISessionGateway sessionGateway)
   {
     if (!context.IsSignedIn())
     {

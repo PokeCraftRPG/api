@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PokeGame.Api.Models.Search;
 using PokeGame.Core.Evolutions;
 using PokeGame.Core.Evolutions.Models;
@@ -16,7 +16,7 @@ public record SearchEvolutionsParameters : SearchParameters
   [FromQuery(Name = "trigger")]
   public EvolutionTrigger? Trigger { get; set; }
 
-  public virtual SearchEvolutionsPayload ToPayload()
+  public SearchEvolutionsPayload ToPayload()
   {
     SearchEvolutionsPayload payload = new();
     payload.Source = Source;

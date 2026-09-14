@@ -387,9 +387,32 @@ internal class Mapper
       };
     }
 
+    foreach (PokemonMoveEntity entity in source.Moves)
+    {
+      destination.Moves.Add(ToPokemonMove(entity));
+    }
+
     MapAggregate(source, destination);
 
     return destination;
+  }
+
+  public PokemonMoveDto ToPokemonMove(PokemonMoveEntity source)
+  {
+    MoveEntity move = source.Move ?? throw new ArgumentException("The move is required.", nameof(source));
+    return new PokemonMoveDto
+    {
+      Move = ToMove(move),
+      LearnedAtLevel = source.LearnedAtLevel,
+      LearningMethod = source.LearningMethod,
+      IsMastered = source.IsMastered,
+      PowerPointUpgrades = source.PowerPointUpgrades,
+      Slot = source.Slot,
+      CreatedBy = FindActor(source.CreatedBy),
+      CreatedOn = source.CreatedOn.AsUniversalTime(),
+      UpdatedBy = FindActor(source.UpdatedBy),
+      UpdatedOn = source.UpdatedOn.AsUniversalTime()
+    };
   }
 
   public RegionDto ToRegion(RegionEntity source)

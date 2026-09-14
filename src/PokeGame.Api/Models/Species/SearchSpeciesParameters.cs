@@ -19,7 +19,7 @@ public record SearchSpeciesParameters : SearchParameters
   [FromQuery(Name = "region")]
   public string? Region { get; set; }
 
-  public virtual SearchSpeciesPayload ToPayload()
+  public SearchSpeciesPayload ToPayload()
   {
     SearchSpeciesPayload payload = new();
     payload.Category = Category;

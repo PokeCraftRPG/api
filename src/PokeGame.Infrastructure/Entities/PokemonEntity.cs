@@ -3,6 +3,7 @@ using Logitar.EventSourcing;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms.Models;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Pokemon.Models;
@@ -88,7 +89,9 @@ internal class PokemonEntity : AggregateEntity
   public bool IsInParty { get; set; }
   public int Priority { get; set; }
 
-  public PokemonEntity(int worldId, int speciesId, int varietyId, int formId, PokemonCreated @event) : base(@event)
+  public List<PokemonMoveEntity> Moves { get; private set; } = [];
+
+  public PokemonEntity(int worldId, int speciesId, int varietyId, int formId, IReadOnlyDictionary<string, int> moveIds, PokemonCreated @event) : base(@event)
   {
     WorldId = worldId;
     Id = new PokemonId(@event.StreamId).EntityId;
@@ -130,6 +133,18 @@ internal class PokemonEntity : AggregateEntity
     Friendship = @event.Friendship.Value;
 
     Characteristic = @event.Characteristic;
+
+    int slot = 0;
+    foreach (LearnedMove move in @event.Moves)
+    {
+      int moveId = moveIds[move.MoveId.Value];
+      Moves.Add(new PokemonMoveEntity(this, moveId, LearningMethod.LevelUp, move.IsInMoveset ? slot : null, @event));
+
+      if (move.IsInMoveset)
+      {
+        slot++;
+      }
+    }
   }
 
   private PokemonEntity()
@@ -162,6 +177,10 @@ internal class PokemonEntity : AggregateEntity
     if (PokeBall is not null)
     {
       actorIds.AddRange(PokeBall.GetActorIds());
+    }
+    foreach (PokemonMoveEntity move in Moves)
+    {
+      actorIds.AddRange(move.GetActorIds());
     }
     return actorIds;
   }
@@ -218,7 +237,7 @@ internal class PokemonEntity : AggregateEntity
     Stamina = @event.Stamina;
   }
 
-  public void Evolve(int speciesId, int varietyId, int formId, PokemonEvolved @event)
+  public void Evolve(int speciesId, int varietyId, int formId, IReadOnlyDictionary<string, int> moveIds, PokemonEvolved @event)
   {
     Update(@event);
 
@@ -239,6 +258,18 @@ internal class PokemonEntity : AggregateEntity
     if (@event.ConsumeHeldItem)
     {
       HeldItemId = null;
+    }
+
+    int slot = Moves.Count(move => move.Slot.HasValue);
+    foreach (LearnedMove move in @event.Moves)
+    {
+      int moveId = moveIds[move.MoveId.Value];
+      Moves.Add(new PokemonMoveEntity(this, moveId, LearningMethod.Evolution, move.IsInMoveset ? slot : null, @event));
+
+      if (move.IsInMoveset)
+      {
+        slot++;
+      }
     }
   }
 

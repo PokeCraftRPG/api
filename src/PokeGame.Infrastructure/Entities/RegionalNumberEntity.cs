@@ -1,4 +1,5 @@
 ﻿using Logitar;
+using Logitar.EventSourcing;
 using PokeGame.Core.Species.Events;
 
 namespace PokeGame.Infrastructure.Entities;
@@ -34,6 +35,24 @@ internal class RegionalNumberEntity
 
   private RegionalNumberEntity()
   {
+  }
+
+  public IReadOnlyCollection<ActorId> GetActorIds()
+  {
+    HashSet<ActorId> actorIds = [];
+    if (Region is not null)
+    {
+      actorIds.AddRange(Region.GetActorIds());
+    }
+    if (CreatedBy is not null)
+    {
+      actorIds.Add(new ActorId(CreatedBy));
+    }
+    if (UpdatedBy is not null)
+    {
+      actorIds.Add(new ActorId(UpdatedBy));
+    }
+    return actorIds;
   }
 
   public void Update(SpeciesRegionalNumberChanged @event)

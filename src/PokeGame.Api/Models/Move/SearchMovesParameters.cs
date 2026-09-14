@@ -14,7 +14,7 @@ public record SearchMovesParameters : SearchParameters
   [FromQuery(Name = "category")]
   public MoveCategory? Category { get; set; }
 
-  public virtual SearchMovesPayload ToPayload()
+  public SearchMovesPayload ToPayload()
   {
     SearchMovesPayload payload = new();
     payload.Type = Type;

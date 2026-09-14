@@ -7,21 +7,18 @@ using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Infrastructure.Configurations;
 
-internal class VarietyMoveConfiguration : IEntityTypeConfiguration<VarietyMoveEntity>
+internal class PokemonMoveConfiguration : IEntityTypeConfiguration<PokemonMoveEntity>
 {
-  public void Configure(EntityTypeBuilder<VarietyMoveEntity> builder)
+  public void Configure(EntityTypeBuilder<PokemonMoveEntity> builder)
   {
-    builder.ToTable(nameof(PokemonContext.VarietyMoves), PokemonContext.Schema);
-    builder.HasKey(x => x.VarietyMoveId);
+    builder.ToTable(nameof(PokemonContext.PokemonMoves), PokemonContext.Schema);
+    builder.HasKey(x => new { x.PokemonId, x.MoveId });
 
-    builder.HasIndex(x => new { x.VarietyId, x.Id }).IsUnique();
     builder.HasIndex(x => x.MoveId);
+    builder.HasIndex(x => new { x.PokemonId, x.Slot });
 
     builder.Property(x => x.LearningMethod).HasMaxLength(16).HasConversion(new EnumToStringConverter<LearningMethod>());
     builder.Property(x => x.CreatedBy).HasMaxLength(ActorId.MaximumLength);
     builder.Property(x => x.UpdatedBy).HasMaxLength(ActorId.MaximumLength);
-
-    builder.HasOne(x => x.Variety).WithMany(x => x.Moves).OnDelete(DeleteBehavior.Cascade);
-    builder.HasOne(x => x.Move).WithMany().OnDelete(DeleteBehavior.Restrict);
   }
 }

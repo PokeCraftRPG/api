@@ -78,19 +78,13 @@ internal class FormEntity : AggregateEntity
     {
       actorIds.AddRange(Variety.GetActorIds());
     }
-    foreach (FormAbilityEntity entity in Abilities)
+    foreach (FormAbilityEntity ability in Abilities)
     {
-      if (entity.Ability is not null)
-      {
-        actorIds.AddRange(entity.Ability.GetActorIds());
-      }
+      actorIds.AddRange(ability.GetActorIds());
     }
-    foreach (FormSpriteEntity entity in Sprites)
+    foreach (FormSpriteEntity sprite in Sprites)
     {
-      if (entity.Asset is not null)
-      {
-        actorIds.AddRange(entity.Asset.GetActorIds());
-      }
+      actorIds.AddRange(sprite.GetActorIds());
     }
     return actorIds;
   }

@@ -1,23 +1,24 @@
 ﻿using Logitar;
 using Logitar.EventSourcing;
 using PokeGame.Core.Moves;
-using PokeGame.Core.Varieties.Events;
 
 namespace PokeGame.Infrastructure.Entities;
 
-internal class VarietyMoveEntity
+internal class PokemonMoveEntity
 {
-  public int VarietyMoveId { get; private set; }
-
-  public VarietyEntity? Variety { get; private set; }
-  public int VarietyId { get; private set; }
-  public Guid Id { get; private set; }
+  public PokemonEntity? Pokemon { get; private set; }
+  public int PokemonId { get; private set; }
 
   public MoveEntity? Move { get; private set; }
   public int MoveId { get; private set; }
 
+  public int LearnedAtLevel { get; private set; }
   public LearningMethod LearningMethod { get; private set; }
-  public int? Level { get; private set; }
+
+  public bool IsMastered { get; private set; }
+  public int PowerPointUpgrades { get; private set; }
+
+  public int? Slot { get; private set; }
 
   public string? CreatedBy { get; private set; }
   public DateTime CreatedOn { get; private set; }
@@ -25,13 +26,17 @@ internal class VarietyMoveEntity
   public string? UpdatedBy { get; private set; }
   public DateTime UpdatedOn { get; private set; }
 
-  public VarietyMoveEntity(VarietyEntity variety, int moveId, VarietyMoveChanged @event)
+  public PokemonMoveEntity(PokemonEntity pokemon, int moveId, LearningMethod learningMethod, int? slot, DomainEvent @event)
   {
-    Variety = variety;
-    VarietyId = variety.VarietyId;
-    Id = @event.VarietyMoveId;
+    Pokemon = pokemon;
+    PokemonId = pokemon.PokemonId;
 
     MoveId = moveId;
+
+    LearnedAtLevel = pokemon.Level;
+    LearningMethod = learningMethod;
+
+    Slot = slot;
 
     CreatedBy = @event.ActorId?.Value;
     CreatedOn = @event.OccurredOn.AsUniversalTime();
@@ -39,7 +44,7 @@ internal class VarietyMoveEntity
     Update(@event);
   }
 
-  private VarietyMoveEntity()
+  private PokemonMoveEntity()
   {
   }
 
@@ -61,16 +66,13 @@ internal class VarietyMoveEntity
     return actorIds;
   }
 
-  public void Update(VarietyMoveChanged @event)
+  private void Update(DomainEvent @event)
   {
-    LearningMethod = @event.Move.LearningMethod;
-    Level = @event.Move.Level?.Value;
-
     UpdatedBy = @event.ActorId?.Value;
     UpdatedOn = @event.OccurredOn.AsUniversalTime();
   }
 
-  public override bool Equals(object? obj) => obj is VarietyMoveEntity entity && entity.VarietyMoveId == VarietyMoveId;
-  public override int GetHashCode() => VarietyMoveId.GetHashCode();
-  public override string ToString() => $"{base.ToString()} (VarietyMoveId={VarietyMoveId})";
+  public override bool Equals(object? obj) => obj is PokemonMoveEntity entity && entity.PokemonId == PokemonId && entity.MoveId == MoveId;
+  public override int GetHashCode() => HashCode.Combine(PokemonId, MoveId);
+  public override string ToString() => $"{base.ToString()} (PokemonId={PokemonId}, MoveId={MoveId})";
 }

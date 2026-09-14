@@ -10,7 +10,7 @@ public record SearchInventoryItemsParameters : SearchParameters
   [FromQuery(Name = "category")]
   public ItemCategory? Category { get; set; }
 
-  public virtual SearchInventoryItemsPayload ToPayload()
+  public SearchInventoryItemsPayload ToPayload()
   {
     SearchInventoryItemsPayload payload = new();
     payload.Category = Category;

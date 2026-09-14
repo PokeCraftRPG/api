@@ -13,7 +13,7 @@ public record SearchTrainersParameters : SearchParameters
   [FromQuery(Name = "member")]
   public Guid? MemberId { get; set; }
 
-  public virtual SearchTrainersPayload ToPayload()
+  public SearchTrainersPayload ToPayload()
   {
     SearchTrainersPayload payload = new();
     payload.Gender = Gender;

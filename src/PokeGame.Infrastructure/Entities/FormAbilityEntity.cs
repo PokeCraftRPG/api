@@ -1,4 +1,5 @@
-﻿using PokeGame.Core.Abilities;
+﻿using Logitar.EventSourcing;
+using PokeGame.Core.Abilities;
 
 namespace PokeGame.Infrastructure.Entities;
 
@@ -25,6 +26,8 @@ internal class FormAbilityEntity
   private FormAbilityEntity()
   {
   }
+
+  public IReadOnlyCollection<ActorId> GetActorIds() => Ability is null ? [] : Ability.GetActorIds();
 
   public override bool Equals(object? obj) => obj is FormAbilityEntity entity && entity.FormId == FormId && entity.Slot == Slot;
   public override int GetHashCode() => HashCode.Combine(FormId, Slot);

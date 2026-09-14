@@ -13,10 +13,6 @@ internal class RegionalNumberConfiguration : IEntityTypeConfiguration<RegionalNu
     builder.HasKey(x => new { x.SpeciesId, x.RegionId });
 
     builder.HasIndex(x => new { x.RegionId, x.Number }).IsUnique();
-    builder.HasIndex(x => x.CreatedBy);
-    builder.HasIndex(x => x.CreatedOn);
-    builder.HasIndex(x => x.UpdatedBy);
-    builder.HasIndex(x => x.UpdatedOn);
 
     builder.Property(x => x.CreatedBy).HasMaxLength(ActorId.MaximumLength);
     builder.Property(x => x.UpdatedBy).HasMaxLength(ActorId.MaximumLength);
