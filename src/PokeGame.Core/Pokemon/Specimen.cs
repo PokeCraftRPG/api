@@ -158,8 +158,21 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     int level = ExperienceTable.GetLevel(species.GrowthRate, experience);
     PokemonStatistics statistics = new(form.BaseStatistics, individualValues, EffortValues, level, nature);
 
+    VarietyMove[] varietyMoves = variety.Moves.Values
+      .Where(x => x.LearningMethod == LearningMethod.LevelUp && x.Level is not null && x.Level.Value <= level)
+      .OrderBy(x => x.Level!.Value)
+      .ToArray();
+    int firstMovesetIndex = varietyMoves.Length < MoveLimit ? 0 : varietyMoves.Length - MoveLimit;
+    List<InitialPokemonMove> moves = new(capacity: varietyMoves.Length);
+    for (int index = 0; index < varietyMoves.Length; index++)
+    {
+      VarietyMove varietyMove = varietyMoves[index];
+      bool isInMoveset = index >= firstMovesetIndex;
+      moves.Add(new InitialPokemonMove(varietyMove.MoveId, isInMoveset));
+    }
+
     PokemonCreated @event = new(species.Id, variety.Id, form.Id, key, gender, isShiny.Value, teraType.Value, abilitySlot.Value, size, nature, eggCycles,
-      species.GrowthRate, experience, form.BaseStatistics, individualValues, statistics.HP, statistics.HP, species.BaseFriendship, characteristic);
+      species.GrowthRate, experience, form.BaseStatistics, individualValues, statistics.HP, statistics.HP, species.BaseFriendship, characteristic, moves);
     Raise(@event, actorId);
   }
   private void Handle(PokemonCreated @event)
@@ -189,6 +202,16 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     Friendship = @event.Friendship;
 
     Characteristic = @event.Characteristic;
+
+    Level level = new(Level);
+    foreach (InitialPokemonMove move in @event.Moves)
+    {
+      _movepool[move.MoveId] = new PokemonMove(level, LearningMethod.LevelUp);
+      if (move.IsInMoveset)
+      {
+        _moveset.Add(move.MoveId);
+      }
+    }
   }
 
   public void Catch(Trainer trainer, Item pokeBall, Location location, ActorId? actorId = null)

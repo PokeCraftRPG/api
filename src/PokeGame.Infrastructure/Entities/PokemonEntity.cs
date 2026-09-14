@@ -88,7 +88,9 @@ internal class PokemonEntity : AggregateEntity
   public bool IsInParty { get; set; }
   public int Priority { get; set; }
 
-  public PokemonEntity(int worldId, int speciesId, int varietyId, int formId, PokemonCreated @event) : base(@event)
+  public List<PokemonMoveEntity> Moves { get; private set; } = [];
+
+  public PokemonEntity(int worldId, int speciesId, int varietyId, int formId, IReadOnlyDictionary<string, int> moveIds, PokemonCreated @event) : base(@event)
   {
     WorldId = worldId;
     Id = new PokemonId(@event.StreamId).EntityId;
@@ -130,6 +132,17 @@ internal class PokemonEntity : AggregateEntity
     Friendship = @event.Friendship.Value;
 
     Characteristic = @event.Characteristic;
+
+    int? slot = null;
+    foreach (InitialPokemonMove move in @event.Moves)
+    {
+      int moveId = moveIds[move.MoveId.Value];
+      if (move.IsInMoveset)
+      {
+        slot = slot.HasValue ? (slot.Value + 1) : 0;
+      }
+      Moves.Add(new PokemonMoveEntity(this, moveId, slot));
+    }
   }
 
   private PokemonEntity()
