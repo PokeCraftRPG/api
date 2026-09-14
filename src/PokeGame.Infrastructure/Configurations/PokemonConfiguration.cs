@@ -55,8 +55,8 @@ internal class PokemonConfiguration : AggregateConfiguration<PokemonEntity>, IEn
     builder.HasOne(x => x.Form).WithMany().OnDelete(DeleteBehavior.Restrict);
     builder.HasOne(x => x.HeldItem).WithMany().OnDelete(DeleteBehavior.Restrict);
     builder.HasOne(x => x.Sprite).WithMany().OnDelete(DeleteBehavior.Restrict);
-    builder.HasOne(x => x.OriginalTrainer).WithMany().OnDelete(DeleteBehavior.Restrict);
-    builder.HasOne(x => x.CurrentTrainer).WithMany().OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.OriginalTrainer).WithMany(x => x.OriginalPokemon).OnDelete(DeleteBehavior.Restrict);
+    builder.HasOne(x => x.CurrentTrainer).WithMany(x => x.CurrentPokemon).OnDelete(DeleteBehavior.Restrict);
     builder.HasOne(x => x.PokeBall).WithMany().OnDelete(DeleteBehavior.Restrict);
   }
 }
