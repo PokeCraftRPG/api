@@ -68,6 +68,31 @@ public sealed class Roster : AggregateRoot, IEntityProvider
     }
   }
 
+  public void Deposit(Specimen specimen, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(this, specimen, nameof(specimen));
+
+    if (specimen.Ownership?.TrainerId != TrainerId)
+    {
+      throw new ArgumentException($"The Pokémon 'Id={specimen.Id}' should be owned by trainer 'Id={TrainerId}'.", nameof(specimen));
+    }
+    if (!_entries.ContainsKey(specimen.Id))
+    {
+      throw new ArgumentException($"The Pokémon 'Id={specimen.Id}' is not in trainer’s 'Id={TrainerId}' roster.", nameof(specimen));
+    }
+    if (!_partyIds.Contains(specimen.Id))
+    {
+      throw new PokemonNotInPartyException(specimen);
+    }
+
+    Raise(new RosterEntryDeposited(specimen.Id), actorId);
+  }
+  private void Handle(RosterEntryDeposited @event)
+  {
+    _entries[@event.PokemonId] = _entries[@event.PokemonId] with { IsInParty = false };
+    _partyIds.Remove(@event.PokemonId);
+  }
+
   public Entity GetEntity() => new(EntityKind, TrainerId.EntityId, TrainerId.WorldId);
 
   public void Remove(Specimen specimen, ActorId? actorId = null)

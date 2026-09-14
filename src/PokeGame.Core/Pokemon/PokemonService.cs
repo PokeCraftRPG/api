@@ -11,6 +11,7 @@ public interface IPokemonService
   Task<PokemonDto?> CatchAsync(Guid id, CatchPokemonPayload payload, CancellationToken cancellationToken = default);
   Task<PokemonDto?> ChangeFormAsync(Guid pokemonId, Guid formId, CancellationToken cancellationToken = default);
   Task<PokemonDto> CreateAsync(CreatePokemonPayload payload, CancellationToken cancellationToken = default);
+  Task<PokemonDto?> DepositAsync(Guid id, CancellationToken cancellationToken = default);
   Task<PokemonDto?> EvolveAsync(Guid id, EvolvePokemonPayload payload, CancellationToken cancellationToken = default);
   Task<PokemonDto?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
   Task<PokemonDto?> ReceiveAsync(Guid id, ReceivePokemonPayload payload, CancellationToken cancellationToken = default);
@@ -29,6 +30,7 @@ internal class PokemonService : IPokemonService
     services.AddTransient<ICommandHandler<CatchPokemonCommand, PokemonDto?>, CatchPokemonCommandHandler>();
     services.AddTransient<ICommandHandler<ChangePokemonFormCommand, PokemonDto?>, ChangePokemonFormCommandHandler>();
     services.AddTransient<ICommandHandler<CreatePokemonCommand, PokemonDto>, CreatePokemonCommandHandler>();
+    services.AddTransient<ICommandHandler<DepositPokemonCommand, PokemonDto?>, DepositPokemonCommandHandler>();
     services.AddTransient<ICommandHandler<EvolvePokemonCommand, PokemonDto?>, EvolvePokemonCommandHandler>();
     services.AddTransient<ICommandHandler<ReceivePokemonCommand, PokemonDto?>, ReceivePokemonCommandHandler>();
     services.AddTransient<ICommandHandler<ReleasePokemonCommand, PokemonDto?>, ReleasePokemonCommandHandler>();
@@ -61,6 +63,12 @@ internal class PokemonService : IPokemonService
   public async Task<PokemonDto> CreateAsync(CreatePokemonPayload payload, CancellationToken cancellationToken)
   {
     CreatePokemonCommand command = new(payload);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<PokemonDto?> DepositAsync(Guid id, CancellationToken cancellationToken)
+  {
+    DepositPokemonCommand command = new(id);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 

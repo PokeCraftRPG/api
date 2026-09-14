@@ -344,6 +344,89 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(1, inventoryItem.Quantity);
   }
 
+  [Fact(DisplayName = "It should deposit a party Pokémon into the box.")]
+  public async Task Given_PartyPokemon_When_Deposit_Then_MovedToBox()
+  {
+    PokemonDto created = await CreatePokemonAsync("deposited");
+    PokemonDto? received = await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+    Assert.NotNull(received);
+    Assert.True(received.IsInParty);
+
+    PokemonDto? pokemon = await _pokemonService.DepositAsync(created.Id);
+    Assert.NotNull(pokemon);
+    Assert.Equal(created.Id, pokemon.Id);
+    Assert.False(pokemon.IsInParty);
+    AssertReceived(pokemon, _trainer, _masterBall, created.Level, "Pallet Town");
+
+    PokemonDto? read = await _pokemonService.ReadAsync(created.Id);
+    Assert.NotNull(read);
+    Assert.False(read.IsInParty);
+
+    await AssertRosterContainsAsync(_trainer, pokemon, isInParty: false);
+    await AssertPartyCountAsync(_trainer, expected: 0);
+  }
+
+  [Fact(DisplayName = "It should return null when depositing a Pokémon that was not found.")]
+  public async Task Given_NotFound_When_Deposit_Then_NullReturned()
+  {
+    Assert.Null(await _pokemonService.DepositAsync(Guid.NewGuid()));
+  }
+
+  [Fact(DisplayName = "It should throw PokemonHasNoOwnerException when depositing a wild Pokémon.")]
+  public async Task Given_WildPokemon_When_Deposit_Then_PokemonHasNoOwnerException()
+  {
+    PokemonDto created = await CreatePokemonAsync("wild-deposit");
+
+    PokemonHasNoOwnerException exception = await Assert.ThrowsAsync<PokemonHasNoOwnerException>(
+      async () => await _pokemonService.DepositAsync(created.Id));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(created.Id, exception.Data["PokemonId"]);
+  }
+
+  [Fact(DisplayName = "It should throw PokemonNotInPartyException when depositing a boxed Pokémon.")]
+  public async Task Given_BoxedPokemon_When_Deposit_Then_PokemonNotInPartyException()
+  {
+    for (int index = 0; index < Roster.PartyLimit; index++)
+    {
+      PokemonDto created = await CreatePokemonAsync($"party-deposit-{index}");
+      await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+    }
+
+    PokemonDto boxedCreated = await CreatePokemonAsync("boxed-deposit");
+    PokemonDto? boxed = await _pokemonService.ReceiveAsync(boxedCreated.Id, CreatePayload("Pallet Town"));
+    Assert.NotNull(boxed);
+    Assert.False(boxed.IsInParty);
+
+    PokemonNotInPartyException exception = await Assert.ThrowsAsync<PokemonNotInPartyException>(
+      async () => await _pokemonService.DepositAsync(boxedCreated.Id));
+    Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
+    Assert.Equal(boxedCreated.Id, exception.Data["PokemonId"]);
+
+    await AssertRosterContainsAsync(_trainer, boxed, isInParty: false);
+    await AssertPartyCountAsync(_trainer, expected: Roster.PartyLimit);
+  }
+
+  [Fact(DisplayName = "It should throw PermissionDeniedException when depositing a Pokémon.")]
+  public async Task Given_NotAllowed_When_Deposit_Then_PermissionDeniedException()
+  {
+    PokemonDto created = await CreatePokemonAsync("denied-deposit");
+    await _pokemonService.ReceiveAsync(created.Id, CreatePayload("Pallet Town"));
+    Context.User = KrakenarFactory.Instance.NewUser(Faker);
+
+    PermissionDeniedException exception = await Assert.ThrowsAsync<PermissionDeniedException>(
+      async () => await _pokemonService.DepositAsync(created.Id));
+    Assert.Equal(Context.ActorId?.Value, exception.Data["Principal"]);
+    Assert.Equal("Deposit", exception.Data["Action"]);
+    Assert.Equal(new Entity(Specimen.EntityKind, created.Id, Context.WorldId).ToString(), exception.Data["Resource"]);
+    Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
+
+    PokemonDto? pokemon = await _pokemonService.ReadAsync(created.Id);
+    Assert.NotNull(pokemon);
+    AssertReceived(pokemon, _trainer, _masterBall, created.Level, "Pallet Town");
+
+    await AssertRosterContainsAsync(_trainer, pokemon, isInParty: true);
+  }
+
   [Fact(DisplayName = "It should release a received Pokémon.")]
   public async Task Given_ReceivedPokemon_When_Release_Then_Released()
   {
