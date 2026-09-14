@@ -4,6 +4,7 @@ using PokeGame.Core.Assets;
 using PokeGame.Core.Evolutions;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Items;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
@@ -16,6 +17,7 @@ namespace PokeGame.Core.Pokemon;
 public sealed class Specimen : AggregateRoot, IEntityProvider
 {
   public const string EntityKind = "Specimen";
+  public const int MoveLimit = 4;
 
   public new PokemonId Id => new(base.Id);
   public WorldId WorldId => Id.WorldId;
@@ -70,6 +72,11 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
 
   public TrainerId? OriginalTrainerId { get; private set; }
   public PokemonOwnership? Ownership { get; private set; }
+
+  private readonly Dictionary<MoveId, PokemonMove> _movepool = [];
+  public IReadOnlyDictionary<MoveId, PokemonMove> Movepool => _movepool.AsReadOnly();
+  private readonly List<MoveId> _moveset = [];
+  public IReadOnlyCollection<MoveId> Moveset => _moveset.AsReadOnly();
 
   public Specimen() : base()
   {
@@ -348,6 +355,33 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   }
 
   public Entity GetEntity() => new(EntityKind, EntityId, WorldId);
+
+  public void LearnMove(MoveId moveId, LearningMethod method, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(this, moveId, nameof(moveId));
+
+    if (!Enum.IsDefined(method))
+    {
+      throw new ArgumentOutOfRangeException(nameof(method));
+    }
+
+    if (_movepool.ContainsKey(moveId))
+    {
+      throw new PokemonMoveAlreadyKnownException(this, moveId);
+    }
+
+    bool addToMoveset = _moveset.Count < MoveLimit;
+
+    Raise(new PokemonMoveLearned(moveId, new Level(Level), method, addToMoveset), actorId);
+  }
+  private void Handle(PokemonMoveLearned @event)
+  {
+    _movepool[@event.MoveId] = new PokemonMove(@event.Level, @event.Method);
+    if (@event.AddToMoveset)
+    {
+      _moveset.Add(@event.MoveId);
+    }
+  }
 
   public void Receive(Trainer trainer, Item pokeBall, Location location, ActorId? actorId = null)
   {
