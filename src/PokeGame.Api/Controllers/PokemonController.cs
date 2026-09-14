@@ -97,4 +97,11 @@ public class PokemonController : ControllerBase
     PokemonDto? pokemon = await _pokemonService.UpdateAsync(id, payload, cancellationToken);
     return pokemon is null ? NotFound() : Ok(pokemon);
   }
+
+  [HttpPost("{id}/withdraw")]
+  public async Task<ActionResult<PokemonDto>> WithdrawAsync(Guid id, CancellationToken cancellationToken)
+  {
+    PokemonDto? pokemon = await _pokemonService.WithdrawAsync(id, cancellationToken);
+    return pokemon is null ? NotFound() : Ok(pokemon);
+  }
 }

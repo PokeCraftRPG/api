@@ -25,4 +25,5 @@ internal static class Actions
   public const string Update = "Update";
   public const string Upload = "Upload";
   public const string ViewInvitations = "ViewInvitations";
+  public const string Withdraw = "Withdraw";
 }

@@ -9,19 +9,21 @@ using PokeGame.Infrastructure.Entities;
 namespace PokeGame.Infrastructure.Handlers;
 
 internal class RosterEvents :
+  IEventHandler<RosterEntriesSwapped>,
   IEventHandler<RosterEntryAdded>,
   IEventHandler<RosterEntryDeposited>,
   IEventHandler<RosterEntryRemoved>,
   IEventHandler<RosterEntryReplaced>,
-  IEventHandler<RosterEntriesSwapped>
+  IEventHandler<RosterEntryWithdrawn>
 {
   public static void Register(IServiceCollection services)
   {
+    services.AddTransient<IEventHandler<RosterEntriesSwapped>, RosterEvents>();
     services.AddTransient<IEventHandler<RosterEntryAdded>, RosterEvents>();
     services.AddTransient<IEventHandler<RosterEntryDeposited>, RosterEvents>();
     services.AddTransient<IEventHandler<RosterEntryRemoved>, RosterEvents>();
     services.AddTransient<IEventHandler<RosterEntryReplaced>, RosterEvents>();
-    services.AddTransient<IEventHandler<RosterEntriesSwapped>, RosterEvents>();
+    services.AddTransient<IEventHandler<RosterEntryWithdrawn>, RosterEvents>();
   }
 
   private readonly PokemonContext _pokemon;
@@ -116,6 +118,19 @@ internal class RosterEvents :
 
     await _pokemon.SaveChangesAsync(cancellationToken);
     await UpdatePartyCountAsync(@event, cancellationToken); // TODO(fpion): is this necessary?
+  }
+
+  public async Task HandleAsync(RosterEntryWithdrawn @event, CancellationToken cancellationToken)
+  {
+    PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.PokemonId.Value, cancellationToken);
+    if (pokemon is not null)
+    {
+      pokemon.IsInParty = true;
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+
+      await UpdatePartyCountAsync(@event, cancellationToken);
+    }
   }
 
   private async Task UpdatePartyCountAsync(DomainEvent @event, CancellationToken cancellationToken)
