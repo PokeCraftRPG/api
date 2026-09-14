@@ -15,6 +15,7 @@ internal class TrainerEvents :
   IEventHandler<TrainerLicenseChanged>,
   IEventHandler<TrainerMemberChanged>,
   IEventHandler<TrainerMoneyChanged>,
+  IEventHandler<TrainerPartyLimitChanged>,
   IEventHandler<TrainerSpriteChanged>
 {
   public static void Register(IServiceCollection services)
@@ -27,6 +28,7 @@ internal class TrainerEvents :
     services.AddTransient<IEventHandler<TrainerLicenseChanged>, TrainerEvents>();
     services.AddTransient<IEventHandler<TrainerMemberChanged>, TrainerEvents>();
     services.AddTransient<IEventHandler<TrainerMoneyChanged>, TrainerEvents>();
+    services.AddTransient<IEventHandler<TrainerPartyLimitChanged>, TrainerEvents>();
     services.AddTransient<IEventHandler<TrainerSpriteChanged>, TrainerEvents>();
   }
 
@@ -124,6 +126,17 @@ internal class TrainerEvents :
     if (trainer is not null && trainer.Version == (@event.Version - 1))
     {
       trainer.SetMoney(@event);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
+  }
+
+  public async Task HandleAsync(TrainerPartyLimitChanged @event, CancellationToken cancellationToken)
+  {
+    TrainerEntity? trainer = await _pokemon.Trainers.SingleOrDefaultAsync(x => x.StreamId == @event.StreamId.Value, cancellationToken);
+    if (trainer is not null && trainer.Version == (@event.Version - 1))
+    {
+      trainer.SetPartyLimit(@event);
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }

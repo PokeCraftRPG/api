@@ -41,7 +41,7 @@ public class RosterAddTests : UnitTests
   [Fact(DisplayName = "It should respect a custom trainer party limit.")]
   public void Given_CustomPartyLimit_When_Add_Then_BoxedWhenLimitReached()
   {
-    SetPartyLimit(Catalog.Red, 1);
+    Catalog.Red.SetPartyLimit(1);
     Roster roster = new(Catalog.Red);
     Specimen first = Catalog.CreateOwnedPokemon(Catalog.Red, "first");
     Specimen second = Catalog.CreateOwnedPokemon(Catalog.Red, "second");
@@ -114,10 +114,5 @@ public class RosterAddTests : UnitTests
       roster.Add(pokemon, trainer);
     }
     return roster;
-  }
-
-  private static void SetPartyLimit(Trainer trainer, int partyLimit)
-  {
-    typeof(Trainer).GetProperty(nameof(Trainer.PartyLimit))!.SetValue(trainer, partyLimit);
   }
 }

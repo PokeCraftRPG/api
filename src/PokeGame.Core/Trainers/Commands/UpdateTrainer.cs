@@ -95,6 +95,11 @@ internal class UpdateTrainerCommandHandler : ICommandHandler<UpdateTrainerComman
       await _trainerManager.SetMemberAsync(trainer, payload.MemberId.Value, nameof(payload.MemberId), cancellationToken);
     }
 
+    if (payload.PartyLimit is not null)
+    {
+      trainer.SetPartyLimit(payload.PartyLimit.Value, actorId);
+    }
+
     await _trainerManager.EnsureUnicityAsync(trainer, cancellationToken);
     await _trainerRepository.SaveAsync(trainer, cancellationToken);
 

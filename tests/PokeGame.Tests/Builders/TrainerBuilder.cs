@@ -21,6 +21,7 @@ public interface ITrainerBuilder
   ITrainerBuilder WithMoney(int money);
   ITrainerBuilder WithSprite(Asset? sprite);
   ITrainerBuilder WithMember(UserId? memberId);
+  ITrainerBuilder WithPartyLimit(int? partyLimit);
 
   Trainer Build();
 }
@@ -36,6 +37,7 @@ public class TrainerBuilder : ITrainerBuilder
   private UserId? _memberId;
   private int _money;
   private string? _name = "Red";
+  private int? _partyLimit;
   private Asset? _sprite;
   private string? _summary;
   private TrainerId? _trainerId;
@@ -112,6 +114,12 @@ public class TrainerBuilder : ITrainerBuilder
     return this;
   }
 
+  public ITrainerBuilder WithPartyLimit(int? partyLimit)
+  {
+    _partyLimit = partyLimit;
+    return this;
+  }
+
   public Trainer Build()
   {
     World world = _world ?? new WorldBuilder(_faker).Build();
@@ -127,6 +135,7 @@ public class TrainerBuilder : ITrainerBuilder
     trainer.SetMoney(new Money(_money), actorId);
     trainer.SetSprite(_sprite, actorId);
     trainer.SetMember(_memberId, actorId);
+    trainer.SetPartyLimit(_partyLimit, actorId);
 
     return trainer;
   }
