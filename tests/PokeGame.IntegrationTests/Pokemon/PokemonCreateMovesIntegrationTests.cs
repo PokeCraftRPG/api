@@ -147,16 +147,20 @@ public class PokemonCreateMovesIntegrationTests : IntegrationTests
     return created;
   }
 
-  private static void AssertPokemonMove(PokemonMoveDto move, int learnedAtLevel, int? expectedSlot)
+  private void AssertPokemonMove(PokemonMoveDto move, int learnedAtLevel, int? expectedSlot)
   {
     Assert.Equal(learnedAtLevel, move.LearnedAtLevel);
     Assert.Equal(LearningMethod.LevelUp, move.LearningMethod);
     Assert.False(move.IsMastered);
     Assert.Equal(0, move.PowerPointUpgrades);
     Assert.Equal(expectedSlot, move.Slot);
+    Assert.Equal(Actor, move.CreatedBy);
+    Assert.Equal(DateTime.UtcNow, move.CreatedOn, TimeSpan.FromSeconds(10));
+    Assert.Equal(move.CreatedBy, move.UpdatedBy);
+    Assert.Equal(move.CreatedOn, move.UpdatedOn, TimeSpan.FromMilliseconds(1));
   }
 
-  private static void AssertPokemonMove(PokemonMoveDto move, int learnedAtLevel)
+  private void AssertPokemonMove(PokemonMoveDto move, int learnedAtLevel)
   {
     Assert.NotNull(move.Slot);
     AssertPokemonMove(move, learnedAtLevel, move.Slot);

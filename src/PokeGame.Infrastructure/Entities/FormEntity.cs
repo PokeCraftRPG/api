@@ -82,14 +82,14 @@ internal class FormEntity : AggregateEntity
     {
       if (entity.Ability is not null)
       {
-        actorIds.AddRange(entity.Ability.GetActorIds());
+        actorIds.AddRange(entity.GetActorIds());
       }
     }
     foreach (FormSpriteEntity entity in Sprites)
     {
       if (entity.Asset is not null)
       {
-        actorIds.AddRange(entity.Asset.GetActorIds());
+        actorIds.AddRange(entity.GetActorIds());
       }
     }
     return actorIds;

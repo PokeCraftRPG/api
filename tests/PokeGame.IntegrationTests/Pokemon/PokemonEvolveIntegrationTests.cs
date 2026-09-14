@@ -355,10 +355,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
       Assert.NotNull(move.Slot);
       Assert.InRange(move.Slot.Value, 0, 1);
       Assert.True(slots.Add(move.Slot.Value));
-      Assert.Equal(pokemon.Level, move.LearnedAtLevel);
-      Assert.Equal(LearningMethod.Evolution, move.LearningMethod);
-      Assert.False(move.IsMastered);
-      Assert.Equal(0, move.PowerPointUpgrades);
+      AssertEvolutionMove(move, pokemon.Level, move.Slot);
     }
     Assert.Equal(2, slots.Count);
   }
@@ -397,12 +394,21 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     Assert.NotNull(pokemon);
 
     PokemonMoveDto learned = Assert.Single(pokemon.Moves, move => move.Move.Id == evolutionMove.EntityId);
-    Assert.Null(learned.Slot);
-    Assert.Equal(pokemon.Level, learned.LearnedAtLevel);
-    Assert.Equal(LearningMethod.Evolution, learned.LearningMethod);
-    Assert.False(learned.IsMastered);
-    Assert.Equal(0, learned.PowerPointUpgrades);
+    AssertEvolutionMove(learned, pokemon.Level, expectedSlot: null);
     Assert.Equal(Specimen.MoveLimit, pokemon.Moves.Count(move => move.Slot.HasValue));
+  }
+
+  private void AssertEvolutionMove(PokemonMoveDto move, int learnedAtLevel, int? expectedSlot)
+  {
+    Assert.Equal(learnedAtLevel, move.LearnedAtLevel);
+    Assert.Equal(LearningMethod.Evolution, move.LearningMethod);
+    Assert.False(move.IsMastered);
+    Assert.Equal(0, move.PowerPointUpgrades);
+    Assert.Equal(expectedSlot, move.Slot);
+    Assert.Equal(Actor, move.CreatedBy);
+    Assert.Equal(DateTime.UtcNow, move.CreatedOn, TimeSpan.FromSeconds(10));
+    Assert.Equal(move.CreatedBy, move.UpdatedBy);
+    Assert.Equal(move.CreatedOn, move.UpdatedOn, TimeSpan.FromMilliseconds(1));
   }
 
   private async Task<Evolution> CreateEvolutionAsync(

@@ -1,4 +1,6 @@
-﻿namespace PokeGame.Infrastructure.Entities;
+﻿using Logitar.EventSourcing;
+
+namespace PokeGame.Infrastructure.Entities;
 
 internal class FormSpriteEntity
 {
@@ -23,6 +25,8 @@ internal class FormSpriteEntity
   private FormSpriteEntity()
   {
   }
+
+  public IReadOnlyCollection<ActorId> GetActorIds() => Asset is null ? [] : Asset.GetActorIds();
 
   public override bool Equals(object? obj) => obj is FormSpriteEntity entity && entity.FormId == FormId && entity.Kind == Kind;
   public override int GetHashCode() => HashCode.Combine(FormId, Kind);
