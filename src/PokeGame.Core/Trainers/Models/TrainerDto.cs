@@ -18,6 +18,8 @@ public class TrainerDto : Aggregate
   public AssetDto? Sprite { get; set; }
 
   public Actor? Member { get; set; }
+  public int PartyCount { get; set; }
+  public int? PartyLimit { get; set; }
 
   public override string ToString() => $"{Name ?? Key} | {base.ToString()}";
 }

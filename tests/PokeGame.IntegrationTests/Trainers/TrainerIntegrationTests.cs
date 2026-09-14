@@ -79,6 +79,24 @@ public class TrainerIntegrationTests : IntegrationTests
     Assert.True(trainer.CreatedOn < trainer.UpdatedOn);
 
     AssertMisty(payload, trainer);
+    Assert.Equal(0, trainer.PartyCount);
+    Assert.Null(trainer.PartyLimit);
+  }
+
+  [Fact(DisplayName = "It should create a trainer with a party limit.")]
+  public async Task Given_PartyLimit_When_Create_Then_Created()
+  {
+    CreateOrReplaceTrainerPayload payload = CreateMistyPayload();
+    payload.PartyLimit = 3;
+
+    CreateOrReplaceTrainerResult result = await _trainerService.CreateOrReplaceAsync(payload);
+    Assert.True(result.Created);
+    TrainerDto trainer = result.Trainer;
+
+    Assert.Equal(6, trainer.Version);
+    AssertMisty(payload, trainer);
+    Assert.Equal(0, trainer.PartyCount);
+    Assert.Equal(3, trainer.PartyLimit);
   }
 
   [Fact(DisplayName = "It should create a trainer with a sprite and member.")]
@@ -143,6 +161,8 @@ public class TrainerIntegrationTests : IntegrationTests
     Assert.Equal(DateTime.UtcNow, trainer.UpdatedOn, TimeSpan.FromSeconds(10));
 
     AssertMisty(payload, trainer);
+    Assert.Equal(0, trainer.PartyCount);
+    Assert.Null(trainer.PartyLimit);
   }
 
   [Fact(DisplayName = "It should return empty search results.")]
@@ -488,6 +508,31 @@ public class TrainerIntegrationTests : IntegrationTests
     Assert.Equal(create.Money, trainer.Money);
   }
 
+  [Fact(DisplayName = "It should update a trainer party limit.")]
+  public async Task Given_PartyLimit_When_Update_Then_Updated()
+  {
+    UpdateTrainerPayload payload = new()
+    {
+      PartyLimit = new Optional<int?>(2)
+    };
+
+    TrainerDto? trainer = await _trainerService.UpdateAsync(_trainer.EntityId, payload);
+    Assert.NotNull(trainer);
+    Assert.Equal(5, trainer.Version);
+    Assert.Equal(2, trainer.PartyLimit);
+    Assert.Equal(0, trainer.PartyCount);
+
+    payload = new()
+    {
+      PartyLimit = new Optional<int?>(null)
+    };
+
+    trainer = await _trainerService.UpdateAsync(_trainer.EntityId, payload);
+    Assert.NotNull(trainer);
+    Assert.Equal(6, trainer.Version);
+    Assert.Null(trainer.PartyLimit);
+  }
+
   private static CreateOrReplaceTrainerPayload CreateMistyPayload() => new()
   {
     Key = "misty",
@@ -508,6 +553,7 @@ public class TrainerIntegrationTests : IntegrationTests
     Assert.Equal(License.Format(payload.License!), trainer.License);
     Assert.Equal(payload.Gender, trainer.Gender);
     Assert.Equal(payload.Money, trainer.Money);
+    Assert.Equal(payload.PartyLimit, trainer.PartyLimit);
   }
 
   private async Task<AssetDto> UploadSpriteAsync()

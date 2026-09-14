@@ -15,6 +15,7 @@ using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Rosters;
 using PokeGame.Core.Species;
 using PokeGame.Core.Trainers;
+using PokeGame.Core.Trainers.Models;
 using PokeGame.Core.Varieties;
 
 namespace PokeGame.Pokemon;
@@ -30,6 +31,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
   private readonly IRosterRepository _rosterRepository;
   private readonly ISpeciesRepository _speciesRepository;
   private readonly ITrainerRepository _trainerRepository;
+  private readonly ITrainerService _trainerService;
   private readonly IVarietyRepository _varietyRepository;
 
   private Form _form = null!;
@@ -46,6 +48,7 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     _rosterRepository = ServiceProvider.GetRequiredService<IRosterRepository>();
     _speciesRepository = ServiceProvider.GetRequiredService<ISpeciesRepository>();
     _trainerRepository = ServiceProvider.GetRequiredService<ITrainerRepository>();
+    _trainerService = ServiceProvider.GetRequiredService<ITrainerService>();
     _varietyRepository = ServiceProvider.GetRequiredService<IVarietyRepository>();
   }
 
@@ -101,6 +104,10 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
 
     await AssertRosterContainsAsync(_trainer, pokemon, isInParty: true);
     AssertPokemonRoster(read, isInParty: true);
+
+    TrainerDto? trainer = await _trainerService.ReadAsync(_trainer.EntityId);
+    Assert.NotNull(trainer);
+    Assert.Null(trainer.PartyLimit);
   }
 
   [Fact(DisplayName = "It should transfer a Pokémon to another trainer.")]
@@ -144,6 +151,27 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Roster roster = await LoadRosterAsync(_trainer);
     Assert.Equal(Roster.PartyLimit + 1, roster.Entries.Count);
     Assert.Equal(Roster.PartyLimit, roster.PartyIds.Count);
+  }
+
+  [Fact(DisplayName = "It should respect a custom trainer party limit when receiving Pokémon.")]
+  public async Task Given_CustomPartyLimit_When_Receive_Then_BoxedWhenLimitReached()
+  {
+    _trainer.SetPartyLimit(1);
+    await _trainerRepository.SaveAsync(_trainer);
+
+    PokemonDto firstCreated = await CreatePokemonAsync("party-limit-first");
+    PokemonDto? first = await _pokemonService.ReceiveAsync(firstCreated.Id, CreatePayload("Pallet Town"));
+    Assert.NotNull(first);
+    await AssertRosterContainsAsync(_trainer, first, isInParty: true);
+
+    PokemonDto secondCreated = await CreatePokemonAsync("party-limit-second");
+    PokemonDto? second = await _pokemonService.ReceiveAsync(secondCreated.Id, CreatePayload("Pallet Town"));
+    Assert.NotNull(second);
+    await AssertRosterContainsAsync(_trainer, second, isInParty: false);
+
+    TrainerDto? trainer = await _trainerService.ReadAsync(_trainer.EntityId);
+    Assert.NotNull(trainer);
+    Assert.Equal(1, trainer.PartyLimit);
   }
 
   [Fact(DisplayName = "It should return null when the Pokémon was not found.")]

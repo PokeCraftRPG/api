@@ -2,6 +2,7 @@
 using Logitar.EventSourcing;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Trainers.Models;
+using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Trainers.Commands;
 
@@ -34,15 +35,17 @@ internal class CreateOrReplaceTrainerCommandHandler : ICommandHandler<CreateOrRe
     CreateOrReplaceTrainerPayload payload = command.Payload;
     payload.Validate();
 
-    TrainerId trainerId = TrainerId.NewId(_context.WorldId);
+    ActorId? actorId = _context.ActorId;
+    WorldId worldId = _context.WorldId;
+
+    TrainerId trainerId = TrainerId.NewId(worldId);
     Trainer? trainer = null;
     if (command.Id.HasValue)
     {
-      trainerId = new TrainerId(trainerId.WorldId, command.Id.Value);
+      trainerId = new TrainerId(worldId, command.Id.Value);
       trainer = await _trainerRepository.LoadAsync(trainerId, cancellationToken);
     }
 
-    ActorId? actorId = _context.ActorId;
     Key key = new(payload.Key);
 
     bool created = false;
@@ -66,6 +69,7 @@ internal class CreateOrReplaceTrainerCommandHandler : ICommandHandler<CreateOrRe
     trainer.SetMoney(new Money(payload.Money), actorId);
     await _trainerManager.SetSpriteAsync(trainer, payload.SpriteId, nameof(payload.SpriteId), cancellationToken);
     await _trainerManager.SetMemberAsync(trainer, payload.MemberId, nameof(payload.MemberId), cancellationToken);
+    trainer.SetPartyLimit(payload.PartyLimit, actorId);
 
     await _trainerManager.EnsureUnicityAsync(trainer, cancellationToken);
     await _trainerRepository.SaveAsync(trainer, cancellationToken);

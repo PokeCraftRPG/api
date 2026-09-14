@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using PokeGame.Core.Rosters;
 
 namespace PokeGame.Core.Trainers.Models;
 
@@ -15,6 +16,7 @@ public record CreateOrReplaceTrainerPayload
   public int Money { get; set; }
   public Guid? SpriteId { get; set; }
 
+  public int? PartyLimit { get; set; }
   public Guid? MemberId { get; set; }
 
   public void Validate() => new Validator().ValidateCommandAndThrow(this);
@@ -32,6 +34,8 @@ public record CreateOrReplaceTrainerPayload
       When(x => !string.IsNullOrWhiteSpace(x.License), () => RuleFor(x => x.License!).License());
       RuleFor(x => x.Gender).IsInEnum();
       RuleFor(x => x.Money).Money();
+
+      RuleFor(x => x.PartyLimit).GreaterThan(0).LessThanOrEqualTo(Roster.PartyLimit);
     }
   }
 }

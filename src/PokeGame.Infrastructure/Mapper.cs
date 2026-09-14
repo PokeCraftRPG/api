@@ -433,7 +433,9 @@ internal class Mapper
       Content = source.Content,
       License = source.License,
       Gender = source.Gender,
-      Money = source.Money
+      Money = source.Money,
+      PartyCount = source.PartyCount,
+      PartyLimit = source.PartyLimit
     };
 
     if (source.Sprite is not null)
