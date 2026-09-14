@@ -26,6 +26,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="PokeGame.UnitTests" />
+    <InternalsVisibleTo Include="PokeGame.IntegrationTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="System.Diagnostics.CodeAnalysis" />
     <Using Include="System.Globalization" />
     <Using Include="System.Linq.Expressions" />

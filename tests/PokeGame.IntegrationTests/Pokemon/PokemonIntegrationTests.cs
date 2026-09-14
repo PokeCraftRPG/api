@@ -12,6 +12,7 @@ using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Seo;
 using PokeGame.Core.Species;
 using PokeGame.Core.Varieties;
+using PokeGame.Infrastructure;
 
 namespace PokeGame.Pokemon;
 
@@ -106,6 +107,7 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal(0, pokemon.Experience);
     Assert.Equal(1, pokemon.Level);
     Assert.Equal(0, pokemon.Tier);
+    AssertAttributes(pokemon, _form.BaseStatistics, payload.IndividualValues!, PokemonNatures.Hardy);
     Assert.Equal((byte)10, pokemon.Statistics.HP.Individual);
     Assert.Equal((byte)11, pokemon.Statistics.Attack.Individual);
     Assert.Equal((byte)12, pokemon.Statistics.Defense.Individual);
@@ -150,6 +152,33 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.NotNull(read);
     Assert.Equal(level, read.Level);
     Assert.Equal(expectedTier, read.Tier);
+  }
+
+  [Fact(DisplayName = "It should calculate Pokémon attributes from nature and individual values.")]
+  public async Task Given_AdamantNature_When_Create_Then_AttributesCalculated()
+  {
+    CreatePokemonPayload payload = new()
+    {
+      FormId = _form.EntityId,
+      Key = "adamant-attributes",
+      Nature = "Adamant",
+      IndividualValues = new IndividualValuesDto
+      {
+        HP = 0,
+        Attack = 31,
+        Defense = 0,
+        SpecialAttack = 31,
+        SpecialDefense = 15,
+        Speed = 7
+      }
+    };
+
+    PokemonDto pokemon = await _pokemonService.CreateAsync(payload);
+    AssertAttributes(pokemon, _form.BaseStatistics, payload.IndividualValues!, PokemonNatures.Adamant);
+
+    PokemonDto? read = await _pokemonService.ReadAsync(pokemon.Id);
+    Assert.NotNull(read);
+    AssertAttributes(read, _form.BaseStatistics, payload.IndividualValues!, PokemonNatures.Adamant);
   }
 
   [Fact(DisplayName = "It should read a Pokémon by key.")]
@@ -640,6 +669,30 @@ public class PokemonIntegrationTests : IntegrationTests
 
   private static int ExperienceForLevel(int level)
     => level <= 1 ? 0 : ExperienceTable.GetThreshold(GrowthRate.MediumSlow, level - 1);
+
+  private static void AssertAttributes(
+    PokemonDto pokemon,
+    IBaseStatistics baseStatistics,
+    IIndividualValues individualValues,
+    IPokemonNature nature)
+  {
+    PokemonAttributesDto expected = PokemonMapper.CalculateAttributes(null!, baseStatistics, individualValues, nature);
+
+    AssertAttribute(pokemon.Attributes.Vigor, expected.Vigor);
+    AssertAttribute(pokemon.Attributes.Fortitude, expected.Fortitude);
+    AssertAttribute(pokemon.Attributes.Mind, expected.Mind);
+    AssertAttribute(pokemon.Attributes.Spirit, expected.Spirit);
+    AssertAttribute(pokemon.Attributes.Dexterity, expected.Dexterity);
+  }
+
+  private static void AssertAttribute(PokemonAttributeDto actual, PokemonAttributeDto expected)
+  {
+    Assert.Equal(expected.Base, actual.Base);
+    Assert.Equal(expected.Individual, actual.Individual);
+    Assert.Equal(expected.Nature, actual.Nature);
+    Assert.Equal(expected.Modifiers, actual.Modifiers);
+    Assert.Equal(expected.Total, actual.Total);
+  }
 
   private async Task<PokemonDto> CreatePokemonAsync(string key)
   {

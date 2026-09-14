@@ -22,4 +22,8 @@ public record BaseStatisticsDto : IBaseStatistics
     SpecialDefense = specialDefense;
     Speed = speed;
   }
+
+  public BaseStatisticsDto(IBaseStatistics @base) : this(@base.HP, @base.Attack, @base.Defense, @base.SpecialAttack, @base.SpecialDefense, @base.Speed)
+  {
+  }
 }

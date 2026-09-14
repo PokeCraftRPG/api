@@ -2,11 +2,9 @@
 using Logitar.EventSourcing;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
-using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Events;
-using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Species;
 
@@ -206,9 +204,6 @@ internal class PokemonEntity : AggregateEntity
     }
     return skillRanks.AsReadOnly();
   }
-
-  public BaseStatisticsDto GetBaseStatistics() => new(BaseHP, BaseAttack, BaseDefense, BaseSpecialAttack, BaseSpecialDefense, BaseSpeed);
-  public IndividualValuesDto GetIndividualValues() => new(IndividualHP, IndividualAttack, IndividualDefense, IndividualSpecialAttack, IndividualSpecialDefense, IndividualSpeed);
 
   public void Catch(int trainerId, int pokeBallId, PokemonCaught @event)
   {

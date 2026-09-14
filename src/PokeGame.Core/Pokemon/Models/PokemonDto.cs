@@ -32,7 +32,7 @@ public class PokemonDto : Aggregate
   public int Level { get; set; }
   public int Tier { get; set; }
 
-  // TODO(fpion): Attributes
+  public PokemonAttributesDto Attributes { get; set; } = new();
   public List<SkillRankDto> SkillRanks { get; set; } = [];
   public PokemonStatisticsDto Statistics { get; set; } = new();
 
