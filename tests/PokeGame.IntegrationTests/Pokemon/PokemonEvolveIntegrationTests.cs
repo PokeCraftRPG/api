@@ -8,6 +8,7 @@ using PokeGame.Core.Forms;
 using PokeGame.Core.Inventory;
 using PokeGame.Core.Inventory.Models;
 using PokeGame.Core.Items;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Events;
@@ -27,6 +28,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
   private readonly IFormRepository _formRepository;
   private readonly IInventoryService _inventoryService;
   private readonly IItemRepository _itemRepository;
+  private readonly IMoveRepository _moveRepository;
   private readonly IPokemonService _pokemonService;
   private readonly ISpeciesRepository _speciesRepository;
   private readonly ITrainerRepository _trainerRepository;
@@ -45,6 +47,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     _formRepository = ServiceProvider.GetRequiredService<IFormRepository>();
     _inventoryService = ServiceProvider.GetRequiredService<IInventoryService>();
     _itemRepository = ServiceProvider.GetRequiredService<IItemRepository>();
+    _moveRepository = ServiceProvider.GetRequiredService<IMoveRepository>();
     _pokemonService = ServiceProvider.GetRequiredService<IPokemonService>();
     _speciesRepository = ServiceProvider.GetRequiredService<ISpeciesRepository>();
     _trainerRepository = ServiceProvider.GetRequiredService<ITrainerRepository>();
@@ -246,6 +249,49 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     IReadOnlyList<EvolutionConditionFailure> failures = Assert.IsAssignableFrom<IReadOnlyList<EvolutionConditionFailure>>(exception.Data["Failures"]);
     EvolutionConditionFailure failure = Assert.Single(failures);
     Assert.Equal(EvolutionCondition.Gender, failure.Condition);
+  }
+
+  [Fact(DisplayName = "It should throw EvolutionRequirementsNotMetException when the required move is not known.")]
+  public async Task Given_UnknownMove_When_Evolve_Then_EvolutionRequirementsNotMetException()
+  {
+    Move tackle = MoveBuilder.Tackle(Faker, Context.World);
+    await _moveRepository.SaveAsync(tackle);
+
+    Evolution evolution = new(EvolutionId.NewId(Context.WorldId), _source, _target, EvolutionTrigger.LeveledUp, actorId: Context.ActorId);
+    evolution.SetConditions(level: null, friendship: false, gender: null, item: null, tackle, location: null, timeOfDay: null, Context.ActorId);
+    await _evolutionRepository.SaveAsync(evolution);
+
+    PokemonDto created = await CreateOwnedPokemonAsync("no-tackle");
+
+    EvolutionRequirementsNotMetException exception = await Assert.ThrowsAsync<EvolutionRequirementsNotMetException>(
+      async () => await _pokemonService.EvolveAsync(created.Id, new EvolvePokemonPayload { EvolutionId = evolution.EntityId }));
+    IReadOnlyList<EvolutionConditionFailure> failures = Assert.IsAssignableFrom<IReadOnlyList<EvolutionConditionFailure>>(exception.Data["Failures"]);
+    EvolutionConditionFailure failure = Assert.Single(failures);
+    Assert.Equal(EvolutionCondition.KnownMove, failure.Condition);
+    Assert.Equal(tackle.Id, failure.Required);
+    Assert.Null(failure.Actual);
+  }
+
+  [Fact(DisplayName = "It should evolve when the required move is in the moveset.")]
+  public async Task Given_RequiredMoveInMoveset_When_Evolve_Then_Evolved()
+  {
+    Move tackle = MoveBuilder.Tackle(Faker, Context.World);
+    await _moveRepository.SaveAsync(tackle);
+
+    Variety variety = await _varietyRepository.LoadAsync(_source.VarietyId) ?? throw new InvalidOperationException("The source variety was not found.");
+    variety.AddMove(new VarietyMove(tackle.Id, LearningMethod.LevelUp, new Level(1)), Context.ActorId);
+    await _varietyRepository.SaveAsync(variety);
+
+    Evolution evolution = new(EvolutionId.NewId(Context.WorldId), _source, _target, EvolutionTrigger.LeveledUp, actorId: Context.ActorId);
+    evolution.SetConditions(level: null, friendship: false, gender: null, item: null, tackle, location: null, timeOfDay: null, Context.ActorId);
+    await _evolutionRepository.SaveAsync(evolution);
+
+    PokemonDto created = await CreateOwnedPokemonAsync("knows-tackle");
+    Assert.Contains(created.Moves, move => move.Move.Id == tackle.EntityId && move.Slot is not null);
+
+    PokemonDto? pokemon = await _pokemonService.EvolveAsync(created.Id, new EvolvePokemonPayload { EvolutionId = evolution.EntityId });
+    Assert.NotNull(pokemon);
+    Assert.Equal(_target.EntityId, pokemon.Form.Id);
   }
 
   [Fact(DisplayName = "It should throw InvalidEvolutionSourceException when the Pokémon form does not match.")]

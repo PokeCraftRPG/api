@@ -1,5 +1,7 @@
+using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Evolutions;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Regions;
@@ -198,6 +200,65 @@ public class SpecimenEvolveTests : UnitTests
     EvolutionConditionFailure failure = AssertSingleFailure(exception, EvolutionCondition.HeldItem);
     Assert.Equal(Catalog.Potion.EntityId, failure.Required);
     Assert.Null(failure.Actual);
+  }
+
+  [Fact(DisplayName = "It should throw EvolutionRequirementsNotMetException when the required move is not in the moveset.")]
+  public void Given_UnknownMove_When_Evolve_Then_EvolutionRequirementsNotMetException()
+  {
+    Move tackle = MoveBuilder.Tackle(Faker, Catalog.World);
+    Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Red);
+    Evolution evolution = CreateEvolution();
+    evolution.SetConditions(level: null, friendship: false, gender: null, item: null, tackle, location: null, timeOfDay: null);
+
+    EvolutionRequirementsNotMetException exception = Assert.Throws<EvolutionRequirementsNotMetException>(
+      () => pokemon.Evolve(evolution, Catalog.CharmanderForm, Catalog.CharmanderVariety));
+    EvolutionConditionFailure failure = AssertSingleFailure(exception, EvolutionCondition.KnownMove);
+    Assert.Equal(tackle.Id, failure.Required);
+    Assert.Null(failure.Actual);
+  }
+
+  [Fact(DisplayName = "It should throw EvolutionRequirementsNotMetException when the required move is only in the movepool.")]
+  public void Given_RequiredMoveOnlyInMovepool_When_Evolve_Then_EvolutionRequirementsNotMetException()
+  {
+    Move tackle = MoveBuilder.Tackle(Faker, Catalog.World);
+    Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Red);
+    for (int index = 0; index < Specimen.MoveLimit; index++)
+    {
+      Move filler = new MoveBuilder(Faker)
+        .WithWorld(Catalog.World)
+        .WithKey($"filler-{index}")
+        .WithName($"Filler {index}")
+        .Build();
+      pokemon.LearnMove(filler.Id, LearningMethod.LevelUp);
+    }
+    pokemon.LearnMove(tackle.Id, LearningMethod.LevelUp);
+    Assert.Contains(tackle.Id, pokemon.Movepool.Keys);
+    Assert.DoesNotContain(tackle.Id, pokemon.Moveset);
+
+    Evolution evolution = CreateEvolution();
+    evolution.SetConditions(level: null, friendship: false, gender: null, item: null, tackle, location: null, timeOfDay: null);
+
+    EvolutionRequirementsNotMetException exception = Assert.Throws<EvolutionRequirementsNotMetException>(
+      () => pokemon.Evolve(evolution, Catalog.CharmanderForm, Catalog.CharmanderVariety));
+    EvolutionConditionFailure failure = AssertSingleFailure(exception, EvolutionCondition.KnownMove);
+    Assert.Equal(tackle.Id, failure.Required);
+    Assert.Null(failure.Actual);
+  }
+
+  [Fact(DisplayName = "It should evolve when the required move is in the moveset.")]
+  public void Given_RequiredMoveInMoveset_When_Evolve_Then_Evolved()
+  {
+    Move tackle = MoveBuilder.Tackle(Faker, Catalog.World);
+    Specimen pokemon = Catalog.CreateOwnedPokemon(Catalog.Red);
+    pokemon.LearnMove(tackle.Id, LearningMethod.LevelUp);
+    Assert.Contains(tackle.Id, pokemon.Moveset);
+
+    Evolution evolution = CreateEvolution();
+    evolution.SetConditions(level: null, friendship: false, gender: null, item: null, tackle, location: null, timeOfDay: null);
+
+    pokemon.Evolve(evolution, Catalog.CharmanderForm, Catalog.CharmanderVariety);
+
+    Assert.Equal(Catalog.CharmanderForm.Id, pokemon.FormId);
   }
 
   [Fact(DisplayName = "It should throw EvolutionRequirementsNotMetException when the location does not match.")]

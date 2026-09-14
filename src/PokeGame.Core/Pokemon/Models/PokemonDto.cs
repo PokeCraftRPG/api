@@ -52,5 +52,7 @@ public class PokemonDto : Aggregate
   public bool IsInParty { get; set; }
   public int Priority { get; set; }
 
+  public List<PokemonMoveDto> Moves { get; set; } = [];
+
   public override string ToString() => $"{Nickname ?? Key} | {base.ToString()}";
 }

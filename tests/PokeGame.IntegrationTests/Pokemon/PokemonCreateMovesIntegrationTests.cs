@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
@@ -9,8 +8,6 @@ using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Species;
 using PokeGame.Core.Varieties;
-using PokeGame.Infrastructure;
-using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Pokemon;
 
@@ -20,9 +17,7 @@ public class PokemonCreateMovesIntegrationTests : IntegrationTests
   private readonly IAbilityRepository _abilityRepository;
   private readonly IFormRepository _formRepository;
   private readonly IMoveRepository _moveRepository;
-  private readonly IPokemonRepository _pokemonRepository;
   private readonly IPokemonService _pokemonService;
-  private readonly PokemonContext _pokemonContext;
   private readonly ISpeciesRepository _speciesRepository;
   private readonly IVarietyRepository _varietyRepository;
 
@@ -36,9 +31,7 @@ public class PokemonCreateMovesIntegrationTests : IntegrationTests
     _abilityRepository = ServiceProvider.GetRequiredService<IAbilityRepository>();
     _formRepository = ServiceProvider.GetRequiredService<IFormRepository>();
     _moveRepository = ServiceProvider.GetRequiredService<IMoveRepository>();
-    _pokemonRepository = ServiceProvider.GetRequiredService<IPokemonRepository>();
     _pokemonService = ServiceProvider.GetRequiredService<IPokemonService>();
-    _pokemonContext = ServiceProvider.GetRequiredService<PokemonContext>();
     _speciesRepository = ServiceProvider.GetRequiredService<ISpeciesRepository>();
     _varietyRepository = ServiceProvider.GetRequiredService<IVarietyRepository>();
   }
@@ -63,12 +56,9 @@ public class PokemonCreateMovesIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should create a Pokémon with no moves when the variety has none.")]
   public async Task Given_NoVarietyMoves_When_Create_Then_EmptyMovepoolAndMoveset()
   {
-    PokemonDto created = await CreatePokemonAsync("no-moves", level: 1);
-    Specimen pokemon = await LoadPokemonAsync(created.Id);
+    PokemonDto pokemon = await CreatePokemonAsync("no-moves", level: 1);
 
-    Assert.Empty(pokemon.Movepool);
-    Assert.Empty(pokemon.Moveset);
-    Assert.Empty(await LoadEntityMovesAsync(created.Id));
+    Assert.Empty(pokemon.Moves);
   }
 
   [Theory(DisplayName = "It should create a Pokémon with every chosen move in the movepool and moveset when there are at most 4.")]
@@ -81,22 +71,15 @@ public class PokemonCreateMovesIntegrationTests : IntegrationTests
     Move[] moves = await SeedMovesAsync(moveCount);
     await SeedVarietyMovesAsync(moves);
 
-    PokemonDto created = await CreatePokemonAsync($"moves-{moveCount}", level: moveCount);
-    Specimen pokemon = await LoadPokemonAsync(created.Id);
-    List<PokemonMoveEntity> entityMoves = await LoadEntityMovesAsync(created.Id);
+    PokemonDto pokemon = await CreatePokemonAsync($"moves-{moveCount}", level: moveCount);
 
-    Assert.Equal(moveCount, pokemon.Movepool.Count);
-    Assert.Equal(moveCount, pokemon.Moveset.Count);
-    Assert.Equal(moves.Select(move => move.Id), pokemon.Moveset);
-    foreach (Move move in moves)
-    {
-      AssertPokemonMove(pokemon.Movepool[move.Id], pokemon.Level);
-    }
+    Assert.Equal(moveCount, pokemon.Moves.Count);
+    Assert.Equal(moves.Select(move => move.EntityId), pokemon.Moves.Select(move => move.Move.Id));
+    Assert.Equal(Enumerable.Range(0, moveCount).Cast<int?>(), pokemon.Moves.Select(move => move.Slot));
 
-    Assert.Equal(moveCount, entityMoves.Count);
-    for (int slot = 0; slot < moveCount; slot++)
+    foreach (PokemonMoveDto move in pokemon.Moves)
     {
-      AssertEntityMove(entityMoves, moves[slot], slot, pokemon.Level);
+      AssertPokemonMove(move, pokemon.Level);
     }
   }
 
@@ -110,30 +93,18 @@ public class PokemonCreateMovesIntegrationTests : IntegrationTests
     Move[] movesetMoves = moves[^Specimen.MoveLimit..];
     Move[] poolOnlyMoves = moves[..^Specimen.MoveLimit];
 
-    PokemonDto created = await CreatePokemonAsync($"moves-{moveCount}", level: moveCount);
-    Specimen pokemon = await LoadPokemonAsync(created.Id);
-    List<PokemonMoveEntity> entityMoves = await LoadEntityMovesAsync(created.Id);
+    PokemonDto pokemon = await CreatePokemonAsync($"moves-{moveCount}", level: moveCount);
 
-    Assert.Equal(moveCount, pokemon.Movepool.Count);
-    Assert.Equal(Specimen.MoveLimit, pokemon.Moveset.Count);
-    Assert.Equal(movesetMoves.Select(move => move.Id), pokemon.Moveset);
-    foreach (Move move in moves)
-    {
-      AssertPokemonMove(pokemon.Movepool[move.Id], pokemon.Level);
-    }
+    Assert.Equal(moveCount, pokemon.Moves.Count);
+    Assert.Equal(moves.Select(move => move.EntityId), pokemon.Moves.Select(move => move.Move.Id));
+
     foreach (Move move in poolOnlyMoves)
     {
-      Assert.DoesNotContain(move.Id, pokemon.Moveset);
-    }
-
-    Assert.Equal(moveCount, entityMoves.Count);
-    foreach (Move move in poolOnlyMoves)
-    {
-      AssertEntityMove(entityMoves, move, expectedSlot: null, pokemon.Level);
+      AssertPokemonMove(Assert.Single(pokemon.Moves, dto => dto.Move.Id == move.EntityId), pokemon.Level, expectedSlot: null);
     }
     for (int slot = 0; slot < Specimen.MoveLimit; slot++)
     {
-      AssertEntityMove(entityMoves, movesetMoves[slot], slot, pokemon.Level);
+      AssertPokemonMove(Assert.Single(pokemon.Moves, dto => dto.Move.Id == movesetMoves[slot].EntityId), pokemon.Level, slot);
     }
   }
 
@@ -176,38 +147,18 @@ public class PokemonCreateMovesIntegrationTests : IntegrationTests
     return created;
   }
 
-  private async Task<Specimen> LoadPokemonAsync(Guid id)
+  private static void AssertPokemonMove(PokemonMoveDto move, int learnedAtLevel, int? expectedSlot)
   {
-    Specimen? pokemon = await _pokemonRepository.LoadAsync(new PokemonId(Context.WorldId, id));
-    Assert.NotNull(pokemon);
-    return pokemon;
-  }
-
-  private async Task<List<PokemonMoveEntity>> LoadEntityMovesAsync(Guid pokemonId)
-  {
-    return await _pokemonContext.PokemonMoves
-      .AsNoTracking()
-      .Include(x => x.Move)
-      .Include(x => x.Pokemon)
-      .Where(x => x.Pokemon!.Id == pokemonId)
-      .ToListAsync();
-  }
-
-  private static void AssertPokemonMove(PokemonMove move, int learnedAtLevel)
-  {
-    Assert.Equal(learnedAtLevel, move.LearnedAtLevel.Value);
+    Assert.Equal(learnedAtLevel, move.LearnedAtLevel);
     Assert.Equal(LearningMethod.LevelUp, move.LearningMethod);
     Assert.False(move.IsMastered);
     Assert.Equal(0, move.PowerPointUpgrades);
+    Assert.Equal(expectedSlot, move.Slot);
   }
 
-  private static void AssertEntityMove(IEnumerable<PokemonMoveEntity> entityMoves, Move move, int? expectedSlot, int learnedAtLevel)
+  private static void AssertPokemonMove(PokemonMoveDto move, int learnedAtLevel)
   {
-    PokemonMoveEntity pokemonMove = Assert.Single(entityMoves, entityMove => entityMove.Move!.StreamId == move.Id.Value);
-    Assert.Equal(learnedAtLevel, pokemonMove.LearnedAtLevel);
-    Assert.Equal(LearningMethod.LevelUp, pokemonMove.LearningMethod);
-    Assert.False(pokemonMove.IsMastered);
-    Assert.Equal(0, pokemonMove.PowerPointUpgrades);
-    Assert.Equal(expectedSlot, pokemonMove.Slot);
+    Assert.NotNull(move.Slot);
+    AssertPokemonMove(move, learnedAtLevel, move.Slot);
   }
 }

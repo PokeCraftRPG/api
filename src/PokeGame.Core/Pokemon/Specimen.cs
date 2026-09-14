@@ -337,7 +337,10 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     {
       failures.Add(new EvolutionConditionFailure(EvolutionCondition.HeldItem, evolution.ItemId?.EntityId, HeldItemId?.EntityId));
     }
-    // TODO(fpion): KnownMoveId
+    if (evolution.MoveId.HasValue && !_moveset.Contains(evolution.MoveId.Value))
+    {
+      failures.Add(new EvolutionConditionFailure(EvolutionCondition.KnownMove, evolution.MoveId.Value, Actual: null));
+    }
     if (evolution.Location is not null && !evolution.Location.Equals(location))
     {
       failures.Add(new EvolutionConditionFailure(EvolutionCondition.Location, evolution.Location.Value, location?.Value));

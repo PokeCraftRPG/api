@@ -20,7 +20,6 @@ internal class EvolvePokemonCommandHandler : ICommandHandler<EvolvePokemonComman
   private readonly IContext _context;
   private readonly IEvolutionRepository _evolutionRepository;
   private readonly IFormRepository _formRepository;
-  private readonly IInventoryManager _inventoryManager;
   private readonly IInventoryRepository _inventoryRepository;
   private readonly IMessagingManager _messagingManager;
   private readonly IPermissionService _permissionService;
@@ -32,7 +31,6 @@ internal class EvolvePokemonCommandHandler : ICommandHandler<EvolvePokemonComman
     IContext context,
     IEvolutionRepository evolutionRepository,
     IFormRepository formRepository,
-    IInventoryManager inventoryManager,
     IInventoryRepository inventoryRepository,
     IMessagingManager messagingManager,
     IPermissionService permissionService,
@@ -43,7 +41,6 @@ internal class EvolvePokemonCommandHandler : ICommandHandler<EvolvePokemonComman
     _context = context;
     _evolutionRepository = evolutionRepository;
     _formRepository = formRepository;
-    _inventoryManager = inventoryManager;
     _inventoryRepository = inventoryRepository;
     _messagingManager = messagingManager;
     _permissionService = permissionService;
@@ -87,7 +84,7 @@ internal class EvolvePokemonCommandHandler : ICommandHandler<EvolvePokemonComman
 
     Location? location = Location.TryCreate(payload.Location);
 
-    specimen.Evolve(evolution, form, variety, location, payload.TimeOfDay, actorId);
+    specimen.Evolve(evolution, form, variety, location, payload.TimeOfDay, actorId); // TODO(fpion): evolution moves
 
     await _pokemonRepository.SaveAsync(specimen, cancellationToken);
     if (inventory is not null)

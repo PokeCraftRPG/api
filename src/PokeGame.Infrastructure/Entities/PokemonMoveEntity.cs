@@ -18,6 +18,12 @@ internal class PokemonMoveEntity
 
   public int? Slot { get; private set; }
 
+  // TODO(fpion): CreatedBy
+  // TODO(fpion): CreatedOn
+
+  // TODO(fpion): UpdatedBy
+  // TODO(fpion): UpdatedOn
+
   public PokemonMoveEntity(PokemonEntity pokemon, int moveId, int? slot = null)
   {
     Pokemon = pokemon;

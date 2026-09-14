@@ -4,7 +4,6 @@ using PokeGame.Core.Moves;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Events;
 using PokeGame.Core.Varieties;
-using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Pokemon;
 
@@ -19,9 +18,6 @@ public class SpecimenCreateMovesTests : UnitTests
     Assert.Empty(pokemon.Movepool);
     Assert.Empty(pokemon.Moveset);
     Assert.Empty(@event.Moves);
-
-    PokemonEntity entity = ToEntity(pokemon, new Dictionary<string, int>());
-    Assert.Empty(entity.Moves);
   }
 
   [Theory(DisplayName = "It should put every chosen Level-Up move in the movepool and moveset when there are at most 4.")]
@@ -33,7 +29,6 @@ public class SpecimenCreateMovesTests : UnitTests
   {
     Move[] moves = CreateMoves(moveCount);
     SeedLevelUpMoves(moves.Select((move, index) => (move, Level: index + 1)).ToArray());
-    Dictionary<string, int> moveIds = ToMoveIds(moves);
 
     Specimen pokemon = CreateAtLevel(moveCount);
     PokemonCreated @event = pokemon.LastChange<PokemonCreated>();
@@ -48,13 +43,6 @@ public class SpecimenCreateMovesTests : UnitTests
     {
       AssertPokemonMove(pokemon.Movepool[move.Id], pokemon.Level);
     }
-
-    PokemonEntity entity = ToEntity(pokemon, moveIds);
-    Assert.Equal(moveCount, entity.Moves.Count);
-    for (int slot = 0; slot < moveCount; slot++)
-    {
-      AssertEntityMove(entity, moveIds[moves[slot].Id.Value], slot, pokemon.Level);
-    }
   }
 
   [Theory(DisplayName = "It should keep all chosen moves in the movepool and only the last 4 in the moveset when there are 5 or more.")]
@@ -64,7 +52,6 @@ public class SpecimenCreateMovesTests : UnitTests
   {
     Move[] moves = CreateMoves(moveCount);
     SeedLevelUpMoves(moves.Select((move, index) => (move, Level: index + 1)).ToArray());
-    Dictionary<string, int> moveIds = ToMoveIds(moves);
 
     Specimen pokemon = CreateAtLevel(moveCount);
     PokemonCreated @event = pokemon.LastChange<PokemonCreated>();
@@ -86,17 +73,6 @@ public class SpecimenCreateMovesTests : UnitTests
     foreach (Move move in poolOnlyMoves)
     {
       Assert.DoesNotContain(move.Id, pokemon.Moveset);
-    }
-
-    PokemonEntity entity = ToEntity(pokemon, moveIds);
-    Assert.Equal(moveCount, entity.Moves.Count);
-    foreach (Move move in poolOnlyMoves)
-    {
-      AssertEntityMove(entity, moveIds[move.Id.Value], expectedSlot: null, pokemon.Level);
-    }
-    for (int slot = 0; slot < Specimen.MoveLimit; slot++)
-    {
-      AssertEntityMove(entity, moveIds[movesetMoves[slot].Id.Value], slot, pokemon.Level);
     }
   }
 
@@ -131,38 +107,11 @@ public class SpecimenCreateMovesTests : UnitTests
     return pokemon;
   }
 
-  private static Dictionary<string, int> ToMoveIds(IEnumerable<Move> moves)
-  {
-    Dictionary<string, int> moveIds = [];
-    int id = 1;
-    foreach (Move move in moves)
-    {
-      moveIds[move.Id.Value] = id++;
-    }
-    return moveIds;
-  }
-
   private static void AssertPokemonMove(PokemonMove move, int learnedAtLevel)
   {
     Assert.Equal(learnedAtLevel, move.LearnedAtLevel.Value);
     Assert.Equal(LearningMethod.LevelUp, move.LearningMethod);
     Assert.False(move.IsMastered);
     Assert.Equal(0, move.PowerPointUpgrades);
-  }
-
-  private static PokemonEntity ToEntity(Specimen pokemon, IReadOnlyDictionary<string, int> moveIds)
-  {
-    PokemonCreated @event = pokemon.Changes.OfType<PokemonCreated>().Single();
-    return new PokemonEntity(worldId: 1, speciesId: 1, varietyId: 1, formId: 1, moveIds, @event);
-  }
-
-  private static void AssertEntityMove(PokemonEntity entity, int moveId, int? expectedSlot, int learnedAtLevel)
-  {
-    PokemonMoveEntity pokemonMove = Assert.Single(entity.Moves, move => move.MoveId == moveId);
-    Assert.Equal(learnedAtLevel, pokemonMove.LearnedAtLevel);
-    Assert.Equal(LearningMethod.LevelUp, pokemonMove.LearningMethod);
-    Assert.False(pokemonMove.IsMastered);
-    Assert.Equal(0, pokemonMove.PowerPointUpgrades);
-    Assert.Equal(expectedSlot, pokemonMove.Slot);
   }
 }
