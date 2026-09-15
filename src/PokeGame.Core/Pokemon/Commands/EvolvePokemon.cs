@@ -95,7 +95,7 @@ internal class EvolvePokemonCommandHandler : ICommandHandler<EvolvePokemonComman
     }
 
     PokemonAcquired acquired = PokemonAcquired.From(specimen);
-    await _messagingManager.PublishAsync(acquired, cancellationToken);
+    await _messagingManager.PublishAsync(acquired, actorId, cancellationToken);
 
     return await _pokemonQuerier.ReadAsync(specimen, cancellationToken);
   }

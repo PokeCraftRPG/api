@@ -90,7 +90,7 @@ internal class CatchPokemonCommandHandler : ICommandHandler<CatchPokemonCommand,
     await _rosterRepository.SaveAsync(roster, cancellationToken);
 
     PokemonAcquired acquired = PokemonAcquired.From(specimen);
-    await _messagingManager.PublishAsync(acquired, cancellationToken);
+    await _messagingManager.PublishAsync(acquired, actorId, cancellationToken);
 
     return await _pokemonQuerier.ReadAsync(specimen, cancellationToken);
   }

@@ -15,14 +15,18 @@ internal class MessagingManager : IMessagingManager
 
   public async Task PublishAsync(IEvent @event, CancellationToken cancellationToken)
   {
-    await _publishEndpoint.Publish(@event, @event.GetType(), cancellationToken);
+    await PublishAsync(@event, actorId: null, cancellationToken);
+  }
+  public async Task PublishAsync(IEvent @event, ActorId? actorId, CancellationToken cancellationToken)
+  {
+    await _publishEndpoint.Publish(@event, @event.GetType(), context => context.SetActorId(actorId), cancellationToken);
   }
 
-  public async Task PublishAsync(IEnumerable<IEvent> events, CancellationToken cancellationToken)
+  public async Task PublishAsync(IEnumerable<IEvent> events, ActorId? actorId, CancellationToken cancellationToken)
   {
     foreach (IEvent @event in events)
     {
-      await PublishAsync(@event, cancellationToken);
+      await PublishAsync(@event, actorId, cancellationToken);
     }
   }
 }

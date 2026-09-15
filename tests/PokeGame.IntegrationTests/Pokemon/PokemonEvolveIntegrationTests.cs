@@ -1,3 +1,4 @@
+using Logitar.EventSourcing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PokeGame.Builders;
@@ -490,7 +491,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
       new TrainerId(Context.WorldId, trainer.EntityId),
       new PokemonId(Context.WorldId, pokemon.Id),
       new VarietyId(Context.WorldId, pokemon.Form.Variety.Id));
-    MessagingManager.Verify(x => x.PublishAsync(expected, It.IsAny<CancellationToken>()), Times.Once);
+    MessagingManager.Verify(x => x.PublishAsync(expected, It.IsAny<ActorId?>(), It.IsAny<CancellationToken>()), Times.Once);
   }
 
   private static int ExperienceForLevel(int level)

@@ -1048,18 +1048,19 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
   private void AssertPokemonAcquired(PokemonDto pokemon, Trainer trainer)
   {
     PokemonAcquired expected = ToPokemonAcquired(pokemon, trainer);
-    MessagingManager.Verify(x => x.PublishAsync(expected, It.IsAny<CancellationToken>()), Times.Once);
+    MessagingManager.Verify(x => x.PublishAsync(expected, It.IsAny<ActorId?>(), It.IsAny<CancellationToken>()), Times.Once);
   }
   private void AssertPokemonAcquired(params (PokemonDto Pokemon, Trainer Trainer)[] expected)
   {
     PokemonAcquired[] acquired = [.. expected.Select(item => ToPokemonAcquired(item.Pokemon, item.Trainer))];
     MessagingManager.Verify(x => x.PublishAsync(
       It.Is<IEnumerable<IEvent>>(events => MatchPokemonAcquired(events, acquired)),
+      It.IsAny<ActorId?>(),
       It.IsAny<CancellationToken>()), Times.Once);
   }
   private void AssertPokemonAcquiredNotPublished()
   {
-    MessagingManager.Verify(x => x.PublishAsync(It.IsAny<IEnumerable<IEvent>>(), It.IsAny<CancellationToken>()), Times.Never);
+    MessagingManager.Verify(x => x.PublishAsync(It.IsAny<IEnumerable<IEvent>>(), It.IsAny<ActorId?>(), It.IsAny<CancellationToken>()), Times.Never);
   }
 
   private static bool MatchPokemonAcquired(IEnumerable<IEvent> events, IReadOnlyCollection<PokemonAcquired> expected)

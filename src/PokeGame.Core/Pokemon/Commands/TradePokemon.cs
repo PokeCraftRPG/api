@@ -74,7 +74,7 @@ internal class TradePokemonCommandHandler : ICommandHandler<TradePokemonCommand,
     await _rosterRepository.SaveAsync([sourceRoster, targetRoster], cancellationToken);
 
     IEnumerable<PokemonAcquired> acquired = new Specimen[] { source, target }.Select(PokemonAcquired.From);
-    await _messagingManager.PublishAsync(acquired, cancellationToken);
+    await _messagingManager.PublishAsync(acquired, actorId, cancellationToken);
 
     return Unit.Value;
   }
