@@ -16,6 +16,6 @@ internal class ClaimMemberInvitationsConsumer : IConsumer<UserCreated>
   public async Task Consume(ConsumeContext<UserCreated> context)
   {
     UserCreated @event = context.Message;
-    await _memberInvitationService.ClaimAsync(@event.UserId, @event.EmailAddress);
+    await _memberInvitationService.ClaimAsync(@event.UserId, @event.EmailAddress, context.CancellationToken);
   }
 }

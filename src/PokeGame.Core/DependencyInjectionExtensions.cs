@@ -12,6 +12,7 @@ using PokeGame.Core.Items;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
+using PokeGame.Core.Pokedexes;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Rosters;
@@ -47,6 +48,7 @@ public static class DependencyInjectionExtensions
     MembershipService.Register(services);
     MoveService.Register(services);
     PermissionService.Register(services);
+    PokedexService.Register(services);
     PokemonService.Register(services);
     RegionService.Register(services);
     RosterService.Register(services);

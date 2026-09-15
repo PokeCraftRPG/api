@@ -17,6 +17,7 @@ using PokeGame.Core.Items;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Messaging;
 using PokeGame.Core.Moves;
+using PokeGame.Core.Pokedexes;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Rosters;
@@ -111,7 +112,7 @@ public static class DependencyInjectionExtensions
       {
         configurator.SetKebabCaseEndpointNameFormatter();
         configurator.AddConsumer<ClaimMemberInvitationsConsumer>();
-        // TODO(fpion): PokemonAcquiredConsumer
+        configurator.AddConsumer<RegisterPokedexEntryAcquiredConsumer>();
         configurator.UsingRabbitMq((context, rabbitMQ) =>
         {
           RabbitMQSettings settings = context.GetRequiredService<RabbitMQSettings>();
@@ -162,6 +163,7 @@ public static class DependencyInjectionExtensions
       .AddScoped<IItemRepository, ItemRepository>()
       .AddScoped<IMemberInvitationRepository, MemberInvitationRepository>()
       .AddScoped<IMoveRepository, MoveRepository>()
+      .AddScoped<IPokedexRepository, PokedexRepository>()
       .AddScoped<IPokemonRepository, PokemonRepository>()
       .AddScoped<IRegionRepository, RegionRepository>()
       .AddScoped<IRosterRepository, RosterRepository>()
