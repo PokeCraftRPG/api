@@ -369,6 +369,12 @@ internal class Mapper
       };
     }
 
+    foreach (PokemonTagEntity entity in source.Tags)
+    {
+      TagEntity tag = entity.Tag ?? throw new ArgumentException("The tag is required.", nameof(source));
+      destination.Tags.Add(ToTag(tag));
+    }
+
     foreach (PokemonMoveEntity entity in source.Moves)
     {
       destination.Moves.Add(ToPokemonMove(entity));

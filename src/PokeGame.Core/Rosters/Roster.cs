@@ -308,6 +308,13 @@ public sealed class Roster : AggregateRoot, IEntityProvider
   private void Handle(RosterTagRemoved @event)
   {
     _tags.Remove(@event.TagId);
+    foreach (KeyValuePair<PokemonId, RosterEntry> entry in _entries)
+    {
+      if (entry.Value.TagIds.Contains(@event.TagId))
+      {
+        _entries[entry.Key] = entry.Value.RemoveTag(@event.TagId);
+      }
+    }
   }
 
   public void SetTag(Guid id, Tag tag, ActorId? actorId = null)

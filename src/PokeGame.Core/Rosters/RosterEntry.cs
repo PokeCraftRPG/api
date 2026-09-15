@@ -13,6 +13,8 @@ public sealed class RosterEntry
     TagIds = (tagIds ?? []).ToHashSet().AsReadOnly();
   }
 
+  public RosterEntry RemoveTag(Guid tagId) => new(IsInParty, Priority, TagIds.Except([tagId]));
+
   public override bool Equals(object? obj) => obj is RosterEntry entry
     && entry.IsInParty == IsInParty
     && entry.Priority == Priority

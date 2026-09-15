@@ -39,7 +39,8 @@ internal static class IncludeExtensions
     .Include(x => x.Moves).ThenInclude(x => x.Move)
     .Include(x => x.OriginalTrainer).ThenInclude(x => x!.Sprite)
     .Include(x => x.PokeBall).ThenInclude(x => x!.Sprite)
-    .Include(x => x.Sprite);
+    .Include(x => x.Sprite)
+    .Include(x => x.Tags).ThenInclude(x => x.Tag);
 
   public static IQueryable<MemberInvitationEntity> IncludeRelated(this IQueryable<MemberInvitationEntity> query) => query
     .Include(x => x.World).ThenInclude(x => x!.Members);

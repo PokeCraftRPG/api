@@ -93,6 +93,7 @@ internal class PokemonEntity : AggregateEntity
   public int Priority { get; set; }
 
   public List<PokemonMoveEntity> Moves { get; private set; } = [];
+  public List<PokemonTagEntity> Tags { get; private set; } = [];
 
   public PokemonEntity(int worldId, int speciesId, int varietyId, int formId, IReadOnlyDictionary<string, int> moveIds, PokemonCreated @event) : base(@event)
   {
@@ -185,6 +186,13 @@ internal class PokemonEntity : AggregateEntity
     foreach (PokemonMoveEntity move in Moves)
     {
       actorIds.AddRange(move.GetActorIds());
+    }
+    foreach (PokemonTagEntity entity in Tags)
+    {
+      if (entity.Tag is not null)
+      {
+        actorIds.AddRange(entity.Tag.GetActorIds());
+      }
     }
     return actorIds;
   }
