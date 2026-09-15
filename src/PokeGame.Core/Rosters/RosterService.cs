@@ -1,6 +1,7 @@
 ﻿using Krakenar.Contracts.Search;
 using Logitar.CQRS;
 using Microsoft.Extensions.DependencyInjection;
+using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Rosters.Commands;
 using PokeGame.Core.Rosters.Models;
 using PokeGame.Core.Rosters.Queries;
@@ -13,6 +14,7 @@ public interface IRosterService
   Task<TagDto?> DeleteTagAsync(Guid trainerId, Guid tagId, CancellationToken cancellationToken = default);
   Task<TagDto?> ReadTagAsync(Guid trainerId, Guid tagId, CancellationToken cancellationToken = default);
   Task<SearchResults<TagDto>?> SearchTagsAsync(Guid trainerId, CancellationToken cancellationToken = default);
+  Task<PokemonDto?> SetEntryAsync(Guid pokemonId, SetRosterEntryPayload payload, CancellationToken cancellationToken = default);
   Task<TagDto?> UpdateTagAsync(Guid trainerId, Guid tagId, UpdateTagPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -24,6 +26,7 @@ internal class RosterService : IRosterService
     services.AddTransient<IRosterManager, RosterManager>();
     services.AddTransient<ICommandHandler<CreateOrReplaceTagCommand, CreateOrReplaceTagResult>, CreateOrReplaceTagCommandHandler>();
     services.AddTransient<ICommandHandler<DeleteTagCommand, TagDto?>, DeleteTagCommandHandler>();
+    services.AddTransient<ICommandHandler<SetRosterEntryCommand, PokemonDto?>, SetRosterEntryCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateTagCommand, TagDto?>, UpdateTagCommandHandler>();
     services.AddTransient<IQueryHandler<ReadTagQuery, TagDto?>, ReadTagQueryHandler>();
     services.AddTransient<IQueryHandler<SearchTagsQuery, SearchResults<TagDto>?>, SearchTagsQueryHandler>();
@@ -60,6 +63,12 @@ internal class RosterService : IRosterService
   {
     SearchTagsQuery query = new(trainerId);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
+  }
+
+  public async Task<PokemonDto?> SetEntryAsync(Guid pokemonId, SetRosterEntryPayload payload, CancellationToken cancellationToken)
+  {
+    SetRosterEntryCommand command = new(pokemonId, payload);
+    return await _commandBus.ExecuteAsync(command, cancellationToken);
   }
 
   public async Task<TagDto?> UpdateTagAsync(Guid trainerId, Guid tagId, UpdateTagPayload payload, CancellationToken cancellationToken)

@@ -141,6 +141,7 @@ internal class PermissionService : IPermissionService
       case Actions.Trade:
       case Actions.Withdraw:
         return _context.IsWorldOwner && entity.WorldId == _context.TryGetWorldId() && entity.Kind == Specimen.EntityKind;
+      case Actions.ManageEntries:
       case Actions.ManageTags:
         return _context.IsWorldOwner && entity.WorldId == _context.TryGetWorldId() && entity.Kind == Roster.EntityKind;
       case Actions.Update:

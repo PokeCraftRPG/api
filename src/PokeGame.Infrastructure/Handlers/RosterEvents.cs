@@ -11,6 +11,7 @@ namespace PokeGame.Infrastructure.Handlers;
 internal class RosterEvents :
   IEventHandler<RosterEntriesSwapped>,
   IEventHandler<RosterEntryAdded>,
+  IEventHandler<RosterEntryChanged>,
   IEventHandler<RosterEntryDeposited>,
   IEventHandler<RosterEntryRemoved>,
   IEventHandler<RosterEntryReplaced>,
@@ -22,6 +23,7 @@ internal class RosterEvents :
   {
     services.AddTransient<IEventHandler<RosterEntriesSwapped>, RosterEvents>();
     services.AddTransient<IEventHandler<RosterEntryAdded>, RosterEvents>();
+    services.AddTransient<IEventHandler<RosterEntryChanged>, RosterEvents>();
     services.AddTransient<IEventHandler<RosterEntryDeposited>, RosterEvents>();
     services.AddTransient<IEventHandler<RosterEntryRemoved>, RosterEvents>();
     services.AddTransient<IEventHandler<RosterEntryReplaced>, RosterEvents>();
@@ -53,6 +55,36 @@ internal class RosterEvents :
       {
         await UpdatePartyCountAsync(@event, cancellationToken);
       }
+    }
+  }
+
+  public async Task HandleAsync(RosterEntryChanged @event, CancellationToken cancellationToken)
+  {
+    PokemonEntity? pokemon = await _pokemon.Specimens
+      .Include(x => x.Tags)
+      .SingleOrDefaultAsync(x => x.StreamId == @event.PokemonId.Value, cancellationToken);
+    if (pokemon is not null)
+    {
+      pokemon.Priority = @event.Priority;
+
+      TrainerId trainerId = new RosterId(@event.StreamId).TrainerId;
+      HashSet<Guid> tagIds = @event.TagIds.ToHashSet();
+      HashSet<int> tagKeys = await _pokemon.Tags
+        .Where(x => x.Trainer!.StreamId == trainerId.Value && tagIds.Contains(x.Id))
+        .Select(x => x.TagId)
+        .ToHashSetAsync(cancellationToken);
+      pokemon.Tags.RemoveAll(tag => !tagKeys.Contains(tag.TagId));
+
+      HashSet<int> existingIds = pokemon.Tags.Select(tag => tag.TagId).ToHashSet();
+      foreach (int tagId in tagKeys)
+      {
+        if (!existingIds.Contains(tagId))
+        {
+          pokemon.Tags.Add(new PokemonTagEntity(pokemon, tagId));
+        }
+      }
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
     }
   }
 
@@ -136,19 +168,6 @@ internal class RosterEvents :
     }
   }
 
-  private async Task UpdatePartyCountAsync(DomainEvent @event, CancellationToken cancellationToken)
-  {
-    TrainerId trainerId = new RosterId(@event.StreamId).TrainerId;
-
-    await _pokemon.Trainers
-      .Where(trainer => trainer.StreamId == trainerId.Value)
-      .ExecuteUpdateAsync(
-        setters => setters.SetProperty(
-          trainer => trainer.PartyCount,
-          _pokemon.Specimens.Count(pokemon => pokemon.CurrentTrainer!.StreamId == trainerId.Value && pokemon.IsInParty)),
-        cancellationToken);
-  }
-
   public async Task HandleAsync(RosterTagChanged @event, CancellationToken cancellationToken)
   {
     TrainerId trainerId = new RosterId(@event.StreamId).TrainerId;
@@ -180,5 +199,18 @@ internal class RosterEvents :
 
       await _pokemon.SaveChangesAsync(cancellationToken);
     }
+  }
+
+  private async Task UpdatePartyCountAsync(DomainEvent @event, CancellationToken cancellationToken)
+  {
+    TrainerId trainerId = new RosterId(@event.StreamId).TrainerId;
+
+    await _pokemon.Trainers
+      .Where(trainer => trainer.StreamId == trainerId.Value)
+      .ExecuteUpdateAsync(
+        setters => setters.SetProperty(
+          trainer => trainer.PartyCount,
+          _pokemon.Specimens.Count(pokemon => pokemon.CurrentTrainer!.StreamId == trainerId.Value && pokemon.IsInParty)),
+        cancellationToken);
   }
 }

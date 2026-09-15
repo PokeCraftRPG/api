@@ -3,6 +3,7 @@ using PokeGame.Core.Abilities;
 using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Items.Models;
+using PokeGame.Core.Rosters.Models;
 using PokeGame.Core.Species;
 using PokeGame.Core.Trainers.Models;
 
@@ -52,6 +53,7 @@ public class PokemonDto : Aggregate
 
   public bool IsInParty { get; set; }
   public int Priority { get; set; }
+  public List<TagDto> Tags { get; set; } = [];
 
   public List<PokemonMoveDto> Moves { get; set; } = [];
 

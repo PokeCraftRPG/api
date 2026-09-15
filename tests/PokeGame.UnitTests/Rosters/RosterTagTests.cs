@@ -1,4 +1,5 @@
 using PokeGame.Core;
+using PokeGame.Core.Pokemon;
 using PokeGame.Core.Rosters;
 using PokeGame.Core.Rosters.Events;
 
@@ -77,6 +78,31 @@ public class RosterTagTests : UnitTests
     Assert.False(roster.HasTag(tagId));
     Assert.Null(roster.TryGetTag(tagId));
     Assert.Equal(tagId, roster.LastChange<RosterTagRemoved>().TagId);
+  }
+
+  [Fact(DisplayName = "It should remove a deleted tag from roster entries.")]
+  public void Given_TaggedEntries_When_RemoveTag_Then_RemovedFromEntries()
+  {
+    Roster roster = new(Catalog.Red);
+    Guid keepId = Guid.NewGuid();
+    Guid removeId = Guid.NewGuid();
+    roster.SetTag(keepId, new Tag(new Name("Keep"), null));
+    roster.SetTag(removeId, new Tag(new Name("Remove"), null));
+    Specimen first = Catalog.CreateOwnedPokemon(Catalog.Red, "first");
+    Specimen second = Catalog.CreateOwnedPokemon(Catalog.Red, "second");
+    roster.Add(first, Catalog.Red);
+    roster.Add(second, Catalog.Red);
+    roster.SetEntry(first, priority: 1, tagIds: [keepId, removeId]);
+    roster.SetEntry(second, priority: 2, tagIds: [removeId]);
+    roster.ClearChanges();
+
+    roster.RemoveTag(removeId);
+
+    Assert.False(roster.HasTag(removeId));
+    Assert.Equal([keepId], roster.Entries[first.Id].TagIds);
+    Assert.Empty(roster.Entries[second.Id].TagIds);
+    Assert.Equal(1, roster.Entries[first.Id].Priority);
+    Assert.Equal(2, roster.Entries[second.Id].Priority);
   }
 
   [Fact(DisplayName = "It should not raise an event when removing a missing tag.")]

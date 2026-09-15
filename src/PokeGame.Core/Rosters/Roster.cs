@@ -8,6 +8,8 @@ namespace PokeGame.Core.Rosters;
 public sealed class Roster : AggregateRoot, IEntityProvider
 {
   public const string EntityKind = "Roster";
+  public const int MinimumPriority = 0;
+  public const int MaximumPriority = 100;
   public const int PartyLimit = 6;
 
   public new RosterId Id => new(base.Id);
@@ -92,7 +94,7 @@ public sealed class Roster : AggregateRoot, IEntityProvider
   }
   private void Handle(RosterEntryDeposited @event)
   {
-    _entries[@event.PokemonId] = _entries[@event.PokemonId] with { IsInParty = false };
+    _entries[@event.PokemonId] = _entries[@event.PokemonId].Deposit();
     _partyIds.Remove(@event.PokemonId);
   }
 
@@ -158,6 +160,33 @@ public sealed class Roster : AggregateRoot, IEntityProvider
     }
   }
 
+  public void SetEntry(Specimen specimen, int priority, IEnumerable<Guid> tagIds, ActorId? actorId = null)
+  {
+    WorldMismatchException.ThrowIfMismatch(this, specimen, nameof(specimen));
+
+    if (priority < MinimumPriority || priority > MaximumPriority)
+    {
+      throw new ArgumentOutOfRangeException(nameof(priority));
+    }
+
+    IEnumerable<Guid> missingTagIds = tagIds.Except(_tags.Keys);
+    if (missingTagIds.Any())
+    {
+      throw new TagsNotFoundException(this, missingTagIds);
+    }
+
+    RosterEntry existingEntry = _entries.GetValueOrDefault(specimen.Id) ?? throw new PokemonNotInRosterException(this, specimen);
+    RosterEntry entry = existingEntry.Update(priority, tagIds);
+    if (!Equals(existingEntry, entry))
+    {
+      Raise(new RosterEntryChanged(specimen.Id, entry.Priority, entry.TagIds), actorId);
+    }
+  }
+  private void Handle(RosterEntryChanged @event)
+  {
+    _entries[@event.PokemonId] = _entries[@event.PokemonId].Update(@event.Priority, @event.TagIds);
+  }
+
   public void Swap(Specimen source, Specimen target, ActorId? actorId = null)
   {
     WorldMismatchException.ThrowIfMismatch(this, source, nameof(source));
@@ -195,7 +224,8 @@ public sealed class Roster : AggregateRoot, IEntityProvider
   }
   private void Handle(RosterEntriesSwapped @event)
   {
-    _entries[@event.SourceId] = _entries[@event.SourceId] with { IsInParty = @event.IsSourceInParty };
+    RosterEntry sourceEntry = _entries[@event.SourceId];
+    _entries[@event.SourceId] = @event.IsSourceInParty ? sourceEntry.Withdraw() : sourceEntry.Deposit();
     if (@event.IsSourceInParty)
     {
       _partyIds.Add(@event.SourceId);
@@ -205,7 +235,8 @@ public sealed class Roster : AggregateRoot, IEntityProvider
       _partyIds.Remove(@event.SourceId);
     }
 
-    _entries[@event.TargetId] = _entries[@event.TargetId] with { IsInParty = @event.IsTargetInParty };
+    RosterEntry targetEntry = _entries[@event.TargetId];
+    _entries[@event.TargetId] = @event.IsTargetInParty ? targetEntry.Withdraw() : targetEntry.Deposit();
     if (@event.IsTargetInParty)
     {
       _partyIds.Add(@event.TargetId);
@@ -253,7 +284,7 @@ public sealed class Roster : AggregateRoot, IEntityProvider
   }
   private void Handle(RosterEntryWithdrawn @event)
   {
-    _entries[@event.PokemonId] = _entries[@event.PokemonId] with { IsInParty = true };
+    _entries[@event.PokemonId] = _entries[@event.PokemonId].Withdraw();
     _partyIds.Add(@event.PokemonId);
   }
 
@@ -274,6 +305,13 @@ public sealed class Roster : AggregateRoot, IEntityProvider
   private void Handle(RosterTagRemoved @event)
   {
     _tags.Remove(@event.TagId);
+    foreach (KeyValuePair<PokemonId, RosterEntry> entry in _entries)
+    {
+      if (entry.Value.TagIds.Contains(@event.TagId))
+      {
+        _entries[entry.Key] = entry.Value.RemoveTag(@event.TagId);
+      }
+    }
   }
 
   public void SetTag(Guid id, Tag tag, ActorId? actorId = null)
