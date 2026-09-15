@@ -22,6 +22,7 @@ internal static class Actions
   public const string Evolve = "Evolve";
   public const string InviteMember = "InviteMember";
   public const string LeaveMembership = "LeaveMembership";
+  public const string ManageTags = "ManageTags";
   public const string Receive = "Receive";
   public const string Release = "Release";
   public const string RevokeMembership = "RevokeMembership";

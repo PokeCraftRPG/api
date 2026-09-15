@@ -15,6 +15,7 @@ using PokeGame.Core.Moves.Models;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Models;
 using PokeGame.Core.Regions.Models;
+using PokeGame.Core.Rosters.Models;
 using PokeGame.Core.Species.Models;
 using PokeGame.Core.Trainers.Models;
 using PokeGame.Core.Varieties.Models;
@@ -424,6 +425,32 @@ internal class Mapper
       UpdatedBy = FindActor(source.UpdatedBy),
       UpdatedOn = source.UpdatedOn.AsUniversalTime()
     };
+  }
+
+  public TagDto ToTag(TagEntity source)
+  {
+    return new TagDto
+    {
+      Id = source.Id,
+      Name = source.Name,
+      Color = ToColor(source),
+      CreatedBy = FindActor(source.CreatedBy),
+      CreatedOn = source.CreatedOn.AsUniversalTime(),
+      UpdatedBy = FindActor(source.UpdatedBy),
+      UpdatedOn = source.UpdatedOn.AsUniversalTime()
+    };
+  }
+  private static ColorDto? ToColor(TagEntity tag)
+  {
+    if (tag.Red.HasValue || tag.Green.HasValue || tag.Blue.HasValue)
+    {
+      return new ColorDto(
+        tag.Red ?? throw new ArgumentException("The red color component is required.", nameof(tag)),
+        tag.Green ?? throw new ArgumentException("The green color component is required.", nameof(tag)),
+        tag.Blue ?? throw new ArgumentException("The blue color component is required.", nameof(tag)));
+    }
+
+    return null;
   }
 
   public TrainerDto ToTrainer(TrainerEntity source)

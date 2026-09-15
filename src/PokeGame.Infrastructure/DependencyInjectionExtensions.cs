@@ -144,6 +144,7 @@ public static class DependencyInjectionExtensions
       .AddScoped<IMoveQuerier, MoveQuerier>()
       .AddScoped<IPokemonQuerier, PokemonQuerier>()
       .AddScoped<IRegionQuerier, RegionQuerier>()
+      .AddScoped<IRosterQuerier, RosterQuerier>()
       .AddScoped<ISpeciesQuerier, SpeciesQuerier>()
       .AddScoped<ITrainerQuerier, TrainerQuerier>()
       .AddScoped<IVarietyQuerier, VarietyQuerier>()
