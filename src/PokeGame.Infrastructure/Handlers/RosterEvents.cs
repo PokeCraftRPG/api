@@ -11,6 +11,7 @@ namespace PokeGame.Infrastructure.Handlers;
 internal class RosterEvents :
   IEventHandler<RosterEntriesSwapped>,
   IEventHandler<RosterEntryAdded>,
+  IEventHandler<RosterEntryChanged>,
   IEventHandler<RosterEntryDeposited>,
   IEventHandler<RosterEntryRemoved>,
   IEventHandler<RosterEntryReplaced>,
@@ -22,6 +23,7 @@ internal class RosterEvents :
   {
     services.AddTransient<IEventHandler<RosterEntriesSwapped>, RosterEvents>();
     services.AddTransient<IEventHandler<RosterEntryAdded>, RosterEvents>();
+    services.AddTransient<IEventHandler<RosterEntryChanged>, RosterEvents>();
     services.AddTransient<IEventHandler<RosterEntryDeposited>, RosterEvents>();
     services.AddTransient<IEventHandler<RosterEntryRemoved>, RosterEvents>();
     services.AddTransient<IEventHandler<RosterEntryReplaced>, RosterEvents>();
@@ -53,6 +55,17 @@ internal class RosterEvents :
       {
         await UpdatePartyCountAsync(@event, cancellationToken);
       }
+    }
+  }
+
+  public async Task HandleAsync(RosterEntryChanged @event, CancellationToken cancellationToken)
+  {
+    PokemonEntity? pokemon = await _pokemon.Specimens.SingleOrDefaultAsync(x => x.StreamId == @event.PokemonId.Value, cancellationToken);
+    if (pokemon is not null)
+    {
+      pokemon.Priority = @event.Priority;
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
     }
   }
 

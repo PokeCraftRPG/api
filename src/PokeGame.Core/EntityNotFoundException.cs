@@ -3,7 +3,8 @@
 public sealed class EntityNotFoundException : NotFoundException
 {
 
-  public EntityNotFoundException(IEntityProvider provider, string propertyName) : base("The specified entity was not found.")
+  public EntityNotFoundException(IEntityProvider provider, string propertyName)
+    : base("The specified entity was not found.")
   {
     Entity entity = provider.GetEntity();
     Data["WorldId"] = entity.WorldId?.EntityId;

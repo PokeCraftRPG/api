@@ -3,6 +3,7 @@ using FluentValidation.Results;
 using Krakenar.Contracts.Settings;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Pokemon;
+using PokeGame.Core.Rosters;
 using PokeGame.Core.Seo;
 
 namespace PokeGame.Core;
@@ -174,6 +175,11 @@ internal static class ValidationExtensions
     return ruleBuilder.GreaterThan(0);
   }
 
+  public static IRuleBuilderOptions<T, int> Priority<T>(this IRuleBuilder<T, int> ruleBuilder)
+  {
+    return ruleBuilder.InclusiveBetween(Roster.MinimumPriority, Roster.MaximumPriority);
+  }
+
   public static IRuleBuilderOptions<T, string> Summary<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(Core.Summary.MaximumLength);
@@ -182,6 +188,13 @@ internal static class ValidationExtensions
   public static IRuleBuilderOptions<T, string> TimeZone<T>(this IRuleBuilder<T, string> ruleBuilder)
   {
     return ruleBuilder.NotEmpty().MaximumLength(32).SetValidator(new TimeZoneValidator<T>());
+  }
+
+  public static IRuleBuilderOptions<T, IEnumerable<TCollection>> UniqueCollection<T, TCollection>(this IRuleBuilder<T, IEnumerable<TCollection>> ruleBuilder)
+  {
+    return ruleBuilder.Must(collection => collection.Distinct().Count() == collection.Count())
+      .WithErrorCode("UniqueCollectionValidator")
+      .WithMessage("'{PropertyName}' may not include duplicate elements.");
   }
 
   public static IRuleBuilderOptions<T, int> Weight<T>(this IRuleBuilder<T, int> ruleBuilder)
