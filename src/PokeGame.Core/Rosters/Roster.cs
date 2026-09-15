@@ -19,6 +19,9 @@ public sealed class Roster : AggregateRoot, IEntityProvider
   private readonly HashSet<PokemonId> _partyIds = [];
   public IReadOnlySet<PokemonId> PartyIds => _partyIds.AsReadOnly();
 
+  private readonly Dictionary<Guid, Tag> _tags = [];
+  public IReadOnlyDictionary<Guid, Tag> Tags => _tags.AsReadOnly();
+
   public Roster() : base()
   {
   }
@@ -253,4 +256,39 @@ public sealed class Roster : AggregateRoot, IEntityProvider
     _entries[@event.PokemonId] = _entries[@event.PokemonId] with { IsInParty = true };
     _partyIds.Add(@event.PokemonId);
   }
+
+  #region Tags
+  public void AddTag(Tag tag, ActorId? actorId = null) => SetTag(Guid.NewGuid(), tag, actorId);
+
+  public Tag FindTag(Guid id) => TryGetTag(id) ?? throw new InvalidOperationException($"The tag 'Id={id}' was not found on roster 'Id={Id}'.");
+
+  public bool HasTag(Guid id) => _tags.ContainsKey(id);
+
+  public void RemoveTag(Guid id, ActorId? actorId = null)
+  {
+    if (HasTag(id))
+    {
+      Raise(new RosterTagRemoved(id), actorId);
+    }
+  }
+  private void Handle(RosterTagRemoved @event)
+  {
+    _tags.Remove(@event.TagId);
+  }
+
+  public void SetTag(Guid id, Tag tag, ActorId? actorId = null)
+  {
+    Tag? existingTag = TryGetTag(id);
+    if (existingTag is null || !Equals(existingTag, tag))
+    {
+      Raise(new RosterTagChanged(id, tag), actorId);
+    }
+  }
+  private void Handle(RosterTagChanged @event)
+  {
+    _tags[@event.TagId] = @event.Tag;
+  }
+
+  public Tag? TryGetTag(Guid id) => _tags.GetValueOrDefault(id);
+  #endregion
 }

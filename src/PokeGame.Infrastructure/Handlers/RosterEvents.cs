@@ -14,7 +14,9 @@ internal class RosterEvents :
   IEventHandler<RosterEntryDeposited>,
   IEventHandler<RosterEntryRemoved>,
   IEventHandler<RosterEntryReplaced>,
-  IEventHandler<RosterEntryWithdrawn>
+  IEventHandler<RosterEntryWithdrawn>,
+  IEventHandler<RosterTagChanged>,
+  IEventHandler<RosterTagRemoved>
 {
   public static void Register(IServiceCollection services)
   {
@@ -24,6 +26,8 @@ internal class RosterEvents :
     services.AddTransient<IEventHandler<RosterEntryRemoved>, RosterEvents>();
     services.AddTransient<IEventHandler<RosterEntryReplaced>, RosterEvents>();
     services.AddTransient<IEventHandler<RosterEntryWithdrawn>, RosterEvents>();
+    services.AddTransient<IEventHandler<RosterTagChanged>, RosterEvents>();
+    services.AddTransient<IEventHandler<RosterTagRemoved>, RosterEvents>();
   }
 
   private readonly PokemonContext _pokemon;
@@ -143,5 +147,38 @@ internal class RosterEvents :
           trainer => trainer.PartyCount,
           _pokemon.Specimens.Count(pokemon => pokemon.CurrentTrainer!.StreamId == trainerId.Value && pokemon.IsInParty)),
         cancellationToken);
+  }
+
+  public async Task HandleAsync(RosterTagChanged @event, CancellationToken cancellationToken)
+  {
+    TrainerId trainerId = new RosterId(@event.StreamId).TrainerId;
+
+    TagEntity? tag = await _pokemon.Tags.SingleOrDefaultAsync(x => x.Trainer!.StreamId == trainerId.Value && x.Id == @event.TagId, cancellationToken);
+    if (tag is null)
+    {
+      int trainerKey = await _pokemon.FindTrainerIdAsync(trainerId, cancellationToken);
+
+      tag = new TagEntity(trainerKey, @event);
+
+      _pokemon.Tags.Add(tag);
+    }
+    else
+    {
+      tag.Update(@event);
+    }
+    await _pokemon.SaveChangesAsync(cancellationToken);
+  }
+
+  public async Task HandleAsync(RosterTagRemoved @event, CancellationToken cancellationToken)
+  {
+    TrainerId trainerId = new RosterId(@event.StreamId).TrainerId;
+
+    TagEntity? tag = await _pokemon.Tags.SingleOrDefaultAsync(x => x.Trainer!.StreamId == trainerId.Value && x.Id == @event.TagId, cancellationToken);
+    if (tag is not null)
+    {
+      _pokemon.Tags.Remove(tag);
+
+      await _pokemon.SaveChangesAsync(cancellationToken);
+    }
   }
 }

@@ -14,6 +14,7 @@ using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Regions;
+using PokeGame.Core.Rosters;
 using PokeGame.Core.Species;
 using PokeGame.Core.Trainers;
 using PokeGame.Core.Varieties;
@@ -48,6 +49,7 @@ public static class DependencyInjectionExtensions
     PermissionService.Register(services);
     PokemonService.Register(services);
     RegionService.Register(services);
+    RosterService.Register(services);
     SpeciesService.Register(services);
     TrainerService.Register(services);
     VarietyService.Register(services);

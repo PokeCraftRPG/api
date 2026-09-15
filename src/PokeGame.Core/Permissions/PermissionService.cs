@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Identity;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Pokemon;
+using PokeGame.Core.Rosters;
 using PokeGame.Core.Worlds;
 
 namespace PokeGame.Core.Permissions;
@@ -140,6 +141,8 @@ internal class PermissionService : IPermissionService
       case Actions.Trade:
       case Actions.Withdraw:
         return _context.IsWorldOwner && entity.WorldId == _context.TryGetWorldId() && entity.Kind == Specimen.EntityKind;
+      case Actions.ManageTags:
+        return _context.IsWorldOwner && entity.WorldId == _context.TryGetWorldId() && entity.Kind == Roster.EntityKind;
       case Actions.Update:
         return _context.IsWorldOwner && entity.WorldId == _context.TryGetWorldId();
       default:
