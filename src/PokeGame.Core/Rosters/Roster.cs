@@ -94,8 +94,7 @@ public sealed class Roster : AggregateRoot, IEntityProvider
   }
   private void Handle(RosterEntryDeposited @event)
   {
-    RosterEntry entry = _entries[@event.PokemonId];
-    _entries[@event.PokemonId] = new RosterEntry(isInParty: false, entry.Priority, entry.TagIds);
+    _entries[@event.PokemonId] = _entries[@event.PokemonId].Deposit();
     _partyIds.Remove(@event.PokemonId);
   }
 
@@ -177,7 +176,7 @@ public sealed class Roster : AggregateRoot, IEntityProvider
     }
 
     RosterEntry existingEntry = _entries.GetValueOrDefault(specimen.Id) ?? throw new PokemonNotInRosterException(this, specimen);
-    RosterEntry entry = new(existingEntry.IsInParty, priority, tagIds);
+    RosterEntry entry = existingEntry.Update(priority, tagIds);
     if (!Equals(existingEntry, entry))
     {
       Raise(new RosterEntryChanged(specimen.Id, entry.Priority, entry.TagIds), actorId);
@@ -185,8 +184,7 @@ public sealed class Roster : AggregateRoot, IEntityProvider
   }
   private void Handle(RosterEntryChanged @event)
   {
-    RosterEntry entry = _entries[@event.PokemonId];
-    _entries[@event.PokemonId] = new RosterEntry(entry.IsInParty, @event.Priority, @event.TagIds);
+    _entries[@event.PokemonId] = _entries[@event.PokemonId].Update(@event.Priority, @event.TagIds);
   }
 
   public void Swap(Specimen source, Specimen target, ActorId? actorId = null)
@@ -227,7 +225,7 @@ public sealed class Roster : AggregateRoot, IEntityProvider
   private void Handle(RosterEntriesSwapped @event)
   {
     RosterEntry sourceEntry = _entries[@event.SourceId];
-    _entries[@event.SourceId] = new RosterEntry(@event.IsSourceInParty, sourceEntry.Priority, sourceEntry.TagIds);
+    _entries[@event.SourceId] = @event.IsSourceInParty ? sourceEntry.Withdraw() : sourceEntry.Deposit();
     if (@event.IsSourceInParty)
     {
       _partyIds.Add(@event.SourceId);
@@ -238,7 +236,7 @@ public sealed class Roster : AggregateRoot, IEntityProvider
     }
 
     RosterEntry targetEntry = _entries[@event.TargetId];
-    _entries[@event.TargetId] = new RosterEntry(@event.IsTargetInParty, targetEntry.Priority, targetEntry.TagIds);
+    _entries[@event.TargetId] = @event.IsTargetInParty ? targetEntry.Withdraw() : targetEntry.Deposit();
     if (@event.IsTargetInParty)
     {
       _partyIds.Add(@event.TargetId);
@@ -286,8 +284,7 @@ public sealed class Roster : AggregateRoot, IEntityProvider
   }
   private void Handle(RosterEntryWithdrawn @event)
   {
-    RosterEntry entry = _entries[@event.PokemonId];
-    _entries[@event.PokemonId] = new RosterEntry(isInParty: true, entry.Priority, entry.TagIds);
+    _entries[@event.PokemonId] = _entries[@event.PokemonId].Withdraw();
     _partyIds.Add(@event.PokemonId);
   }
 
