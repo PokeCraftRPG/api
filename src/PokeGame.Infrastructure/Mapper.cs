@@ -325,16 +325,7 @@ internal class Mapper
     IReadOnlyDictionary<PokemonSkill, PokemonSkillTraining> skills = source.GetSkills();
 
     destination.Attributes = source.CalculateAttributes(baseStatistics, individualValues, nature);
-    #region TODO(fpion): statistics
-    EffortValues effortValues = new(skills);
-    PokemonStatistics statistics = new(baseStatistics, individualValues, effortValues, source.Level, nature);
-    destination.Statistics.HP = new PokemonStatisticDto(baseStatistics.HP, individualValues.HP, effortValues.HP, statistics.HP);
-    destination.Statistics.Attack = new PokemonStatisticDto(baseStatistics.Attack, individualValues.Attack, effortValues.Attack, statistics.Attack);
-    destination.Statistics.Defense = new PokemonStatisticDto(baseStatistics.Defense, individualValues.Defense, effortValues.Defense, statistics.Defense);
-    destination.Statistics.SpecialAttack = new PokemonStatisticDto(baseStatistics.SpecialAttack, individualValues.SpecialAttack, effortValues.SpecialAttack, statistics.SpecialAttack);
-    destination.Statistics.SpecialDefense = new PokemonStatisticDto(baseStatistics.SpecialDefense, individualValues.SpecialDefense, effortValues.SpecialDefense, statistics.SpecialDefense);
-    destination.Statistics.Speed = new PokemonStatisticDto(baseStatistics.Speed, individualValues.Speed, effortValues.Speed, statistics.Speed);
-    #endregion
+    destination.Statistics = source.CalculateStatistics(baseStatistics, individualValues, skills, nature);
     destination.Skills = source.CalculateSkills(skills, destination.Attributes);
 
     if (source.HeldItem is not null)

@@ -17,14 +17,15 @@ public class SpecimenEvolveTests : UnitTests
     Specimen pokemon = CreateOwnedAtLevel(16);
     pokemon.SetNickname(new Name("Bulba"), Catalog.World.OwnerId.ActorId);
     int previousVitality = pokemon.Vitality;
-    PokemonStatistics previous = new(pokemon);
+    int previousStamina = pokemon.Stamina;
+    PokemonStatistics previous = CreateStatistics(pokemon);
 
     Evolution evolution = CreateEvolution();
     evolution.SetConditions(new Level(16), friendship: false, gender: null, item: null, move: null, Catalog.PalletTown, TimeOfDay.Day);
 
     pokemon.Evolve(evolution, Catalog.CharmanderForm, Catalog.CharmanderVariety, Catalog.PalletTown, TimeOfDay.Day);
 
-    AssertEvolved(pokemon, previous, previousVitality);
+    AssertEvolved(pokemon, previous, previousVitality, previousStamina);
     Assert.Equal("Bulba", pokemon.Nickname?.Value);
     Assert.Equal(Catalog.Red.Id, pokemon.OriginalTrainerId);
     PokemonEvolved @event = pokemon.LastChange<PokemonEvolved>();
@@ -443,17 +444,25 @@ public class SpecimenEvolveTests : UnitTests
     return pokemon;
   }
 
-  private void AssertEvolved(Specimen pokemon, PokemonStatistics previous, int previousVitality)
+  private void AssertEvolved(Specimen pokemon, PokemonStatistics previous, int previousVitality, int previousStamina)
   {
     Assert.Equal(Catalog.CharmanderSpecies.Id, pokemon.SpeciesId);
     Assert.Equal(Catalog.CharmanderVariety.Id, pokemon.VarietyId);
     Assert.Equal(Catalog.CharmanderForm.Id, pokemon.FormId);
 
-    PokemonStatistics changed = new(pokemon);
-    int delta = changed.HP - previous.HP;
-    Assert.Equal(Math.Clamp(previousVitality + delta, 0, changed.HP), pokemon.Vitality);
-    Assert.Equal(Math.Clamp(previousVitality + delta, 0, changed.HP), pokemon.Stamina);
+    PokemonStatistics changed = CreateStatistics(pokemon);
+    int vitalityDelta = changed.Vitality - previous.Vitality;
+    int staminaDelta = changed.Stamina - previous.Stamina;
+    Assert.Equal(Math.Clamp(previousVitality + vitalityDelta, 0, changed.Vitality), pokemon.Vitality);
+    Assert.Equal(Math.Clamp(previousStamina + staminaDelta, 0, changed.Stamina), pokemon.Stamina);
   }
+
+  private static PokemonStatistics CreateStatistics(Specimen pokemon) => new(
+    pokemon.BaseStatistics,
+    pokemon.IndividualValues,
+    new EffortValues(pokemon.Skills),
+    pokemon.Level,
+    pokemon.Nature);
 
   private static void AssertEvolutionMove(PokemonMove move, int learnedAtLevel)
   {

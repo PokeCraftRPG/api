@@ -118,6 +118,27 @@ internal static class PokemonMapper
     return training.TryGetValue(skill, out PokemonSkillTraining? skillTraining) ? skillTraining : new PokemonSkillTraining(level: 0, rank: 0);
   }
 
+  public static PokemonStatisticsDto CalculateStatistics(
+    this PokemonEntity pokemon,
+    IBaseStatistics baseStatistics,
+    IIndividualValues individualValues,
+    IReadOnlyDictionary<PokemonSkill, PokemonSkillTraining> skills,
+    PokemonNature nature)
+  {
+    EffortValues effortValues = new(skills);
+    PokemonStatistics statistics = new(baseStatistics, individualValues, effortValues, pokemon.Level, nature);
+    return new PokemonStatisticsDto
+    {
+      Vitality = new PokemonStatisticDto(baseStatistics.HP, individualValues.HP, effortValues.Vitality, statistics.Vitality),
+      Stamina = new PokemonStatisticDto(baseStatistics.HP, individualValues.HP, effortValues.Stamina, statistics.Stamina),
+      Attack = new PokemonStatisticDto(baseStatistics.Attack, individualValues.Attack, effortValues.Attack, statistics.Attack),
+      Defense = new PokemonStatisticDto(baseStatistics.Defense, individualValues.Defense, effortValues.Defense, statistics.Defense),
+      SpecialAttack = new PokemonStatisticDto(baseStatistics.SpecialAttack, individualValues.SpecialAttack, effortValues.SpecialAttack, statistics.SpecialAttack),
+      SpecialDefense = new PokemonStatisticDto(baseStatistics.SpecialDefense, individualValues.SpecialDefense, effortValues.SpecialDefense, statistics.SpecialDefense),
+      Speed = new PokemonStatisticDto(baseStatistics.Speed, individualValues.Speed, effortValues.Speed, statistics.Speed)
+    };
+  }
+
   public static BaseStatisticsDto ToBaseStatistics(this PokemonEntity pokemon) => new(
     pokemon.BaseHP,
     pokemon.BaseAttack,
