@@ -1,9 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PokeGame.Api.Models.Search;
 using PokeGame.Core.Inventories.Models;
 using PokeGame.Core.Items;
 
-namespace PokeGame.Api.Models.Inventories;
+namespace PokeGame.Api.Models.Inventory;
 
 public record SearchInventoryItemsParameters : SearchParameters
 {

@@ -1,4 +1,4 @@
-using Logitar.EventSourcing;
+﻿using Logitar.EventSourcing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PokeGame.Builders;
@@ -76,7 +76,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     await _itemRepository.SaveAsync(_leafStone);
   }
 
-  [Fact(DisplayName = "It should evolve a PokÃ©mon by leveling up.")]
+  [Fact(DisplayName = "It should evolve a Pokémon by leveling up.")]
   public async Task Given_LevelUpEvolution_When_Evolve_Then_Evolved()
   {
     Evolution evolution = await CreateEvolutionAsync(EvolutionTrigger.LeveledUp, new Level(16), location: "Route 1", timeOfDay: TimeOfDay.Day);
@@ -100,7 +100,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     Assert.Equal(_target.VarietyId.EntityId, read.Form.Variety.Id);
   }
 
-  [Fact(DisplayName = "It should evolve a PokÃ©mon by using an item and consume it from the inventory.")]
+  [Fact(DisplayName = "It should evolve a Pokémon by using an item and consume it from the inventory.")]
   public async Task Given_ItemUsed_When_Evolve_Then_EvolvedAndItemConsumed()
   {
     Evolution evolution = new(EvolutionId.NewId(Context.WorldId), _source, _target, EvolutionTrigger.ItemUsed, _leafStone, Context.ActorId);
@@ -117,7 +117,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     Assert.Equal(1, inventoryItem.Quantity);
   }
 
-  [Fact(DisplayName = "It should evolve a PokÃ©mon after it has been traded.")]
+  [Fact(DisplayName = "It should evolve a Pokémon after it has been traded.")]
   public async Task Given_TradedPokemon_When_Evolve_Then_Evolved()
   {
     Trainer blue = TrainerBuilder.Blue(Faker, Context.World);
@@ -130,7 +130,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     await _pokemonService.TradeAsync(new TradePokemonPayload
     {
       PokemonIds = [source.Id, target.Id],
-      Location = "PokÃ©mon Center"
+      Location = "Pokémon Center"
     });
 
     PokemonDto? pokemon = await _pokemonService.EvolveAsync(source.Id, new EvolvePokemonPayload { EvolutionId = evolution.EntityId });
@@ -162,7 +162,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     Assert.Null(pokemon.HeldItem);
   }
 
-  [Fact(DisplayName = "It should return null when the PokÃ©mon was not found.")]
+  [Fact(DisplayName = "It should return null when the Pokémon was not found.")]
   public async Task Given_NotFound_When_Evolve_Then_NullReturned()
   {
     Evolution evolution = await CreateEvolutionAsync();
@@ -196,7 +196,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     await Assert.ThrowsAsync<InvalidCommandException>(async () => await _pokemonService.EvolveAsync(created.Id, payload));
   }
 
-  [Fact(DisplayName = "It should throw PermissionDeniedException when evolving a PokÃ©mon.")]
+  [Fact(DisplayName = "It should throw PermissionDeniedException when evolving a Pokémon.")]
   public async Task Given_NotAllowed_When_Evolve_Then_PermissionDeniedException()
   {
     Evolution evolution = await CreateEvolutionAsync();
@@ -211,7 +211,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     Assert.Equal(Context.WorldId, exception.Data["WorldId"]);
   }
 
-  [Fact(DisplayName = "It should throw PokemonHasNoOwnerException when the PokÃ©mon is wild.")]
+  [Fact(DisplayName = "It should throw PokemonHasNoOwnerException when the Pokémon is wild.")]
   public async Task Given_WildPokemon_When_Evolve_Then_PokemonHasNoOwnerException()
   {
     Evolution evolution = await CreateEvolutionAsync();
@@ -223,7 +223,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     Assert.Equal(created.Id, exception.Data["PokemonId"]);
   }
 
-  [Fact(DisplayName = "It should throw PokemonEggCannotEvolveException when the PokÃ©mon is an egg.")]
+  [Fact(DisplayName = "It should throw PokemonEggCannotEvolveException when the Pokémon is an egg.")]
   public async Task Given_Egg_When_Evolve_Then_PokemonEggCannotEvolveException()
   {
     Evolution evolution = await CreateEvolutionAsync();
@@ -295,7 +295,7 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     Assert.Equal(_target.EntityId, pokemon.Form.Id);
   }
 
-  [Fact(DisplayName = "It should throw InvalidEvolutionSourceException when the PokÃ©mon form does not match.")]
+  [Fact(DisplayName = "It should throw InvalidEvolutionSourceException when the Pokémon form does not match.")]
   public async Task Given_WrongSourceForm_When_Evolve_Then_InvalidEvolutionSourceException()
   {
     Evolution evolution = await CreateEvolutionAsync();
