@@ -478,8 +478,10 @@ public class PokemonEvolveIntegrationTests : IntegrationTests
     Assert.Equal(before.Experience, after.Experience);
     Assert.Equal(_trainer.EntityId, after.OriginalTrainer!.Id);
 
-    int delta = after.Statistics.HP.Total - before.Statistics.HP.Total;
-    Assert.Equal(Math.Clamp(before.Vitality + delta, 0, after.Statistics.HP.Total), after.Vitality);
+    int vitalityDelta = after.Statistics.Vitality.Total - before.Statistics.Vitality.Total;
+    int staminaDelta = after.Statistics.Stamina.Total - before.Statistics.Stamina.Total;
+    Assert.Equal(Math.Clamp(before.Vitality + vitalityDelta, 0, after.Statistics.Vitality.Total), after.Vitality);
+    Assert.Equal(Math.Clamp(before.Stamina + staminaDelta, 0, after.Statistics.Stamina.Total), after.Stamina);
   }
 
   private void AssertPokemonAcquired(PokemonDto pokemon, Trainer trainer)

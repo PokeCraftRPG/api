@@ -51,14 +51,12 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
   public int Level => ExperienceTable.GetLevel(GrowthRate, Experience);
   public int Tier => ExperienceTable.GetTier(Level);
 
-  private readonly Dictionary<PokemonSkill, PokemonSkillTraining> _skills = [];
-  public IReadOnlyDictionary<PokemonSkill, PokemonSkillTraining> Skills => _skills.AsReadOnly();
-
   private BaseStatistics? _baseStatistics = null;
   public BaseStatistics BaseStatistics => _baseStatistics ?? throw new InvalidOperationException("The base statistics were not initialized.");
   public IndividualValues IndividualValues { get; private set; } = new();
-  public EffortValues EffortValues => new(Skills);
-  public PokemonStatistics Statistics => new(this);
+
+  private readonly Dictionary<PokemonSkill, PokemonSkillTraining> _skills = [];
+  public IReadOnlyDictionary<PokemonSkill, PokemonSkillTraining> Skills => _skills.AsReadOnly();
 
   public int Vitality { get; private set; }
   public int Stamina { get; private set; }
@@ -154,11 +152,14 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     abilitySlot ??= randomizer.AbilitySlot();
     size ??= randomizer.Size();
     nature ??= randomizer.Nature();
+    BaseStatistics baseStatistics = form.BaseStatistics;
     individualValues ??= randomizer.IndividualValues();
+    EffortValues effortValues = new();
     PokemonCharacteristic characteristic = randomizer.Characteristic(individualValues);
 
     int level = ExperienceTable.GetLevel(species.GrowthRate, experience);
-    PokemonStatistics statistics = new(form.BaseStatistics, individualValues, EffortValues, level, nature);
+    int maximumVitality = PokemonHelper.CalculateMaximumVitality(baseStatistics, individualValues, effortValues, level);
+    int maximumStamina = PokemonHelper.CalculateMaximumStamina(baseStatistics, individualValues, effortValues, level);
 
     VarietyMove[] varietyMoves = variety.Moves.Values
       .Where(x => x.LearningMethod == LearningMethod.LevelUp && x.Level is not null && x.Level.Value <= level)
@@ -174,7 +175,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     }
 
     PokemonCreated @event = new(species.Id, variety.Id, form.Id, key, gender, isShiny.Value, teraType.Value, abilitySlot.Value, size, nature, eggCycles,
-      species.GrowthRate, experience, form.BaseStatistics, individualValues, statistics.HP, statistics.HP, species.BaseFriendship, characteristic, moves);
+      species.GrowthRate, experience, baseStatistics, individualValues, maximumVitality, maximumStamina, species.BaseFriendship, characteristic, moves);
     Raise(@event, actorId);
   }
   private void Handle(PokemonCreated @event)
@@ -260,13 +261,19 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
     FormId formId = form.Id;
     if (!Equals(FormId, formId))
     {
-      PokemonStatistics current = Statistics;
-      PokemonStatistics changed = new(form.BaseStatistics, IndividualValues, EffortValues, Level, Nature);
-      int delta = changed.HP - current.HP;
-      int vitality = Math.Clamp(Vitality + delta, 0, changed.HP);
-      int stamina = Math.Clamp(Stamina + delta, 0, changed.HP);
+      BaseStatistics baseStatistics = form.BaseStatistics;
 
-      Raise(new PokemonFormChanged(formId, form.BaseStatistics, vitality, stamina), actorId);
+      int currentMaximumVitality = this.CalculateMaximumVitality();
+      int changedMaximumVitality = this.CalculateMaximumVitality(baseStatistics);
+      int vitalityDelta = changedMaximumVitality - currentMaximumVitality;
+      int vitality = Math.Clamp(Vitality + vitalityDelta, 0, changedMaximumVitality);
+
+      int currentMaximumStamina = this.CalculateMaximumStamina();
+      int changedMaximumStamina = this.CalculateMaximumStamina(baseStatistics);
+      int staminaDelta = changedMaximumStamina - currentMaximumStamina;
+      int stamina = Math.Clamp(Stamina + staminaDelta, 0, changedMaximumStamina);
+
+      Raise(new PokemonFormChanged(formId, baseStatistics, vitality, stamina), actorId);
     }
   }
   private void Handle(PokemonFormChanged @event)
@@ -356,11 +363,17 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
       throw new EvolutionRequirementsNotMetException(failures);
     }
 
-    PokemonStatistics current = Statistics;
-    PokemonStatistics changed = new(form.BaseStatistics, IndividualValues, EffortValues, Level, Nature);
-    int delta = changed.HP - current.HP;
-    int vitality = Math.Clamp(Vitality + delta, 0, changed.HP);
-    int stamina = Math.Clamp(Stamina + delta, 0, changed.HP);
+    BaseStatistics baseStatistics = form.BaseStatistics;
+
+    int currentMaximumVitality = this.CalculateMaximumVitality();
+    int changedMaximumVitality = this.CalculateMaximumVitality(baseStatistics);
+    int vitalityDelta = changedMaximumVitality - currentMaximumVitality;
+    int vitality = Math.Clamp(Vitality + vitalityDelta, 0, changedMaximumVitality);
+
+    int currentMaximumStamina = this.CalculateMaximumStamina();
+    int changedMaximumStamina = this.CalculateMaximumStamina(baseStatistics);
+    int staminaDelta = changedMaximumStamina - currentMaximumStamina;
+    int stamina = Math.Clamp(Stamina + staminaDelta, 0, changedMaximumStamina);
 
     bool consumeHeldItem = evolution.Trigger != EvolutionTrigger.ItemUsed && evolution.ItemId.HasValue;
 
@@ -380,7 +393,7 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
       moves.Add(new LearnedMove(move.MoveId, isInMoveset));
     }
 
-    Raise(new PokemonEvolved(variety.SpeciesId, variety.Id, form.Id, form.BaseStatistics, vitality, stamina, consumeHeldItem, moves), actorId);
+    Raise(new PokemonEvolved(variety.SpeciesId, variety.Id, form.Id, baseStatistics, vitality, stamina, consumeHeldItem, moves), actorId);
   }
   private void Handle(PokemonEvolved @event)
   {
@@ -568,18 +581,18 @@ public sealed class Specimen : AggregateRoot, IEntityProvider
 
   public void SetStatus(int vitality, int stamina, StatusCondition? condition, Friendship friendship, ActorId? actorId = null)
   {
-    PokemonStatistics statistics = new(this);
-
     ArgumentOutOfRangeException.ThrowIfNegative(vitality);
-    if (vitality > statistics.HP)
+    int maximumVitality = this.CalculateMaximumVitality();
+    if (vitality > maximumVitality)
     {
-      throw new ConstitutionOutOfRangeException(this, statistics.HP, vitality, nameof(Vitality));
+      throw new ConstitutionOutOfRangeException(this, maximumVitality, vitality, nameof(Vitality));
     }
 
     ArgumentOutOfRangeException.ThrowIfNegative(stamina);
-    if (stamina > statistics.HP)
+    int maximumStamina = this.CalculateMaximumStamina();
+    if (stamina > maximumStamina)
     {
-      throw new ConstitutionOutOfRangeException(this, statistics.HP, stamina, nameof(Stamina));
+      throw new ConstitutionOutOfRangeException(this, maximumStamina, stamina, nameof(Stamina));
     }
 
     if (condition.HasValue && !Enum.IsDefined(condition.Value))

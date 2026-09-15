@@ -109,14 +109,9 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal(0, pokemon.Tier);
     AssertAttributes(pokemon, _form.BaseStatistics, payload.IndividualValues!, PokemonNatures.Hardy);
     AssertSkills(pokemon, emptyTraining: true);
-    Assert.Equal((byte)10, pokemon.Statistics.HP.Individual);
-    Assert.Equal((byte)11, pokemon.Statistics.Attack.Individual);
-    Assert.Equal((byte)12, pokemon.Statistics.Defense.Individual);
-    Assert.Equal((byte)13, pokemon.Statistics.SpecialAttack.Individual);
-    Assert.Equal((byte)14, pokemon.Statistics.SpecialDefense.Individual);
-    Assert.Equal((byte)15, pokemon.Statistics.Speed.Individual);
-    Assert.True(pokemon.Vitality > 0);
-    Assert.Equal(pokemon.Vitality, pokemon.Stamina);
+    AssertStatistics(pokemon, _form.BaseStatistics, payload.IndividualValues!, PokemonNatures.Hardy);
+    Assert.Equal(pokemon.Statistics.Vitality.Total, pokemon.Vitality);
+    Assert.Equal(pokemon.Statistics.Stamina.Total, pokemon.Stamina);
     Assert.Null(pokemon.HeldItem);
     Assert.Null(pokemon.Sprite);
     Assert.False(pokemon.IsInParty);
@@ -180,6 +175,36 @@ public class PokemonIntegrationTests : IntegrationTests
     PokemonDto? read = await _pokemonService.ReadAsync(pokemon.Id);
     Assert.NotNull(read);
     AssertAttributes(read, _form.BaseStatistics, payload.IndividualValues!, PokemonNatures.Adamant);
+  }
+
+  [Fact(DisplayName = "It should calculate Pokémon statistics from nature and individual values.")]
+  public async Task Given_AdamantNature_When_Create_Then_StatisticsCalculated()
+  {
+    CreatePokemonPayload payload = new()
+    {
+      FormId = _form.EntityId,
+      Key = "adamant-statistics",
+      Nature = "Adamant",
+      Experience = ExperienceForLevel(50),
+      IndividualValues = new IndividualValuesDto
+      {
+        HP = 31,
+        Attack = 31,
+        Defense = 0,
+        SpecialAttack = 31,
+        SpecialDefense = 15,
+        Speed = 7
+      }
+    };
+
+    PokemonDto pokemon = await _pokemonService.CreateAsync(payload);
+    AssertStatistics(pokemon, _form.BaseStatistics, payload.IndividualValues!, PokemonNatures.Adamant);
+    Assert.Equal(pokemon.Statistics.Vitality.Total, pokemon.Vitality);
+    Assert.Equal(pokemon.Statistics.Stamina.Total, pokemon.Stamina);
+
+    PokemonDto? read = await _pokemonService.ReadAsync(pokemon.Id);
+    Assert.NotNull(read);
+    AssertStatistics(read, _form.BaseStatistics, payload.IndividualValues!, PokemonNatures.Adamant);
   }
 
   [Fact(DisplayName = "It should calculate Pokémon skills from attributes when training is empty.")]
@@ -520,11 +545,11 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal(nameof(Specimen.SpriteId), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ConstitutionOutOfRangeException when vitality exceeds HP.")]
+  [Fact(DisplayName = "It should throw ConstitutionOutOfRangeException when vitality exceeds the maximum.")]
   public async Task Given_VitalityTooHigh_When_Update_Then_ConstitutionOutOfRangeException()
   {
     PokemonDto created = await CreatePokemonAsync("vitality-too-high");
-    int attemptedValue = created.Statistics.HP.Total + 1;
+    int attemptedValue = created.Statistics.Vitality.Total + 1;
 
     UpdatePokemonPayload payload = new()
     {
@@ -535,16 +560,16 @@ public class PokemonIntegrationTests : IntegrationTests
       async () => await _pokemonService.UpdateAsync(created.Id, payload));
     Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
     Assert.Equal(created.Id, exception.Data["PokemonId"]);
-    Assert.Equal(created.Statistics.HP.Total, exception.Data["MaximumValue"]);
+    Assert.Equal(created.Statistics.Vitality.Total, exception.Data["MaximumValue"]);
     Assert.Equal(attemptedValue, exception.Data["AttemptedValue"]);
     Assert.Equal(nameof(Specimen.Vitality), exception.Data["PropertyName"]);
   }
 
-  [Fact(DisplayName = "It should throw ConstitutionOutOfRangeException when stamina exceeds HP.")]
+  [Fact(DisplayName = "It should throw ConstitutionOutOfRangeException when stamina exceeds the maximum.")]
   public async Task Given_StaminaTooHigh_When_Update_Then_ConstitutionOutOfRangeException()
   {
     PokemonDto created = await CreatePokemonAsync("stamina-too-high");
-    int attemptedValue = created.Statistics.HP.Total + 1;
+    int attemptedValue = created.Statistics.Stamina.Total + 1;
 
     UpdatePokemonPayload payload = new()
     {
@@ -555,7 +580,7 @@ public class PokemonIntegrationTests : IntegrationTests
       async () => await _pokemonService.UpdateAsync(created.Id, payload));
     Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
     Assert.Equal(created.Id, exception.Data["PokemonId"]);
-    Assert.Equal(created.Statistics.HP.Total, exception.Data["MaximumValue"]);
+    Assert.Equal(created.Statistics.Stamina.Total, exception.Data["MaximumValue"]);
     Assert.Equal(attemptedValue, exception.Data["AttemptedValue"]);
     Assert.Equal(nameof(Specimen.Stamina), exception.Data["PropertyName"]);
   }
@@ -622,16 +647,18 @@ public class PokemonIntegrationTests : IntegrationTests
 
     Assert.Equal(alternative.EntityId, pokemon.Form.Id);
     Assert.Equal(FormCategory.Alternative, pokemon.Form.Category);
-    Assert.Equal(alternative.BaseStatistics.HP, pokemon.Statistics.HP.Base);
+    Assert.Equal(alternative.BaseStatistics.HP, pokemon.Statistics.Vitality.Base);
+    Assert.Equal(alternative.BaseStatistics.HP, pokemon.Statistics.Stamina.Base);
     Assert.Equal(alternative.BaseStatistics.Attack, pokemon.Statistics.Attack.Base);
     Assert.Equal(alternative.BaseStatistics.Defense, pokemon.Statistics.Defense.Base);
     Assert.Equal(alternative.BaseStatistics.SpecialAttack, pokemon.Statistics.SpecialAttack.Base);
     Assert.Equal(alternative.BaseStatistics.SpecialDefense, pokemon.Statistics.SpecialDefense.Base);
     Assert.Equal(alternative.BaseStatistics.Speed, pokemon.Statistics.Speed.Base);
 
-    int delta = pokemon.Statistics.HP.Total - damaged.Statistics.HP.Total;
-    Assert.Equal(Math.Clamp(damaged.Vitality + delta, 0, pokemon.Statistics.HP.Total), pokemon.Vitality);
-    Assert.Equal(Math.Clamp(damaged.Stamina + delta, 0, pokemon.Statistics.HP.Total), pokemon.Stamina);
+    int vitalityDelta = pokemon.Statistics.Vitality.Total - damaged.Statistics.Vitality.Total;
+    int staminaDelta = pokemon.Statistics.Stamina.Total - damaged.Statistics.Stamina.Total;
+    Assert.Equal(Math.Clamp(damaged.Vitality + vitalityDelta, 0, pokemon.Statistics.Vitality.Total), pokemon.Vitality);
+    Assert.Equal(Math.Clamp(damaged.Stamina + staminaDelta, 0, pokemon.Statistics.Stamina.Total), pokemon.Stamina);
   }
 
   [Fact(DisplayName = "It should not change a Pokémon form when it is already the target form.")]
@@ -761,6 +788,32 @@ public class PokemonIntegrationTests : IntegrationTests
     Assert.Equal(expected.Attribute, actual.Attribute);
     Assert.Equal(expected.Modifiers, actual.Modifiers);
     Assert.Equal(expected.Total, actual.Total);
+  }
+
+  private static void AssertStatistics(
+    PokemonDto pokemon,
+    IBaseStatistics baseStatistics,
+    IIndividualValues individualValues,
+    PokemonNature nature)
+  {
+    EffortValues effortValues = new();
+    PokemonStatistics expected = new(baseStatistics, individualValues, effortValues, pokemon.Level, nature);
+
+    AssertStatistic(pokemon.Statistics.Vitality, baseStatistics.HP, individualValues.HP, effortValues.Vitality, expected.Vitality);
+    AssertStatistic(pokemon.Statistics.Stamina, baseStatistics.HP, individualValues.HP, effortValues.Stamina, expected.Stamina);
+    AssertStatistic(pokemon.Statistics.Attack, baseStatistics.Attack, individualValues.Attack, effortValues.Attack, expected.Attack);
+    AssertStatistic(pokemon.Statistics.Defense, baseStatistics.Defense, individualValues.Defense, effortValues.Defense, expected.Defense);
+    AssertStatistic(pokemon.Statistics.SpecialAttack, baseStatistics.SpecialAttack, individualValues.SpecialAttack, effortValues.SpecialAttack, expected.SpecialAttack);
+    AssertStatistic(pokemon.Statistics.SpecialDefense, baseStatistics.SpecialDefense, individualValues.SpecialDefense, effortValues.SpecialDefense, expected.SpecialDefense);
+    AssertStatistic(pokemon.Statistics.Speed, baseStatistics.Speed, individualValues.Speed, effortValues.Speed, expected.Speed);
+  }
+
+  private static void AssertStatistic(PokemonStatisticDto actual, byte @base, byte individual, byte effort, int total)
+  {
+    Assert.Equal(@base, actual.Base);
+    Assert.Equal(individual, actual.Individual);
+    Assert.Equal(effort, actual.Effort);
+    Assert.Equal(total, actual.Total);
   }
 
   private async Task<PokemonDto> CreatePokemonAsync(string key)

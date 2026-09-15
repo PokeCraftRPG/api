@@ -13,7 +13,7 @@ namespace PokeGame.Infrastructure.Entities;
 internal class PokemonEntity : AggregateEntity
 {
   private const char PairSeparator = ':';
-  private const char TrainingSeparator = ',';
+  private const char TrainingSeparator = '+';
   private const char ValueSeparator = '|';
 
   public int PokemonId { get; private set; }

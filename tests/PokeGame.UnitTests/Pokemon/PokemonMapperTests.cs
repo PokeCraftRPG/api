@@ -3,6 +3,7 @@ using PokeGame.Core.Forms;
 using PokeGame.Core.Pokemon;
 using PokeGame.Core.Pokemon.Models;
 using PokeGame.Infrastructure;
+using PokeGame.Infrastructure.Entities;
 
 namespace PokeGame.Pokemon;
 
@@ -187,6 +188,62 @@ public class PokemonMapperTests : UnitTests
     AssertSkill(skills.Survival, training: 0, rank: 0, attribute: 2);
   }
 
+  [Fact(DisplayName = "It should calculate Pokémon statistics from base, individual, effort and nature.")]
+  public void Given_Inputs_When_CalculateStatistics_Then_Mapped()
+  {
+    BaseStatistics baseStatistics = new(45, 49, 49, 65, 65, 45);
+    IndividualValues individualValues = new(10, 31, 0, 24, 8, 7);
+    PokemonEntity pokemon = CreatePokemonEntity(level: 50);
+
+    PokemonStatisticsDto statistics = pokemon.CalculateStatistics(
+      baseStatistics,
+      individualValues,
+      new Dictionary<PokemonSkill, PokemonSkillTraining>(),
+      PokemonNatures.Adamant);
+
+    PokemonStatistics expected = new(baseStatistics, individualValues, new EffortValues(), level: 50, PokemonNatures.Adamant);
+
+    AssertStatistic(statistics.Vitality, baseStatistics.HP, individualValues.HP, effort: 0, expected.Vitality);
+    AssertStatistic(statistics.Stamina, baseStatistics.HP, individualValues.HP, effort: 0, expected.Stamina);
+    AssertStatistic(statistics.Attack, baseStatistics.Attack, individualValues.Attack, effort: 0, expected.Attack);
+    AssertStatistic(statistics.Defense, baseStatistics.Defense, individualValues.Defense, effort: 0, expected.Defense);
+    AssertStatistic(statistics.SpecialAttack, baseStatistics.SpecialAttack, individualValues.SpecialAttack, effort: 0, expected.SpecialAttack);
+    AssertStatistic(statistics.SpecialDefense, baseStatistics.SpecialDefense, individualValues.SpecialDefense, effort: 0, expected.SpecialDefense);
+    AssertStatistic(statistics.Speed, baseStatistics.Speed, individualValues.Speed, effort: 0, expected.Speed);
+  }
+
+  [Fact(DisplayName = "It should include effort values from skill training in statistics.")]
+  public void Given_SkillTraining_When_CalculateStatistics_Then_EffortApplied()
+  {
+    BaseStatistics baseStatistics = new(45, 49, 49, 65, 65, 45);
+    IndividualValues individualValues = new(0, 0, 0, 0, 0, 0);
+    Dictionary<PokemonSkill, PokemonSkillTraining> skills = new()
+    {
+      [PokemonSkill.Survival] = new(4, 10),   // EV 252 → Vitality
+      [PokemonSkill.Athletics] = new(0, 2),   // EV 18 → Stamina
+      [PokemonSkill.Melee] = new(1, 2)        // EV 54 → Attack
+    };
+    PokemonEntity pokemon = CreatePokemonEntity(level: 50);
+
+    PokemonStatisticsDto statistics = pokemon.CalculateStatistics(
+      baseStatistics,
+      individualValues,
+      skills,
+      PokemonNatures.Hardy);
+
+    Assert.Equal((byte)252, statistics.Vitality.Effort);
+    Assert.Equal((byte)18, statistics.Stamina.Effort);
+    Assert.Equal((byte)54, statistics.Attack.Effort);
+    Assert.True(statistics.Vitality.Total > statistics.Stamina.Total);
+  }
+
+  private static PokemonEntity CreatePokemonEntity(int level)
+  {
+    PokemonEntity pokemon = (PokemonEntity)Activator.CreateInstance(typeof(PokemonEntity), nonPublic: true)!;
+    typeof(PokemonEntity).GetProperty(nameof(PokemonEntity.Level))!.SetValue(pokemon, level);
+    return pokemon;
+  }
+
   private static void AssertAttribute(PokemonAttributeDto attribute, int expectedBase, int expectedIndividual, int expectedNature)
   {
     Assert.Equal(expectedBase, attribute.Base);
@@ -203,5 +260,13 @@ public class PokemonMapperTests : UnitTests
     Assert.Equal(attribute, skill.Attribute);
     Assert.Equal(0, skill.Modifiers);
     Assert.Equal(new PokemonSkillTraining(training, rank).GetEffectiveRank() + attribute, skill.Total);
+  }
+
+  private static void AssertStatistic(PokemonStatisticDto statistic, byte @base, byte individual, byte effort, int total)
+  {
+    Assert.Equal(@base, statistic.Base);
+    Assert.Equal(individual, statistic.Individual);
+    Assert.Equal(effort, statistic.Effort);
+    Assert.Equal(total, statistic.Total);
   }
 }

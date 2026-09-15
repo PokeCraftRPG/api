@@ -2,7 +2,8 @@
 
 public record PokemonStatisticsDto
 {
-  public PokemonStatisticDto HP { get; set; } = new();
+  public PokemonStatisticDto Vitality { get; set; } = new();
+  public PokemonStatisticDto Stamina { get; set; } = new();
   public PokemonStatisticDto Attack { get; set; } = new();
   public PokemonStatisticDto Defense { get; set; } = new();
   public PokemonStatisticDto SpecialAttack { get; set; } = new();
