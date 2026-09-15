@@ -1,8 +1,8 @@
 using PokeGame.Core;
-using PokeGame.Core.Inventory;
-using PokeGame.Core.Inventory.Models;
+using PokeGame.Core.Inventories;
+using PokeGame.Core.Inventories.Models;
 
-namespace PokeGame.Inventory;
+namespace PokeGame.Inventories;
 
 public class InventoryPayloadTests : UnitTests
 {
@@ -19,7 +19,7 @@ public class InventoryPayloadTests : UnitTests
   [Fact(DisplayName = "It should accept a valid set quantity.")]
   public void Given_ValidQuantity_When_ValidateSet_Then_Valid()
   {
-    new SetInventoryItemPayload { Quantity = TrainerInventory.MaximumQuantity }.Validate();
+    new SetInventoryItemPayload { Quantity = Inventory.MaximumQuantity }.Validate();
   }
 
   [Theory(DisplayName = "It should throw InvalidCommandException when the adjust delta is invalid.")]

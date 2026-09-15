@@ -1,6 +1,6 @@
-﻿using PokeGame.Core.Items.Models;
+using PokeGame.Core.Items.Models;
 
-namespace PokeGame.Core.Inventory.Models;
+namespace PokeGame.Core.Inventories.Models;
 
 public record InventoryItemDto
 {

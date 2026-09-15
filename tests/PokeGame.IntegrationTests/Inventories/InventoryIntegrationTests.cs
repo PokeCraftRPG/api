@@ -2,15 +2,15 @@ using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
-using PokeGame.Core.Inventory;
-using PokeGame.Core.Inventory.Models;
+using PokeGame.Core.Inventories;
+using PokeGame.Core.Inventories.Models;
 using PokeGame.Core.Items;
 using PokeGame.Core.Items.Models;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Search;
 using PokeGame.Core.Trainers;
 
-namespace PokeGame.Inventory;
+namespace PokeGame.Inventories;
 
 [Trait(Traits.Category, Categories.Integration)]
 public class InventoryIntegrationTests : IntegrationTests
@@ -93,16 +93,16 @@ public class InventoryIntegrationTests : IntegrationTests
   [Fact(DisplayName = "It should throw InventoryQuantityOutOfRangeException when adjusting above the maximum.")]
   public async Task Given_WouldExceedMaximum_When_Adjust_Then_InventoryQuantityOutOfRangeException()
   {
-    await SetAsync(TrainerInventory.MaximumQuantity);
+    await SetAsync(Inventory.MaximumQuantity);
 
     InventoryQuantityOutOfRangeException exception = await Assert.ThrowsAsync<InventoryQuantityOutOfRangeException>(
       async () => await AdjustAsync(1));
     Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
     Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
     Assert.Equal(_item.EntityId, exception.Data["ItemId"]);
-    Assert.Equal(TrainerInventory.MinimumQuantity, exception.Data["MinimumQuantity"]);
-    Assert.Equal(TrainerInventory.MaximumQuantity, exception.Data["MaximumQuantity"]);
-    Assert.Equal(TrainerInventory.MaximumQuantity + 1, exception.Data["AttemptedQuantity"]);
+    Assert.Equal(Inventory.MinimumQuantity, exception.Data["MinimumQuantity"]);
+    Assert.Equal(Inventory.MaximumQuantity, exception.Data["MaximumQuantity"]);
+    Assert.Equal(Inventory.MaximumQuantity + 1, exception.Data["AttemptedQuantity"]);
     Assert.Equal("Quantity", exception.Data["PropertyName"]);
   }
 

@@ -1,4 +1,4 @@
-﻿using Krakenar.Contracts;
+using Krakenar.Contracts;
 using Krakenar.Contracts.Actors;
 using Logitar;
 using Logitar.EventSourcing;
@@ -8,7 +8,7 @@ using PokeGame.Core.Assets.Models;
 using PokeGame.Core.Evolutions.Models;
 using PokeGame.Core.Forms.Models;
 using PokeGame.Core.Identity;
-using PokeGame.Core.Inventory.Models;
+using PokeGame.Core.Inventories.Models;
 using PokeGame.Core.Items.Models;
 using PokeGame.Core.Membership.Models;
 using PokeGame.Core.Moves.Models;

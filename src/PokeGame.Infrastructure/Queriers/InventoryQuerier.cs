@@ -1,10 +1,10 @@
-﻿using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Actors;
 using Krakenar.Contracts.Search;
 using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
-using PokeGame.Core.Inventory;
-using PokeGame.Core.Inventory.Models;
+using PokeGame.Core.Inventories;
+using PokeGame.Core.Inventories.Models;
 using PokeGame.Core.Search;
 using PokeGame.Infrastructure.Actors;
 using PokeGame.Infrastructure.Entities;

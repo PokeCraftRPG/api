@@ -1,6 +1,6 @@
-﻿using Logitar.CQRS;
+using Logitar.CQRS;
 using Logitar.EventSourcing;
-using PokeGame.Core.Inventory;
+using PokeGame.Core.Inventories;
 using PokeGame.Core.Items;
 using PokeGame.Core.Messaging;
 using PokeGame.Core.Permissions;
@@ -72,7 +72,7 @@ internal class CatchPokemonCommandHandler : ICommandHandler<CatchPokemonCommand,
     Item pokeBall = await _itemRepository.LoadAsync(pokeBallId, cancellationToken) ?? throw new EntityNotFoundException(pokeBallId, nameof(payload.PokeBallId));
 
     InventoryId inventoryId = new(trainer.Id);
-    TrainerInventory inventory = await _inventoryRepository.LoadAsync(inventoryId, cancellationToken) ?? new(trainer);
+    Inventory inventory = await _inventoryRepository.LoadAsync(inventoryId, cancellationToken) ?? new(trainer);
     await _permissionService.CheckAsync(Actions.Update, inventory, cancellationToken);
 
     RosterId rosterId = new(trainer.Id);

@@ -1,8 +1,8 @@
-﻿using FluentValidation;
+using FluentValidation;
 using PokeGame.Core.Items;
 using PokeGame.Core.Search;
 
-namespace PokeGame.Core.Inventory.Models;
+namespace PokeGame.Core.Inventories.Models;
 
 public record SearchInventoryItemsPayload : SearchPayload<InventoryItemSort>
 {

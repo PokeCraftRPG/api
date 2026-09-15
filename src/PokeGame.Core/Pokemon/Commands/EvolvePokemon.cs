@@ -1,8 +1,8 @@
-﻿using Logitar.CQRS;
+using Logitar.CQRS;
 using Logitar.EventSourcing;
 using PokeGame.Core.Evolutions;
 using PokeGame.Core.Forms;
-using PokeGame.Core.Inventory;
+using PokeGame.Core.Inventories;
 using PokeGame.Core.Messaging;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon.Events;
@@ -73,7 +73,7 @@ internal class EvolvePokemonCommandHandler : ICommandHandler<EvolvePokemonComman
     Variety variety = await _varietyRepository.LoadAsync(form.VarietyId, cancellationToken)
       ?? throw new InvalidOperationException($"The variety 'Id={form.VarietyId}' was not loaded.");
 
-    TrainerInventory? inventory = null;
+    Inventory? inventory = null;
     if (evolution.Trigger == EvolutionTrigger.ItemUsed && evolution.ItemId.HasValue)
     {
       PokemonOwnership ownership = specimen.Ownership ?? throw new PokemonHasNoOwnerException(specimen);

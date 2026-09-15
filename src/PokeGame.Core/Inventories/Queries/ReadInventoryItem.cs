@@ -1,7 +1,7 @@
 using Logitar.CQRS;
-using PokeGame.Core.Inventory.Models;
+using PokeGame.Core.Inventories.Models;
 
-namespace PokeGame.Core.Inventory.Queries;
+namespace PokeGame.Core.Inventories.Queries;
 
 internal record ReadInventoryItemQuery(Guid TrainerId, Guid ItemId) : IQuery<InventoryItemDto?>;
 

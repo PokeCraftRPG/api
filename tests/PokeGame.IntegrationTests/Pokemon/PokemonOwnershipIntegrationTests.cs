@@ -1,12 +1,12 @@
-﻿using Logitar.EventSourcing;
+using Logitar.EventSourcing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using PokeGame.Builders;
 using PokeGame.Core;
 using PokeGame.Core.Abilities;
 using PokeGame.Core.Forms;
-using PokeGame.Core.Inventory;
-using PokeGame.Core.Inventory.Models;
+using PokeGame.Core.Inventories;
+using PokeGame.Core.Inventories.Models;
 using PokeGame.Core.Items;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Pokemon;
@@ -284,8 +284,8 @@ public class PokemonOwnershipIntegrationTests : IntegrationTests
     Assert.Equal(Context.WorldId.EntityId, exception.Data["WorldId"]);
     Assert.Equal(_trainer.EntityId, exception.Data["TrainerId"]);
     Assert.Equal(_masterBall.EntityId, exception.Data["ItemId"]);
-    Assert.Equal(TrainerInventory.MinimumQuantity, exception.Data["MinimumQuantity"]);
-    Assert.Equal(TrainerInventory.MaximumQuantity, exception.Data["MaximumQuantity"]);
+    Assert.Equal(Inventory.MinimumQuantity, exception.Data["MinimumQuantity"]);
+    Assert.Equal(Inventory.MaximumQuantity, exception.Data["MaximumQuantity"]);
     Assert.Equal(-1, exception.Data["AttemptedQuantity"]);
     Assert.Equal("Quantity", exception.Data["PropertyName"]);
 
