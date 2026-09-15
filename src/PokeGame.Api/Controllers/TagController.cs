@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Krakenar.Contracts.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Api.Filters;
 using PokeGame.Core.Rosters;
@@ -47,6 +48,13 @@ public class TagController : ControllerBase
   {
     CreateOrReplaceTagResult result = await _rosterService.CreateOrReplaceTagAsync(trainerId, payload, tagId, cancellationToken);
     return ToActionResult(trainerId, result);
+  }
+
+  [HttpGet]
+  public async Task<ActionResult<SearchResults<TagDto>>> SearchAsync(Guid trainerId, CancellationToken cancellationToken)
+  {
+    SearchResults<TagDto>? results = await _rosterService.SearchTagsAsync(trainerId, cancellationToken);
+    return results is null ? NotFound() : Ok(results);
   }
 
   [HttpPatch("{tagId}")]

@@ -1,4 +1,5 @@
-﻿using Logitar.CQRS;
+﻿using Krakenar.Contracts.Search;
+using Logitar.CQRS;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Core.Rosters.Commands;
 using PokeGame.Core.Rosters.Models;
@@ -11,6 +12,7 @@ public interface IRosterService
   Task<CreateOrReplaceTagResult> CreateOrReplaceTagAsync(Guid trainerId, CreateOrReplaceTagPayload payload, Guid? tagId = null, CancellationToken cancellationToken = default);
   Task<TagDto?> DeleteTagAsync(Guid trainerId, Guid tagId, CancellationToken cancellationToken = default);
   Task<TagDto?> ReadTagAsync(Guid trainerId, Guid tagId, CancellationToken cancellationToken = default);
+  Task<SearchResults<TagDto>?> SearchTagsAsync(Guid trainerId, CancellationToken cancellationToken = default);
   Task<TagDto?> UpdateTagAsync(Guid trainerId, Guid tagId, UpdateTagPayload payload, CancellationToken cancellationToken = default);
 }
 
@@ -24,6 +26,7 @@ internal class RosterService : IRosterService
     services.AddTransient<ICommandHandler<DeleteTagCommand, TagDto?>, DeleteTagCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateTagCommand, TagDto?>, UpdateTagCommandHandler>();
     services.AddTransient<IQueryHandler<ReadTagQuery, TagDto?>, ReadTagQueryHandler>();
+    services.AddTransient<IQueryHandler<SearchTagsQuery, SearchResults<TagDto>?>, SearchTagsQueryHandler>();
   }
 
   private readonly ICommandBus _commandBus;
@@ -50,6 +53,12 @@ internal class RosterService : IRosterService
   public async Task<TagDto?> ReadTagAsync(Guid trainerId, Guid tagId, CancellationToken cancellationToken)
   {
     ReadTagQuery query = new(trainerId, tagId);
+    return await _queryBus.ExecuteAsync(query, cancellationToken);
+  }
+
+  public async Task<SearchResults<TagDto>?> SearchTagsAsync(Guid trainerId, CancellationToken cancellationToken)
+  {
+    SearchTagsQuery query = new(trainerId);
     return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 

@@ -1,3 +1,4 @@
+using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
@@ -120,6 +121,34 @@ public class TagIntegrationTests : IntegrationTests
     Assert.Equal(created.Tag.Name, deleted.Name);
 
     Assert.Null(await _rosterService.ReadTagAsync(_trainer.EntityId, created.Tag.Id));
+  }
+
+  [Fact(DisplayName = "It should search tags sorted by name.")]
+  public async Task Given_Tags_When_Search_Then_SortedByName()
+  {
+    await CreateAsync(new CreateOrReplaceTagPayload { Name = "Zebra" });
+    await CreateAsync(new CreateOrReplaceTagPayload { Name = "Alpha" });
+    await CreateAsync(new CreateOrReplaceTagPayload { Name = "Middle" });
+
+    SearchResults<TagDto>? results = await _rosterService.SearchTagsAsync(_trainer.EntityId);
+    Assert.NotNull(results);
+    Assert.Equal(3, results.Total);
+    Assert.Equal(["Alpha", "Middle", "Zebra"], results.Items.Select(tag => tag.Name));
+  }
+
+  [Fact(DisplayName = "It should return empty search results when the trainer has no tags.")]
+  public async Task Given_NoTags_When_Search_Then_EmptyResults()
+  {
+    SearchResults<TagDto>? results = await _rosterService.SearchTagsAsync(_trainer.EntityId);
+    Assert.NotNull(results);
+    Assert.Equal(0, results.Total);
+    Assert.Empty(results.Items);
+  }
+
+  [Fact(DisplayName = "It should return null when searching tags for a missing trainer.")]
+  public async Task Given_MissingTrainer_When_Search_Then_Null()
+  {
+    Assert.Null(await _rosterService.SearchTagsAsync(Guid.NewGuid()));
   }
 
   [Fact(DisplayName = "It should return null when reading a missing tag.")]

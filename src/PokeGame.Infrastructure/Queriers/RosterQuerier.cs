@@ -1,4 +1,5 @@
 ﻿using Krakenar.Contracts.Actors;
+using Krakenar.Contracts.Search;
 using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using PokeGame.Core;
@@ -36,11 +37,28 @@ internal class RosterQuerier : IRosterQuerier
     return tag is null ? null : await MapAsync(tag, cancellationToken);
   }
 
+  public async Task<SearchResults<TagDto>> SearchTagsAsync(Guid trainerId, CancellationToken cancellationToken)
+  {
+    TagEntity[] entities = await _tags.AsNoTracking()
+      .Where(x => x.Trainer!.World!.StreamId == _context.WorldId.Value && x.Trainer.Id == trainerId)
+      .OrderBy(x => x.Name).ThenBy(x => x.TagId)
+      .ToArrayAsync(cancellationToken);
+
+    IReadOnlyCollection<TagDto> tags = await MapAsync(entities, cancellationToken);
+
+    return new SearchResults<TagDto>(tags);
+  }
+
   private async Task<TagDto> MapAsync(TagEntity tag, CancellationToken cancellationToken)
   {
-    IReadOnlyDictionary<ActorId, Actor> actors = await _actors.FindAsync(tag.GetActorIds(), cancellationToken);
+    return (await MapAsync([tag], cancellationToken)).Single();
+  }
+  private async Task<IReadOnlyCollection<TagDto>> MapAsync(IEnumerable<TagEntity> tags, CancellationToken cancellationToken)
+  {
+    IEnumerable<ActorId> actorIds = tags.SelectMany(tag => tag.GetActorIds());
+    IReadOnlyDictionary<ActorId, Actor> actors = await _actors.FindAsync(actorIds, cancellationToken);
     Mapper mapper = new(actors);
 
-    return mapper.ToTag(tag);
+    return tags.Select(mapper.ToTag).ToList().AsReadOnly();
   }
 }
