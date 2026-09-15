@@ -1,11 +1,11 @@
-﻿using Krakenar.Contracts.Search;
+using Krakenar.Contracts.Search;
 using Logitar.CQRS;
 using Microsoft.Extensions.DependencyInjection;
-using PokeGame.Core.Inventory.Commands;
-using PokeGame.Core.Inventory.Models;
-using PokeGame.Core.Inventory.Queries;
+using PokeGame.Core.Inventories.Commands;
+using PokeGame.Core.Inventories.Models;
+using PokeGame.Core.Inventories.Queries;
 
-namespace PokeGame.Core.Inventory;
+namespace PokeGame.Core.Inventories;
 
 public interface IInventoryService
 {

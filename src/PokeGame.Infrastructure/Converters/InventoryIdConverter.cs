@@ -1,4 +1,4 @@
-using PokeGame.Core.Inventory;
+using PokeGame.Core.Inventories;
 
 namespace PokeGame.Infrastructure.Converters;
 

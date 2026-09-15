@@ -1,4 +1,4 @@
-﻿namespace PokeGame.Core.Inventory.Models;
+namespace PokeGame.Core.Inventories.Models;
 
 public enum InventoryItemSort
 {

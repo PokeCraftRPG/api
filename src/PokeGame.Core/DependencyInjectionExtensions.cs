@@ -1,4 +1,4 @@
-﻿using Logitar.CQRS;
+using Logitar.CQRS;
 using Logitar.EventSourcing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,7 +7,7 @@ using PokeGame.Core.Assets;
 using PokeGame.Core.Evolutions;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Identity;
-using PokeGame.Core.Inventory;
+using PokeGame.Core.Inventories;
 using PokeGame.Core.Items;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Moves;

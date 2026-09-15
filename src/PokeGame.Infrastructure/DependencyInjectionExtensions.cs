@@ -1,4 +1,4 @@
-﻿using Logitar;
+using Logitar;
 using Logitar.CQRS;
 using Logitar.EventSourcing.EntityFrameworkCore.PostgreSQL;
 using Logitar.EventSourcing.EntityFrameworkCore.Relational;
@@ -12,7 +12,7 @@ using PokeGame.Core.Assets;
 using PokeGame.Core.Evolutions;
 using PokeGame.Core.Forms;
 using PokeGame.Core.Identity;
-using PokeGame.Core.Inventory;
+using PokeGame.Core.Inventories;
 using PokeGame.Core.Items;
 using PokeGame.Core.Membership;
 using PokeGame.Core.Messaging;

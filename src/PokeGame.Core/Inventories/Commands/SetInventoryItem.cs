@@ -1,10 +1,10 @@
-﻿using Logitar.CQRS;
-using PokeGame.Core.Inventory.Models;
+using Logitar.CQRS;
+using PokeGame.Core.Inventories.Models;
 using PokeGame.Core.Items;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Trainers;
 
-namespace PokeGame.Core.Inventory.Commands;
+namespace PokeGame.Core.Inventories.Commands;
 
 internal record SetInventoryItemCommand(Guid TrainerId, Guid ItemId, SetInventoryItemPayload Payload) : ICommand<InventoryItemDto>;
 
@@ -39,7 +39,7 @@ internal class SetInventoryItemCommandHandler : ICommandHandler<SetInventoryItem
     payload.Validate();
 
     TrainerId trainerId = new(_context.WorldId, command.TrainerId);
-    TrainerInventory inventory = await _inventoryManager.FindAsync(trainerId, nameof(command.TrainerId), cancellationToken);
+    Inventory inventory = await _inventoryManager.FindAsync(trainerId, nameof(command.TrainerId), cancellationToken);
     await _permissionService.CheckAsync(Actions.Update, inventory, cancellationToken);
 
     ItemId itemId = new(trainerId.WorldId, command.ItemId);

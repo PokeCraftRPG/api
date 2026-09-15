@@ -1,6 +1,6 @@
-﻿using FluentValidation;
+using FluentValidation;
 
-namespace PokeGame.Core.Inventory.Models;
+namespace PokeGame.Core.Inventories.Models;
 
 public record AdjustInventoryItemPayload
 {
@@ -12,7 +12,7 @@ public record AdjustInventoryItemPayload
   {
     public Validator()
     {
-      RuleFor(x => x.Delta).InclusiveBetween(-TrainerInventory.MaximumQuantity, TrainerInventory.MaximumQuantity).NotEqual(0);
+      RuleFor(x => x.Delta).InclusiveBetween(-Inventory.MaximumQuantity, Inventory.MaximumQuantity).NotEqual(0);
     }
   }
 }

@@ -1,10 +1,10 @@
-﻿using PokeGame.Core.Trainers;
+using PokeGame.Core.Trainers;
 
-namespace PokeGame.Core.Inventory;
+namespace PokeGame.Core.Inventories;
 
 public interface IInventoryManager
 {
-  Task<TrainerInventory> FindAsync(TrainerId trainerId, string propertyName, CancellationToken cancellationToken = default);
+  Task<Inventory> FindAsync(TrainerId trainerId, string propertyName, CancellationToken cancellationToken = default);
 }
 
 internal class InventoryManager : IInventoryManager
@@ -18,14 +18,14 @@ internal class InventoryManager : IInventoryManager
     _trainerRepository = trainerRepository;
   }
 
-  public async Task<TrainerInventory> FindAsync(TrainerId trainerId, string propertyName, CancellationToken cancellationToken)
+  public async Task<Inventory> FindAsync(TrainerId trainerId, string propertyName, CancellationToken cancellationToken)
   {
     InventoryId inventoryId = new(trainerId);
-    TrainerInventory? inventory = await _inventoryRepository.LoadAsync(inventoryId, cancellationToken);
+    Inventory? inventory = await _inventoryRepository.LoadAsync(inventoryId, cancellationToken);
     if (inventory is null)
     {
       Trainer trainer = await _trainerRepository.LoadAsync(trainerId, cancellationToken) ?? throw new EntityNotFoundException(trainerId, propertyName);
-      inventory = new TrainerInventory(trainer);
+      inventory = new Inventory(trainer);
     }
     return inventory;
   }

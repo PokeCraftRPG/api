@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokeGame.Api.Filters;
 using PokeGame.Api.Models.Inventory;
-using PokeGame.Core.Inventory;
-using PokeGame.Core.Inventory.Models;
+using PokeGame.Core.Inventories;
+using PokeGame.Core.Inventories.Models;
 
 namespace PokeGame.Api.Controllers;
 

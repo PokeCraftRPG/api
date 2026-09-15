@@ -1,7 +1,7 @@
-﻿using Logitar.EventSourcing;
+using Logitar.EventSourcing;
 using PokeGame.Core.Trainers;
 
-namespace PokeGame.Core.Inventory;
+namespace PokeGame.Core.Inventories;
 
 public readonly struct InventoryId : IEntityProvider
 {
@@ -14,7 +14,7 @@ public readonly struct InventoryId : IEntityProvider
   {
     StreamId = streamId;
 
-    Entity entity = Entity.Parse(streamId.Value, TrainerInventory.EntityKind);
+    Entity entity = Entity.Parse(streamId.Value, Inventory.EntityKind);
     if (!entity.WorldId.HasValue)
     {
       throw new ArgumentException("A world identifier is required.", nameof(streamId));
@@ -28,13 +28,13 @@ public readonly struct InventoryId : IEntityProvider
 
   public InventoryId(TrainerId trainerId)
   {
-    Entity entity = new(TrainerInventory.EntityKind, trainerId.EntityId, trainerId.WorldId);
+    Entity entity = new(Inventory.EntityKind, trainerId.EntityId, trainerId.WorldId);
     StreamId = new StreamId(entity.ToString());
 
     TrainerId = trainerId;
   }
 
-  public Entity GetEntity() => new(TrainerInventory.EntityKind, TrainerId.EntityId, TrainerId.WorldId);
+  public Entity GetEntity() => new(Inventory.EntityKind, TrainerId.EntityId, TrainerId.WorldId);
 
   public static bool operator ==(InventoryId left, InventoryId right) => left.Equals(right);
   public static bool operator !=(InventoryId left, InventoryId right) => !left.Equals(right);

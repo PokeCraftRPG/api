@@ -1,16 +1,16 @@
-﻿using Logitar.EventSourcing;
-using PokeGame.Core.Inventory.Events;
+using Logitar.EventSourcing;
+using PokeGame.Core.Inventories.Events;
 using PokeGame.Core.Items;
 using PokeGame.Core.Trainers;
 
-namespace PokeGame.Core.Inventory;
+namespace PokeGame.Core.Inventories;
 
-public sealed class TrainerInventory : AggregateRoot, IEntityProvider
+public sealed class Inventory : AggregateRoot, IEntityProvider
 {
   public const int MinimumQuantity = 0;
   public const int MaximumQuantity = 999;
 
-  public const string EntityKind = "TrainerInventory";
+  public const string EntityKind = "Inventory";
 
   public new InventoryId Id => new(base.Id);
   public TrainerId TrainerId => Id.TrainerId;
@@ -18,19 +18,19 @@ public sealed class TrainerInventory : AggregateRoot, IEntityProvider
   private readonly Dictionary<ItemId, int> _quantities = [];
   public IReadOnlyDictionary<ItemId, int> Quantities => _quantities.AsReadOnly();
 
-  public TrainerInventory() : base()
+  public Inventory() : base()
   {
   }
 
-  public TrainerInventory(Trainer trainer) : this(trainer.Id)
+  public Inventory(Trainer trainer) : this(trainer.Id)
   {
   }
 
-  public TrainerInventory(TrainerId trainerId) : this(new InventoryId(trainerId))
+  public Inventory(TrainerId trainerId) : this(new InventoryId(trainerId))
   {
   }
 
-  public TrainerInventory(InventoryId inventoryId) : base(inventoryId.StreamId)
+  public Inventory(InventoryId inventoryId) : base(inventoryId.StreamId)
   {
   }
 

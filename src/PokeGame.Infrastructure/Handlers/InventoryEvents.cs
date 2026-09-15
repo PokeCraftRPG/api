@@ -1,8 +1,8 @@
-﻿using Logitar.EventSourcing;
+using Logitar.EventSourcing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using PokeGame.Core.Inventory;
-using PokeGame.Core.Inventory.Events;
+using PokeGame.Core.Inventories;
+using PokeGame.Core.Inventories.Events;
 using PokeGame.Core.Trainers;
 using PokeGame.Infrastructure.Entities;
 

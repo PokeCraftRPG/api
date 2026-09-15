@@ -1,9 +1,9 @@
-﻿using Krakenar.Contracts.Search;
+using Krakenar.Contracts.Search;
 using Logitar.CQRS;
-using PokeGame.Core.Inventory.Models;
+using PokeGame.Core.Inventories.Models;
 using PokeGame.Core.Trainers;
 
-namespace PokeGame.Core.Inventory.Queries;
+namespace PokeGame.Core.Inventories.Queries;
 
 internal record SearchInventoryItemsQuery(Guid TrainerId, SearchInventoryItemsPayload Payload) : IQuery<SearchResults<InventoryItemDto>?>;
 

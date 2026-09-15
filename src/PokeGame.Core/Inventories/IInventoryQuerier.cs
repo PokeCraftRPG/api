@@ -1,7 +1,7 @@
-﻿using Krakenar.Contracts.Search;
-using PokeGame.Core.Inventory.Models;
+using Krakenar.Contracts.Search;
+using PokeGame.Core.Inventories.Models;
 
-namespace PokeGame.Core.Inventory;
+namespace PokeGame.Core.Inventories;
 
 public interface IInventoryQuerier
 {
