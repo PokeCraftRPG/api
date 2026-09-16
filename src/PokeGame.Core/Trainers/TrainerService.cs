@@ -10,6 +10,7 @@ namespace PokeGame.Core.Trainers;
 public interface ITrainerService
 {
   Task<CreateOrReplaceTrainerResult> CreateOrReplaceAsync(CreateOrReplaceTrainerPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
+  Task<TrainerFiltersDto> GetFiltersAsync(CancellationToken cancellationToken = default);
   Task<TrainerDto?> ReadAsync(Guid? id = null, string? key = null, string? license = null, CancellationToken cancellationToken = default);
   Task<SearchResults<TrainerDto>> SearchAsync(SearchTrainersPayload payload, CancellationToken cancellationToken = default);
   Task<TrainerDto?> UpdateAsync(Guid id, UpdateTrainerPayload payload, CancellationToken cancellationToken = default);
@@ -23,6 +24,7 @@ internal class TrainerService : ITrainerService
     services.AddTransient<ITrainerManager, TrainerManager>();
     services.AddTransient<ICommandHandler<CreateOrReplaceTrainerCommand, CreateOrReplaceTrainerResult>, CreateOrReplaceTrainerCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateTrainerCommand, TrainerDto?>, UpdateTrainerCommandHandler>();
+    services.AddTransient<IQueryHandler<GetTrainerFiltersQuery, TrainerFiltersDto>, GetTrainerFiltersQueryHandler>();
     services.AddTransient<IQueryHandler<ReadTrainerQuery, TrainerDto?>, ReadTrainerQueryHandler>();
     services.AddTransient<IQueryHandler<SearchTrainersQuery, SearchResults<TrainerDto>>, SearchTrainersQueryHandler>();
   }
@@ -40,6 +42,12 @@ internal class TrainerService : ITrainerService
   {
     CreateOrReplaceTrainerCommand command = new(payload, id);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<TrainerFiltersDto> GetFiltersAsync(CancellationToken cancellationToken)
+  {
+    GetTrainerFiltersQuery query = new();
+    return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 
   public async Task<TrainerDto?> ReadAsync(Guid? id, string? key, string? license, CancellationToken cancellationToken)

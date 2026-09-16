@@ -30,6 +30,13 @@ public class TrainerController : ControllerBase
     return ToActionResult(result);
   }
 
+  [HttpGet("filters")]
+  public async Task<ActionResult<TrainerFiltersDto>> GetFiltersAsync(CancellationToken cancellationToken)
+  {
+    TrainerFiltersDto filters = await _trainerService.GetFiltersAsync(cancellationToken);
+    return Ok(filters);
+  }
+
   [HttpGet("{id}", Name = GetByIdRoute)]
   public async Task<ActionResult<TrainerDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {

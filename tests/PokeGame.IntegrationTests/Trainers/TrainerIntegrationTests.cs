@@ -232,6 +232,20 @@ public class TrainerIntegrationTests : IntegrationTests
     Assert.Equal(blue.EntityId, trainer.Id);
   }
 
+  [Fact(DisplayName = "It should return the trainer filter options.")]
+  public async Task Given_Members_When_GetFilters_Then_OptionsReturned()
+  {
+    User member = await GrantMembershipAsync();
+    SetupUsers(member);
+
+    TrainerFiltersDto filters = await _trainerService.GetFiltersAsync();
+
+    Assert.Equal(2, filters.Members.Count);
+    Assert.Contains(filters.Members, actor => actor.Id == Context.User!.Id);
+    Assert.Contains(filters.Members, actor => actor.Id == member.Id);
+    Assert.Equal(filters.Members.OrderBy(actor => actor.DisplayName).Select(actor => actor.Id), filters.Members.Select(actor => actor.Id));
+  }
+
   [Fact(DisplayName = "It should filter search results by gender.")]
   public async Task Given_Gender_When_Search_Then_Filtered()
   {
