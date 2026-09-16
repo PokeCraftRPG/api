@@ -216,6 +216,20 @@ public class SpeciesIntegrationTests : IntegrationTests
     Assert.Equal(charmander.EntityId, species.Id);
   }
 
+  [Fact(DisplayName = "It should return the species filter options.")]
+  public async Task Given_Regions_When_GetFilters_Then_OptionsReturned()
+  {
+    Region johto = RegionBuilder.Johto(Faker, Context.World);
+    await _regionRepository.SaveAsync(johto);
+
+    SpeciesFiltersDto filters = await _speciesService.GetFiltersAsync();
+
+    Assert.Equal(2, filters.Regions.Count);
+    Assert.Contains(filters.Regions, option => option.Value == _region.Key.Value && option.Text == (_region.Name?.Value ?? _region.Key.Value));
+    Assert.Contains(filters.Regions, option => option.Value == johto.Key.Value && option.Text == (johto.Name?.Value ?? johto.Key.Value));
+    Assert.Equal(filters.Regions.OrderBy(option => option.Text).Select(option => option.Value), filters.Regions.Select(option => option.Value));
+  }
+
   [Theory(DisplayName = "It should filter search results by region.")]
   [InlineData(false)]
   [InlineData(true)]

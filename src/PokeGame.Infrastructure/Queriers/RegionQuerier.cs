@@ -34,6 +34,16 @@ internal class RegionQuerier : IRegionQuerier
     return streamId is null ? null : new RegionId(streamId);
   }
 
+  public async Task<IReadOnlyCollection<FilterOption>> ListOptionsAsync(CancellationToken cancellationToken)
+  {
+    var regions = await _regions
+      .Where(x => x.World!.StreamId == _context.WorldId.Value)
+      .Select(x => new { x.Key, x.Name })
+      .OrderBy(x => x.Name ?? x.Key)
+      .ToArrayAsync(cancellationToken);
+    return regions.Select(region => new FilterOption(region.Name ?? region.Key, region.Key)).ToList().AsReadOnly();
+  }
+
   public async Task<RegionDto> ReadAsync(Region region, CancellationToken cancellationToken)
   {
     return await ReadAsync(region.Id, cancellationToken)

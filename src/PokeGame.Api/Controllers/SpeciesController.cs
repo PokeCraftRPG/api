@@ -30,6 +30,13 @@ public class SpeciesController : ControllerBase
     return ToActionResult(result);
   }
 
+  [HttpGet("filters")]
+  public async Task<ActionResult<SpeciesFiltersDto>> GetFiltersAsync(CancellationToken cancellationToken)
+  {
+    SpeciesFiltersDto filters = await _speciesService.GetFiltersAsync(cancellationToken);
+    return Ok(filters);
+  }
+
   [HttpGet("{id}", Name = GetByIdRoute)]
   public async Task<ActionResult<SpeciesDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {

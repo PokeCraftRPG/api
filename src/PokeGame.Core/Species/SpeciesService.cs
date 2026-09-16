@@ -10,6 +10,7 @@ namespace PokeGame.Core.Species;
 public interface ISpeciesService
 {
   Task<CreateOrReplaceSpeciesResult> CreateOrReplaceAsync(CreateOrReplaceSpeciesPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
+  Task<SpeciesFiltersDto> GetFiltersAsync(CancellationToken cancellationToken = default);
   Task<SpeciesDto?> ReadAsync(Guid? id = null, int? number = null, string? key = null, CancellationToken cancellationToken = default);
   Task<SpeciesDto?> ReadAsync(string region, int number, CancellationToken cancellationToken = default);
   Task<SpeciesDto?> RemoveRegionalNumberAsync(Guid speciesId, Guid regionId, CancellationToken cancellationToken = default);
@@ -28,6 +29,7 @@ internal class SpeciesService : ISpeciesService
     services.AddTransient<ICommandHandler<RemoveRegionalNumberCommand, SpeciesDto?>, RemoveRegionalNumberCommandHandler>();
     services.AddTransient<ICommandHandler<SetRegionalNumberCommand, SpeciesDto>, SetRegionalNumberCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateSpeciesCommand, SpeciesDto?>, UpdateSpeciesCommandHandler>();
+    services.AddTransient<IQueryHandler<GetSpeciesFiltersQuery, SpeciesFiltersDto>, GetSpeciesFiltersQueryHandler>();
     services.AddTransient<IQueryHandler<ReadRegionalSpeciesQuery, SpeciesDto?>, ReadRegionalSpeciesQueryHandler>();
     services.AddTransient<IQueryHandler<ReadSpeciesQuery, SpeciesDto?>, ReadSpeciesQueryHandler>();
     services.AddTransient<IQueryHandler<SearchSpeciesQuery, SearchResults<SpeciesDto>>, SearchSpeciesQueryHandler>();
@@ -46,6 +48,12 @@ internal class SpeciesService : ISpeciesService
   {
     CreateOrReplaceSpeciesCommand command = new(payload, id);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<SpeciesFiltersDto> GetFiltersAsync(CancellationToken cancellationToken)
+  {
+    GetSpeciesFiltersQuery query = new();
+    return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 
   public async Task<SpeciesDto?> ReadAsync(Guid? id, int? number, string? key, CancellationToken cancellationToken)
