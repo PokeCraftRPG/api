@@ -7,6 +7,8 @@ public interface IRegionQuerier
 {
   Task<RegionId?> GetIdAsync(Key key, CancellationToken cancellationToken = default);
 
+  Task<IReadOnlyCollection<FilterOption>> ListOptionsAsync(CancellationToken cancellationToken = default);
+
   Task<RegionDto> ReadAsync(Region region, CancellationToken cancellationToken = default);
   Task<RegionDto?> ReadAsync(RegionId id, CancellationToken cancellationToken = default);
   Task<RegionDto?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
