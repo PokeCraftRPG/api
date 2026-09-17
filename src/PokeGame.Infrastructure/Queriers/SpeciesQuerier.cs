@@ -51,6 +51,16 @@ internal class SpeciesQuerier : ISpeciesQuerier
     return streamId is null ? null : new SpeciesId(streamId);
   }
 
+  public async Task<IReadOnlyCollection<SpeciesSummary>> ListSummariesAsync(CancellationToken cancellationToken)
+  {
+    var species = await _species
+      .Where(x => x.World!.StreamId == _context.WorldId.Value)
+      .Select(x => new { x.Id, x.Key, x.Name })
+      .OrderBy(x => x.Name ?? x.Key).ThenBy(x => x.Key)
+      .ToArrayAsync(cancellationToken);
+    return species.Select(x => new SpeciesSummary(x.Id, x.Key, x.Name)).ToList().AsReadOnly();
+  }
+
   public async Task<SpeciesDto> ReadAsync(PokemonSpecies species, CancellationToken cancellationToken)
   {
     return await ReadAsync(species.Id, cancellationToken)

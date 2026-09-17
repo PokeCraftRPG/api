@@ -30,6 +30,13 @@ public class VarietyController : ControllerBase
     return ToActionResult(result);
   }
 
+  [HttpGet("filters")]
+  public async Task<ActionResult<VarietyFiltersDto>> GetFiltersAsync(CancellationToken cancellationToken)
+  {
+    VarietyFiltersDto filters = await _varietyService.GetFiltersAsync(cancellationToken);
+    return Ok(filters);
+  }
+
   [HttpGet("{id}", Name = GetByIdRoute)]
   public async Task<ActionResult<VarietyDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {

@@ -189,6 +189,20 @@ public class VarietyIntegrationTests : IntegrationTests
     Assert.Equal(charmander.EntityId, variety.Id);
   }
 
+  [Fact(DisplayName = "It should return the variety filter options.")]
+  public async Task Given_Species_When_GetFilters_Then_OptionsReturned()
+  {
+    PokemonSpecies charmander = SpeciesBuilder.Charmander(Faker, Context.World);
+    await _speciesRepository.SaveAsync(charmander);
+
+    VarietyFiltersDto filters = await _varietyService.GetFiltersAsync();
+
+    Assert.Equal(2, filters.Species.Count);
+    Assert.Contains(filters.Species, species => species.Id == _species.EntityId && species.Key == _species.Key.Value && species.Name == _species.Name?.Value);
+    Assert.Contains(filters.Species, species => species.Id == charmander.EntityId && species.Key == charmander.Key.Value && species.Name == charmander.Name?.Value);
+    Assert.Equal(filters.Species.OrderBy(species => species.Name ?? species.Key).Select(species => species.Id), filters.Species.Select(species => species.Id));
+  }
+
   [Theory(DisplayName = "It should filter search results by species.")]
   [InlineData(false)]
   [InlineData(true)]

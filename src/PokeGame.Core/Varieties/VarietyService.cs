@@ -10,6 +10,7 @@ namespace PokeGame.Core.Varieties;
 public interface IVarietyService
 {
   Task<CreateOrReplaceVarietyResult> CreateOrReplaceAsync(CreateOrReplaceVarietyPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
+  Task<VarietyFiltersDto> GetFiltersAsync(CancellationToken cancellationToken = default);
   Task<VarietyDto?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
   Task<VarietyDto?> RemoveMoveAsync(Guid varietyId, Guid id, CancellationToken cancellationToken = default);
   Task<SearchResults<VarietyDto>> SearchAsync(SearchVarietiesPayload payload, CancellationToken cancellationToken = default);
@@ -27,6 +28,7 @@ internal class VarietyService : IVarietyService
     services.AddTransient<ICommandHandler<RemoveVarietyMoveCommand, VarietyDto?>, RemoveVarietyMoveCommandHandler>();
     services.AddTransient<ICommandHandler<SetVarietyMoveCommand, VarietyDto>, SetVarietyMoveCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateVarietyCommand, VarietyDto?>, UpdateVarietyCommandHandler>();
+    services.AddTransient<IQueryHandler<GetVarietyFiltersQuery, VarietyFiltersDto>, GetVarietyFiltersQueryHandler>();
     services.AddTransient<IQueryHandler<ReadVarietyQuery, VarietyDto?>, ReadVarietyQueryHandler>();
     services.AddTransient<IQueryHandler<SearchVarietiesQuery, SearchResults<VarietyDto>>, SearchVarietiesQueryHandler>();
   }
@@ -44,6 +46,12 @@ internal class VarietyService : IVarietyService
   {
     CreateOrReplaceVarietyCommand command = new(payload, id);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<VarietyFiltersDto> GetFiltersAsync(CancellationToken cancellationToken)
+  {
+    GetVarietyFiltersQuery query = new();
+    return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 
   public async Task<VarietyDto?> ReadAsync(Guid? id, string? key, CancellationToken cancellationToken)
