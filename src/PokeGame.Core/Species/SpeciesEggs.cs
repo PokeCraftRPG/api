@@ -33,6 +33,6 @@ internal class SpeciesEggsValidator : AbstractValidator<ISpeciesEggs>
     RuleFor(x => x.Cycles).GreaterThan((byte)0);
     RuleFor(x => x.PrimaryGroup).IsInEnum();
     When(x => x.PrimaryGroup == EggGroup.NoEggsDiscovered || x.PrimaryGroup == EggGroup.Ditto, () => RuleFor(x => x.SecondaryGroup).Null());
-    RuleFor(x => x.SecondaryGroup).IsInEnum().NotEqual(x => x.PrimaryGroup);
+    RuleFor(x => x.SecondaryGroup).IsInEnum().NotEqual(x => x.PrimaryGroup).NotEqual(EggGroup.NoEggsDiscovered).NotEqual(EggGroup.Ditto);
   }
 }
