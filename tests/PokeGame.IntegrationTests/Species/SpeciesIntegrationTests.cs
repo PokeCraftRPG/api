@@ -225,9 +225,9 @@ public class SpeciesIntegrationTests : IntegrationTests
     SpeciesFiltersDto filters = await _speciesService.GetFiltersAsync();
 
     Assert.Equal(2, filters.Regions.Count);
-    Assert.Contains(filters.Regions, option => option.Value == _region.Key.Value && option.Text == (_region.Name?.Value ?? _region.Key.Value));
-    Assert.Contains(filters.Regions, option => option.Value == johto.Key.Value && option.Text == (johto.Name?.Value ?? johto.Key.Value));
-    Assert.Equal(filters.Regions.OrderBy(option => option.Text).Select(option => option.Value), filters.Regions.Select(option => option.Value));
+    Assert.Contains(filters.Regions, region => region.Id == _region.EntityId && region.Key == _region.Key.Value && region.Name == _region.Name?.Value);
+    Assert.Contains(filters.Regions, region => region.Id == johto.EntityId && region.Key == johto.Key.Value && region.Name == johto.Name?.Value);
+    Assert.Equal(filters.Regions.OrderBy(region => region.Name ?? region.Key).Select(region => region.Id), filters.Regions.Select(region => region.Id));
   }
 
   [Theory(DisplayName = "It should filter search results by region.")]

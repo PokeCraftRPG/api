@@ -34,14 +34,14 @@ internal class RegionQuerier : IRegionQuerier
     return streamId is null ? null : new RegionId(streamId);
   }
 
-  public async Task<IReadOnlyCollection<FilterOption>> ListOptionsAsync(CancellationToken cancellationToken)
+  public async Task<IReadOnlyCollection<RegionSummary>> ListSummariesAsync(CancellationToken cancellationToken)
   {
     var regions = await _regions
       .Where(x => x.World!.StreamId == _context.WorldId.Value)
-      .Select(x => new { x.Key, x.Name })
-      .OrderBy(x => x.Name ?? x.Key)
+      .Select(x => new { x.Id, x.Key, x.Name })
+      .OrderBy(x => x.Name ?? x.Key).ThenBy(x => x.Key)
       .ToArrayAsync(cancellationToken);
-    return regions.Select(region => new FilterOption(region.Name ?? region.Key, region.Key)).ToList().AsReadOnly();
+    return regions.Select(region => new RegionSummary(region.Id, region.Key, region.Name)).ToList().AsReadOnly();
   }
 
   public async Task<RegionDto> ReadAsync(Region region, CancellationToken cancellationToken)

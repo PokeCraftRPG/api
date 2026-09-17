@@ -1,4 +1,4 @@
-using Logitar.CQRS;
+﻿using Logitar.CQRS;
 using PokeGame.Core.Regions;
 using PokeGame.Core.Species.Models;
 
@@ -18,7 +18,7 @@ internal class GetSpeciesFiltersQueryHandler : IQueryHandler<GetSpeciesFiltersQu
   public async Task<SpeciesFiltersDto> HandleAsync(GetSpeciesFiltersQuery _, CancellationToken cancellationToken)
   {
     SpeciesFiltersDto filters = new();
-    filters.Regions.AddRange(await _regionQuerier.ListOptionsAsync(cancellationToken));
+    filters.Regions.AddRange(await _regionQuerier.ListSummariesAsync(cancellationToken));
     return filters;
   }
 }

@@ -10,6 +10,8 @@ public interface ISpeciesQuerier
   Task<SpeciesId?> GetIdAsync(Number number, CancellationToken cancellationToken = default);
   Task<SpeciesId?> GetIdAsync(RegionId regionId, Number number, CancellationToken cancellationToken = default);
 
+  Task<IReadOnlyCollection<SpeciesSummary>> ListSummariesAsync(CancellationToken cancellationToken = default);
+
   Task<SpeciesDto> ReadAsync(PokemonSpecies species, CancellationToken cancellationToken = default);
   Task<SpeciesDto?> ReadAsync(SpeciesId id, CancellationToken cancellationToken = default);
   Task<SpeciesDto?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
