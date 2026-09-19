@@ -3,6 +3,7 @@ using Krakenar.Contracts.Search;
 using Microsoft.Extensions.DependencyInjection;
 using PokeGame.Builders;
 using PokeGame.Core;
+using PokeGame.Core.Moves;
 using PokeGame.Core.Permissions;
 using PokeGame.Core.Search;
 using PokeGame.Core.Seo;
@@ -15,6 +16,7 @@ namespace PokeGame.Varieties;
 [Trait(Traits.Category, Categories.Integration)]
 public class VarietyIntegrationTests : IntegrationTests
 {
+  private readonly IMoveRepository _moveRepository;
   private readonly ISpeciesRepository _speciesRepository;
   private readonly IVarietyRepository _varietyRepository;
   private readonly IVarietyService _varietyService;
@@ -25,6 +27,7 @@ public class VarietyIntegrationTests : IntegrationTests
 
   public VarietyIntegrationTests()
   {
+    _moveRepository = ServiceProvider.GetRequiredService<IMoveRepository>();
     _speciesRepository = ServiceProvider.GetRequiredService<ISpeciesRepository>();
     _varietyRepository = ServiceProvider.GetRequiredService<IVarietyRepository>();
     _varietyService = ServiceProvider.GetRequiredService<IVarietyService>();
@@ -190,10 +193,14 @@ public class VarietyIntegrationTests : IntegrationTests
   }
 
   [Fact(DisplayName = "It should return the variety filter options.")]
-  public async Task Given_Species_When_GetFilters_Then_OptionsReturned()
+  public async Task Given_SpeciesAndMoves_When_GetFilters_Then_OptionsReturned()
   {
     PokemonSpecies charmander = SpeciesBuilder.Charmander(Faker, Context.World);
     await _speciesRepository.SaveAsync(charmander);
+
+    Move tackle = MoveBuilder.Tackle(Faker, Context.World);
+    Move ember = MoveBuilder.Ember(Faker, Context.World);
+    await _moveRepository.SaveAsync([tackle, ember]);
 
     VarietyFiltersDto filters = await _varietyService.GetFiltersAsync();
 
@@ -201,6 +208,11 @@ public class VarietyIntegrationTests : IntegrationTests
     Assert.Contains(filters.Species, species => species.Id == _species.EntityId && species.Key == _species.Key.Value && species.Name == _species.Name?.Value);
     Assert.Contains(filters.Species, species => species.Id == charmander.EntityId && species.Key == charmander.Key.Value && species.Name == charmander.Name?.Value);
     Assert.Equal(filters.Species.OrderBy(species => species.Name ?? species.Key).Select(species => species.Id), filters.Species.Select(species => species.Id));
+
+    Assert.Equal(2, filters.Moves.Count);
+    Assert.Contains(filters.Moves, move => move.Id == tackle.EntityId && move.Key == tackle.Key.Value && move.Name == tackle.Name?.Value);
+    Assert.Contains(filters.Moves, move => move.Id == ember.EntityId && move.Key == ember.Key.Value && move.Name == ember.Name?.Value);
+    Assert.Equal(filters.Moves.OrderBy(move => move.Name ?? move.Key).Select(move => move.Id), filters.Moves.Select(move => move.Id));
   }
 
   [Theory(DisplayName = "It should filter search results by species.")]

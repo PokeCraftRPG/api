@@ -34,6 +34,16 @@ internal class MoveQuerier : IMoveQuerier
     return streamId is null ? null : new MoveId(streamId);
   }
 
+  public async Task<IReadOnlyCollection<MoveSummary>> ListSummariesAsync(CancellationToken cancellationToken)
+  {
+    var species = await _moves
+      .Where(x => x.World!.StreamId == _context.WorldId.Value)
+      .Select(x => new { x.Id, x.Key, x.Name })
+      .OrderBy(x => x.Name ?? x.Key).ThenBy(x => x.Key)
+      .ToArrayAsync(cancellationToken);
+    return species.Select(x => new MoveSummary(x.Id, x.Key, x.Name)).ToList().AsReadOnly();
+  }
+
   public async Task<MoveDto> ReadAsync(Move move, CancellationToken cancellationToken)
   {
     return await ReadAsync(move.Id, cancellationToken)

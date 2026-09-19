@@ -1,4 +1,4 @@
-using Krakenar.Contracts.Search;
+﻿using Krakenar.Contracts.Search;
 using PokeGame.Core.Moves.Models;
 
 namespace PokeGame.Core.Moves;
@@ -6,6 +6,8 @@ namespace PokeGame.Core.Moves;
 public interface IMoveQuerier
 {
   Task<MoveId?> GetIdAsync(Key key, CancellationToken cancellationToken = default);
+
+  Task<IReadOnlyCollection<MoveSummary>> ListSummariesAsync(CancellationToken cancellationToken = default);
 
   Task<MoveDto> ReadAsync(Move move, CancellationToken cancellationToken = default);
   Task<MoveDto?> ReadAsync(MoveId id, CancellationToken cancellationToken = default);
