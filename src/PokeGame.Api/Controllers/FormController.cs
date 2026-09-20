@@ -30,6 +30,13 @@ public class FormController : ControllerBase
     return ToActionResult(result);
   }
 
+  [HttpGet("filters")]
+  public async Task<ActionResult<FormFiltersDto>> GetFiltersAsync(CancellationToken cancellationToken)
+  {
+    FormFiltersDto filters = await _formService.GetFiltersAsync(cancellationToken);
+    return Ok(filters);
+  }
+
   [HttpGet("{id}", Name = GetByIdRoute)]
   public async Task<ActionResult<FormDto>> ReadAsync(Guid id, CancellationToken cancellationToken)
   {

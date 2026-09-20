@@ -236,6 +236,31 @@ public class FormIntegrationTests : IntegrationTests
     Assert.Equal(charmander.EntityId, form.Id);
   }
 
+  [Fact(DisplayName = "It should return the form filter options.")]
+  public async Task Given_VarietiesAndAbilities_When_GetFilters_Then_OptionsReturned()
+  {
+    Ability blaze = AbilityBuilder.Blaze(Faker, Context.World);
+    await _abilityRepository.SaveAsync(blaze);
+
+    PokemonSpecies charmanderSpecies = SpeciesBuilder.Charmander(Faker, Context.World);
+    await _speciesRepository.SaveAsync(charmanderSpecies);
+
+    Variety charmanderVariety = VarietyBuilder.Charmander(Faker, charmanderSpecies, Context.World);
+    await _varietyRepository.SaveAsync(charmanderVariety);
+
+    FormFiltersDto filters = await _formService.GetFiltersAsync();
+
+    Assert.Equal(2, filters.Varieties.Count);
+    Assert.Contains(filters.Varieties, variety => variety.Id == _variety.EntityId && variety.Key == _variety.Key.Value && variety.Name == _variety.Name?.Value);
+    Assert.Contains(filters.Varieties, variety => variety.Id == charmanderVariety.EntityId && variety.Key == charmanderVariety.Key.Value && variety.Name == charmanderVariety.Name?.Value);
+    Assert.Equal(filters.Varieties.OrderBy(variety => variety.Name ?? variety.Key).Select(variety => variety.Id), filters.Varieties.Select(variety => variety.Id));
+
+    Assert.Equal(2, filters.Abilities.Count);
+    Assert.Contains(filters.Abilities, ability => ability.Id == _ability.EntityId && ability.Key == _ability.Key.Value && ability.Name == _ability.Name?.Value);
+    Assert.Contains(filters.Abilities, ability => ability.Id == blaze.EntityId && ability.Key == blaze.Key.Value && ability.Name == blaze.Name?.Value);
+    Assert.Equal(filters.Abilities.OrderBy(ability => ability.Name ?? ability.Key).Select(ability => ability.Id), filters.Abilities.Select(ability => ability.Id));
+  }
+
   [Theory(DisplayName = "It should filter search results by variety.")]
   [InlineData(false)]
   [InlineData(true)]

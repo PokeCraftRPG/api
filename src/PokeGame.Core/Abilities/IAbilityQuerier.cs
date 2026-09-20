@@ -7,6 +7,8 @@ public interface IAbilityQuerier
 {
   Task<AbilityId?> GetIdAsync(Key key, CancellationToken cancellationToken = default);
 
+  Task<IReadOnlyCollection<AbilitySummary>> ListSummariesAsync(CancellationToken cancellationToken = default);
+
   Task<AbilityDto> ReadAsync(Ability ability, CancellationToken cancellationToken = default);
   Task<AbilityDto?> ReadAsync(AbilityId id, CancellationToken cancellationToken = default);
   Task<AbilityDto?> ReadAsync(Guid id, CancellationToken cancellationToken = default);

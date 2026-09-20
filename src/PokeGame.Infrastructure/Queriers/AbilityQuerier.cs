@@ -34,6 +34,16 @@ internal class AbilityQuerier : IAbilityQuerier
     return streamId is null ? null : new AbilityId(streamId);
   }
 
+  public async Task<IReadOnlyCollection<AbilitySummary>> ListSummariesAsync(CancellationToken cancellationToken)
+  {
+    var abilities = await _abilities
+      .Where(x => x.World!.StreamId == _context.WorldId.Value)
+      .Select(x => new { x.Id, x.Key, x.Name })
+      .OrderBy(x => x.Name ?? x.Key).ThenBy(x => x.Key)
+      .ToArrayAsync(cancellationToken);
+    return abilities.Select(x => new AbilitySummary(x.Id, x.Key, x.Name)).ToList().AsReadOnly();
+  }
+
   public async Task<AbilityDto> ReadAsync(Ability ability, CancellationToken cancellationToken)
   {
     return await ReadAsync(ability.Id, cancellationToken)

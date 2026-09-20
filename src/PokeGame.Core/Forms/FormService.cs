@@ -10,6 +10,7 @@ namespace PokeGame.Core.Forms;
 public interface IFormService
 {
   Task<CreateOrReplaceFormResult> CreateOrReplaceAsync(CreateOrReplaceFormPayload payload, Guid? id = null, CancellationToken cancellationToken = default);
+  Task<FormFiltersDto> GetFiltersAsync(CancellationToken cancellationToken = default);
   Task<FormDto?> ReadAsync(Guid? id = null, string? key = null, CancellationToken cancellationToken = default);
   Task<SearchResults<FormDto>> SearchAsync(SearchFormsPayload payload, CancellationToken cancellationToken = default);
   Task<FormDto?> UpdateAsync(Guid id, UpdateFormPayload payload, CancellationToken cancellationToken = default);
@@ -23,6 +24,7 @@ internal class FormService : IFormService
     services.AddTransient<IFormManager, FormManager>();
     services.AddTransient<ICommandHandler<CreateOrReplaceFormCommand, CreateOrReplaceFormResult>, CreateOrReplaceFormCommandHandler>();
     services.AddTransient<ICommandHandler<UpdateFormCommand, FormDto?>, UpdateFormCommandHandler>();
+    services.AddTransient<IQueryHandler<GetFormFiltersQuery, FormFiltersDto>, GetFormFiltersQueryHandler>();
     services.AddTransient<IQueryHandler<ReadFormQuery, FormDto?>, ReadFormQueryHandler>();
     services.AddTransient<IQueryHandler<SearchFormsQuery, SearchResults<FormDto>>, SearchFormsQueryHandler>();
   }
@@ -40,6 +42,12 @@ internal class FormService : IFormService
   {
     CreateOrReplaceFormCommand command = new(payload, id);
     return await _commandBus.ExecuteAsync(command, cancellationToken);
+  }
+
+  public async Task<FormFiltersDto> GetFiltersAsync(CancellationToken cancellationToken)
+  {
+    GetFormFiltersQuery query = new();
+    return await _queryBus.ExecuteAsync(query, cancellationToken);
   }
 
   public async Task<FormDto?> ReadAsync(Guid? id, string? key, CancellationToken cancellationToken)

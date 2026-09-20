@@ -34,6 +34,16 @@ internal class VarietyQuerier : IVarietyQuerier
     return streamId is null ? null : new VarietyId(streamId);
   }
 
+  public async Task<IReadOnlyCollection<VarietySummary>> ListSummariesAsync(CancellationToken cancellationToken)
+  {
+    var varieties = await _varieties
+      .Where(x => x.World!.StreamId == _context.WorldId.Value)
+      .Select(x => new { x.Id, x.Key, x.Name })
+      .OrderBy(x => x.Name ?? x.Key).ThenBy(x => x.Key)
+      .ToArrayAsync(cancellationToken);
+    return varieties.Select(x => new VarietySummary(x.Id, x.Key, x.Name)).ToList().AsReadOnly();
+  }
+
   public async Task<VarietyDto> ReadAsync(Variety variety, CancellationToken cancellationToken)
   {
     return await ReadAsync(variety.Id, cancellationToken)

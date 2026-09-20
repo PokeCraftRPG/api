@@ -7,6 +7,8 @@ public interface IVarietyQuerier
 {
   Task<VarietyId?> GetIdAsync(Key key, CancellationToken cancellationToken = default);
 
+  Task<IReadOnlyCollection<VarietySummary>> ListSummariesAsync(CancellationToken cancellationToken = default);
+
   Task<VarietyDto> ReadAsync(Variety variety, CancellationToken cancellationToken = default);
   Task<VarietyDto?> ReadAsync(VarietyId id, CancellationToken cancellationToken = default);
   Task<VarietyDto?> ReadAsync(Guid id, CancellationToken cancellationToken = default);
